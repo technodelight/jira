@@ -8,19 +8,99 @@ ini_set('display_errors', 1);
 
 use GuzzleHttp\Client as GuzzleClient;
 
+class Credentials
+{
+    /**
+     * @var string
+     */
+    private $username;
+
+    /**
+     * @var string
+     */
+    private $password;
+
+    /**
+     * @var string
+     */
+    private $domain;
+
+    /**
+     * @var string
+     */
+    private $project;
+
+    private function __construct(array $ini)
+    {
+        $this->username = $ini['username'];
+        $this->password = $ini['password'];
+        $this->domain = $ini['domain'];
+        $this->project = $ini['project'];
+    }
+
+    public static function instance()
+    {
+        static $instance;
+        if (!$instance) {
+            $instance = new self(self::iniFile());
+        }
+
+        return $instance;
+    }
+
+    public function username()
+    {
+        return $this->username;
+    }
+
+    public function password()
+    {
+        return $this->password;
+    }
+
+    public function domain()
+    {
+        return $this->domain;
+    }
+
+    public function project()
+    {
+        return $this->project;
+    }
+
+    private static function iniFile()
+    {
+        $iniPath = __DIR__ . '/jira.ini';
+        if (!is_file($iniPath)) {
+            throw new UnexpectedValueException('No configuration found!');
+        }
+
+        if (!is_readable($iniPath)) {
+            throw new UnexpectedValueException('Cannot read configuration!');
+        }
+
+        $perms = substr(sprintf('%o', fileperms($iniPath)), -4);
+        if ($perms !== '0600') {
+            throw new UnexpectedValueException(
+                sprintf('Configuration cannot be readable by others! %s should be 0600)', $perms)
+            );
+        }
+
+        return parse_ini_file($iniPath);
+    }
+}
+
 class Client
 {
-    const API_URL = 'https://<domain>/rest/api/2/';
-
     private $_client;
 
     public function __construct()
     {
         $this->_client = new GuzzleClient(
             [
-                'base_url' => self::API_URL,
+                'base_url' => $this->apiUrl(),
                 'defaults' => [
-                    'auth' => ['user', 'pass']
+                    'auth' => [Credentials::instance()->username(), Credentials::instance()->password()]
                 ]
             ]
         );
@@ -46,6 +126,14 @@ class Client
     {
         $query = sprintf('project = "%s" and assignee = currentUser() and status = "In Progress"', $projectCode);
         return $this->search($query);
+    }
+
+    private function apiUrl()
+    {
+        return sprintf(
+            'https://%s/rest/api/2/',
+            Credentials::instance()->domain()
+        );
     }
 }
 
@@ -349,7 +437,7 @@ EOL;
 
 try {
     $client = new Client;
-    $issues = $client->inprogressIssues('<projectId>');
+    $issues = $client->inprogressIssues(Credentials::instance()->project());
     foreach ($issues as $issue) {
         print renderIssue($issue) . PHP_EOL;
     }
