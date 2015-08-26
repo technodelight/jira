@@ -1,0 +1,20 @@
+{
+    "name": "technodelight/jira",
+    "description": "JIRA PHP console application for day-to-day development",
+    "require": {
+        "php": ">=5.5.0",
+        "symfony/console": "^2.7",
+        "stecman/symfony-console-completion": "^0.5.1",
+        "guzzlehttp/guzzle": "^6.0"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "2.3.0-beta",
+        "clue/phar-composer": "^0.5.0"
+    },
+    "authors": [
+        {
+            "name": "Zsolt Gál",
+            "email": "technodelight@gmail.com"
+        }
+    ]
+}
