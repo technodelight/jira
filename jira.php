@@ -8,8 +8,10 @@ ini_set('display_errors', 1);
 
 use GuzzleHttp\Client as GuzzleClient;
 
-class Credentials
+class Configuration
 {
+    const CONFIG_FILENAME = 'jira.ini';
+
     /**
      * @var string
      */
@@ -30,22 +32,17 @@ class Credentials
      */
     private $project;
 
-    private function __construct(array $ini)
+    protected function __construct(array $ini = [])
     {
-        $this->username = $ini['username'];
-        $this->password = $ini['password'];
-        $this->domain = $ini['domain'];
-        $this->project = $ini['project'];
+        $this->username = $this->setIniField($ini, 'username');
+        $this->password = $this->setIniField($ini, 'password');
+        $this->domain = $this->setIniField($ini, 'domain');
+        $this->project = $this->setIniField($ini, 'project');
     }
 
-    public static function instance()
+    public static function initFromDirectory($iniFilePath)
     {
-        static $instance;
-        if (!$instance) {
-            $instance = new self(self::iniFile());
-        }
-
-        return $instance;
+        return new self(self::parseIniFile($iniFilePath));
     }
 
     public function username()
@@ -68,39 +65,76 @@ class Credentials
         return $this->project;
     }
 
-    private static function iniFile()
+    public function merge(Configuration $configuration)
     {
-        $iniPath = __DIR__ . '/jira.ini';
-        if (!is_file($iniPath)) {
+        $fields = array_keys(get_object_vars($this));
+        foreach ($fields as $field) {
+            if ($value = $configuration->$field()) {
+                $this->$field = $value;
+            }
+        }
+    }
+
+    protected function setIniField(array $ini, $field)
+    {
+        if (!empty($ini[$field])) {
+            return $ini[$field];
+        }
+    }
+
+    protected static function parseIniFile($iniFilePath)
+    {
+        $iniFile = $iniFilePath . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME;
+        if (!is_file($iniFile)) {
             throw new UnexpectedValueException('No configuration found!');
         }
 
-        if (!is_readable($iniPath)) {
+        if (!is_readable($iniFile)) {
             throw new UnexpectedValueException('Cannot read configuration!');
         }
 
-        $perms = substr(sprintf('%o', fileperms($iniPath)), -4);
+        $perms = substr(sprintf('%o', fileperms($iniFile)), -4);
         if ($perms !== '0600') {
             throw new UnexpectedValueException(
                 sprintf('Configuration cannot be readable by others! %s should be 0600)', $perms)
             );
         }
 
-        return parse_ini_file($iniPath);
+        return parse_ini_file($iniFile);
+    }
+}
+
+class GlobalConfiguration extends Configuration
+{
+    public static function initFromDirectory($iniFilePath)
+    {
+        if (!is_file($iniFilePath . DIRECTORY_SEPARATOR . self::CONFIG_FILENAME)) {
+            return new self();
+        }
+
+        return new self(self::parseIniFile($iniFilePath));
     }
 }
 
 class Client
 {
-    private $_client;
+    /**
+     * @var GuzzleClient
+     */
+    private $client;
 
-    public function __construct()
+    /**
+     * @var Configuration
+     */
+    private $configuration;
+
+    public function __construct(Configuration $config)
     {
-        $this->_client = new GuzzleClient(
+        $this->httpClient = new GuzzleClient(
             [
-                'base_url' => $this->apiUrl(),
+                'base_url' => $this->apiUrl($config->domain()),
                 'defaults' => [
-                    'auth' => [Credentials::instance()->username(), Credentials::instance()->password()]
+                    'auth' => [$config->username(), $config->password()]
                 ]
             ]
         );
@@ -108,18 +142,12 @@ class Client
 
     public function user()
     {
-        return $this->_client->get('myself')->json();
+        return $this->httpClient->get('myself')->json();
     }
 
     public function project($code)
     {
-        return $this->_client->get('project/' . $code)->json();
-    }
-
-    public function search($jql)
-    {
-        $response = $this->_client->get('search', ['query' => ['jql' => $jql]]);
-        return SearchResultList::fromArray($response->json());
+        return $this->httpClient->get('project/' . $code)->json();
     }
 
     public function inprogressIssues($projectCode)
@@ -128,11 +156,23 @@ class Client
         return $this->search($query);
     }
 
-    private function apiUrl()
+    public function todoIssues($projectCode)
+    {
+        $query = sprintf('project = "%s" and status = "Open" and Sprint in openSprints() ORDER BY priority DESC', $projectCode);
+        return $this->search($query);
+    }
+
+    private function search($jql)
+    {
+        $response = $this->httpClient->get('search', ['query' => ['jql' => $jql]]);
+        return SearchResultList::fromArray($response->json());
+    }
+
+    private function apiUrl($projectDomain)
     {
         return sprintf(
             'https://%s/rest/api/2/',
-            Credentials::instance()->domain()
+            $projectDomain
         );
     }
 }
@@ -365,6 +405,12 @@ class GitHelper
         return ltrim(end($list), '* ');
     }
 
+    public function topLevelDirectory()
+    {
+        $tld = $this->shell('rev-parse --show-toplevel');
+        return trim(end($tld));
+    }
+
     private function shell($command)
     {
         $result = explode(PHP_EOL, shell_exec("git $command"));
@@ -397,7 +443,7 @@ EOL;
     );
 }
 
-function renderIssue(Issue $issue)
+function renderIssue(GitHelper $git, Issue $issue)
 {
 $template = <<<EOL
 %s: %s (estimate: %s, spent: %s)
@@ -407,7 +453,6 @@ branches:
     %s
 
 EOL;
-    $git = new GitHelper;
     $branchList = $git->branches($issue->ticketNumber());
     if (empty($branchList)) {
         $generator = new GitBranchnameGenerator;
@@ -435,12 +480,70 @@ EOL;
     return $content . PHP_EOL;
 }
 
-try {
-    $client = new Client;
-    $issues = $client->inprogressIssues(Credentials::instance()->project());
-    foreach ($issues as $issue) {
-        print renderIssue($issue) . PHP_EOL;
+class Arguments
+{
+    /**
+     * @var array
+     */
+    private $args;
+
+    public function __construct()
+    {
+        $this->args = isset($_SERVER['argv']) ? $_SERVER['argv'] : [];
     }
+
+    public function scriptName()
+    {
+        return $this->argument(0);
+    }
+
+    public function firstArgument()
+    {
+        return $this->argument(1);
+    }
+
+    private function argument($index)
+    {
+        return isset($this->args[$index]) ? $this->args[$index] : null;
+    }
+}
+
+/**
+ * @return SearchResultList
+ */
+function controller(Configuration $config, Client $client, Arguments $arguments)
+{
+    switch ($arguments->firstArgument()) {
+        case 'todo':
+            return $client->todoIssues($config->project());
+        case 'inprogess':
+        case 'in-progess':
+        default:
+            return $client->inprogressIssues($config->project());
+    }
+}
+
+try {
+
+    $git = new GitHelper;
+    $arguments = new Arguments;
+
+    // init configuration
+    $config = GlobalConfiguration::initFromDirectory(getenv('HOME'));
+    $projectConfig = Configuration::initFromDirectory($git->topLevelDirectory());
+    $config->merge($projectConfig);
+
+    // init client
+    $client = new Client($config);
+
+    // retrieve issues
+    $issues = controller($config, $client, $arguments);
+
+    // render
+    foreach ($issues as $issue) {
+        print renderIssue($git, $issue) . PHP_EOL;
+    }
+
 } catch (Exception $exception) {
     print $exception . PHP_EOL;
 }
