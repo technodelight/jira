@@ -1,6 +1,10 @@
 <?php
 
-namespace Technodelight\Jira;
+namespace Technodelight\Jira\Api;
+
+use GuzzleHttp\Client as GuzzleClient;
+use Technodelight\Jira\Configuration\Configuration;
+use Technodelight\Jira\Api\SearchResultList;
 
 class Client
 {
@@ -14,6 +18,9 @@ class Client
      */
     private $configuration;
 
+    /**
+     * @param Configuration $config
+     */
     public function __construct(Configuration $config)
     {
         $this->httpClient = new GuzzleClient(
@@ -26,22 +33,40 @@ class Client
         );
     }
 
+    /**
+     * @return array
+     */
     public function user()
     {
         return $this->httpClient->get('myself')->json();
     }
 
-    public function project($code)
+    /**
+     * @param string $projectCode
+     *
+     * @return array
+     */
+    public function project($projectCode)
     {
-        return $this->httpClient->get('project/' . $code)->json();
+        return $this->httpClient->get('project/' . $projectCode)->json();
     }
 
+    /**
+     * @param string $projectCode
+     *
+     * @return SearchResultList
+     */
     public function inprogressIssues($projectCode)
     {
         $query = sprintf('project = "%s" and assignee = currentUser() and status = "In Progress"', $projectCode);
         return $this->search($query);
     }
 
+    /**
+     * @param string $projectCode
+     *
+     * @return SearchResultList
+     */
     public function todoIssues($projectCode)
     {
         $query = sprintf(
@@ -52,6 +77,11 @@ class Client
         return $this->search($query);
     }
 
+    /**
+     * @param string $jql
+     *
+     * @return SearchResultList
+     */
     private function search($jql)
     {
         $response = $this->httpClient->get('search', ['query' => ['jql' => $jql]]);

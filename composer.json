@@ -2,10 +2,10 @@
     "name": "technodelight/jira",
     "description": "JIRA PHP console application for day-to-day development",
     "require": {
-        "php": ">=5.5.0",
+        "php": ">=5.4.0",
         "symfony/console": "^2.7",
         "stecman/symfony-console-completion": "^0.5.1",
-        "guzzlehttp/guzzle": "^6.0"
+        "guzzlehttp/guzzle": "5.3"
     },
     "require-dev": {
         "phpspec/phpspec": "2.3.0-beta",
@@ -16,5 +16,6 @@
             "name": "Zsolt Gál",
             "email": "technodelight@gmail.com"
         }
-    ]
+    ],
+    "autoload": {"psr-0": {"": "src"}}
 }
