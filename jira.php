@@ -158,7 +158,11 @@ class Client
 
     public function todoIssues($projectCode)
     {
-        $query = sprintf('project = "%s" and status = "Open" and Sprint in openSprints() ORDER BY priority DESC', $projectCode);
+        $query = sprintf(
+            'project = "%s" and status = "Open" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
+            $projectCode,
+            implode('", "', ['Defect', 'Bug', 'Technical Sub-Task'])
+        );
         return $this->search($query);
     }
 
@@ -345,6 +349,29 @@ class Issue
         }
     }
 
+    public function url()
+    {
+        $uriParts = parse_url($this->link);
+        return sprintf(
+            '%s://%s/browse/%s',
+            $uriParts['scheme'],
+            $uriParts['host'],
+            $this->key
+        );
+    }
+
+    public function components()
+    {
+        if ($comps = $this->findField('compnents')) {
+            $names = [];
+            foreach ($comps as $field) {
+                $names[] = $field['name'];
+            }
+
+            return $names;
+        }
+    }
+
     public static function fromArray($resultArray)
     {
         return new self($resultArray['id'], $resultArray['self'], $resultArray['key'], $resultArray['fields']);
@@ -359,7 +386,7 @@ class Issue
 class GitBranchnameGenerator
 {
     private $remove = ['BE', 'FE'];
-    private $replace = [' ', ':'];
+    private $replace = [' ', ':', '/', ','];
     private $jiraPattern = 'feature/%s-%s';
     private $separator = '-';
 
@@ -374,20 +401,24 @@ class GitBranchnameGenerator
         );
     }
 
-    private function remove($string)
+    private function remove($summary)
     {
-        return str_replace($this->remove, '', $string);
+        return str_replace($this->remove, '', $summary);
     }
 
-    private function replace($string)
+    private function replace($summary)
     {
-        return str_replace($this->replace, $this->separator, $string);
+        return str_replace($this->replace, $this->separator, $summary);
     }
 
-    private function cleanup($string)
+    private function cleanup($branchName)
     {
-        $string = preg_replace('~[^A-Za-z0-9/-]~', '', $string);
-        return preg_replace('~[' . preg_quote($this->separator) . ']+~', $this->separator, $string);
+        $branchName = preg_replace('~[^A-Za-z0-9/-]~', '', $branchName);
+        return preg_replace(
+            '~[' . preg_quote($this->separator) . ']+~',
+            $this->separator,
+            trim($branchName, $this->separator)
+        );
     }
 }
 
@@ -426,31 +457,48 @@ function tabulate($string, $pad = 4)
     );
 }
 
+function render($template, $variables)
+{
+    $keys = array_map(
+        function($key) {
+            return sprintf('{{ %s }}', $key);
+        },
+        array_keys($variables)
+    );
+
+    return strtr($template, array_combine($keys, array_values($variables)));
+}
+
 function renderDefect(Issue $issue)
 {
 $template = <<<EOL
 description:
-    %s
-environment: %s
-reporter: %s
+    {{ description }}
+environment: {{ environment }}
+reporter: {{ reporter }}
 
 EOL;
-    return sprintf(
+
+    return render(
         $template,
-        tabulate($issue->description()),
-        $issue->environment(),
-        $issue->reporter()
+        [
+            'description' => tabulate(wordwrap($issue->description())),
+            'environment' => $issue->environment(),
+            'reporter' => $issue->reporter(),
+        ]
     );
 }
 
 function renderIssue(GitHelper $git, Issue $issue)
 {
 $template = <<<EOL
-%s: %s (estimate: %s, spent: %s)
-    %s
-%s
+{{ issueNumber }}: {{ issueType }} (estimate: {{ estimate }}, spent: {{ spent }})
+    {{ summary }}
+{{ additionalInfo }}
+link:
+    {{ url }}
 branches:
-    %s
+    {{ branches }}
 
 EOL;
     $branchList = $git->branches($issue->ticketNumber());
@@ -467,16 +515,20 @@ EOL;
     }
     $dateHelper = new DateHelper;
 
-    $content = sprintf(
+    $content = render(
         $template,
-        $issue->ticketNumber(),
-        $issue->issueType(),
-        $dateHelper->secondsToHuman($issue->estimate()),
-        $dateHelper->secondsToHuman($issue->timeSpent()),
-        $issue->summary(),
-        $additionalInfo,
-        $branches
+        [
+            'issueNumber' => $issue->ticketNumber(),
+            'issueType' => $issue->issueType(),
+            'summary' => tabulate(wordwrap($issue->summary())),
+            'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
+            'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
+            'additionalInfo' => $additionalInfo,
+            'branches' => $branches,
+            'url' => $issue->url(),
+        ]
     );
+
     return $content . PHP_EOL;
 }
 
