@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Helper;
 
+use Technodelight\Jira\Api\Issue;
+
 class GitBranchnameGenerator
 {
     private $remove = ['BE', 'FE'];

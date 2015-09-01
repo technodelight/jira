@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Api;
 
+use Iterator;
+
 class SearchResultList implements Iterator
 {
     private $startAt, $maxResults, $total, $issues;
