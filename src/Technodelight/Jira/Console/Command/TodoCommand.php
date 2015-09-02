@@ -40,8 +40,22 @@ class TodoCommand extends Command
             return;
         }
 
-        $output->writeln(sprintf('There are %d open issues in the open sprints' . PHP_EOL, count($issues)));
+        $output->writeln(
+            sprintf(
+                'There are %d open %s in the open sprints' . PHP_EOL,
+                count($issues),
+                $this->pluralizedIssue(count($issues))
+                )
+        );
         $output->writeln($renderer->renderIssues($issues));
     }
 
+    private function pluralizedIssue($count)
+    {
+        if ($count <= 1) {
+            return 'issue';
+        }
+
+        return 'issues';
+    }
 }

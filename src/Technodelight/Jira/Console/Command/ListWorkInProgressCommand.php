@@ -39,7 +39,22 @@ class ListWorkInProgressCommand extends Command
             return;
         }
 
-        $output->writeln(sprintf('You have %d in progress issue(s)' . PHP_EOL, count($issues)));
+        $output->writeln(
+            sprintf(
+                'You have %d in progress %s' . PHP_EOL,
+                count($issues),
+                $this->pluralizedIssue(count($issues))
+            )
+        );
         $output->writeln($renderer->renderIssues($issues));
+    }
+
+    private function pluralizedIssue($count)
+    {
+        if ($count <= 1) {
+            return 'issue';
+        }
+
+        return 'issues';
     }
 }

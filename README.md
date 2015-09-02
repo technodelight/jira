@@ -1,5 +1,14 @@
 # TODO:
 
-- Upgrade console app (symfony/console) http://symfony.com/doc/current/components/console/single_command_tool.html
+- pick an issue from todo command
+- log time command
+- create `hub` tool helper
+- preconfigure PR message for `hub` with issue id + summary + commit messages differing from develop (without merges ofc)
+- pull-request command using hub, with interactive work log input (offer something based on the date when dev picked up the task?)
+- create jql query builder?
+
+# Resources
 - https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
-- Create micro-template rendering engine for using in CLI tools (probably separate repo?)
+- https://docs.atlassian.com/jira/REST/latest/
+- https://hub.github.com/
+-
