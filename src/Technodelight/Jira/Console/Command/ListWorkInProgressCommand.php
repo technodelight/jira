@@ -28,7 +28,7 @@ class ListWorkInProgressCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $project = $this->getApplication()->config()->project();
-        if ($input->hasArgument('project')) {
+        if ($input->getArgument('project')) {
             $project = $input->getArgument('project');
         }
         $issues = $this->getApplication()->jira()->inprogressIssues($project);
