@@ -13,6 +13,9 @@ use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
 
 use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\Jira\Helper\DateHelper;
+use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Helper\GitBranchnameGenerator;
 
 use Technodelight\Jira\Api\Client as JiraClient;
 
@@ -27,6 +30,21 @@ class Application extends BaseApp
      * @var GitHelper
      */
     protected $gitHelper;
+
+    /**
+     * @var DateHelper
+     */
+    protected $dateHelper;
+
+    /**
+     * @var GitBranchnameGenerator
+     */
+    protected $gitBranchnameGenerator;
+
+    /**
+     * @var TemplateHelper
+     */
+    protected $templateHelper;
 
     /**
      * @var JiraClient
@@ -70,6 +88,42 @@ class Application extends BaseApp
     }
 
     /**
+     * @return GitBranchnameGenerator
+     */
+    public function gitBranchnameGenerator()
+    {
+        if (!isset($this->gitBranchnameGenerator)) {
+            $this->gitBranchnameGenerator = new GitBranchnameGenerator;
+        }
+
+        return $this->gitBranchnameGenerator;
+    }
+
+    /**
+     * @return TemplateHelper
+     */
+    public function templateHelper()
+    {
+        if (!isset($this->templateHelper)) {
+            $this->templateHelper = new TemplateHelper;
+        }
+
+        return $this->templateHelper;
+    }
+
+    /**
+     * @return DateHelper
+     */
+    public function dateHelper()
+    {
+        if (!isset($this->dateHelper)) {
+            $this->dateHelper = new DateHelper;
+        }
+
+        return $this->dateHelper;
+    }
+
+    /**
      * @return JiraClient
      */
     public function jira()
@@ -80,23 +134,4 @@ class Application extends BaseApp
 
         return $this->jira;
     }
-
-    // /**
-    //  * Configures the input and output instances based on the user arguments and options.
-    //  *
-    //  * @param InputInterface  $input  An InputInterface instance
-    //  * @param OutputInterface $output An OutputInterface instance
-    //  */
-    // protected function configureIO(InputInterface $input, OutputInterface $output)
-    // {
-    //     parent::configureIO($input, $output);
-    //     $this->handleProjectArgument($input);
-    // }
-
-    // private function handleProjectArgument(InputInterface $input)
-    // {
-    //     if (!$input->hasArgument('project')) {
-    //         $input->setArgument('project', $this->config()->project());
-    //     }
-    // }
 }

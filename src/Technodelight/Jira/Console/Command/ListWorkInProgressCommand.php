@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Technodelight\Jira\Template\SearchResultRenderer;
+
 class ListWorkInProgressCommand extends Command
 {
     protected function configure()
@@ -26,8 +28,18 @@ class ListWorkInProgressCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $project = $this->getApplication()->config()->project();
+        if ($input->hasArgument('project')) {
+            $project = $input->getArgument('project');
+        }
+        $issues = $this->getApplication()->jira()->inprogressIssues($project);
+        $renderer = new SearchResultRenderer;
 
-        $output->writeln($project);
+        if (count($issues) == 0) {
+            $output->writeln('You don\'t have any in-progress issues currently.');
+            return;
+        }
+
+        $output->writeln(sprintf('You have %d in progress issue(s)' . PHP_EOL, count($issues)));
+        $output->writeln($renderer->renderIssues($issues));
     }
-
 }
