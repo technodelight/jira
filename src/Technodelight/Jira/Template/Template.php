@@ -15,8 +15,7 @@ class Template
 
     public static function fromFile($relativePath)
     {
-        $relativePath = str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
-        $path = realpath(__DIR__ . '/../../../' . $relativePath);
+        $path = __DIR__ . '/../../../' . $relativePath;
         if (!is_readable($path)) {
             throw new UnexpectedValueException(sprintf('File %s could not be opened', $path));
         }
