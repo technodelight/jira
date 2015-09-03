@@ -1,7 +1,6 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} (estimate: {{ estimate }}, spent: {{ spent }})
     {{ summary }}
-<comment>link:</comment>
-    {{ url }}
+<comment>link:</comment> {{ url }}
 <comment>branches:</comment>
     {{ branches }}
 

@@ -1,0 +1,3 @@
+It seems the issue <info>{{ issueKey }}</info> has been picked up by <info>{{ asignee }}</info>, ticket is <comment>{{ status }}</comment>
+
+<comment>link:</comment> {{ url }}

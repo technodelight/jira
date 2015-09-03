@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
+use Technodelight\Jira\Console\Command\PickupIssueCommand;
 
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
@@ -56,6 +57,7 @@ class Application extends BaseApp
         $commands = parent::getDefaultCommands();
         $commands[] = new TodoCommand;
         $commands[] = new ListWorkInProgressCommand;
+        $commands[] = new PickupIssueCommand;
         return $commands;
     }
 

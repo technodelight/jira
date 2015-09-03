@@ -39,6 +39,13 @@ class Issue
         return $field;
     }
 
+    public function status()
+    {
+        if ($field = $this->findField('status')) {
+            return $field['name'];
+        }
+    }
+
     public function environment()
     {
         return $this->findField('environment');
@@ -50,7 +57,7 @@ class Issue
         if ($field) {
             return $field['displayName'] ?: '<unknown>';
         }
-        return '<unknown>';
+        return '';
     }
 
     public function creator()
@@ -59,7 +66,16 @@ class Issue
         if ($field) {
             return $field['displayName'] ?: '<unknown>';
         }
-        return '<unknown>';
+        return '';
+    }
+
+    public function asignee()
+    {
+        $field = $this->findField('assignee');
+        if ($field) {
+            return $field['displayName'] ?: '?';
+        }
+        return 'Unassigned';
     }
 
     public function progress()

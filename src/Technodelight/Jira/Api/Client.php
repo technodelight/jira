@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Api;
 use GuzzleHttp\Client as GuzzleClient;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Api\SearchResultList;
+use Technodelight\Jira\Api\Issue;
 
 class Client
 {
@@ -75,6 +76,58 @@ class Client
             implode('", "', ['Defect', 'Bug', 'Technical Sub-Task'])
         );
         return $this->search($query);
+    }
+
+    /**
+     * @param string $issueKey
+     *
+     * @return Issue
+     */
+    public function retrieveIssue($issueKey)
+    {
+        $result = $this->httpClient->get(sprintf('issue/%s', $issueKey))->json();
+        return Issue::fromArray($result);
+    }
+
+    /**
+     * @param string $issueKey
+     *
+     * @return array
+     */
+    public function retrievePossibleTransitionsForIssue($issueKey)
+    {
+        $result = $this->httpClient->get(sprintf('issue/%s/transitions', $issueKey))->json();
+        return isset($result['transitions']) ? $result['transitions'] : [];
+    }
+
+    /**
+     * @param string $issueKey
+     * @param int $transitionId returned by retrieveTransitions
+     *
+     * @return array
+     */
+    public function performIssueTransition($issueKey, $transitionId)
+    {
+        return $this->httpClient
+            ->post(
+                sprintf('issue/%s/transitions', $issueKey),
+                [
+                    'json' => [
+                        'transition' => ['id' => $transitionId],
+                    ]
+                ]
+            )
+            ->json();
+    }
+
+    public function post($url, $data)
+    {
+        return $this->httpClient->post($url, ['json' => $data])->json();
+    }
+
+    public function get($url)
+    {
+        return $this->httpClient->get($url)->json();
     }
 
     /**
