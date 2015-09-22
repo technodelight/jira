@@ -44,6 +44,7 @@ class SearchResultRenderer
                 'description' => $this->templateHelper->tabulate(wordwrap($issue->description())),
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
+                'assignee' => $issue->assignee(),
 
                 'branches' => $this->templateHelper->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue))),
             ];

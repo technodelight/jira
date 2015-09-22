@@ -4,6 +4,7 @@
     {{ description }}
 <comment>environment:</comment> {{ environment }}
 <comment>reporter:</comment> {{ reporter }}
+<comment>assignee:</comment> {{ assignee }}
 <comment>link:</comment> {{ url }}
 <comment>branches:</comment>
     {{ branches }}
