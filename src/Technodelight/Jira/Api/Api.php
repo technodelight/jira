@@ -34,12 +34,17 @@ class Api
 
     /**
      * @param string $projectCode
+     * @param bool $all shows other's progress
      *
      * @return SearchResultList
      */
-    public function inprogressIssues($projectCode)
+    public function inprogressIssues($projectCode, $all = false)
     {
-        $query = sprintf('project = "%s" and assignee = currentUser() and status = "In Progress"', $projectCode);
+        $query = sprintf(
+            'project = "%s"%s and status = "In Progress"',
+            $projectCode,
+            $all ? '' : ' and assignee = currentUser()'
+        );
         return $this->search($query);
     }
 

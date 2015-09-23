@@ -4,6 +4,7 @@
 + move jira client into separate class, inject it into the wrapper which will have the specific methods
 + hide branch names from list views, show branch names incl. generated when verbosity enabled
 + add verbosity handling where it makes sense (ie. show assignee if `-v`, show assignee and description if `-vv` etc)
++ add `--all` option for `in-progress` command to show what others are doing
 - log time command (https://docs.atlassian.com/jira/REST/latest/#d2e2855)
 - your daily worklog (worklogDate >= startOfDay() AND worklogAuthor = currentUser())
 - use service container
@@ -16,7 +17,6 @@
     project=PROJ1
     project=PROJ2
 
-- add `--all` option for `in-progress` command to show what others are doing
 
 - add cli autocomplete
 - create `hub` tool helper class?

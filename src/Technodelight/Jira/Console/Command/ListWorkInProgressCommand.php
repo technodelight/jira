@@ -22,6 +22,12 @@ class ListWorkInProgressCommand extends Command
                 InputArgument::OPTIONAL,
                 'Project name if differing from repo configuration'
             )
+            ->addOption(
+                'all',
+                'a',
+                InputOption::VALUE_NONE,
+                'Shows other team member\'s progress'
+            )
         ;
     }
 
@@ -31,8 +37,8 @@ class ListWorkInProgressCommand extends Command
         if ($input->getArgument('project')) {
             $project = $input->getArgument('project');
         }
-        $issues = $this->getApplication()->jira()->inprogressIssues($project);
-        $renderer = new SearchResultRenderer;
+        $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
+        $renderer = new SearchResultRenderer($output);
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
