@@ -69,7 +69,7 @@ class Issue
         return '';
     }
 
-    public function asignee()
+    public function assignee()
     {
         $field = $this->findField('assignee');
         if ($field) {

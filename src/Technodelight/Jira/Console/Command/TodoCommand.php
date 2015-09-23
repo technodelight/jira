@@ -33,7 +33,7 @@ class TodoCommand extends Command
         }
 
         $issues = $this->getApplication()->jira()->todoIssues($project);
-        $renderer = new SearchResultRenderer;
+        $renderer = new SearchResultRenderer($output);
 
         if (count($issues) == 0) {
             $output->writeln(sprintf('No tickets available to pick up on project %s.', $project));
@@ -47,7 +47,8 @@ class TodoCommand extends Command
                 $this->pluralizedIssue(count($issues))
                 )
         );
-        $output->writeln($renderer->renderIssues($issues));
+
+        $renderer->renderIssues($issues);
     }
 
     private function pluralizedIssue($count)

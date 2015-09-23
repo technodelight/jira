@@ -2,10 +2,16 @@
     {{ summary }}
 <comment>description:</comment>
     {{ description }}
+{{ depends !empty($environment) }}
 <comment>environment:</comment> {{ environment }}
+{{ end_depends }}
 <comment>reporter:</comment> {{ reporter }}
+{{ depends $assignee != 'Unassigned' }}
 <comment>assignee:</comment> {{ assignee }}
+{{ end_depends }}
 <comment>link:</comment> {{ url }}
+{{ depends ($verbosity > 1) }}
 <comment>branches:</comment>
     {{ branches }}
+{{ end_depends }}
 

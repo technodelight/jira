@@ -19,6 +19,7 @@ use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 
 use Technodelight\Jira\Api\Client as JiraClient;
+use Technodelight\Jira\Api\Api as JiraApi;
 
 class Application extends BaseApp
 {
@@ -126,12 +127,13 @@ class Application extends BaseApp
     }
 
     /**
-     * @return JiraClient
+     * @return JiraApi
      */
     public function jira()
     {
         if (!isset($this->jira)) {
-            $this->jira = new JiraClient($this->config());
+            $client = new JiraClient($this->config());
+            $this->jira = new JiraApi($client);
         }
 
         return $this->jira;

@@ -1,7 +1,13 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} (estimate: {{ estimate }}, spent: {{ spent }})
     {{ summary }}
+<comment>description:</comment>
+    {{ description }}
+{{ depends $assignee != 'Unassigned' }}
 <comment>assignee:</comment> {{ assignee }}
+{{ end_depends }}
 <comment>link:</comment> {{ url }}
+{{ depends ($verbosity > 1) }}
 <comment>branches:</comment>
     {{ branches }}
+{{ end_depends }}
 
