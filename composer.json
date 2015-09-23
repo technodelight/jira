@@ -1,6 +1,8 @@
 {
     "name": "technodelight/jira",
     "description": "JIRA PHP console application for day-to-day development",
+    "minimum-stability": "dev",
+    "license": "MIT",
     "require": {
         "php": ">=5.4.0",
         "symfony/console": "^2.7",
@@ -15,6 +17,12 @@
             "email": "technodelight@gmail.com"
         }
     ],
-    "autoload": {"psr-0": {"": "src"}},
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/technodelight/simplate"
+        }
+    ],
+    "autoload": {"psr-0": {"Technodelight": "src"}},
     "bin": ["bin/jira"]
 }

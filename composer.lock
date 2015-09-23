@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "456d1aa0b070c821344aad42a57719c6",
+    "hash": "439fd001fc26c7a26a2b7880fc59696d",
+    "content-hash": "0eddf12d168530a1b1664afcbe1fe877",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -1432,6 +1433,45 @@
             "time": "2015-07-28 14:07:07"
         },
         {
+            "name": "technodelight/simplate",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/simplate.git",
+                "reference": "2d48b2555793a5a1204525634710911ad149db80"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/simplate/zipball/2d48b2555793a5a1204525634710911ad149db80",
+                "reference": "2d48b2555793a5a1204525634710911ad149db80",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^2.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Technodelight": "src"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gal",
+                    "email": "technodelight@gmail.com"
+                }
+            ],
+            "description": "Template management at it's simplest. With PHP/JS libs.",
+            "support": {
+                "source": "https://github.com/technodelight/simplate/tree/0.1.0",
+                "issues": "https://github.com/technodelight/simplate/issues"
+            },
+            "time": "2015-09-23 20:35:07"
+        },
+        {
             "name": "tedivm/jshrink",
             "version": "v1.1.0",
             "source": {
@@ -1480,8 +1520,10 @@
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "technodelight/simplate": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
