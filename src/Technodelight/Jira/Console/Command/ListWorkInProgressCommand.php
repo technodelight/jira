@@ -52,7 +52,8 @@ class ListWorkInProgressCommand extends Command
                 $this->pluralizedIssue(count($issues))
             )
         );
-        $output->writeln($renderer->renderIssues($issues));
+
+        $renderer->renderIssues($issues);
     }
 
     private function pluralizedIssue($count)

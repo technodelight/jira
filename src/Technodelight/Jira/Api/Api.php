@@ -33,6 +33,49 @@ class Api
     }
 
     /**
+     * Log work against ticket
+     *
+     * $adjustEstimate options:
+     * "new" - sets the estimate to a specific value
+     * "leave"- leaves the estimate as is
+     * "manual" - specify a specific amount to increase remaining estimate by
+     * "auto"- Default option. Will automatically adjust the value based on the new timeSpent specified on the worklog
+     *
+     * @param string $issueKey
+     * @param string $timeSpent like '2d'
+     * @param string $comment
+     * @param string $adjustEstimate
+     * @param string $newEstimate if adjustEstimate is 'new' this arg should be provided
+     *
+     */
+    public function worklog($issueKey, $timeSpent, $comment, $adjustEstimate = 'auto', $newEstimate = null)
+    {
+        $params = ['adjustEstimate' => $adjustEstimate];
+        if ($newEstimate) {
+            $params['newEstimate'] = $newEstimate;
+        }
+
+        return $this->client->post(
+            sprintf('issue/%s/worklog', $issueKey) . '?' . http_build_query($params),
+            [
+                'comment' => $comment,
+                'started' => date('Y-m-d\TH:i:s.000O'),
+                'timeSpent' => $timeSpent,
+            ]
+        );
+    }
+
+    /**
+     * @param string $issueKey
+     *
+     * @return array
+     */
+    public function retrieveWorklogs($issueKey)
+    {
+        return $this->client->get(sprintf('issue/%s/worklog', $issueKey));
+    }
+
+    /**
      * @param string $projectCode
      * @param bool $all shows other's progress
      *

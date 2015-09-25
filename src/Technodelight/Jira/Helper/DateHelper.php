@@ -2,9 +2,10 @@
 
 namespace Technodelight\Jira\Helper;
 
+use DateTime;
+
 class DateHelper
 {
-    private $jiraFormat = 'Y-m-dTH:i:s.000+0100';
     private $secondsMap = [
         'd' => 27000, // 7h 30m
         'h' => 3600,
@@ -14,7 +15,9 @@ class DateHelper
 
     public static function dateTimeFromJira($dateString)
     {
-        return \DateTime::createFromFormat($dateString, $this->jiraFormat);
+        $dateString = substr($dateString, 0, strpos($dateString, '.'))
+            . substr($dateString, strpos($dateString, '+'));
+        return DateTime::createFromFormat(DateTime::ISO8601, $dateString);
     }
 
     public function secondsToHuman($seconds)
