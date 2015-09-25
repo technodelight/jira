@@ -19,6 +19,11 @@ class Issue
         return $this->key;
     }
 
+    public function issueKey()
+    {
+        return $this->ticketNumber();
+    }
+
     public function summary()
     {
         return $this->findField('summary');

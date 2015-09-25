@@ -1,0 +1,6 @@
+You have successfully logged <comment>{{ logged }}</comment> to issue <info>{{ issueKey }}</info>
+
+Time spent: <comment>{{ spent }}</comment>, Remaining estimate: <comment>{{ estimate }}</comment>
+
+Logged work so far:
+{{ worklogs }}
