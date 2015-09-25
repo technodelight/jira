@@ -59,6 +59,7 @@ class LogTimeCommand extends Command
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $dialog = $this->getHelper('dialog');
+        $templateHelper = $this->getApplication()->templateHelper();
         $project = $this->getApplication()->config()->project();
         $jira = $this->getApplication()->jira();
 
@@ -117,10 +118,18 @@ class LogTimeCommand extends Command
             }
 
             if (!$input->getOption('comment')) {
+                $commitMessages = $this->retrieveGitCommitMessages();
+                if (!empty($commitMessages)) {
+                    $commitMessagesSummary = PHP_EOL . 'What you have done so far: (based on your git commit messages):' . PHP_EOL
+                        . $templateHelper->tabulate(wordwrap($this->retrieveGitCommitMessages())) . PHP_EOL;
+                } else {
+                    $commitMessagesSummary = PHP_EOL;
+                }
                 $comment = $dialog->ask(
                     $output,
                     PHP_EOL . "Do you want to add a comment on your work log?" . PHP_EOL
-                    . "If you leave it empty, the comment will be 'Worked on issue $issueKey'" . PHP_EOL,
+                    . "If you leave it empty, the comment will be 'Worked on issue $issueKey'" . PHP_EOL
+                    . $commitMessagesSummary,
                     false
                 );
 
@@ -216,6 +225,12 @@ class LogTimeCommand extends Command
         }
 
         return $issueKeys;
+    }
+
+    private function retrieveGitCommitMessages()
+    {
+        $git = $this->getApplication()->git();
+        return implode(PHP_EOL, $git->commitMessages());
     }
 
 }
