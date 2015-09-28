@@ -10,6 +10,7 @@ use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\PickupIssueCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
+use Technodelight\Jira\Console\Command\DashboardCommand;
 
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
@@ -61,6 +62,7 @@ class Application extends BaseApp
         $commands[] = new ListWorkInProgressCommand;
         $commands[] = new PickupIssueCommand;
         $commands[] = new LogTimeCommand;
+        $commands[] = new DashboardCommand;
         return $commands;
     }
 

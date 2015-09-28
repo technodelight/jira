@@ -154,7 +154,7 @@ class LogTimeCommand extends Command
 
         $issue = $app->jira()->retrieveIssue($issueKey);
         $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/logtime.template');
-        $worklogs = $app->jira()->retrieveWorklogs($issueKey);
+        $worklogs = $app->jira()->retrieveIssueWorklogs($issueKey);
 
         $output->writeln(
             $template->render(

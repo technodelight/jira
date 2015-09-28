@@ -70,9 +70,30 @@ class Api
      *
      * @return array
      */
-    public function retrieveWorklogs($issueKey)
+    public function retrieveIssueWorklogs($issueKey)
     {
         return $this->client->get(sprintf('issue/%s/worklog', $issueKey));
+    }
+
+    /**
+     * Retrieve issues having worklog after given date on
+     *
+     * @param string $from could be startOfWeek or startOfDay
+     * @param string $to could be startOfWeek or startOfDay
+     * @param string|null $user username or currentUser() by default
+     *
+     * @return array
+     */
+    public function retrieveIssuesHavingWorklogsForUser($from = 'startOfWeek()', $to = null, $user = null)
+    {
+        return $this->search(
+            sprintf(
+                'worklogDate >= %s %sAND worklogAuthor = %s',
+                $from,
+                $to ? 'AND worklogDate <= ' . $to . ' ' : '',
+                $user ?: 'currentUser()'
+            )
+        );
     }
 
     /**

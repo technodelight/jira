@@ -7,6 +7,9 @@
 + add `--all` option for `in-progress` command to show what others are doing
 + log time command (https://docs.atlassian.com/jira/REST/latest/#d2e2855)
 - your daily worklog (worklogDate >= startOfDay() AND worklogAuthor = currentUser())
+- add filter options to todo (--stories --bugs --tasks)
+- add default verbosity as 3 for in progress issues
+- display worklogs too when verbosity 3
 - use service container
 - create a jql query builder for assembling various queries?
 - add a command which reads meeting ticket IDs from config, adds separate commands for each (ie. `standup=PROJ-321`, then `jira log standup 15m`)
