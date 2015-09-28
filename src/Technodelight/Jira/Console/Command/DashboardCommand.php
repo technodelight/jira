@@ -8,6 +8,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Technodelight\Jira\Api\Worklog;
+
 class DashboardCommand extends Command
 {
     protected function configure()
@@ -37,36 +39,72 @@ class DashboardCommand extends Command
         $to = $this->defineTo($date, $input->getOption('week'));
         $jira = $this->getApplication()->jira();
         $issues = $jira->retrieveIssuesHavingWorklogsForUser('"' . $from . '"', '"' . $to . '"');
+        $user = $jira->user();
 
         if (count($issues) == 0) {
             $output->writeln("You don't have any issues at the moment, which has worklog in range");
             return;
         }
 
-        $output->writeln(
-            sprintf(
-                'You have been working on %d %s from %s to %s' . PHP_EOL,
-                count($issues),
-                $this->pluralizedIssue(count($issues)),
-                $from,
-                $to
-            )
-        );
-
         $rows = array();
+        $summary = 0;
         foreach ($issues as $issue) {
-            $logs = $jira->retrieveIssueWorklogs($issue->issueKey());
-            foreach ($logs['worklogs'] as $log) {
-                $rows[] = array($issue->issueKey(), $log['timeSpent'], $log['started']);
+            $logs = $this->filterLogsByDateAndUser($jira->retrieveIssueWorklogs($issue->issueKey()), $from, $to, $user['displayName']);
+            foreach ($logs as $log) {
+                $summary+= $log->timeSpentSeconds();
+                $rows[] = array($issue->issueKey(), $log->timeSpent(), $log->date());
             }
         }
+
+        $output->writeln(
+            sprintf(
+                'You have been working on %d %s %s' . PHP_EOL,
+                count($issues),
+                $this->pluralizedIssue(count($issues)),
+                $from == $to ? "on $from" : "from $from to $to"
+            )
+        );
 
         $table = $this->getHelper('table');
         $table
             ->setHeaders(array('Issue', 'Work log', 'Date'))
-            ->setRows($rows);
+            ->setRows($this->orderByDate($rows));
 
         $table->render($output);
+        $output->writeln(
+            sprintf(
+                'Total time logged: %s' . PHP_EOL,
+                $this->getApplication()->dateHelper()->secondsToHuman($summary)
+            )
+        );
+    }
+
+    private function orderByDate(array $rows)
+    {
+        uasort($rows, function($a, $b) {
+            if ($a[2] == $b[2]) {
+                return 0;
+            }
+
+            return $a[2] < $b[2] ? -1 : 1;
+        });
+
+        return $rows;
+    }
+
+    private function filterLogsByDateAndUser(array $logs, $from, $to, $username)
+    {
+        return array_filter(
+            $logs,
+            function(Worklog $log) use ($from, $to, $username) {
+                if ($log->author() != $username) {
+                    return false;
+                }
+                if ($log->date() >= $from && $log->date() <= $to) {
+                    return $log;
+                }
+            }
+        );
     }
 
     private function defineFrom($date, $weekFlag)

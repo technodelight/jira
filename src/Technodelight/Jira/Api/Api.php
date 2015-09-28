@@ -68,11 +68,22 @@ class Api
     /**
      * @param string $issueKey
      *
-     * @return array
+     * @return Worklog[]
      */
     public function retrieveIssueWorklogs($issueKey)
     {
-        return $this->client->get(sprintf('issue/%s/worklog', $issueKey));
+        try {
+            $response = $this->client->get(sprintf('issue/%s/worklog', $issueKey));
+
+            $results = [];
+            foreach ($response['worklogs'] as $jiraRecord) {
+                $results[] = Worklog::fromArray($jiraRecord);
+            }
+
+            return $results;
+        } catch (Exception $exception) {
+            return [];
+        }
     }
 
     /**

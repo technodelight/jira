@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Technodelight\Jira\Template\Template;
+use Technodelight\Jira\Template\WorklogRenderer;
 use Technodelight\Jira\Helper\DateHelper;
 
 use UnexpectedValueException;
@@ -163,7 +164,7 @@ class LogTimeCommand extends Command
                     'logged' => $timeSpent,
                     'estimate' => $app->dateHelper()->secondsToHuman($issue->estimate()),
                     'spent' => $app->dateHelper()->secondsToHuman($issue->timeSpent()),
-                    'worklogs' => $this->renderWorklogs($worklogs['worklogs']),
+                    'worklogs' => $this->renderWorklogs($worklogs),
                 ]
             )
         );
@@ -196,23 +197,8 @@ class LogTimeCommand extends Command
 
     private function renderWorklogs($worklogs)
     {
-        $output = '';
-        $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/worklog.template');
-        $helper = $this->getApplication()->templateHelper();
-
-        foreach ($worklogs as $record) {
-            $content = $template->render(
-                [
-                    'author' => $record['author']['displayName'],
-                    'timeSpent' => $record['timeSpent'],
-                    'date' => DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d'),
-                    'comment' => $helper->tabulate(wordwrap($record['comment'])),
-                ]
-            );
-            $output.= str_replace("\n\n", "\n", $content);
-        }
-
-        return $output;
+        $renderer = new WorklogRenderer;
+        return $renderer->renderWorklogs($worklogs);
     }
 
     private function retrieveInProgressIssues()
