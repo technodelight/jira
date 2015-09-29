@@ -6,7 +6,8 @@
 + add verbosity handling where it makes sense (ie. show assignee if `-v`, show assignee and description if `-vv` etc)
 + add `--all` option for `in-progress` command to show what others are doing
 + log time command (https://docs.atlassian.com/jira/REST/latest/#d2e2855)
-- your daily worklog (worklogDate >= startOfDay() AND worklogAuthor = currentUser())
++ your daily/weekly worklog
+- add progress bar to today's dashboard
 - add filter options to todo (--stories --bugs --tasks)
 - add default verbosity as 3 for in progress issues
 - display worklogs too when verbosity 3
