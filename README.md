@@ -6,26 +6,32 @@
 + add verbosity handling where it makes sense (ie. show assignee if `-v`, show assignee and description if `-vv` etc)
 + add `--all` option for `in-progress` command to show what others are doing
 + log time command (https://docs.atlassian.com/jira/REST/latest/#d2e2855)
++ interactive work log input (offer commit messages differing from develop (`git log develop..head --format=%s --no-merges`))
 + your daily/weekly worklog
++ add transitions configuration (`[transitions]` where `command="Transition"` like `pick="Picked up by dev"`)
+- add "story: PROJ-321 (https://sub.jira.domain/browse/PROJ-321)" info for every issues if available
+- add default verbosity as 3 for in progress issues to show worklogs/comments
+- display worklogs/comments too when verbosity 3
+- add filter options to todo (--stories --bugs --tasks --filter "search term")
+- refactor `PickupIssueCommand` to accept transition command and transition name from above config
 - add progress bar to today's dashboard
-- add filter options to todo (--stories --bugs --tasks)
-- add default verbosity as 3 for in progress issues
-- display worklogs too when verbosity 3
-- use service container
-- create a jql query builder for assembling various queries?
-- add a command which reads meeting ticket IDs from config, adds separate commands for each (ie. `standup=PROJ-321`, then `jira log standup 15m`)
-- add a command which reads transitions from config, adds separate commands for each (ie. `pick="Picked up by dev", oops="Oops", then `jira oops PROJ-123` will do the trick)
-- `jira dev-to-check PROJ-123` ask for logging time
-- handle multiple projects at once
+- add progress bar to in progress issues (original estimate vs time spent)
+- limit displaying previous worklogs for the recent 10
+- aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
+- handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 
+```
     [projects]
     project=PROJ1
     project=PROJ2
+```
 
-
-- add cli autocomplete `jira pick TWVODA-<tab>` autocomplete list
-- create `hub` tool helper class?
-- pull-request command using hub, with interactive work log input (offer something based on the update date when dev picked up the task?)
+- add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
+- refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
+- refactor commands to extract business logic into separate action classes
+- refactor to use service container
+? create a jql query builder for assembling various queries?
+x create `hub` tool helper class?
 x preconfigure PR message for `hub` with issue id + summary + commit messages differing from develop (`git log develop..head --format=%s --no-merges`)
 
 # Resources

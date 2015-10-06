@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
-use Technodelight\Jira\Console\Command\PickupIssueCommand;
+use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
 
@@ -60,9 +60,17 @@ class Application extends BaseApp
         $commands = parent::getDefaultCommands();
         $commands[] = new TodoCommand;
         $commands[] = new ListWorkInProgressCommand;
-        $commands[] = new PickupIssueCommand;
         $commands[] = new LogTimeCommand;
         $commands[] = new DashboardCommand;
+
+        $transitions = $this->config()->transitions();
+        if (empty($transitions)) {
+            $transitions = ['pick' => 'Picked up by dev'];
+        }
+        foreach ($transitions as $alias => $transitionName) {
+            $commands[] = new IssueTransitionCommand($alias, $this->config());
+        }
+
         return $commands;
     }
 

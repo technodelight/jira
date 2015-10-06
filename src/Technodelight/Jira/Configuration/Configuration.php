@@ -26,12 +26,18 @@ class Configuration
      */
     private $project;
 
+    /**
+     * @var array
+     */
+    private $transitions;
+
     protected function __construct(array $ini = [])
     {
         $this->username = $this->setIniField($ini, 'username');
         $this->password = $this->setIniField($ini, 'password');
         $this->domain = $this->setIniField($ini, 'domain');
         $this->project = $this->setIniField($ini, 'project');
+        $this->transitions = $this->setIniField($ini, 'transitions');
     }
 
     public static function initFromDirectory($iniFilePath)
@@ -57,6 +63,15 @@ class Configuration
     public function project()
     {
         return $this->project;
+    }
+
+    public function transitions()
+    {
+        if (!is_array($this->transitions)) {
+            $this->transitions = [];
+        }
+
+        return $this->transitions;
     }
 
     public function merge(Configuration $configuration)
@@ -94,6 +109,6 @@ class Configuration
             );
         }
 
-        return parse_ini_file($iniFile);
+        return parse_ini_file($iniFile, true);
     }
 }
