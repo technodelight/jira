@@ -6,6 +6,10 @@
 <comment>assignee:</comment> {{ assignee }}
 {{ end_depends }}
 <comment>link:</comment> {{ url }}
+{{ depends !empty($parentIssueNumber) }}
+<comment>parent:</comment> {{ parentIssueNumber }} ({{ parentUrl }})
+    {{ parentIssueSummary }}
+{{ end_depends }}
 {{ depends ($verbosity > 1) }}
 <comment>branches:</comment>
     {{ branches }}

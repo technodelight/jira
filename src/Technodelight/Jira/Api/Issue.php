@@ -6,6 +6,12 @@ class Issue
 {
     private $id, $link, $key, $fields;
 
+    /**
+     * Parent issue, if any
+     * @var Issue|null
+     */
+    private $parent;
+
     public function __construct($id, $link, $key, $fields)
     {
         $this->id = $id;
@@ -126,6 +132,18 @@ class Issue
 
             return $names;
         }
+    }
+
+    /**
+     * @return Issue|null
+     */
+    public function parent()
+    {
+        if ($parent = $this->findField('parent')) {
+            $this->parent = Issue::fromArray($parent);
+        }
+
+        return $this->parent;
     }
 
     public static function fromArray($resultArray)

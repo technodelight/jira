@@ -50,6 +50,9 @@ class SearchResultRenderer
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
+                'parentIssueNumber' => $issue->parent() ? $issue->parent()->issueKey() : '',
+                'parentIssueSummary' => $issue->parent() ? $this->templateHelper->tabulate(wordwrap($issue->parent()->summary())) : '',
+                'parentUrl' => $issue->parent() ? $issue->parent()->url() : '',
 
                 'branches' => $this->templateHelper->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue))),
                 'verbosity' => $this->output->getVerbosity(),
