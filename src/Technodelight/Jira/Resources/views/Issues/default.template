@@ -1,7 +1,8 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} (estimate: {{ estimate }}, spent: {{ spent }})
     {{ summary }}
+{{ depends !empty($description) }}
 <comment>description:</comment>
-    {{ description }}
+    {{ description }}{{ end_depends }}
 {{ depends $assignee != 'Unassigned' }}
 <comment>assignee:</comment> {{ assignee }}
 {{ end_depends }}
