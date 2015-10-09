@@ -3,9 +3,10 @@
 namespace Technodelight\Jira\Api;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Technodelight\Jira\Configuration\Configuration;
-use Technodelight\Jira\Api\SearchResultList;
+use GuzzleHttp\Pool;
 use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Api\SearchResultList;
+use Technodelight\Jira\Configuration\Configuration;
 
 class Client
 {
@@ -42,6 +43,25 @@ class Client
     public function get($url)
     {
         return $this->httpClient->get($url)->json();
+    }
+
+    public function multiGet(array $urls)
+    {
+        $requests = [];
+        foreach ($urls as $url) {
+            $requests[] = $this->httpClient->createRequest('GET', $url);
+        }
+
+        // Results is a GuzzleHttp\BatchResults object.
+        $results = Pool::batch($this->httpClient, $requests);
+
+        $resultArray = [];
+        // Retrieve all successful responses
+        foreach ($results->getSuccessful() as $response) {
+            $resultArray[$response->getEffectiveUrl()] = $response->json();
+        }
+
+        return $resultArray;
     }
 
     /**

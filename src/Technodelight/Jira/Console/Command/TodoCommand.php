@@ -33,7 +33,7 @@ class TodoCommand extends Command
         }
 
         $issues = $this->getApplication()->jira()->todoIssues($project);
-        $renderer = new SearchResultRenderer($output);
+        $renderer = new SearchResultRenderer($output, $this->getHelper('formatter'));
 
         if (count($issues) == 0) {
             $output->writeln(sprintf('No tickets available to pick up on project %s.', $project));

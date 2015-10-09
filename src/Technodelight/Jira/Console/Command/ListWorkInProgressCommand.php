@@ -31,14 +31,27 @@ class ListWorkInProgressCommand extends Command
         ;
     }
 
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        // ensure we display every information for in progress issues
+        if ($output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
+        }
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $project = $this->getApplication()->config()->project();
         if ($input->getArgument('project')) {
             $project = $input->getArgument('project');
         }
-        $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
-        $renderer = new SearchResultRenderer($output);
+        $jira = $this->getApplication()->jira();
+        $issues = $jira->inprogressIssues($project, $input->getOption('all'));
+        $renderer = new SearchResultRenderer($output, $this->getHelper('formatter'));
+        $worklogs = $jira->retrieveIssuesWorklogs(
+            $this->issueKeys($issues),
+            $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10 // limit worklogs to render
+        );
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
@@ -53,7 +66,17 @@ class ListWorkInProgressCommand extends Command
             )
         );
 
+        $renderer->addWorklogs($worklogs);
         $renderer->renderIssues($issues);
+    }
+
+    private function issueKeys($issues)
+    {
+        $issueKeys = [];
+        foreach ($issues as $issue) {
+            $issueKeys[] = $issue->issueKey();
+        }
+        return $issueKeys;
     }
 
     private function pluralizedIssue($count)

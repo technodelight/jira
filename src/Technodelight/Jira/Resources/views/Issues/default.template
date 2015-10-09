@@ -1,16 +1,15 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} (estimate: {{ estimate }}, spent: {{ spent }})
     {{ summary }}
-{{ depends !empty($description) }}
-<comment>description:</comment>
+{{ depends !empty($description) }}<comment>description:</comment>
     {{ description }}{{ end_depends }}
 {{ depends $assignee != 'Unassigned' }}
 <comment>assignee:</comment> {{ assignee }}
 {{ end_depends }}
 <comment>link:</comment> {{ url }}
-{{ depends !empty($parentIssueNumber) }}
-<comment>parent:</comment> {{ parentIssueNumber }} {{ parentIssueSummary }} ({{ parentUrl }}){{ end_depends }}
 {{ depends ($verbosity > 1) }}
 <comment>branches:</comment>
     {{ branches }}
 {{ end_depends }}
+{{ depends !empty($worklogs) }}<comment>logged work:</comment>
+    {{ worklogs }}{{ end_depends }}
 

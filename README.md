@@ -9,14 +9,15 @@
 + interactive work log input (offer commit messages differing from develop (`git log develop..head --format=%s --no-merges`))
 + your daily/weekly worklog
 + add transitions configuration (`[transitions]` where `command="Transition"` like `pick="Picked up by dev"`)
-- add "story: PROJ-321 (https://sub.jira.domain/browse/PROJ-321)" info for every issues if available
-- add default verbosity as 3 for in progress issues to show worklogs/comments
-- display worklogs/comments too when verbosity 3
++ refactor `PickupIssueCommand` to accept transition command and transition name from above config
++ add "story: PROJ-321 (https://sub.jira.domain/browse/PROJ-321)" info for every issues if available
++ search result renderer sort by stories
++ add default verbosity as 3 for in progress issues to show worklogs/comments
++ limit displaying previous worklogs for the recent 10
+- display comments too when verbosity is very verbose
 - add filter options to todo (--stories --bugs --tasks --filter "search term")
-- refactor `PickupIssueCommand` to accept transition command and transition name from above config
 - add progress bar to today's dashboard
 - add progress bar to in progress issues (original estimate vs time spent)
-- limit displaying previous worklogs for the recent 10
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 

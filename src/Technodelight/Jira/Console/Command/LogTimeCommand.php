@@ -198,7 +198,7 @@ class LogTimeCommand extends Command
     private function renderWorklogs($worklogs)
     {
         $renderer = new WorklogRenderer;
-        return $renderer->renderWorklogs($worklogs);
+        return $renderer->renderWorklogs(array_slice($worklogs, -10));
     }
 
     private function retrieveInProgressIssues()

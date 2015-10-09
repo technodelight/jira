@@ -66,6 +66,33 @@ class Api
     }
 
     /**
+     * @param  array $issueKeys
+     * @param  int|null $limit
+     *
+     * @return Worklog[]
+     */
+    public function retrieveIssuesWorklogs(array $issueKeys, $limit = null)
+    {
+        $requests = [];
+        foreach ($issueKeys as $issueKey) {
+            $requests[] = sprintf('issue/%s/worklog', $issueKey);
+        }
+        $responses = $this->client->multiGet($requests);
+        $worklogs = [];
+        foreach ($responses as $url => $response) {
+            sscanf($url, 'issue/%s/worklog', $issueKey);
+            if (!is_null($limit)) {
+                $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
+            }
+            foreach ($response['worklogs'] as $jiraRecord) {
+                $worklogs[] = Worklog::fromArray($jiraRecord, $issueKey);
+            }
+        }
+
+        return $worklogs;
+    }
+
+    /**
      * @param string $issueKey
      *
      * @return Worklog[]
@@ -77,7 +104,7 @@ class Api
 
             $results = [];
             foreach ($response['worklogs'] as $jiraRecord) {
-                $results[] = Worklog::fromArray($jiraRecord);
+                $results[] = Worklog::fromArray($jiraRecord, $issueKey);
             }
 
             return $results;
