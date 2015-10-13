@@ -99,7 +99,6 @@ class DashboardCommand extends Command
         ksort($rows);
         $table = $this->getHelper('table');
         $table
-            ->setLayout(TableHelper::LAYOUT_COMPACT)
             ->setHeaders(array_values($headers))
             ->setRows($rows);
         $table->render($output);
