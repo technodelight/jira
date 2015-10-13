@@ -3,11 +3,11 @@
 namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use Technodelight\Jira\Api\Worklog;
 
 class DashboardCommand extends Command
@@ -46,14 +46,12 @@ class DashboardCommand extends Command
             return;
         }
 
-        $rows = array();
+        $worklogs = $jira->retrieveIssuesWorklogs($this->issueKeys($issues));
+        $logs = $this->filterLogsByDateAndUser($worklogs, $from, $to, $user['displayName']);
+
         $summary = 0;
-        foreach ($issues as $issue) {
-            $logs = $this->filterLogsByDateAndUser($jira->retrieveIssueWorklogs($issue->issueKey()), $from, $to, $user['displayName']);
-            foreach ($logs as $log) {
-                $summary+= $log->timeSpentSeconds();
-                $rows[] = array($issue->issueKey(), $log->timeSpent(), $log->date());
-            }
+        foreach ($logs as $log) {
+            $summary+= $log->timeSpentSeconds();
         }
 
         $output->writeln(
@@ -65,18 +63,59 @@ class DashboardCommand extends Command
             )
         );
 
-        $table = $this->getHelper('table');
-        $table
-            ->setHeaders(array('Issue', 'Work log', 'Date'))
-            ->setRows($this->orderByDate($rows));
+        if ($input->getOption('week')) {
+            $this->renderWeek($output, $logs);
+        } else {
+            $this->renderDay($output, $logs);
+        }
 
-        $table->render($output);
         $output->writeln(
             sprintf(
                 'Total time logged: %s' . PHP_EOL,
                 $this->getApplication()->dateHelper()->secondsToHuman($summary)
             )
         );
+    }
+
+    private function renderWeek(OutputInterface $output, array $logs)
+    {
+        $rows = [];
+        $headers = [];
+        foreach ($logs as $log) {
+            $headers[$log->date()] = $log->date();
+        }
+        foreach ($logs as $log) {
+            if (!isset($rows[$log->issueKey()])) {
+                $rows[$log->issueKey()] = array_fill_keys($headers, '');
+            }
+            $rows[$log->issueKey()][$log->date()] = sprintf(
+                '%s: %s' . PHP_EOL . '  %s',
+                $log->issueKey(),
+                $log->timeSpent(),
+                $this->shortenWorklogComment($log->comment())
+            );
+        }
+
+        ksort($rows);
+        $table = $this->getHelper('table');
+        $table
+            ->setLayout(TableHelper::LAYOUT_COMPACT)
+            ->setHeaders(array_values($headers))
+            ->setRows($rows);
+        $table->render($output);
+    }
+
+    private function renderDay(OutputInterface $output, array $logs)
+    {
+        $rows = array();
+        foreach ($logs as $log) {
+            $rows[] = array($log->issueKey(), $log->timeSpent(), $log->date());
+        }
+        $table = $this->getHelper('table');
+        $table
+            ->setHeaders(array('Issue', 'Work log', 'Date'))
+            ->setRows($this->orderByDate($rows));
+        $table->render($output);
     }
 
     private function orderByDate(array $rows)
@@ -109,12 +148,47 @@ class DashboardCommand extends Command
 
     private function defineFrom($date, $weekFlag)
     {
-        return date('Y-m-d', strtotime($date . ($weekFlag ? ' monday' : '')));
+        if ($weekFlag) {
+            $date = $this->defineWeekStr($date, 1);
+        }
+        return date(
+            'Y-m-d',
+            strtotime($date)
+        );
     }
 
     private function defineTo($date, $weekFlag)
     {
-        return date('Y-m-d', strtotime($date . ($weekFlag ? ' friday' : '')));
+        if ($weekFlag) {
+            $date = $this->defineWeekStr($date, 5);
+        }
+        return date(
+            'Y-m-d',
+            strtotime($date)
+        );
+    }
+
+    private function defineWeekStr($date, $day)
+    {
+        $dayOfWeek = date('N', strtotime($date));
+        $operator = $day < $dayOfWeek ? '-' : '+';
+        $delta = abs($dayOfWeek - $day);
+        return sprintf('%s %s %s day', $date, $operator, $delta);
+    }
+
+    private function issueKeys($issues)
+    {
+        $issueKeys = [];
+        foreach ($issues as $issue) {
+            $issueKeys[] = $issue->issueKey();
+        }
+        return $issueKeys;
+    }
+
+    private function shortenWorklogComment($text)
+    {
+        $wrapped = explode(PHP_EOL, wordwrap($text, 15));
+        return array_shift($wrapped);
     }
 
     private function pluralizedIssue($count)

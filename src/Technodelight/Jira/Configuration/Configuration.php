@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Configuration;
 
+use \UnexpectedValueException;
+
 class Configuration
 {
     const CONFIG_FILENAME = 'jira.ini';

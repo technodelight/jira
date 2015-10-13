@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Api;
 use Iterator;
 use Countable;
 
-class SearchResultList implements Iterator, Countable
+class IssueCollection implements Iterator, Countable
 {
     private $startAt, $maxResults, $total, $issues;
 
@@ -17,7 +17,7 @@ class SearchResultList implements Iterator, Countable
         $this->issues = $issues;
     }
 
-    public static function fromArray($resultArray)
+    public static function fromSearchArray($resultArray)
     {
         return new self(
             $resultArray['startAt'],

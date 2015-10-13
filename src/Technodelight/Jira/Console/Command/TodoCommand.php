@@ -8,10 +8,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Technodelight\Jira\Template\SearchResultRenderer;
+use Technodelight\Jira\Template\IssueRenderer;
 
 class TodoCommand extends Command
 {
+    private $issueTypeFilter = [
+        'bugs' => ['Defect', 'Bug'],
+        'tasks' => ['Technical Sub-Task', 'Story'],
+        'stories' => ['Story'],
+    ];
+
     protected function configure()
     {
         $this
@@ -21,6 +27,24 @@ class TodoCommand extends Command
                 'project',
                 InputArgument::OPTIONAL,
                 'Project name if differing from repo configuration'
+            )
+            ->addOption(
+                'bugs',
+                'b',
+                InputOption::VALUE_NONE,
+                'show bugs only'
+            )
+            ->addOption(
+                'tasks',
+                't',
+                InputOption::VALUE_NONE,
+                'show tasks only'
+            )
+            ->addOption(
+                'stories',
+                's',
+                InputOption::VALUE_NONE,
+                'show stories only'
             )
         ;
     }
@@ -32,8 +56,13 @@ class TodoCommand extends Command
             $project = $input->getArgument('project');
         }
 
-        $issues = $this->getApplication()->jira()->todoIssues($project);
-        $renderer = new SearchResultRenderer($output, $this->getHelper('formatter'));
+        $issueFilter = [];
+        foreach ($this->issueTypeFilter as $option => $types) {
+            if ($input->getOption($option)) {
+                $issueFilter = array_merge($issueFilter, $types);
+            }
+        }
+        $issues = $this->getApplication()->jira()->todoIssues($project, $issueFilter);
 
         if (count($issues) == 0) {
             $output->writeln(sprintf('No tickets available to pick up on project %s.', $project));
@@ -45,9 +74,10 @@ class TodoCommand extends Command
                 'There are %d open %s in the open sprints' . PHP_EOL,
                 count($issues),
                 $this->pluralizedIssue(count($issues))
-                )
+            )
         );
 
+        $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
         $renderer->renderIssues($issues);
     }
 

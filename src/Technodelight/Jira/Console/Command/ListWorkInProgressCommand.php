@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Technodelight\Jira\Template\SearchResultRenderer;
+use Technodelight\Jira\Template\IssueRenderer;
 
 class ListWorkInProgressCommand extends Command
 {
@@ -45,13 +45,7 @@ class ListWorkInProgressCommand extends Command
         if ($input->getArgument('project')) {
             $project = $input->getArgument('project');
         }
-        $jira = $this->getApplication()->jira();
-        $issues = $jira->inprogressIssues($project, $input->getOption('all'));
-        $renderer = new SearchResultRenderer($output, $this->getHelper('formatter'));
-        $worklogs = $jira->retrieveIssuesWorklogs(
-            $this->issueKeys($issues),
-            $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10 // limit worklogs to render
-        );
+        $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
@@ -62,12 +56,22 @@ class ListWorkInProgressCommand extends Command
             sprintf(
                 'You have %d in progress %s' . PHP_EOL,
                 count($issues),
-                $this->pluralizedIssue(count($issues))
+                $this->pluralize('issue', count($issues))
             )
         );
 
-        $renderer->addWorklogs($worklogs);
+        $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
+        $renderer->addWorklogs(
+            $this->retrieveWorklogs($issues, $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10)
+        );
         $renderer->renderIssues($issues);
+    }
+
+    private function retrieveWorklogs($issues, $limit)
+    {
+        return $this->getApplication()->jira()->retrieveIssuesWorklogs(
+            $this->issueKeys($issues), $limit
+        );
     }
 
     private function issueKeys($issues)
@@ -79,12 +83,12 @@ class ListWorkInProgressCommand extends Command
         return $issueKeys;
     }
 
-    private function pluralizedIssue($count)
+    private function pluralize($word, $count)
     {
         if ($count <= 1) {
-            return 'issue';
+            return $word;
         }
 
-        return 'issues';
+        return $word . 's';
     }
 }

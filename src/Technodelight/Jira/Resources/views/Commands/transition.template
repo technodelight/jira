@@ -1,4 +1,4 @@
-It seems the issue <info>{{ issueKey }}</info> has been moved to <info>{{ status }}</info>, and currently assigned to <info>{{ asignee }}</info>
+It seems the issue <info>{{ issueKey }}</info> is already <info>{{ status }}</info>, and currently assigned to <info>{{ asignee }}</info>
 
 Possible transitions:
 <info>{{ transitionsNames }}</info>

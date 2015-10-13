@@ -14,8 +14,12 @@
 + search result renderer sort by stories
 + add default verbosity as 3 for in progress issues to show worklogs/comments
 + limit displaying previous worklogs for the recent 10
-- display comments too when verbosity is very verbose
-- add filter options to todo (--stories --bugs --tasks --filter "search term")
++ fix fatal error unexpected value exception not found
++ tabulate issue list better
++ display comments too when verbosity is very verbose
++ add filter options to todo (--stories --bugs --tasks --filter "search term")
++ fix weekly dashboard
++ render weekly dashboard similar as in Jira
 - add progress bar to today's dashboard
 - add progress bar to in progress issues (original estimate vs time spent)
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')

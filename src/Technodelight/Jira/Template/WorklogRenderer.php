@@ -7,6 +7,9 @@ use Technodelight\Jira\Template\Template;
 
 class WorklogRenderer
 {
+    /**
+     * @var TemplateHelper
+     */
     private $templateHelper;
 
     public function __construct()
@@ -28,7 +31,7 @@ class WorklogRenderer
                     'author' => $record->author(),
                     'timeSpent' => $record->timeSpent(),
                     'date' => $record->date(),
-                    'comment' => $this->templateHelper->tabulate(wordwrap($record->comment())),
+                    'comment' => $this->templateHelper->tabulate(wordwrap($record->comment()), 8),
                 ]
             );
             $output.= str_replace("\n\n", "\n", $content);

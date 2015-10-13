@@ -80,12 +80,14 @@ class Api
         $responses = $this->client->multiGet($requests);
         $worklogs = [];
         foreach ($responses as $url => $response) {
-            sscanf($url, 'issue/%s/worklog', $issueKey);
-            if (!is_null($limit)) {
-                $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
-            }
-            foreach ($response['worklogs'] as $jiraRecord) {
-                $worklogs[] = Worklog::fromArray($jiraRecord, $issueKey);
+            if (preg_match('~.+/issue/([^/]+)/worklog~', $url, $matches)) {
+                $issueKey = $matches[1];
+                if (!is_null($limit)) {
+                    $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
+                }
+                foreach ($response['worklogs'] as $jiraRecord) {
+                    $worklogs[] = Worklog::fromArray($jiraRecord, $issueKey);
+                }
             }
         }
 
@@ -138,7 +140,7 @@ class Api
      * @param string $projectCode
      * @param bool $all shows other's progress
      *
-     * @return SearchResultList
+     * @return IssueCollection
      */
     public function inprogressIssues($projectCode, $all = false)
     {
@@ -147,20 +149,22 @@ class Api
             $projectCode,
             $all ? '' : ' and assignee = currentUser()'
         );
-        return $this->search($query);
+        return $this->search($query, '*all');
     }
 
     /**
      * @param string $projectCode
+     * @param array|null $issueTypes
      *
-     * @return SearchResultList
+     * @return IssueCollection
      */
-    public function todoIssues($projectCode)
+    public function todoIssues($projectCode, array $issueTypes = [])
     {
+        $issueTypeFilter = empty($issueTypes) ? ['Defect', 'Bug', 'Technical Sub-Task'] : $issueTypes;
         $query = sprintf(
             'project = "%s" and status = "Open" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
             $projectCode,
-            implode('", "', ['Defect', 'Bug', 'Technical Sub-Task'])
+            implode('", "', $issueTypeFilter)
         );
         return $this->search($query);
     }
@@ -204,11 +208,12 @@ class Api
 
     /**
      * @param string $jql
+     * @param string|null $fields
      *
-     * @return SearchResultList
+     * @return IssueCollection
      */
-    private function search($jql)
+    private function search($jql, $fields = null)
     {
-        return SearchResultList::fromArray($this->client->search($jql));
+        return IssueCollection::fromSearchArray($this->client->search($jql, $fields));
     }
 }

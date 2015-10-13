@@ -5,17 +5,18 @@ namespace Technodelight\Jira\Template;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\SearchResultList;
+use Technodelight\Jira\Api\IssueCollection;
 use Technodelight\Jira\Api\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Template\CommentRenderer;
 use Technodelight\Jira\Template\Template;
 use Technodelight\Jira\Template\WorklogRenderer;
 use Technodelight\Simplate;
 
-class SearchResultRenderer
+class IssueRenderer
 {
     /**
      * @var GitHelper
@@ -62,6 +63,11 @@ class SearchResultRenderer
      */
     private $worklogRenderer;
 
+    /**
+     * @var CommentRenderer
+     */
+    private $commentRenderer;
+
     public function __construct(OutputInterface $output, FormatterHelper $formatterHelper)
     {
         $this->templateHelper = new TemplateHelper;
@@ -69,6 +75,7 @@ class SearchResultRenderer
         $this->git = new GitHelper;
         $this->gitBranchnameGenerator = new GitBranchnameGenerator;
         $this->worklogRenderer = new WorklogRenderer;
+        $this->commentRenderer = new CommentRenderer;
 
         $this->output = $output;
         $this->formatterHelper = $formatterHelper;
@@ -86,7 +93,10 @@ class SearchResultRenderer
         return $this;
     }
 
-    public function renderIssues(SearchResultList $issues)
+    /**
+     * @param  IssueCollection $issues
+     */
+    public function renderIssues(IssueCollection $issues)
     {
         $content = '';
         $groupedIssues = $this->groupByParent(iterator_to_array($issues));
@@ -95,7 +105,7 @@ class SearchResultRenderer
                 $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
             );
             foreach ($issueGroup['issues'] as $issue) {
-                $this->output->writeln(str_replace("\n\n", "\n", $this->render($issue)));
+                $this->output->writeln($this->render($issue));
             }
         }
     }
@@ -108,27 +118,43 @@ class SearchResultRenderer
             $template = $this->getTemplateInstance($templateNameOverride);
         }
 
-        return $template->render(
+        $content = $template->render(
             [
                 'issueNumber' => $issue->ticketNumber(),
                 'issueType' => $issue->issueType(),
                 'url' => $issue->url(),
-                'summary' => $this->templateHelper->tabulate(wordwrap($issue->summary())),
-                'estimate' => $this->dateHelper->secondsToHuman($issue->estimate()),
-                'spent' => $this->dateHelper->secondsToHuman($issue->timeSpent()),
+                'summary' => $this->tabulate(wordwrap($issue->summary()), 8),
+                'estimate' => $this->secondsToHuman($issue->estimate()),
+                'spent' => $this->secondsToHuman($issue->timeSpent()),
 
-                'description' => $this->shorten(wordwrap($issue->description())),
+                'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
 
-                'branches' => $this->templateHelper->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue))),
+                'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
                 'verbosity' => $this->output->getVerbosity(),
-                'worklogs' => $this->templateHelper->tabulate(
+                'worklogs' => $this->tabulate(
                     $this->worklogRenderer->renderWorklogs($this->issueWorklogs($issue))
                 ),
+                'comments' => $this->tabulate($this->renderComments($issue)),
             ]
         );
+        return implode(
+            PHP_EOL,
+            array_filter(
+                array_map('rtrim', explode(PHP_EOL, $content))
+            )
+        ) . PHP_EOL;
+    }
+
+    private function renderComments(Issue $issue)
+    {
+        if ($this->output->getVerbosity() == OutputInterface::VERBOSITY_VERY_VERBOSE) {
+            return $this->commentRenderer->renderComments($issue->comments());
+        }
+
+        return '';
     }
 
     private function issueWorklogs(Issue $issue)
@@ -228,5 +254,15 @@ class SearchResultRenderer
         }
 
         return $this->templateHelper->tabulate($text);
+    }
+
+    private function tabulate($text, $pad = 4)
+    {
+        return $this->templateHelper->tabulate($text, $pad);
+    }
+
+    private function secondsToHuman($seconds)
+    {
+        return $this->dateHelper->secondsToHuman($seconds);
     }
 }

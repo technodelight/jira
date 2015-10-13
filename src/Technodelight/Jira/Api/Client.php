@@ -4,8 +4,7 @@ namespace Technodelight\Jira\Api;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Pool;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\SearchResultList;
+
 use Technodelight\Jira\Configuration\Configuration;
 
 class Client
@@ -66,12 +65,16 @@ class Client
 
     /**
      * @param string $jql
+     * @param string|null $fields
      *
      * @return array
      */
-    public function search($jql)
+    public function search($jql, $fields = null)
     {
-        return $this->httpClient->get('search', ['query' => ['jql' => $jql]])->json();
+        return $this->httpClient->get(
+            'search' . ($fields ? '?fields=' . $fields : ''),
+            ['query' => ['jql' => $jql]]
+        )->json();
     }
 
     private function apiUrl($projectDomain)

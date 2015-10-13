@@ -2,15 +2,32 @@
 
 namespace Technodelight\Jira\Api;
 
+use Technodelight\Jira\Api\Worklog;
+
 class Issue
 {
     private $id, $link, $key, $fields;
 
     /**
      * Parent issue, if any
+     *
      * @var Issue|null
      */
     private $parent;
+
+    /**
+     * Worklogs, if all fields are returned by API
+     *
+     * @var array
+     */
+    private $worklogs = [];
+
+    /**
+     * Comments, if any
+     *
+     * @var array
+     */
+    private $comments = [];
 
     public function __construct($id, $link, $key, $fields)
     {
@@ -124,7 +141,7 @@ class Issue
 
     public function components()
     {
-        if ($comps = $this->findField('compnents')) {
+        if ($comps = $this->findField('components')) {
             $names = [];
             foreach ($comps as $field) {
                 $names[] = $field['name'];
@@ -132,6 +149,29 @@ class Issue
 
             return $names;
         }
+    }
+
+    public function worklogs()
+    {
+        if ($field = $this->findField('worklog') && empty($this->worklogs)) {
+            $logs = $field['worklogs'];
+            foreach ($logs as $logArray) {
+                $this->worklogs[] = Worklog::fromArray($logArray);
+            }
+        }
+
+        return $this->worklogs;
+    }
+
+    public function comments()
+    {
+        if ($field = $this->findField('comment') && empty($this->comments)) {
+            foreach ($field['comments'] as $commentArray) {
+                $this->comments[] = Comment::fromArray($commentArray);
+            }
+        }
+
+        return $this->comments;
     }
 
     /**
