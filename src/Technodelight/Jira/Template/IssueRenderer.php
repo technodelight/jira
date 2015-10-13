@@ -151,7 +151,7 @@ class IssueRenderer
 
     private function renderComments(Issue $issue)
     {
-        if ($this->output->getVerbosity() == OutputInterface::VERBOSITY_VERY_VERBOSE) {
+        if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
             return $this->commentRenderer->renderComments($issue->comments());
         }
 

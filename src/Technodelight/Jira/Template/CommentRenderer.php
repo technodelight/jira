@@ -31,7 +31,7 @@ class CommentRenderer
                 [
                     'author' => $comment->author(),
                     'body' => $this->templateHelper->tabulate(wordwrap($comment->body()), 8),
-                    'created' => $comment->created(),
+                    'created' => $comment->created()->format('Y-m-d H:i:s'),
                 ]
             );
         }
