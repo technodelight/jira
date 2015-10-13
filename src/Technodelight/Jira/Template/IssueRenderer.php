@@ -41,6 +41,7 @@ class IssueRenderer
     private $templates = [
         'Default' => 'Technodelight/Jira/Resources/views/Issues/default.template',
         'Defect' => 'Technodelight/Jira/Resources/views/Issues/defect.template',
+        'Bug' => 'Technodelight/Jira/Resources/views/Issues/defect.template',
     ];
 
     /**
