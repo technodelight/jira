@@ -157,16 +157,16 @@ class LogTimeCommand extends Command
         $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/logtime.template');
         $worklogs = $app->jira()->retrieveIssueWorklogs($issueKey);
 
+        $currentWorklogDetails = [
+            'issueKey' => $issueKey,
+            'logged' => $timeSpent,
+            'estimate' => $app->dateHelper()->secondsToHuman($issue->estimate()),
+            'spent' => $app->dateHelper()->secondsToHuman($issue->timeSpent()),
+            'worklogs' => $this->renderWorklogs($worklogs),
+        ];
+
         $output->writeln(
-            $template->render(
-                [
-                    'issueKey' => $issueKey,
-                    'logged' => $timeSpent,
-                    'estimate' => $app->dateHelper()->secondsToHuman($issue->estimate()),
-                    'spent' => $app->dateHelper()->secondsToHuman($issue->timeSpent()),
-                    'worklogs' => $this->renderWorklogs($worklogs),
-                ]
-            )
+            $this->deDoubleNewlineize($template->render($currentWorklogDetails))
         );
     }
 
@@ -219,4 +219,8 @@ class LogTimeCommand extends Command
         return implode(PHP_EOL, $git->commitMessages());
     }
 
+    private function deDoubleNewlineize($string)
+    {
+        return str_replace(PHP_EOL . PHP_EOL, PHP_EOL, $string);
+    }
 }

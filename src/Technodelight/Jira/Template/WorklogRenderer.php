@@ -26,7 +26,7 @@ class WorklogRenderer
 
         $output = '';
         foreach ($worklogs as $record) {
-            $content = $template->render(
+            $output.= $template->render(
                 [
                     'author' => $record->author(),
                     'timeSpent' => $record->timeSpent(),
@@ -34,9 +34,8 @@ class WorklogRenderer
                     'comment' => $this->templateHelper->tabulate(wordwrap($record->comment()), 8),
                 ]
             );
-            $output.= str_replace("\n\n", "\n", $content);
         }
 
-        return $output;
+        return str_replace(PHP_EOL . PHP_EOL, PHP_EOL, $output);
     }
 }

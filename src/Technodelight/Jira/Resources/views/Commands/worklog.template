@@ -1,4 +1,3 @@
     <comment>{{ author }}</comment>: {{ timeSpent }} at {{ date }}
     {{ depends !empty($comment) }}
-        {{ comment }}
-    {{ end_depends }}
+        {{ comment }}{{ end_depends }}

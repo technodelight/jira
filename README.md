@@ -20,6 +20,8 @@
 + add filter options to todo (--stories --bugs --tasks --filter "search term")
 + fix weekly dashboard
 + render weekly dashboard similar as in Jira
++ fix dashboard to order columns by dates increment, add day name
+- shorten in-progress --all view
 - add progress bar to in progress issues (original estimate vs time spent)
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma

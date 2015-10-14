@@ -82,11 +82,15 @@ class DashboardCommand extends Command
         $rows = [];
         $headers = [];
         foreach ($logs as $log) {
-            $headers[$log->date()] = $log->date();
+            $headers[$log->date()] = date(
+                'Y-m-d l',
+                strtotime($log->date())
+            );
         }
+        ksort($headers);
         foreach ($logs as $log) {
             if (!isset($rows[$log->issueKey()])) {
-                $rows[$log->issueKey()] = array_fill_keys($headers, '');
+                $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
             }
             $rows[$log->issueKey()][$log->date()] = sprintf(
                 '%s: %s' . PHP_EOL . '  %s',
