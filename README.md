@@ -21,7 +21,7 @@
 + fix weekly dashboard
 + render weekly dashboard similar as in Jira
 + fix dashboard to order columns by dates increment, add day name
-- shorten in-progress --all view
++ shorten in-progress --all view
 - implement `init` command, which guides the user throughout the initial/per project setup
 - add proper error handling if no configuration found
 - add progress bar to in progress issues (original estimate vs time spent)

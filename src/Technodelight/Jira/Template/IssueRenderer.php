@@ -38,10 +38,22 @@ class IssueRenderer
      */
     private $dateHelper;
 
+    /**
+     * Templates per issue type
+     * @var array
+     */
     private $templates = [
         'Default' => 'Technodelight/Jira/Resources/views/Issues/default.template',
-        'Defect' => 'Technodelight/Jira/Resources/views/Issues/defect.template',
-        'Bug' => 'Technodelight/Jira/Resources/views/Issues/defect.template',
+    ];
+
+    /**
+     * Formats for various issue types
+     * @var array
+     */
+    private $issueTypeFormats = [
+        'Default' => '<fg=black;bg=blue>%s</>',
+        'Defect' => '<error>%s</error>',
+        'Bug' => '<error>%s</error>',
     ];
 
     /**
@@ -122,11 +134,12 @@ class IssueRenderer
         $content = $template->render(
             [
                 'issueNumber' => $issue->ticketNumber(),
-                'issueType' => $issue->issueType(),
+                'issueType' => $this->formatIssueType($issue->issueType()),
                 'url' => $issue->url(),
                 'summary' => $this->tabulate(wordwrap($issue->summary()), 8),
                 'estimate' => $this->secondsToHuman($issue->estimate()),
                 'spent' => $this->secondsToHuman($issue->timeSpent()),
+                'remaining' => $this->secondsToHuman($issue->remainingEstimate()),
 
                 'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
                 'environment' => $issue->environment(),
@@ -147,6 +160,13 @@ class IssueRenderer
                 array_map('rtrim', explode(PHP_EOL, $content))
             )
         ) . PHP_EOL;
+    }
+
+    private function formatIssueType($issueType)
+    {
+        $format = isset($this->issueTypeFormats[$issueType])
+            ? $issueType : 'Default';
+        return sprintf($this->issueTypeFormats[$format], $issueType);
     }
 
     private function renderComments(Issue $issue)

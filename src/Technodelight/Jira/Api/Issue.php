@@ -121,6 +121,15 @@ class Issue
         return (int) $this->findField('timespent');
     }
 
+    public function remainingEstimate()
+    {
+        if ($field = $this->findField('timetracking')) {
+            return isset($field['remainingEstimateSeconds'])
+                ? $field['remainingEstimateSeconds']
+                : null;
+        }
+    }
+
     public function issueType()
     {
         if ($field = $this->findField('issuetype')) {
