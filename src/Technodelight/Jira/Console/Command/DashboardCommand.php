@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -64,8 +65,18 @@ class DashboardCommand extends Command
         );
 
         if ($input->getOption('week')) {
+            $progress = $this->createProgressbar($output, 27000 * 5);
+            $progress->setProgress($summary);
+            $progress->display();
+            $output->writeln('');
+
             $this->renderWeek($output, $logs);
         } else {
+            $progress = $this->createProgressbar($output, 27000);
+            $progress->setProgress($summary);
+            $progress->display();
+            $output->writeln('');
+
             $this->renderDay($output, $logs);
         }
 
@@ -112,13 +123,29 @@ class DashboardCommand extends Command
     {
         $rows = array();
         foreach ($logs as $log) {
-            $rows[] = array($log->issueKey(), $log->timeSpent(), $log->date());
+            $rows[] = array(
+                $log->issueKey(),
+                $log->timeSpent(),
+                $this->shortenWorklogComment($log->comment(), 35)
+            );
         }
         $table = $this->getHelper('table');
         $table
-            ->setHeaders(array('Issue', 'Work log', 'Date'))
+            ->setHeaders(array('Issue', 'Work log', 'Comment'))
             ->setRows($this->orderByDate($rows));
         $table->render($output);
+    }
+
+    private function createProgressbar(OutputInterface $output, $steps)
+    {
+        // render progress bar
+        $progress = new ProgressBar($output, $steps);
+        $progress->setFormat('%bar% %percent%%');
+        $progress->setBarCharacter('<bg=green> </>');
+        $progress->setEmptyBarCharacter('<bg=white> </>');
+        $progress->setProgressCharacter('<bg=green> </>');
+        $progress->setBarWidth(50);
+        return $progress;
     }
 
     private function orderByDate(array $rows)
@@ -188,10 +215,10 @@ class DashboardCommand extends Command
         return $issueKeys;
     }
 
-    private function shortenWorklogComment($text)
+    private function shortenWorklogComment($text, $length = 15)
     {
-        $wrapped = explode(PHP_EOL, wordwrap($text, 15));
-        return array_shift($wrapped);
+        $wrapped = explode(PHP_EOL, wordwrap($text, $length));
+        return array_shift($wrapped) . (count($wrapped) >= 1 ? '..' : '');
     }
 
     private function pluralizedIssue($count)
