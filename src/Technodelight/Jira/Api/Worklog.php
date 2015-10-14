@@ -28,7 +28,7 @@ class Worklog
         return new self(
             $issueKey,
             $record['author']['displayName'],
-            $record['comment'],
+            isset($record['comment']) ? $record['comment'] : null,
             DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d'),
             $record['timeSpent'],
             $record['timeSpentSeconds']

@@ -34,7 +34,7 @@ class ListWorkInProgressCommand extends Command
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         // ensure we display every information for in progress issues
-        if ($output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
+        if ($output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE && !$input->getOption('all')) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
         }
     }
@@ -61,9 +61,11 @@ class ListWorkInProgressCommand extends Command
         );
 
         $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
-        $renderer->addWorklogs(
-            $this->retrieveWorklogs($issues, $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10)
-        );
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+            $renderer->addWorklogs(
+                $this->retrieveWorklogs($issues, $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10)
+            );
+        }
         $renderer->renderIssues($issues);
     }
 
