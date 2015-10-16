@@ -4,7 +4,8 @@ namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Helper\TableHelper;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -92,27 +93,36 @@ class DashboardCommand extends Command
     {
         $rows = [];
         $headers = [];
+        $dates = [];
         foreach ($logs as $log) {
-            $headers[$log->date()] = date(
-                'Y-m-d l',
+            $dates[$log->date()] = date(
+                'l',
                 strtotime($log->date())
             );
         }
-        ksort($headers);
+        ksort($dates);
+        $headers = ['Issue' => 'Issue'] + $dates;
+
         foreach ($logs as $log) {
             if (!isset($rows[$log->issueKey()])) {
                 $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
+                $rows[$log->issueKey()]['Issue'] = $log->issueKey();
             }
-            $rows[$log->issueKey()][$log->date()] = sprintf(
-                '%s: %s' . PHP_EOL . '  %s',
-                $log->issueKey(),
+            if (!isset($rows[$log->issueKey()][$log->date()])) {
+                $rows[$log->issueKey()][$log->date()] = '';
+            }
+            $rows[$log->issueKey()][$log->date()].= sprintf(
+                PHP_EOL . '%s %s',
                 $log->timeSpent(),
                 $this->shortenWorklogComment($log->comment())
             );
+            $rows[$log->issueKey()][$log->date()] = trim($rows[$log->issueKey()][$log->date()]);
         }
 
         ksort($rows);
-        $table = $this->getHelper('table');
+
+        // use the style for this table
+        $table = new Table($output);
         $table
             ->setHeaders(array_values($headers))
             ->setRows($rows);

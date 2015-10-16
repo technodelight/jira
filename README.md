@@ -22,10 +22,28 @@
 + render weekly dashboard similar as in Jira
 + fix dashboard to order columns by dates increment, add day name
 + shorten in-progress --all view
-- implement `init` command, which guides the user throughout the initial/per project setup
+- create `hub` tool helper class, which could return open PRs associated with an issue
+- add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
+- add `--status=<issueType>` for todo command (which defaults to `Open`). One can list `Dev to check` issues if wants to review code
+- fix worklog command output to filter empty rows
+- worklog command should be interactive by default, remove `-i` option
+- ability to add worklog to given day
+- default to parsed issueKey from git branch for every command where an `issueKey` is required
+- add `show` command to render a given issue, regardless of it's state
+? idea: worklog issue autocomplete based on this weeks time summary details, desc ordered by missing time
+? idea: edit worklog details (`jira log PROJ-321 --edit` for interactive worklog edit)
+- add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
+- add `init` command, which guides the user throughout the initial/per project setup
+- refactor time spent summary collector logic to it's own class
+- render colors from jira description/comments `{color:red}something{/color}`
 - add proper error handling if no configuration found
-- add progress bar to in progress issues (original estimate vs time spent)
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
+- add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
+? idea: refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
+- refactor commands to extract business logic into separate action classes
+- refactor to use service container
+- reduce build size and time: rework build process to exclude non-php/tests files from vendor
+- add progress bar to in progress issues (original estimate vs time spent)
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 
 ```
@@ -34,15 +52,11 @@
     project=PROJ2
 ```
 
-- add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
-- refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
-- refactor commands to extract business logic into separate action classes
-- refactor to use service container
-? create a jql query builder for assembling various queries?
-x create `hub` tool helper class?
+? idea: create a jql query builder for assembling various queries?
 x preconfigure PR message for `hub` with issue id + summary + commit messages differing from develop (`git log develop..head --format=%s --no-merges`)
 
 # Resources
 - https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
 - https://docs.atlassian.com/jira/REST/latest/
 - https://hub.github.com/
+- https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php
