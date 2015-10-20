@@ -23,6 +23,7 @@
 + fix dashboard to order columns by dates increment, add day name
 + shorten in-progress --all view
 + fix worklog command output to filter empty rows
++ ++ TEST ++
 - create `hub` tool helper class, which could return open PRs associated with an issue
 - add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
 - add `--status=<issueType>` for todo command (which defaults to `Open`). One can list `Dev to check` issues if wants to review code
