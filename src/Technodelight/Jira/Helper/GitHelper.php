@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Helper;
 
-class GitHelper
+class GitHelper extends ShellCommandHelper
 {
     public function branches($pattern = '')
     {
@@ -33,9 +33,13 @@ class GitHelper
         return [];
     }
 
-    private function shell($command)
+    public function getName()
     {
-        $result = explode(PHP_EOL, shell_exec("git $command"));
-        return array_filter(array_map('trim', $result));
+        return 'git';
+    }
+
+    protected function getExecutable()
+    {
+        return '/usr/bin/env git';
     }
 }

@@ -5,23 +5,20 @@ namespace Technodelight\Jira\Console;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use Technodelight\Jira\Console\Command\TodoCommand;
-use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
-use Technodelight\Jira\Console\Command\IssueTransitionCommand;
-use Technodelight\Jira\Console\Command\LogTimeCommand;
-use Technodelight\Jira\Console\Command\DashboardCommand;
-
+use Technodelight\Jira\Api\Api as JiraApi;
+use Technodelight\Jira\Api\Client as JiraClient;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
-
-use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\Jira\Console\Command\DashboardCommand;
+use Technodelight\Jira\Console\Command\IssueTransitionCommand;
+use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
+use Technodelight\Jira\Console\Command\LogTimeCommand;
+use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
-
-use Technodelight\Jira\Api\Client as JiraClient;
-use Technodelight\Jira\Api\Api as JiraApi;
+use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\Jira\Helper\HubHelper;
+use Technodelight\Jira\Helper\TemplateHelper;
 
 class Application extends BaseApp
 {
@@ -149,5 +146,12 @@ class Application extends BaseApp
         }
 
         return $this->jira;
+    }
+
+    public function getDefaultHelperSet()
+    {
+        $helperSet = parent::getDefaultHelperSet();
+        $helperSet->set(new HubHelper);
+        return $helperSet;
     }
 }

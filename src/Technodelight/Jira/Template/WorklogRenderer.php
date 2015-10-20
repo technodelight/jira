@@ -24,9 +24,9 @@ class WorklogRenderer
     {
         $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/worklog.template');
 
-        $output = '';
+        $output = [];
         foreach ($worklogs as $record) {
-            $output.= $template->render(
+            $output[] = $template->render(
                 [
                     'author' => $record->author(),
                     'timeSpent' => $record->timeSpent(),
@@ -36,6 +36,17 @@ class WorklogRenderer
             );
         }
 
-        return str_replace(PHP_EOL . PHP_EOL, PHP_EOL, $output);
+        return implode(
+            PHP_EOL . PHP_EOL,
+            array_map(
+                function($renderedLog) {
+                    return implode(
+                        PHP_EOL,
+                        array_filter(array_map('rtrim', explode(PHP_EOL, $renderedLog)))
+                    );
+                },
+                $output
+            )
+        );
     }
 }

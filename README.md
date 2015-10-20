@@ -22,10 +22,10 @@
 + render weekly dashboard similar as in Jira
 + fix dashboard to order columns by dates increment, add day name
 + shorten in-progress --all view
++ fix worklog command output to filter empty rows
 - create `hub` tool helper class, which could return open PRs associated with an issue
 - add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
 - add `--status=<issueType>` for todo command (which defaults to `Open`). One can list `Dev to check` issues if wants to review code
-- fix worklog command output to filter empty rows
 - worklog command should be interactive by default, remove `-i` option
 - ability to add worklog to given day
 - default to parsed issueKey from git branch for every command where an `issueKey` is required

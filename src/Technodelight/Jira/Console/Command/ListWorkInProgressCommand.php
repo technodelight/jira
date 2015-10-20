@@ -47,6 +47,7 @@ class ListWorkInProgressCommand extends Command
         }
         $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
 
+        var_dump($this->getHelper('hub')->issues());
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
             return;
