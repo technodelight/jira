@@ -153,6 +153,7 @@ class Application extends BaseApp
     {
         $helperSet = parent::getDefaultHelperSet();
         $helperSet->set(new HubHelper);
+        $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;
     }

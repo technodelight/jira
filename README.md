@@ -26,23 +26,24 @@
 + create `hub` tool helper class, which could return open PRs associated with an issue
 + worklog command should be interactive by default, remove `-i` option
 + default to parsed issueKey from git branch for every command where an `issueKey` is required
+- reduce build size and time: rework build process to exclude non-php/tests files from vendor
 - refactor time spent summary collector logic to it's own class
-- add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
-- add `--status=<issueType>` for todo command (which defaults to `Open`). One can list `Dev to check` issues if wants to review code
 - ability to add worklog to given day
+- add proper error handling if no configuration found
+- add `init` command, which guides the user throughout the initial/per project setup
+- add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
+- add `--status=<issueType>` for `todo` command (which defaults to `Open` currently). One can list `Dev to check` issues if wants to review code
+? idea: possibly change `todo` command to `issue-list` command, where `status` argument defaults to `Open` ?
 - add `show` command to render a given issue, regardless of it's state
 ? idea: worklog issue autocomplete based on this weeks time summary details, desc ordered by missing time
 ? idea: edit worklog details (`jira log PROJ-321 --edit` for interactive worklog edit)
 ? idea: add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
-- add `init` command, which guides the user throughout the initial/per project setup
 - render colors from jira description/comments `{color:red}something{/color}`
-- add proper error handling if no configuration found
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
 ? idea: refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
 - refactor commands to extract business logic into separate action classes
 - refactor to use service container
-- reduce build size and time: rework build process to exclude non-php/tests files from vendor
 - add progress bar to in progress issues (original estimate vs time spent)
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 
