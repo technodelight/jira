@@ -276,9 +276,16 @@ class IssueRenderer
             return [];
         }
         $hubIssues = $this->hub->issues();
-        return array_filter($hubIssues, function($hubIssue) use($issue) {
+        $matchingIssues = array_filter($hubIssues, function($hubIssue) use($issue) {
             return strpos($hubIssue['text'], $issue->issueKey()) === 0;
         });
+
+        return array_map(
+            function($hubIssue) {
+                return $hubIssue['link'];
+            },
+            $matchingIssues
+        );
     }
 
     private function shorten($text, $maxLines = 2)
