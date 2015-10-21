@@ -47,6 +47,11 @@ class Issue
         return $this->ticketNumber();
     }
 
+    public function project()
+    {
+        return (object) ($this->findField('project') ?: []);
+    }
+
     public function summary()
     {
         return $this->findField('summary');

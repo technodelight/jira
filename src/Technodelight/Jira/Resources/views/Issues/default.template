@@ -7,6 +7,9 @@
     <comment>branches:</comment>
         {{ branches }}
     {{ end_depends }}
+    {{ depends ($verbosity > 1 && !empty($hubIssues)) }}
+    <comment>pull requests:</comment>
+        {{ hubIssues }}{{ end_depends }}
     {{ depends !empty($worklogs) }}<comment>logged work:</comment>
     {{ worklogs }}{{ end_depends }}
     {{ depends !empty($comments) }}<comment>comments:</comment>

@@ -10,6 +10,7 @@ use Technodelight\Jira\Api\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Template\CommentRenderer;
 use Technodelight\Jira\Template\Template;
@@ -81,11 +82,17 @@ class IssueRenderer
      */
     private $commentRenderer;
 
+    /**
+     * @var HubHelper
+     */
+    private $hub;
+
     public function __construct(OutputInterface $output, FormatterHelper $formatterHelper)
     {
         $this->templateHelper = new TemplateHelper;
         $this->dateHelper = new DateHelper;
         $this->git = new GitHelper;
+        $this->hub = new HubHelper;
         $this->gitBranchnameGenerator = new GitBranchnameGenerator;
         $this->worklogRenderer = new WorklogRenderer;
         $this->commentRenderer = new CommentRenderer;
@@ -147,6 +154,7 @@ class IssueRenderer
                 'assignee' => $issue->assignee(),
 
                 'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
+                'hubIssues' => $this->tabulate(implode(PHP_EOL, $this->retrieveHubIssues($issue)), 8),
                 'verbosity' => $this->output->getVerbosity(),
                 'worklogs' => $this->tabulate(
                     $this->worklogRenderer->renderWorklogs($this->issueWorklogs($issue))
@@ -260,6 +268,17 @@ class IssueRenderer
         }
 
         return $branches;
+    }
+
+    private function retrieveHubIssues(Issue $issue)
+    {
+        if ($this->output->getVerbosity() == 1) {
+            return [];
+        }
+        $hubIssues = $this->hub->issues();
+        return array_filter($hubIssues, function($hubIssue) use($issue) {
+            return strpos($hubIssue['text'], $issue->issueKey()) === 0;
+        });
     }
 
     private function shorten($text, $maxLines = 2)

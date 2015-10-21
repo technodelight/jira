@@ -47,7 +47,6 @@ class ListWorkInProgressCommand extends Command
         }
         $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
 
-        var_dump($this->getHelper('hub')->issues());
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
             return;
@@ -57,7 +56,7 @@ class ListWorkInProgressCommand extends Command
             sprintf(
                 'You have %d in progress %s' . PHP_EOL,
                 count($issues),
-                $this->pluralize('issue', count($issues))
+                $this->getHelper('pluralize')->pluralize('issue', count($issues))
             )
         );
 
@@ -84,14 +83,5 @@ class ListWorkInProgressCommand extends Command
             $issueKeys[] = $issue->issueKey();
         }
         return $issueKeys;
-    }
-
-    private function pluralize($word, $count)
-    {
-        if ($count <= 1) {
-            return $word;
-        }
-
-        return $word . 's';
     }
 }

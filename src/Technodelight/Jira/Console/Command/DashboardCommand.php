@@ -60,7 +60,7 @@ class DashboardCommand extends Command
             sprintf(
                 'You have been working on %d %s %s' . PHP_EOL,
                 count($issues),
-                $this->pluralizedIssue(count($issues)),
+                $this->getHelper('pluralize')->pluralize('issue', count($issues)),
                 $from == $to ? "on $from" : "from $from to $to"
             )
         );
@@ -229,14 +229,5 @@ class DashboardCommand extends Command
     {
         $wrapped = explode(PHP_EOL, wordwrap($text, $length));
         return array_shift($wrapped) . (count($wrapped) >= 1 ? '..' : '');
-    }
-
-    private function pluralizedIssue($count)
-    {
-        if ($count <= 1) {
-            return 'issue';
-        }
-
-        return 'issues';
     }
 }

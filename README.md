@@ -23,18 +23,18 @@
 + fix dashboard to order columns by dates increment, add day name
 + shorten in-progress --all view
 + fix worklog command output to filter empty rows
-- create `hub` tool helper class, which could return open PRs associated with an issue
++ create `hub` tool helper class, which could return open PRs associated with an issue
++ worklog command should be interactive by default, remove `-i` option
++ default to parsed issueKey from git branch for every command where an `issueKey` is required
+- refactor time spent summary collector logic to it's own class
 - add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
 - add `--status=<issueType>` for todo command (which defaults to `Open`). One can list `Dev to check` issues if wants to review code
-- worklog command should be interactive by default, remove `-i` option
 - ability to add worklog to given day
-- default to parsed issueKey from git branch for every command where an `issueKey` is required
 - add `show` command to render a given issue, regardless of it's state
 ? idea: worklog issue autocomplete based on this weeks time summary details, desc ordered by missing time
 ? idea: edit worklog details (`jira log PROJ-321 --edit` for interactive worklog edit)
-- add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
+? idea: add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
 - add `init` command, which guides the user throughout the initial/per project setup
-- refactor time spent summary collector logic to it's own class
 - render colors from jira description/comments `{color:red}something{/color}`
 - add proper error handling if no configuration found
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')

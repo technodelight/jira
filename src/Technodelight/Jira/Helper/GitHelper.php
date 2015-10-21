@@ -16,6 +16,15 @@ class GitHelper extends ShellCommandHelper
         return ltrim(end($list), '* ');
     }
 
+    public function issueKeyFromCurrentBranch()
+    {
+        if (preg_match('~^feature/([A-Z]+[0-9]+)-(.*)~', $this->currentBranch(), $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+
     public function topLevelDirectory()
     {
         $tld = $this->shell('rev-parse --show-toplevel');
