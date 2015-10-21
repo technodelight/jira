@@ -18,6 +18,7 @@ use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\HubHelper;
+use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 
 class Application extends BaseApp
@@ -152,6 +153,7 @@ class Application extends BaseApp
     {
         $helperSet = parent::getDefaultHelperSet();
         $helperSet->set(new HubHelper);
+        $helperSet->set(new PluralizeHelper);
         return $helperSet;
     }
 }

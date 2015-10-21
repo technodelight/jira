@@ -4,18 +4,23 @@ namespace Technodelight\Jira\Helper;
 
 class HubHelper extends ShellCommandHelper
 {
+    private $issuesCache;
+
     public function issues()
     {
-        $issues = array_map('trim', $this->shell('issue'));
-        $result = [];
-        foreach ($issues as $lineIdx => $row) {
-            $signature = $this->parseIssueSignature($row);
-            if (!empty($signature)) {
-                $result[$row['pr']] = $row;
+        if (!isset($this->issuesCache)) {
+            $issues = array_map('trim', $this->shell('issue'));
+            $result = [];
+            foreach ($issues as $lineIdx => $row) {
+                $signature = $this->parseIssueSignature($row);
+                if (!empty($signature)) {
+                    $result[$signature['pr']] = $signature;
+                }
             }
+            $this->issuesCache = $result;
         }
 
-        return $result;
+        return $this->issuesCache;
     }
 
     public function getName()

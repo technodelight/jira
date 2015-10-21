@@ -73,20 +73,11 @@ class TodoCommand extends Command
             sprintf(
                 'There are %d open %s in the open sprints' . PHP_EOL,
                 count($issues),
-                $this->pluralizedIssue(count($issues))
+                $this->getHelper('pluralize')->pluralize('issue', count($issues))
             )
         );
 
         $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
         $renderer->renderIssues($issues);
-    }
-
-    private function pluralizedIssue($count)
-    {
-        if ($count <= 1) {
-            return 'issue';
-        }
-
-        return 'issues';
     }
 }

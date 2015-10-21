@@ -1,2 +1,2 @@
-<info>{{ author }}</info> ({{ created }}):
-    {{ body }}
+    <info>{{ author }}</info> ({{ created }}):
+        {{ body }}
