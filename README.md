@@ -26,9 +26,11 @@
 + create `hub` tool helper class, which could return open PRs associated with an issue
 + worklog command should be interactive by default, remove `-i` option
 + default to parsed issueKey from git branch for every command where an `issueKey` is required
+- fix todo list to be non-verbose (somehow it went verbose and shows more than 2 lines of `description`)
+- when picking from `Open` status, show generated branch name for starting on a task more easily
+- ability to add worklog to given day
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor
 - refactor time spent summary collector logic to it's own class
-- ability to add worklog to given day
 - add proper error handling if no configuration found
 - add `init` command, which guides the user throughout the initial/per project setup
 - add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
@@ -41,7 +43,7 @@
 - render colors from jira description/comments `{color:red}something{/color}`
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
-? idea: refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
+x idea: refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
 - refactor commands to extract business logic into separate action classes
 - refactor to use service container
 - add progress bar to in progress issues (original estimate vs time spent)
