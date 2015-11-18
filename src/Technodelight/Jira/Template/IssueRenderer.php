@@ -7,13 +7,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\IssueCollection;
 use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Template\CommentRenderer;
-use Technodelight\Jira\Template\Template;
 use Technodelight\Jira\Template\WorklogRenderer;
 use Technodelight\Simplate;
 
@@ -38,29 +38,6 @@ class IssueRenderer
      * @var DateHelper
      */
     private $dateHelper;
-
-    /**
-     * Templates per issue type
-     * @var array
-     */
-    private $templates = [
-        'Default' => 'Technodelight/Jira/Resources/views/Issues/default.template',
-    ];
-
-    /**
-     * Formats for various issue types
-     * @var array
-     */
-    private $issueTypeFormats = [
-        'Default' => '<fg=black;bg=blue>%s</>',
-        'Defect' => '<error>%s</error>',
-        'Bug' => '<error>%s</error>',
-    ];
-
-    /**
-     * @var array
-     */
-    private $worklogs = [];
 
     /**
      * @var OutputInterface
@@ -88,22 +65,65 @@ class IssueRenderer
     private $hub;
 
     /**
+     * @var string
+     */
+    private $viewsDir;
+
+    /**
+     * Templates per issue type
+     * @var array
+     */
+    private $templates = [
+        'Default' => 'Issues/default.template',
+    ];
+
+    /**
+     * Formats for various issue types
+     * @var array
+     */
+    private $issueTypeFormats = [
+        'Default' => '<fg=black;bg=blue>%s</>',
+        'Defect' => '<error>%s</error>',
+        'Bug' => '<error>%s</error>',
+    ];
+
+    /**
+     * @var array
+     */
+    private $worklogs = [];
+
+    /**
      * @var array
      */
     private $hubCache;
 
-    public function __construct(OutputInterface $output, FormatterHelper $formatterHelper)
-    {
-        $this->templateHelper = new TemplateHelper;
-        $this->dateHelper = new DateHelper;
-        $this->git = new GitHelper;
-        $this->hub = new HubHelper;
-        $this->gitBranchnameGenerator = new GitBranchnameGenerator;
-        $this->worklogRenderer = new WorklogRenderer;
-        $this->commentRenderer = new CommentRenderer;
 
-        $this->output = $output;
+    public function __construct(
+        Application $app,
+        FormatterHelper $formatterHelper,
+        TemplateHelper $templateHelper,
+        DateHelper $dateHelper,
+        GitHelper $gitHelper,
+        HubHelper $hubHelper,
+        GitBranchnameGenerator $gitBranchnameGenerator,
+        WorklogRenderer $worklogRenderer,
+        CommentRenderer $commentRenderer
+    )
+    {
+        $this->viewsDir = $app->directory('views');
         $this->formatterHelper = $formatterHelper;
+        $this->templateHelper = $templateHelper;
+        $this->dateHelper = $dateHelper;
+        $this->git = $gitHelper;
+        $this->hub = $hubHelper;
+        $this->gitBranchnameGenerator = $gitBranchnameGenerator;
+        $this->worklogRenderer = $worklogRenderer;
+        $this->commentRenderer = $commentRenderer;
+    }
+
+    public function setOutput(OutputInterface $output)
+    {
+        $this->output = $output;
     }
 
     /**
@@ -209,7 +229,9 @@ class IssueRenderer
     private function getTemplateInstance($templateId)
     {
         if (!($this->templates[$templateId] instanceof Simplate)) {
-            $this->templates[$templateId] = Template::fromFile($this->templates[$templateId]);
+            $this->templates[$templateId] = Simplate::fromFile(
+                $this->viewsDir . DIRECTORY_SEPARATOR . $this->templates[$templateId]
+            );
         }
 
         return $this->templates[$templateId];

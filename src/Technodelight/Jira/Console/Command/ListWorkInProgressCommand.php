@@ -2,15 +2,14 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class ListWorkInProgressCommand extends Command
+class ListWorkInProgressCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -41,11 +40,8 @@ class ListWorkInProgressCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $project = $this->getApplication()->config()->project();
-        if ($input->getArgument('project')) {
-            $project = $input->getArgument('project');
-        }
-        $issues = $this->getApplication()->jira()->inprogressIssues($project, $input->getOption('all'));
+        $project = $this->projectArgument($input);
+        $issues = $this->getService('technodelight.jira.api')->inprogressIssues($project, $input->getOption('all'));
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
@@ -56,11 +52,12 @@ class ListWorkInProgressCommand extends Command
             sprintf(
                 'You have %d in progress %s' . PHP_EOL,
                 count($issues),
-                $this->getHelper('pluralize')->pluralize('issue', count($issues))
+                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues))
             )
         );
 
-        $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
+        $renderer = $this->getService('technodelight.jira.issue_renderer');
+        $renderer->setOutput($output);
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $renderer->addWorklogs(
                 $this->retrieveWorklogs($issues, $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10)
@@ -71,7 +68,7 @@ class ListWorkInProgressCommand extends Command
 
     private function retrieveWorklogs($issues, $limit)
     {
-        return $this->getApplication()->jira()->retrieveIssuesWorklogs(
+        return $this->getService('technodelight.jira.api')->retrieveIssuesWorklogs(
             $this->issueKeys($issues), $limit
         );
     }

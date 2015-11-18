@@ -2,15 +2,14 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class TodoCommand extends Command
+class TodoCommand extends AbstractCommand
 {
     private $issueTypeFilter = [
         'bugs' => ['Defect', 'Bug'],
@@ -51,10 +50,7 @@ class TodoCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $project = $this->getApplication()->config()->project();
-        if ($input->getArgument('project')) {
-            $project = $input->getArgument('project');
-        }
+        $project = $this->projectArgument($input);
 
         $issueFilter = [];
         foreach ($this->issueTypeFilter as $option => $types) {
@@ -62,7 +58,7 @@ class TodoCommand extends Command
                 $issueFilter = array_merge($issueFilter, $types);
             }
         }
-        $issues = $this->getApplication()->jira()->todoIssues($project, $issueFilter);
+        $issues = $this->getService('technodelight.jira.api')->todoIssues($project, $issueFilter);
 
         if (count($issues) == 0) {
             $output->writeln(sprintf('No tickets available to pick up on project %s.', $project));
@@ -73,11 +69,12 @@ class TodoCommand extends Command
             sprintf(
                 'There are %d open %s in the open sprints' . PHP_EOL,
                 count($issues),
-                $this->getHelper('pluralize')->pluralize('issue', count($issues))
+                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues))
             )
         );
 
-        $renderer = new IssueRenderer($output, $this->getHelper('formatter'));
+        $renderer = $this->getService('technodelight.jira.issue_renderer');
+        $renderer->setOutput($output);
         $renderer->renderIssues($issues);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace Technodelight\Jira\Template;
 
+use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Template\Template;
+use Technodelight\Simplate;
 
 class WorklogRenderer
 {
@@ -12,9 +13,15 @@ class WorklogRenderer
      */
     private $templateHelper;
 
-    public function __construct()
+    /**
+     * @var string
+     */
+    private $viewsDir;
+
+    public function __construct(Application $app, TemplateHelper $templateHelper)
     {
-        $this->templateHelper = new TemplateHelper;
+        $this->viewsDir = $app->directory('views');
+        $this->templateHelper = $templateHelper;
     }
 
     /**
@@ -22,7 +29,7 @@ class WorklogRenderer
      */
     public function renderWorklogs(array $worklogs)
     {
-        $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/worklog.template');
+        $template = Simplate::fromFile($this->viewsDir . DIRECTORY_SEPARATOR . 'Commands/worklog.template');
 
         $output = [];
         foreach ($worklogs as $record) {

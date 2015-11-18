@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableStyle;
@@ -11,8 +10,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class DashboardCommand extends Command
+class DashboardCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -39,7 +39,8 @@ class DashboardCommand extends Command
         $date = $input->getArgument('date');
         $from = $this->defineFrom($date, $input->getOption('week'));
         $to = $this->defineTo($date, $input->getOption('week'));
-        $jira = $this->getApplication()->jira();
+
+        $jira = $this->getService('technodelight.jira.api');
         $issues = $jira->retrieveIssuesHavingWorklogsForUser('"' . $from . '"', '"' . $to . '"');
         $user = $jira->user();
 
@@ -60,7 +61,7 @@ class DashboardCommand extends Command
             sprintf(
                 'You have been working on %d %s %s' . PHP_EOL,
                 count($issues),
-                $this->getHelper('pluralize')->pluralize('issue', count($issues)),
+                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues)),
                 $from == $to ? "on $from" : "from $from to $to"
             )
         );
@@ -84,7 +85,7 @@ class DashboardCommand extends Command
         $output->writeln(
             sprintf(
                 'Total time logged: %s' . PHP_EOL,
-                $this->getApplication()->dateHelper()->secondsToHuman($summary)
+                $this->getService('technodelight.jira.date_helper')->secondsToHuman($summary)
             )
         );
     }
@@ -139,7 +140,7 @@ class DashboardCommand extends Command
                 $this->shortenWorklogComment($log->comment(), 35)
             );
         }
-        $table = $this->getHelper('table');
+        $table = new Table($output);
         $table
             ->setHeaders(array('Issue', 'Work log', 'Comment'))
             ->setRows($this->orderByDate($rows));

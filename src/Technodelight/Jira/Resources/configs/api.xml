@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="technodelight.jira.api_client" class="Technodelight\Jira\Api\Client">
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+            <argument type="service" id="technodelight.jira.api_client" />
+        </service>
+    </services>
+
+</container>

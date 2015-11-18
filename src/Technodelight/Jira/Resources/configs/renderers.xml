@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="technodelight.jira.comment_renderer" class="Technodelight\Jira\Template\CommentRenderer">
+            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+
+        <service id="technodelight.jira.worklog_renderer" class="Technodelight\Jira\Template\WorklogRenderer">
+            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+
+        <service id="technodelight.jira.issue_renderer" class="Technodelight\Jira\Template\IssueRenderer">
+            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.git_helper" />
+            <argument type="service" id="technodelight.jira.hub_helper" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator" />
+            <argument type="service" id="technodelight.jira.worklog_renderer" />
+            <argument type="service" id="technodelight.jira.comment_renderer" />
+        </service>
+    </services>
+
+</container>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper" />
+        <service id="technodelight.jira.git_helper" class="Technodelight\Jira\Helper\GitHelper" />
+        <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper" />
+        <service id="technodelight.jira.pluralize_helper" class="Technodelight\Jira\Helper\PluralizeHelper" />
+        <service id="technodelight.jira.shell_command_helper" class="Technodelight\Jira\Helper\ShellCommandHelper" />
+        <service id="technodelight.jira.template_helper" class="Technodelight\Jira\Helper\TemplateHelper" />
+        <service id="technodelight.jira.git_branchname_generator" class="Technodelight\Jira\Helper\GitBranchnameGenerator" />
+    </services>
+
+</container>

@@ -3,7 +3,9 @@
 namespace Technodelight\Jira\Template;
 
 use Technodelight\Jira\Api\Comment;
+use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Simplate;
 
 class CommentRenderer
 {
@@ -12,9 +14,15 @@ class CommentRenderer
      */
     private $templateHelper;
 
-    public function __construct()
+    /**
+     * @var string
+     */
+    private $viewsDir;
+
+    public function __construct(Application $app, TemplateHelper $templateHelper)
     {
-        $this->templateHelper = new TemplateHelper;
+        $this->viewsDir = $app->directory('views');
+        $this->templateHelper = $templateHelper;
     }
 
     /**
@@ -24,7 +32,7 @@ class CommentRenderer
      */
     public function renderComments(array $comments)
     {
-        $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/comment.template');
+        $template = Simplate::fromFile($this->viewsDir . DIRECTORY_SEPARATOR . 'Commands/comment.template');
         $contents = [];
         foreach ($comments as $comment) {
             $contents[] = $template->render(

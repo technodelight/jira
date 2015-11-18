@@ -2,19 +2,17 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
+use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Template\Template;
 use Technodelight\Jira\Template\WorklogRenderer;
-use Technodelight\Jira\Helper\DateHelper;
-
 use UnexpectedValueException;
 
-class LogTimeCommand extends Command
+class LogTimeCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -53,11 +51,11 @@ class LogTimeCommand extends Command
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getHelper('dialog');
-        $templateHelper = $this->getApplication()->templateHelper();
-        $gitHelper = $this->getHelper('git');
-        $project = $this->getApplication()->config()->project();
-        $jira = $this->getApplication()->jira();
+        $dialog = $this->getService('console.dialog_helper');
+        $gitHelper = $this->getService('technodelight.jira.git_helper');
+        $templateHelper = $this->getService('technodelight.jira.template_helper');
+        $jira = $this->getService('technodelight.jira.api');
+        $project = $this->getService('technodelight.jira.config')->project();
 
         if (!$issueKey = $input->getArgument('issueKey')) {
             $issues = $this->retrieveInProgressIssues();
@@ -143,6 +141,8 @@ class LogTimeCommand extends Command
         $timeSpent = $input->getArgument('time');
         $remaining = $input->getArgument('remaining');
         $app = $this->getApplication();
+        $jira = $this->getService('technodelight.jira.api');
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
 
         if (!$issueKey || !$timeSpent) {
             return $output->writeln('<error>You need to specify the issue and time arguments</error>');
@@ -150,15 +150,15 @@ class LogTimeCommand extends Command
 
         $this->log($input);
 
-        $issue = $app->jira()->retrieveIssue($issueKey);
-        $template = Template::fromFile('Technodelight/Jira/Resources/views/Commands/logtime.template');
-        $worklogs = $app->jira()->retrieveIssueWorklogs($issueKey);
+        $issue = $jira->retrieveIssue($issueKey);
+        $template = Simplate::fromFile($app->directory('views') . '/Commands/logtime.template');
+        $worklogs = $jira->retrieveIssueWorklogs($issueKey);
 
         $currentWorklogDetails = [
             'issueKey' => $issueKey,
             'logged' => $timeSpent,
-            'estimate' => $app->dateHelper()->secondsToHuman($issue->estimate()),
-            'spent' => $app->dateHelper()->secondsToHuman($issue->timeSpent()),
+            'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
+            'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
             'worklogs' => $this->renderWorklogs($worklogs),
         ];
 
@@ -169,13 +169,14 @@ class LogTimeCommand extends Command
 
     private function log(InputInterface $input)
     {
+        $jira = $this->getService('technodelight.jira.api');
         $issueKey = $input->getArgument('issueKey');
         $timeSpent = $input->getArgument('time');
         $remaining = $input->getArgument('remaining');
         $comment = $input->getOption('comment') ?: sprintf('Worked on issue %s', $issueKey);
 
         if ($remaining) {
-            $res = $this->getApplication()->jira()->worklog(
+            $res = $jira->worklog(
                 $issueKey,
                 $timeSpent,
                 $comment,
@@ -183,7 +184,7 @@ class LogTimeCommand extends Command
                 $remaining
             );
         } else {
-            $res = $this->getApplication()->jira()->worklog(
+            $res = $jira->worklog(
                 $issueKey,
                 $timeSpent,
                 $comment,
@@ -194,14 +195,13 @@ class LogTimeCommand extends Command
 
     private function renderWorklogs($worklogs)
     {
-        $renderer = new WorklogRenderer;
-        return $renderer->renderWorklogs(array_slice($worklogs, -10));
+        return $this->getService('technodelight.jira.worklog_renderer')->renderWorklogs(array_slice($worklogs, -10));
     }
 
     private function retrieveInProgressIssues()
     {
-        $project = $this->getApplication()->config()->project();
-        $issues = $this->getApplication()->jira()->inprogressIssues($project, true);
+        $project = $this->getService('technodelight.jira.config')->project();
+        $issues = $this->getService('technodelight.jira.api')->inprogressIssues($project, true);
         $issueKeys = [];
         foreach ($issues as $issue) {
             $issueKeys[] = $issue->issueKey();
@@ -212,8 +212,7 @@ class LogTimeCommand extends Command
 
     private function retrieveGitCommitMessages()
     {
-        $git = $this->getApplication()->git();
-        return implode(PHP_EOL, $git->commitMessages());
+        return implode(PHP_EOL, $this->getService('technodelight.jira.git_helper')->commitMessages());
     }
 
     private function deDoubleNewlineize($string)

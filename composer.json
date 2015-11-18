@@ -8,7 +8,9 @@
         "symfony/console": "^2.7",
         "stecman/symfony-console-completion": "^0.5.1",
         "guzzlehttp/guzzle": "5.3",
-        "technodelight/simplate": "dev-master"
+        "technodelight/simplate": "dev-master",
+        "symfony/config": "^2.7",
+        "symfony/dependency-injection": "^2.7"
     },
     "require-dev": {
     },

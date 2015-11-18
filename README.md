@@ -28,6 +28,8 @@
 + default to parsed issueKey from git branch for every command where an `issueKey` is required
 + fix todo list to be non-verbose (somehow it went verbose and shows more than 2 lines of `description`)
 + when transitioning, show generated branch name for starting on a task quicker
++ refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
+- add `show` command to render a given issue, regardless of it's state
 - add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors
 - ability to add worklog to given day
 - refactor time spent summary collector logic to it's own class
@@ -36,8 +38,9 @@
 - change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `qa-ready="Ready to QA"`)
   It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
 - add `--groupby=<field>` for issue lists
-- add `show` command to render a given issue, regardless of it's state
-- `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop, would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
+- `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
+  would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
+  But, may be better to retrieve branch name using the git helper instead of using `head`
 - parse remote branches for tasks, modify branchname generator to base on remotes first
 - make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
 - add proper error handling if no configuration found
@@ -46,7 +49,6 @@
 - render colors from jira description/comments `{color:red}something{/color}`
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
 - refactor commands to extract business logic into separate action classes
-- refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
 - refactor to use `symfony/config` to load configuration files as allows more flexibility
 - add progress bar to in progress issues (original estimate vs time spent)
 - show last update time per issue using `php-time-ago`

@@ -5,6 +5,9 @@ namespace Technodelight\Jira\Console;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\Api as JiraApi;
 use Technodelight\Jira\Api\Client as JiraClient;
 use Technodelight\Jira\Configuration\Configuration;
@@ -23,6 +26,32 @@ use Technodelight\Jira\Helper\TemplateHelper;
 
 class Application extends BaseApp
 {
+    /**
+     * Relative path to base source directory
+     * @var string
+     */
+    private $baseDir;
+
+    private $directories = [
+        'views' => ['Resources', 'views'],
+        'configs' => ['Resources', 'configs']
+    ];
+
+    /**
+     * DI files to load
+     * @var array
+     */
+    private $diFiles = [
+        'helpers.xml',
+        'renderers.xml',
+        'api.xml',
+    ];
+
+    /**
+     * @var ContainerBuilder
+     */
+    private $container;
+
     /**
      * @var Configuration
      */
@@ -53,20 +82,33 @@ class Application extends BaseApp
      */
     protected $jira;
 
+    /**
+     * Constructor.
+     *
+     * @param string $name    The name of the application
+     * @param string $version The version of the application
+     */
+    public function __construct($name = 'UNKNOWN', $version = 'UNKNOWN')
+    {
+        $this->baseDir = $this->path([__DIR__, '..']);
+
+        parent::__construct($name, $version);
+    }
+
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
-        $commands[] = new TodoCommand;
-        $commands[] = new ListWorkInProgressCommand;
-        $commands[] = new LogTimeCommand;
-        $commands[] = new DashboardCommand;
+        $commands[] = new TodoCommand($this->container());
+        $commands[] = new ListWorkInProgressCommand($this->container());
+        $commands[] = new LogTimeCommand($this->container());
+        $commands[] = new DashboardCommand($this->container());
 
         $transitions = $this->config()->transitions();
         if (empty($transitions)) {
             $transitions = ['pick' => 'Picked up by dev'];
         }
         foreach ($transitions as $alias => $transitionName) {
-            $commands[] = new IssueTransitionCommand($alias, $this->config());
+            $commands[] = new IssueTransitionCommand($this->container(), $alias);
         }
 
         return $commands;
@@ -78,14 +120,35 @@ class Application extends BaseApp
     public function config()
     {
         if (!isset($this->config)) {
+            $git = new GitHelper;
             // init configuration
             $config = GlobalConfiguration::initFromDirectory(getenv('HOME'));
-            $projectConfig = Configuration::initFromDirectory($this->git()->topLevelDirectory());
+            $projectConfig = Configuration::initFromDirectory($git->topLevelDirectory());
             $config->merge($projectConfig);
             $this->config = $config;
         }
 
         return $this->config;
+    }
+
+    /**
+     * @return ContainerBuilder
+     */
+    public function container()
+    {
+        if (!isset($this->container)) {
+            $this->container = new ContainerBuilder();
+            foreach ($this->syntheticContainerServices() as $serviceId => $object) {
+                $this->container->set($serviceId, $object);
+            }
+
+            $loader = new XmlFileLoader($this->container, new FileLocator($this->directory('configs')));
+            foreach ($this->diFiles as $fileName) {
+                $loader->load($fileName);
+            }
+        }
+
+        return $this->container;
     }
 
     /**
@@ -156,5 +219,34 @@ class Application extends BaseApp
         $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;
+    }
+
+    /**
+     * @param  string $alias
+     *
+     * @return string relative path
+     */
+    public function directory($alias)
+    {
+        if (!isset($this->directories[$alias])) {
+            throw new \UnexpectedValueException(sprintf('No directory %s configured', $alias));
+        }
+
+        return $this->baseDir . DIRECTORY_SEPARATOR . $this->path($this->directories[$alias]);
+    }
+
+    private function path(array $parts)
+    {
+        return implode(DIRECTORY_SEPARATOR, $parts);
+    }
+
+    private function syntheticContainerServices()
+    {
+        return [
+            'technodelight.jira.config' => $this->config(),
+            'technodelight.jira.app' => $this,
+            'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
+            'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
+        ];
     }
 }
