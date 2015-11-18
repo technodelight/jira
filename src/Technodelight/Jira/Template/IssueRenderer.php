@@ -87,6 +87,11 @@ class IssueRenderer
      */
     private $hub;
 
+    /**
+     * @var array
+     */
+    private $hubCache;
+
     public function __construct(OutputInterface $output, FormatterHelper $formatterHelper)
     {
         $this->templateHelper = new TemplateHelper;
@@ -275,8 +280,11 @@ class IssueRenderer
         if ($this->output->getVerbosity() == 1) {
             return [];
         }
-        $hubIssues = $this->hub->issues();
-        $matchingIssues = array_filter($hubIssues, function($hubIssue) use($issue) {
+        if (!isset($this->hubCache)) {
+            $this->hubCache = $this->hub->issues();
+        }
+
+        $matchingIssues = array_filter($this->hubCache, function($hubIssue) use($issue) {
             return strpos($hubIssue['text'], $issue->issueKey()) === 0;
         });
 
@@ -290,7 +298,7 @@ class IssueRenderer
 
     private function shorten($text, $maxLines = 2)
     {
-        if ($this->output->getVerbosity() == 1) {
+        if ($this->output->getVerbosity() >= 1) {
             $lines = explode(PHP_EOL, $text);
             $text = implode(
                 PHP_EOL,

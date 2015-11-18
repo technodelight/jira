@@ -34,7 +34,7 @@ class GitHelper extends ShellCommandHelper
     public function commitMessages()
     {
         // $parent = show-branch -a | sed 's/^ *//g' | grep -v "^\*" | head -1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
-        $parentCommit = implode(PHP_EOL, $this->shell('show-branch -a'));
+        $parentCommit = implode(PHP_EOL, $this->shell('show-branch -a 2> /dev/null'));
         if (preg_match('~\[([^\]]+)\]~', $parentCommit, $matches)) {
             return $this->shell('log ' . $matches[1] . '..head --format=%s --no-merges');
         }

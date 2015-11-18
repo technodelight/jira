@@ -26,27 +26,30 @@
 + create `hub` tool helper class, which could return open PRs associated with an issue
 + worklog command should be interactive by default, remove `-i` option
 + default to parsed issueKey from git branch for every command where an `issueKey` is required
-- fix todo list to be non-verbose (somehow it went verbose and shows more than 2 lines of `description`)
-- when picking from `Open` status, show generated branch name for starting on a task more easily
++ fix todo list to be non-verbose (somehow it went verbose and shows more than 2 lines of `description`)
++ when transitioning, show generated branch name for starting on a task quicker
+- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors
 - ability to add worklog to given day
-- reduce build size and time: rework build process to exclude non-php/tests files from vendor
 - refactor time spent summary collector logic to it's own class
+- render worklog link after added to the issue, probably list every link per worklog in the worklog history renderer
+- reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
+- change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `qa-ready="Ready to QA"`)
+  It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
+- add `--groupby=<field>` for issue lists
+- add `show` command to render a given issue, regardless of it's state
+- `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop, would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
+- parse remote branches for tasks, modify branchname generator to base on remotes first
+- make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
 - add proper error handling if no configuration found
 - add `init` command, which guides the user throughout the initial/per project setup
-- add `--groupby=<field>` for in progress issues (might be cool to have it for todo as well?)
-- add `--status=<issueType>` for `todo` command (which defaults to `Open` currently). One can list `Dev to check` issues if wants to review code
-? idea: possibly change `todo` command to `issue-list` command, where `status` argument defaults to `Open` ?
-- add `show` command to render a given issue, regardless of it's state
-? idea: worklog issue autocomplete based on this weeks time summary details, desc ordered by missing time
-? idea: edit worklog details (`jira log PROJ-321 --edit` for interactive worklog edit)
-? idea: add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
-- render colors from jira description/comments `{color:red}something{/color}`
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
+- render colors from jira description/comments `{color:red}something{/color}`
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
-x idea: refactor helpers to benefit from symfony built-in helper solutions, therefore it will be available through `getHelper`
 - refactor commands to extract business logic into separate action classes
-- refactor to use service container
+- refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
+- refactor to use `symfony/config` to load configuration files as allows more flexibility
 - add progress bar to in progress issues (original estimate vs time spent)
+- show last update time per issue using `php-time-ago`
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 
 ```
@@ -54,12 +57,18 @@ x idea: refactor helpers to benefit from symfony built-in helper solutions, ther
     project=PROJ1
     project=PROJ2
 ```
+# Ideas:
 
-? idea: create a jql query builder for assembling various queries?
-x preconfigure PR message for `hub` with issue id + summary + commit messages differing from develop (`git log develop..head --format=%s --no-merges`)
+- idea: edit worklog details (`jira log PROJ-321 --edit` which should be interactive)
+- idea: add a walker-like implementation for iterating through search results (https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php)
+- idea: worklog issue autocomplete based on this weeks time summary details, desc ordered by missing time
+- idea: create a jql query builder for assembling various queries?
 
 # Resources
 - https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
 - https://docs.atlassian.com/jira/REST/latest/
 - https://hub.github.com/
 - https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php
+- https://github.com/sirprize/queried
+- https://github.com/secondtruth/php-phar-compiler
+- http://symfony.com/doc/current/components/dependency_injection/introduction.html
