@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Jira\Template\Template;
 use Technodelight\Jira\Template\WorklogRenderer;
+use Technodelight\Simplate;
 use UnexpectedValueException;
 
 class LogTimeCommand extends AbstractCommand
