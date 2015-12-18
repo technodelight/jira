@@ -2,16 +2,26 @@
 
 namespace Technodelight\Jira\Api;
 
+use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
+
 class Api
 {
+    const FIELDS_ALL = '*all';
+    const CURRENT_USER = 'currentUser()';
+
     /**
      * @var Client
      */
     private $client;
+    /**
+     * @var SearchQueryBuilder
+     */
+    private $queryBuilder;
 
-    public function __construct(Client $client)
+    public function __construct(Client $client, SearchQueryBuilder $queryBuilder)
     {
         $this->client = $client;
+        $this->queryBuilder = $queryBuilder;
     }
 
     /**
@@ -124,16 +134,13 @@ class Api
      *
      * @return array
      */
-    public function retrieveIssuesHavingWorklogsForUser($from = 'startOfWeek()', $to = null, $user = null)
+    public function retrieveIssuesHavingWorklogsForUser($from, $to, $user = null)
     {
-        return $this->search(
-            sprintf(
-                'worklogDate >= %s %sAND worklogAuthor = %s',
-                $from,
-                $to ? 'AND worklogDate <= ' . $to . ' ' : '',
-                $user ?: 'currentUser()'
-            )
-        );
+        $this->queryBuilder->resetActiveConditions();
+        $this->queryBuilder->worklogAuthor($user ?: self::CURRENT_USER);
+        $this->queryBuilder->worklogDate($from, $to);
+
+        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
     }
 
     /**
@@ -144,28 +151,43 @@ class Api
      */
     public function inprogressIssues($projectCode, $all = false)
     {
-        $query = sprintf(
-            'project = "%s"%s and status = "In Progress"',
-            $projectCode,
-            $all ? '' : ' and assignee = currentUser()'
-        );
-        return $this->search($query, '*all');
+        $this->queryBuilder->resetActiveConditions();
+        $this->queryBuilder->project($projectCode);
+        $this->queryBuilder->status('In Progress');
+        if (!$all) {
+            $this->queryBuilder->assignee(self::CURRENT_USER);
+        }
+
+        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
     }
 
-    /**
-     * @param string $projectCode
-     * @param array|null $issueTypes
-     *
-     * @return IssueCollection
-     */
-    public function todoIssues($projectCode, array $issueTypes = [])
+    // /**
+    //  * @param string $projectCode
+    //  * @param array|null $issueTypes
+    //  *
+    //  * @return IssueCollection
+    //  */
+    // public function todoIssues($projectCode, array $issueTypes = [])
+    // {
+    //     $issueTypeFilter = empty($issueTypes) ? ['Defect', 'Bug', 'Technical Sub-Task'] : $issueTypes;
+    //     $query = sprintf(
+    //         'project = "%s" and status = "Open" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
+    //         $projectCode,
+    //         implode('", "', $issueTypeFilter)
+    //     );
+    //     return $this->search($query);
+    // }
+
+    public function filterIssuesByStatusAndType($projectCode, $status, array $issueTypes = [])
     {
         $issueTypeFilter = empty($issueTypes) ? ['Defect', 'Bug', 'Technical Sub-Task'] : $issueTypes;
         $query = sprintf(
-            'project = "%s" and status = "Open" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
+            'project = "%s" and status = "%s" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
             $projectCode,
+            $status,
             implode('", "', $issueTypeFilter)
         );
+
         return $this->search($query);
     }
 
@@ -212,7 +234,7 @@ class Api
      *
      * @return IssueCollection
      */
-    private function search($jql, $fields = null)
+    public function search($jql, $fields = null)
     {
         return IssueCollection::fromSearchArray($this->client->search($jql, $fields));
     }

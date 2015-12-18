@@ -29,14 +29,15 @@
 + fix todo list to be non-verbose (somehow it went verbose and shows more than 2 lines of `description`)
 + when transitioning, show generated branch name for starting on a task quicker
 + refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
+- change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `qa-ready="Ready to QA"`)
+  It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
 - add `show` command to render a given issue, regardless of it's state
-- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors
+- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors, OR introduce `groupby` first
 - ability to add worklog to given day
 - refactor time spent summary collector logic to it's own class
 - render worklog link after added to the issue, probably list every link per worklog in the worklog history renderer
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
-- change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `qa-ready="Ready to QA"`)
-  It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
+  collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev`
 - add `--groupby=<field>` for issue lists
 - `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
   would be helpful for the worklog message -> *will working only if you're on the correct feature branch*

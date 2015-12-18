@@ -10,9 +10,11 @@
         "guzzlehttp/guzzle": "5.3",
         "technodelight/simplate": "dev-master",
         "symfony/config": "^2.7",
-        "symfony/dependency-injection": "^2.7"
+        "symfony/dependency-injection": "^2.7",
+        "sirprize/queried": "^0.1.0"
     },
     "require-dev": {
+        "phpspec/phpspec": "^2.4"
     },
     "authors": [
         {
@@ -27,5 +29,8 @@
         }
     ],
     "autoload": {"psr-0": {"Technodelight": "src"}},
+    "config": {
+      "bin-dir": "bin"
+    },
     "bin": ["bin/jira"]
 }

@@ -58,7 +58,7 @@ class TodoCommand extends AbstractCommand
                 $issueFilter = array_merge($issueFilter, $types);
             }
         }
-        $issues = $this->getService('technodelight.jira.api')->todoIssues($project, $issueFilter);
+        $issues = $this->getService('technodelight.jira.api')->filterIssuesByStatusAndType($project, 'Open', $issueFilter);
 
         if (count($issues) == 0) {
             $output->writeln(sprintf('No tickets available to pick up on project %s.', $project));

@@ -41,7 +41,7 @@ class DashboardCommand extends AbstractCommand
         $to = $this->defineTo($date, $input->getOption('week'));
 
         $jira = $this->getService('technodelight.jira.api');
-        $issues = $jira->retrieveIssuesHavingWorklogsForUser('"' . $from . '"', '"' . $to . '"');
+        $issues = $jira->retrieveIssuesHavingWorklogsForUser($from, $to);
         $user = $jira->user();
 
         if (count($issues) == 0) {
