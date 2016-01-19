@@ -7,18 +7,24 @@ use Technodelight\Jira\Api\SearchQuery\Condition;
 
 class Builder
 {
+    const ORDER_ASC = 'ASC';
+    const ORDER_DESC = 'DESC';
+
     /**
      * @var BaseQuery
      */
     private $baseQuery;
 
     private $defaultConditions = [
-        'project' => 'project = :project',
-        'status' => 'status = :status',
-        'issueKey' => 'issueKey = :issueKey',
-        'worklogDate' => 'worklogDate >= :from AND worklogDate <= :to',
-        'worklogAuthor' => 'worklogAuthor = :worklogAuthor',
-        'assignee' => 'assignee = :assignee',
+        'project' => [Condition::OPERATOR_AND, 'project = :project'],
+        'status' => [Condition::OPERATOR_AND, 'status = :status'],
+        'issueKey' => [Condition::OPERATOR_AND, 'issueKey in (:issueKeys)'],
+        'issueType' => [Condition::OPERATOR_AND, 'issueType in (:issueTypes)'],
+        'worklogDate' => [Condition::OPERATOR_AND, 'worklogDate >= :from AND worklogDate <= :to'],
+        'worklogAuthor' => [Condition::OPERATOR_AND, 'worklogAuthor = :worklogAuthor'],
+        'assignee' => [Condition::OPERATOR_AND, 'assignee = :assignee'],
+        'sprint' => [Condition::OPERATOR_AND, 'Sprint in :sprint'],
+        'orderBy' => [Condition::OPERATOR_ORDER_BY, ':field :orientation'],
     ];
 
     public function __construct(BaseQuery $baseQuery)
@@ -29,8 +35,8 @@ class Builder
 
     private function registerDefaultConditions()
     {
-        foreach ($this->defaultConditions as $name => $clause) {
-            $this->registerCondition($name, $clause);
+        foreach ($this->defaultConditions as $name => $def) {
+            $this->registerCondition($name, $def);
         }
     }
 
@@ -39,12 +45,13 @@ class Builder
         return new self(new BaseQuery);
     }
 
-    public function registerCondition($name, $clause)
+    public function registerCondition($name, array $def)
     {
+        list ($operator, $clause) = $def;
         $paramsList = $this->parseParamsListFromClause($clause);
         $this->baseQuery->registerCondition(
             $name,
-            $this->createCondition($clause, $paramsList)
+            $this->createCondition($clause, $operator, $paramsList)
         );
     }
 
@@ -65,9 +72,30 @@ class Builder
         $this->baseQuery->activateCondition('project', ['project' => $project]);
     }
 
+    public function issueKey($issueKey)
+    {
+        if (!is_array($issueKey)) {
+            $issueKey = [$issueKey];
+        }
+        $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join(',', $issueKey)]);
+    }
+
+    public function issueType($issueType)
+    {
+        if (!is_array($issueType)) {
+            $issueType = [$issueType];
+        }
+        $this->baseQuery->activateCondition('issueType', ['issueTypes' => join(',', $issueType)]);
+    }
+
     public function status($status)
     {
         $this->baseQuery->activateCondition('status', ['status' => $status]);
+    }
+
+    public function sprint($sprint)
+    {
+        $this->baseQuery->activateCondition('sprint', ['sprint' => $sprint]);
     }
 
     public function worklogDate($from, $to)
@@ -78,11 +106,6 @@ class Builder
         );
     }
 
-    public function worklogDateTo($worklogDateTo)
-    {
-        $this->baseQuery->activateCondition('worklogDateTo', ['worklogDateTo' => $worklogDateTo]);
-    }
-
     public function worklogAuthor($worklogAuthor)
     {
         $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => $worklogAuthor]);
@@ -91,6 +114,16 @@ class Builder
     public function assignee($assignee)
     {
         $this->baseQuery->activateCondition('assignee', ['assignee' => $assignee]);
+    }
+
+    public function orderAsc($field)
+    {
+        $this->baseQuery->activateCondition('orderBy', ['field' => $field, 'orientation' => self::ORDER_ASC]);
+    }
+
+    public function orderDesc($field)
+    {
+        $this->baseQuery->activateCondition('orderBy', ['field' => $field, 'orientation' => self::ORDER_DESC]);
     }
 
     public function assemble()
@@ -111,10 +144,11 @@ class Builder
         );
     }
 
-    private function createCondition($clause, array $params = [])
+    private function createCondition($clause, $operator, array $params = [])
     {
         $condition = new Condition();
         $condition->setClause($clause);
+        $condition->operator($operator);
         if ($params) {
             $condition->setParams(array_combine($params, $params));
         }

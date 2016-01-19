@@ -8,6 +8,7 @@ class Api
 {
     const FIELDS_ALL = '*all';
     const CURRENT_USER = 'currentUser()';
+    const SPRINT_OPEN_SPRINTS = 'openSprints()';
 
     /**
      * @var Client
@@ -17,6 +18,8 @@ class Api
      * @var SearchQueryBuilder
      */
     private $queryBuilder;
+
+    private $defaultIssueTypeFilter = ['Defect', 'Bug', 'Technical Sub-Task'];
 
     public function __construct(Client $client, SearchQueryBuilder $queryBuilder)
     {
@@ -180,15 +183,14 @@ class Api
 
     public function filterIssuesByStatusAndType($projectCode, $status, array $issueTypes = [])
     {
-        $issueTypeFilter = empty($issueTypes) ? ['Defect', 'Bug', 'Technical Sub-Task'] : $issueTypes;
-        $query = sprintf(
-            'project = "%s" and status = "%s" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
-            $projectCode,
-            $status,
-            implode('", "', $issueTypeFilter)
-        );
+        $this->queryBuilder->resetActiveConditions();
+        $this->queryBuilder->project($projectCode);
+        $this->queryBuilder->status($status);
+        $this->queryBuilder->sprint(self::SPRINT_OPEN_SPRINTS);
+        $this->queryBuilder->issueType($issueTypes ?: $this->defaultIssueTypeFilter);
+        $this->queryBuilder->orderDesc('priority');
 
-        return $this->search($query);
+        return $this->search($this->queryBuilder->assemble());
     }
 
     /**

@@ -8,6 +8,8 @@ use Sirprize\Queried\Condition\Tokenizer;
 class Condition extends BaseCondition
 {
     const OPERATOR_AND = 'AND';
+    const OPERATOR_OR = 'OR';
+    const OPERATOR_ORDER_BY = 'ORDER BY';
 
     /**
      * Condition operator, ie. AND, OR, IS, LIKE, ~ etc.
