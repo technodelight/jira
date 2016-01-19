@@ -30,21 +30,14 @@ class LogTimeCommand extends AbstractCommand
                 'Time you spent with the issue, like \'1h\''
             )
             ->addArgument(
-                'remaining',
-                InputArgument::OPTIONAL,
-                "Set remaining estimate to the value you specify, like '1h'. Issue will have this new remaining estimate when you use this argument."
-            )
-            ->addOption(
-                'leave-remaining',
-                'l',
-                InputOption::VALUE_NONE,
-                'Skip updating remaining time. If you specified the remaining time this option is ineffective.'
-            )
-            ->addOption(
                 'comment',
-                'c',
-                InputOption::VALUE_REQUIRED,
+                InputArgument::OPTIONAL,
                 'Add comment to worklog'
+            )
+            ->addArgument(
+                'date',
+                InputArgument::OPTIONAL,
+                'Day to put your log to, like \'yesterday 12:00\' or \'Y-m-d\''
             )
         ;
     }
@@ -94,26 +87,6 @@ class LogTimeCommand extends AbstractCommand
             $input->setArgument('time', $timeSpent);
         }
 
-        // if (!$input->getArgument('remaining')) {
-        //     $remaining = $dialog->askAndValidate(
-        //         $output,
-        //         PHP_EOL . "Do you want to update remaining time?" . PHP_EOL
-        //         . "If yes, just enter the required time left, or leave it blank to skip." . PHP_EOL,
-        //         function ($answer) {
-        //             if (!empty($answer) && !preg_match('~[0-9hmd ]~', $answer)) {
-        //                 throw new \RuntimeException(
-        //                     "It's not possible to log '$answer' as time, as it's not matching the allowed format."
-        //                 );
-        //             }
-
-        //             return $answer;
-        //         },
-        //         false,
-        //         false
-        //     );
-        //     $input->setArgument('remaining', $remaining);
-        // }
-
         // if (!$input->getOption('comment')) {
         //     $commitMessages = $this->retrieveGitCommitMessages();
         //     if (!empty($commitMessages)) {
@@ -137,26 +110,34 @@ class LogTimeCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $input->getArgument('issueKey');
-        $timeSpent = $input->getArgument('time');
-        $remaining = $input->getArgument('remaining');
-        $app = $this->getApplication();
         $jira = $this->getService('technodelight.jira.api');
         $dateHelper = $this->getService('technodelight.jira.date_helper');
 
+        $issueKey = $input->getArgument('issueKey');
+        $timeSpent = $input->getArgument('time');
+        $comment = $input->getArgument('comment') ?: sprintf('Worked on issue %s', $issueKey);
+        $startDay = $input->getArgument('date') ?: 'today';
+
         if (!$issueKey || !$timeSpent) {
-            return $output->writeln('<error>You need to specify the issue and time arguments</error>');
+            return $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
         }
 
-        $this->log($input);
+        $jira->worklog(
+            $issueKey,
+            $timeSpent,
+            $comment,
+            $this->startDayToJiraFormat($startDay)
+        );
 
         $issue = $jira->retrieveIssue($issueKey);
-        $template = Simplate::fromFile($app->directory('views') . '/Commands/logtime.template');
+        $template = Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/logtime.template');
         $worklogs = $jira->retrieveIssueWorklogs($issueKey);
 
         $currentWorklogDetails = [
-            'issueKey' => $issueKey,
+            'issueKey' => $issue->issueKey(),
+            'issueUrl' => $issue->url(),
             'logged' => $timeSpent,
+            'startDay' => date('Y-m-d H:i:s', strtotime($startDay)),
             'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
             'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
             'worklogs' => $this->renderWorklogs($worklogs),
@@ -165,32 +146,6 @@ class LogTimeCommand extends AbstractCommand
         $output->writeln(
             $this->deDoubleNewlineize($template->render($currentWorklogDetails))
         );
-    }
-
-    private function log(InputInterface $input)
-    {
-        $jira = $this->getService('technodelight.jira.api');
-        $issueKey = $input->getArgument('issueKey');
-        $timeSpent = $input->getArgument('time');
-        $remaining = $input->getArgument('remaining');
-        $comment = $input->getOption('comment') ?: sprintf('Worked on issue %s', $issueKey);
-
-        if ($remaining) {
-            $res = $jira->worklog(
-                $issueKey,
-                $timeSpent,
-                $comment,
-                'new',
-                $remaining
-            );
-        } else {
-            $res = $jira->worklog(
-                $issueKey,
-                $timeSpent,
-                $comment,
-                $input->getOption('leave-remaining') ? 'leave' : 'auto'
-            );
-        }
     }
 
     private function renderWorklogs($worklogs)
@@ -218,5 +173,14 @@ class LogTimeCommand extends AbstractCommand
     private function deDoubleNewlineize($string)
     {
         return str_replace(PHP_EOL . PHP_EOL, PHP_EOL, $string);
+    }
+
+    private function startDayToJiraFormat($datetimeString)
+    {
+        $date = new \DateTime($datetimeString);
+        if ($date->format('H:i:s') == '00:00:00') {
+            $date->setTime(12, 0, 0);
+        }
+        return $date->format('Y-m-d\TH:i:s.000O');
     }
 }

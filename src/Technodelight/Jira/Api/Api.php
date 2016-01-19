@@ -61,7 +61,7 @@ class Api
      * @param string $newEstimate if adjustEstimate is 'new' this arg should be provided
      *
      */
-    public function worklog($issueKey, $timeSpent, $comment, $adjustEstimate = 'auto', $newEstimate = null)
+    public function worklog($issueKey, $timeSpent, $comment, $started, $adjustEstimate = 'auto', $newEstimate = null)
     {
         $params = ['adjustEstimate' => $adjustEstimate];
         if ($newEstimate) {
@@ -72,7 +72,7 @@ class Api
             sprintf('issue/%s/worklog', $issueKey) . '?' . http_build_query($params),
             [
                 'comment' => $comment,
-                'started' => date('Y-m-d\TH:i:s.000O'),
+                'started' => $started,
                 'timeSpent' => $timeSpent,
             ]
         );
