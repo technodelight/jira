@@ -31,6 +31,8 @@
 + refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
 + ability to add worklog to given day
 - fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
+- reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
+  collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
 - improve branch name generator to shorten feature branch name
 - change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `toqa="Ready to QA"`)
   It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
@@ -38,8 +40,6 @@
 - add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors, OR introduce `groupby` first
 - refactor time spent summary collector logic to it's own class
 - render worklog link after added to the issue, probably list every link per worklog in the worklog history renderer
-- reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
-  collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
 - add `--groupby=<field>` for issue lists
 - `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
   would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
