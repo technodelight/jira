@@ -164,23 +164,6 @@ class Api
         return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
     }
 
-    // /**
-    //  * @param string $projectCode
-    //  * @param array|null $issueTypes
-    //  *
-    //  * @return IssueCollection
-    //  */
-    // public function todoIssues($projectCode, array $issueTypes = [])
-    // {
-    //     $issueTypeFilter = empty($issueTypes) ? ['Defect', 'Bug', 'Technical Sub-Task'] : $issueTypes;
-    //     $query = sprintf(
-    //         'project = "%s" and status = "Open" and Sprint in openSprints() and issuetype in ("%s") ORDER BY priority DESC',
-    //         $projectCode,
-    //         implode('", "', $issueTypeFilter)
-    //     );
-    //     return $this->search($query);
-    // }
-
     public function filterIssuesByStatusAndType($projectCode, $status, array $issueTypes = [])
     {
         $this->queryBuilder->resetActiveConditions();

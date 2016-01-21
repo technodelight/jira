@@ -7,9 +7,6 @@ use Technodelight\Jira\Api\SearchQuery\Condition;
 
 class Builder
 {
-    const ORDER_ASC = 'ASC';
-    const ORDER_DESC = 'DESC';
-
     /**
      * @var BaseQuery
      */
@@ -24,7 +21,8 @@ class Builder
         'worklogAuthor' => [Condition::OPERATOR_AND, 'worklogAuthor = :worklogAuthor'],
         'assignee' => [Condition::OPERATOR_AND, 'assignee = :assignee'],
         'sprint' => [Condition::OPERATOR_AND, 'Sprint in :sprint'],
-        'orderBy' => [Condition::OPERATOR_ORDER_BY, ':field :orientation'],
+        'orderByDesc' => [Condition::OPERATOR_ORDER_BY, ':field DESC'],
+        'orderByAsc' => [Condition::OPERATOR_ORDER_BY, ':field ASC'],
     ];
 
     public function __construct(BaseQuery $baseQuery)
@@ -77,7 +75,7 @@ class Builder
         if (!is_array($issueKey)) {
             $issueKey = [$issueKey];
         }
-        $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join(',', $issueKey)]);
+        $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join('","', $issueKey)]);
     }
 
     public function issueType($issueType)
@@ -85,7 +83,7 @@ class Builder
         if (!is_array($issueType)) {
             $issueType = [$issueType];
         }
-        $this->baseQuery->activateCondition('issueType', ['issueTypes' => join(',', $issueType)]);
+        $this->baseQuery->activateCondition('issueType', ['issueTypes' => join('","', $issueType)]);
     }
 
     public function status($status)
@@ -118,12 +116,12 @@ class Builder
 
     public function orderAsc($field)
     {
-        $this->baseQuery->activateCondition('orderBy', ['field' => $field, 'orientation' => self::ORDER_ASC]);
+        $this->baseQuery->activateCondition('orderByAsc', ['field' => $field]);
     }
 
     public function orderDesc($field)
     {
-        $this->baseQuery->activateCondition('orderBy', ['field' => $field, 'orientation' => self::ORDER_DESC]);
+        $this->baseQuery->activateCondition('orderByDesc', ['field' => $field]);
     }
 
     public function assemble()
