@@ -81,10 +81,11 @@ class DashboardCommand extends AbstractCommand
 
         $output->writeln(
             sprintf(
-                'Total time logged: %s of %s (%d%%)' . PHP_EOL,
+                'Total time logged: %s of %s (%d%%, %s missing)' . PHP_EOL,
                 $dateHelper->secondsToHuman($summary),
                 $input->getOption('week') ? '5d' : '1d',
-                ($summary / $totalTimeInRange) * 100
+                ($summary / $totalTimeInRange) * 100,
+                $dateHelper->secondsToHuman($totalTimeInRange - $summary)
             )
         );
     }

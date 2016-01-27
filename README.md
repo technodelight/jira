@@ -33,6 +33,8 @@
 - fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
   collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
+  Move away from phar-composer?
+- Phar auto update https://github.com/box-project/amend
 - improve branch name generator to shorten feature branch name
 - change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `toqa="Ready to QA"`)
   It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
@@ -79,4 +81,6 @@
 - https://github.com/chobie/jira-api-restclient/blob/master/src/Jira/Issues/Walker.php
 - https://github.com/sirprize/queried
 - https://github.com/secondtruth/php-phar-compiler
+- https://github.com/box-project/box2
+- https://github.com/box-project/amend
 - http://symfony.com/doc/current/components/dependency_injection/introduction.html
