@@ -6,6 +6,8 @@ use DateTime;
 
 class DateHelper
 {
+    const ZERO_SECONDS = 'none';
+
     private $secondsMap = [
         'd' => 27000, // 7h 30m
         'h' => 3600,
@@ -23,7 +25,7 @@ class DateHelper
     public function secondsToHuman($seconds)
     {
         if ($seconds === 0) {
-            return 'none';
+            return self::ZERO_SECONDS;
         }
 
         $human = [];
@@ -38,5 +40,22 @@ class DateHelper
             }
         }
         return implode(' ', $human);
+    }
+
+    public function humanToSeconds($def)
+    {
+        if ($def == self::ZERO_SECONDS) {
+            return 0;
+        }
+
+        $parts = explode(' ', $def);
+        $seconds = 0;
+        foreach ($parts as $part) {
+            $part = trim($part);
+            $unit = substr($part, -1);
+            $number = substr($part, 0, -1);
+            $seconds+= isset($this->secondsMap[$unit]) ? ($number * $this->secondsMap[$unit]) : 0;
+        }
+        return $seconds;
     }
 }

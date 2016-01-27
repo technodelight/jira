@@ -41,6 +41,8 @@ class DashboardCommand extends AbstractCommand
         $to = $this->defineTo($date, $input->getOption('week'));
 
         $jira = $this->getService('technodelight.jira.api');
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
+        $pluralizeHelper = $this->getService('technodelight.jira.pluralize_helper');
         $issues = $jira->retrieveIssuesHavingWorklogsForUser($from, $to);
         $user = $jira->user();
 
@@ -52,6 +54,7 @@ class DashboardCommand extends AbstractCommand
         $worklogs = $jira->retrieveIssuesWorklogs($this->issueKeys($issues));
         $logs = $this->filterLogsByDateAndUser($worklogs, $from, $to, $user['displayName']);
 
+        $totalTimeInRange = $dateHelper->humanToSeconds($input->getOption('week') ? '5d' : '1d');
         $summary = 0;
         foreach ($logs as $log) {
             $summary+= $log->timeSpentSeconds();
@@ -61,31 +64,27 @@ class DashboardCommand extends AbstractCommand
             sprintf(
                 'You have been working on %d %s %s' . PHP_EOL,
                 count($issues),
-                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues)),
+                $pluralizeHelper->pluralize('issue', count($issues)),
                 $from == $to ? "on $from" : "from $from to $to"
             )
         );
 
+        $progress = $this->createProgressbar($output, $totalTimeInRange);
+        $progress->setProgress($summary);
+        $progress->display();
+        $output->writeln('');
         if ($input->getOption('week')) {
-            $progress = $this->createProgressbar($output, 27000 * 5);
-            $progress->setProgress($summary);
-            $progress->display();
-            $output->writeln('');
-
             $this->renderWeek($output, $logs);
         } else {
-            $progress = $this->createProgressbar($output, 27000);
-            $progress->setProgress($summary);
-            $progress->display();
-            $output->writeln('');
-
             $this->renderDay($output, $logs);
         }
 
         $output->writeln(
             sprintf(
-                'Total time logged: %s' . PHP_EOL,
-                $this->getService('technodelight.jira.date_helper')->secondsToHuman($summary)
+                'Total time logged: %s of %s (%d%%)' . PHP_EOL,
+                $dateHelper->secondsToHuman($summary),
+                $input->getOption('week') ? '5d' : '1d',
+                ($summary / $totalTimeInRange) * 100
             )
         );
     }
