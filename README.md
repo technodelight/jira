@@ -30,34 +30,37 @@
 + when transitioning, show generated branch name for starting on a task quicker
 + refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
 + ability to add worklog to given day
-- fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
-- reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
-  collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
-  Move away from phar-composer?
-- Phar auto update https://github.com/box-project/amend
-- improve branch name generator to shorten feature branch name
-- change `todo` command to `list-issues` command, should be configurable like the transitions (`todo=Open`, `toqa="Ready to QA"`)
-  It would be better to have a query associated to a task, `todo="sprint in openSprints()..."` https://github.com/sirprize/queried to assemble where parts
-- add `show` command to render a given issue, regardless of it's state
-- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors, OR introduce `groupby` first
-- refactor time spent summary collector logic to it's own class
-- render worklog link after added to the issue, probably list every link per worklog in the worklog history renderer
-- add `--groupby=<field>` for issue lists
+- parse remote branches for tasks, modify branchname generator to base on remotes first
 - `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
   would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
   But, may be better to retrieve branch name using the git helper instead of using `head`
   TODO: find Parent branch, find feature branch and use ie. `log <...> develop..feature/PROJ-321-something`
-- parse remote branches for tasks, modify branchname generator to base on remotes first
+- add `--asignee` and `--unassign` option to the `IssueTransition` command, default assignee to `currentUser()`
+- fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
+- Phar auto update https://github.com/box-project/amend
+- add `show` command to render a given issue, regardless of it's state
+- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
+  merge with existing dashboard logic around percentages and remaining time, display other user logs only on verbosity=verbose
+- refactor to use `symfony/config` to load configuration files as allows more flexibility
+- change `todo` command to `list-issues` command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
+- add `--groupby=<field>` for issue lists
+- reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
+  collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
+  Move away from phar-composer?
+- refactor time spent summary collector logic to it's own class
+- render worklog id/link after added to the issue, probably list every link per worklog in the worklog history renderer
+- improve branch name generator to shorten feature branch name
 - make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
 - add proper error handling if no configuration found, trigger `init` command
 - add `init` command, which guides the user throughout the initial/per project setup
 - aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
-- render/handle colors from jira description/comments `{color:red}something{/color}`
+  create `issueKeyResolver` to handle this config
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
+  for autocomplete, introduce issueKeyAwareCommand interface and add some logic to commands regarding the filters required to return a list of issues
 - refactor commands to extract business logic into separate action classes
-- refactor to use `symfony/config` to load configuration files as allows more flexibility
 - add progress bar to in progress issues (original estimate vs time spent)
 - show last update time per issue using `php-time-ago`
+- render/handle colors from jira description/comments `{color:red}something{/color}`
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 
 ```
@@ -73,6 +76,7 @@
 + idea: create a jql query builder for assembling various queries?
 - idea: possibly create a command, to generate branch name with autocomplete based on split words from issue summary, like `jira branch PROJ-321 add<tab> -> jira branch PROJ-321 additional-`
 - idea: contractor helper command to help generating invoices at the end of month, like total workdays, official holidays, personal holidays, unpaid time?
+- idea: add rescuetime integration to revisit dailiy highlights
 
 # Resources
 - https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html

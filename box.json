@@ -1,0 +1,13 @@
+{
+    "directories": ["src"],
+    "main": "bin/jira",
+    "output": "jira.phar",
+    "finder": [
+        {
+            "name": "*.php",
+            "exclude": ["tests", "spec", "features"],
+            "in": "vendor"
+        }
+    ],
+    "stub": true
+}

@@ -6,8 +6,12 @@ class GitHelper extends ShellCommandHelper
 {
     public function branches($pattern = '')
     {
-        $command = 'branch' . ($pattern ? sprintf('| grep "%s"', $pattern) : '');
-        return $this->shell($command);
+        return array_map(
+            function($row) {
+                return str_replace('remotes/', '', $row);
+            },
+            $this->shell('branch -a ' . ($pattern ? sprintf('| grep "%s"', $pattern) : ''))
+        );
     }
 
     public function currentBranch()
