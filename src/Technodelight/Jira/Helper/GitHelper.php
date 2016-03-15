@@ -4,6 +4,17 @@ namespace Technodelight\Jira\Helper;
 
 class GitHelper extends ShellCommandHelper
 {
+    public function log($pattern)
+    {
+// log
+//      --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate>"
+//      --no-merges
+//      --date-order
+//      --reverse
+//      <parent>..<head sha1>
+
+    }
+
     public function branches($pattern = '')
     {
         return array_map(

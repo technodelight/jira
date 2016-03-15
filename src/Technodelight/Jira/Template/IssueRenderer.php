@@ -150,12 +150,12 @@ class IssueRenderer
                 $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
             );
             foreach ($issueGroup['issues'] as $issue) {
-                $this->output->writeln($this->render($issue));
+                $this->render($issue);
             }
         }
     }
 
-    private function render(Issue $issue, $templateNameOverride = null)
+    public function render(Issue $issue, $templateNameOverride = null)
     {
         if (is_null($templateNameOverride)) {
             $template = $this->getTemplateInstanceForIssue($issue);
@@ -187,12 +187,14 @@ class IssueRenderer
                 'comments' => $this->tabulate($this->renderComments($issue)),
             ]
         );
-        return implode(
+
+        $output = implode(
             PHP_EOL,
             array_filter(
                 array_map('rtrim', explode(PHP_EOL, $content))
             )
         ) . PHP_EOL;
+        $this->output->writeln($output);
     }
 
     private function formatIssueType($issueType)

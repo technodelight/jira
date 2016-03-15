@@ -17,6 +17,7 @@ use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\TodoCommand;
+use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -102,6 +103,7 @@ class Application extends BaseApp
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
+        $commands[] = new ShowCommand($this->container());
 
         $transitions = $this->config()->transitions();
         if (empty($transitions)) {

@@ -30,7 +30,7 @@
 + when transitioning, show generated branch name for starting on a task quicker
 + refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
 + ability to add worklog to given day
-- parse remote branches for tasks, modify branchname generator to base on remotes first
++ parse remote branches for tasks, modify branchname generator to base on remotes first
 - `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
   would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
   But, may be better to retrieve branch name using the git helper instead of using `head`
@@ -42,7 +42,7 @@
 - add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
   merge with existing dashboard logic around percentages and remaining time, display other user logs only on verbosity=verbose
 - refactor to use `symfony/config` to load configuration files as allows more flexibility
-- change `todo` command to `list-issues` command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
+- change `todo` command to `list-issues` (`IssuesFilterCommand`) command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
 - add `--groupby=<field>` for issue lists
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
   collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
@@ -62,12 +62,13 @@
 - show last update time per issue using `php-time-ago`
 - render/handle colors from jira description/comments `{color:red}something{/color}`
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
-
 ```
     [projects]
     project=PROJ1
     project=PROJ2
 ```
+- add a global option to allow specifying configuration file path (`--config /path/to/config.file`)
+
 # Ideas:
 
 - idea: edit worklog details (`jira log PROJ-321 --edit` which should be interactive)
