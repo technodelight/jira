@@ -38,6 +38,11 @@ class Configuration
      */
     private $filters;
 
+    /**
+     * @var array
+     */
+    private $aliases;
+
     protected function __construct(array $ini = [])
     {
         $this->username = $this->setIniField($ini, 'username');
@@ -46,6 +51,7 @@ class Configuration
         $this->project = $this->setIniField($ini, 'project');
         $this->transitions = $this->setIniField($ini, 'transitions');
         $this->filters = $this->setIniField($ini, 'filters');
+        $this->aliases = $this->setIniField($ini, 'aliases');
     }
 
     public static function initFromDirectory($iniFilePath)
@@ -89,6 +95,15 @@ class Configuration
         }
 
         return $this->filters;
+    }
+
+    public function aliases()
+    {
+        if (!is_array($this->aliases)) {
+            $this->aliases = [];
+        }
+
+        return $this->aliases;
     }
 
     public function merge(Configuration $configuration)

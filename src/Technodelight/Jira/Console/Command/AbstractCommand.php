@@ -37,6 +37,16 @@ class AbstractCommand extends Command
         return $project;
     }
 
+    public function issueKeyArgument(InputInterface $input)
+    {
+        $aliases = $this->getService('technodelight.jira.config')->aliases();
+        $issueKey = $input->getArgument('issueKey');
+        if (isset($aliases[$issueKey])) {
+            $issueKey = $aliases[$issueKey];
+        }
+        return $issueKey;
+    }
+
     protected function getService($id)
     {
         return $this->container->get($id);

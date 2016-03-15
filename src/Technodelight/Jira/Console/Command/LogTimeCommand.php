@@ -50,7 +50,7 @@ class LogTimeCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $project = $this->getService('technodelight.jira.config')->project();
 
-        if (!$issueKey = $input->getArgument('issueKey')) {
+        if (!$issueKey = $this->issueKeyArgument($input)) {
             $issues = $this->retrieveInProgressIssues();
             // prepend current branch issue
             if ($currentIssue = $gitHelper->issueKeyFromCurrentBranch()) {
@@ -113,7 +113,7 @@ class LogTimeCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $dateHelper = $this->getService('technodelight.jira.date_helper');
 
-        $issueKey = $input->getArgument('issueKey');
+        $issueKey = $this->issueKeyArgument($input);
         $timeSpent = $input->getArgument('time');
         $comment = $input->getArgument('comment') ?: sprintf('Worked on issue %s', $issueKey);
         $startDay = $input->getArgument('date') ?: 'today';

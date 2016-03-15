@@ -40,7 +40,7 @@ class IssueTransitionCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $input->getArgument('issueKey');
+        $issueKey = $this->issueKeyArgument($input);
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
