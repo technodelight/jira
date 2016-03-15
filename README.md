@@ -38,11 +38,11 @@
 - add `--asignee` and `--unassign` option to the `IssueTransition` command, default assignee to `currentUser()`
 - fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
 - Phar auto update https://github.com/box-project/amend
-- add `show` command to render a given issue, regardless of it's state
++ add `show` command to render a given issue, regardless of it's state
 - add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
   merge with existing dashboard logic around percentages and remaining time, display other user logs only on verbosity=verbose
 - refactor to use `symfony/config` to load configuration files as allows more flexibility
-- change `todo` command to `list-issues` (`IssuesFilterCommand`) command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
++ add `list-issues` (`IssuesFilterCommand`) command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
 - add `--groupby=<field>` for issue lists
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
   collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?

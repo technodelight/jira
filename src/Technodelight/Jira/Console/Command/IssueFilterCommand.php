@@ -1,12 +1,14 @@
 <?php
 
+namespace Technodelight\Jira\Console\Command;
+
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Api;
+use Technodelight\Jira\Api\Api;
 
 class IssueFilterCommand extends AbstractCommand
 {
@@ -31,12 +33,12 @@ class IssueFilterCommand extends AbstractCommand
 
     protected function configure()
     {
-        $this->setDescription($this->descriptionFromName());
+        $this->setDescription($this->descriptionFromJql());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var Technodelight\Api\Api $jira */
+        /** @var Technodelight\Jira\Api\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         /** @var Technodelight\Template\IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
@@ -44,8 +46,10 @@ class IssueFilterCommand extends AbstractCommand
         $renderer->renderIssues($jira->search($this->jql, Api::FIELDS_ALL));
     }
 
-    private function descriptionFromName()
+    private function descriptionFromJql()
     {
-        return ucfirst(strtr($this->name, ['-' => ' ']));
+        return sprintf(
+            'Runs filter: \'%s\'', $this->jql
+        );
     }
 }
