@@ -14,6 +14,7 @@ use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
 use Technodelight\Jira\Console\Command\DashboardCommand;
 use Technodelight\Jira\Console\Command\IssueTransitionCommand;
+use Technodelight\Jira\Console\Command\IssueFilterCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\TodoCommand;
@@ -111,6 +112,10 @@ class Application extends BaseApp
         }
         foreach ($transitions as $alias => $transitionName) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias);
+        }
+        $filters = $this->config()->filters();
+        foreach ($filters as $alias => $jql) {
+            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
         }
 
         return $commands;
