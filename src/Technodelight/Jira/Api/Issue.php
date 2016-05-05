@@ -169,8 +169,10 @@ class Issue
     {
         if ($field = $this->findField('worklog') && empty($this->worklogs)) {
             $logs = $field['worklogs'];
-            foreach ($logs as $logArray) {
-                $this->worklogs[] = Worklog::fromArray($logArray);
+            if (!empty($logs)) {
+                foreach ($logs as $logArray) {
+                    $this->worklogs[] = Worklog::fromArray($logArray);
+                }
             }
         }
 
@@ -203,7 +205,7 @@ class Issue
 
     public static function fromArray($resultArray)
     {
-        return new self($resultArray['id'], $resultArray['self'], $resultArray['key'], $resultArray['fields']);
+        return new self($resultArray['id'], $resultArray['self'], $resultArray['key'], isset($resultArray['fields']) ? $resultArray['fields'] : []);
     }
 
     private function findField($name)

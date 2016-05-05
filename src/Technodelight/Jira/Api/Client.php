@@ -69,10 +69,18 @@ class Client
      *
      * @return array
      */
-    public function search($jql, $fields = null)
+    public function search($jql, $fields = null, $expand = null)
     {
         return $this->httpClient->get(
-            'search' . ($fields ? '?fields=' . $fields : ''),
+            sprintf(
+                'search%s',
+                $fields || $expand ? '?' . http_build_query(
+                    array_filter([
+                        'fields' => $fields,
+                        'expand' => $expand
+                    ])
+                ) : ''
+            ),
             ['query' => ['jql' => $jql]]
         )->json();
     }

@@ -143,7 +143,7 @@ class Api
         $this->queryBuilder->worklogAuthor($user ?: self::CURRENT_USER);
         $this->queryBuilder->worklogDate($from, $to);
 
-        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
+        return $this->search($this->queryBuilder->assemble(), 'issueKey');
     }
 
     /**
@@ -216,11 +216,18 @@ class Api
     /**
      * @param string $jql
      * @param string|null $fields
+     * @param array|null $expand
      *
      * @return IssueCollection
      */
-    public function search($jql, $fields = null)
+    public function search($jql, $fields = null, array $expand = null)
     {
-        return IssueCollection::fromSearchArray($this->client->search($jql, $fields));
+        return IssueCollection::fromSearchArray(
+            $this->client->search(
+                $jql,
+                $fields,
+                !empty($expand) ? join(',', $expand) : null
+            )
+        );
     }
 }

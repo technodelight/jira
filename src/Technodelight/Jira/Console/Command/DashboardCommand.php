@@ -5,11 +5,13 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableStyle;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Api\IssueCollection;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class DashboardCommand extends AbstractCommand
@@ -118,9 +120,29 @@ class DashboardCommand extends AbstractCommand
                 $this->shortenWorklogComment($log->comment())
             );
             $rows[$log->issueKey()][$log->date()] = trim($rows[$log->issueKey()][$log->date()]);
+            if (!isset($rows['Sum'][$log->date()])) {
+                $rows['Sum'][$log->date()] = 0;
+            }
+            $rows['Sum'][$log->date()]+= $log->timeSpentSeconds();
         }
 
+        // sum logged / max seconds
+        $sum = $rows['Sum'];
+        unset($rows['Sum']);
         ksort($rows);
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
+        $aDay = $dateHelper->humanToSeconds('1d');
+        foreach ($sum as $date => $timeSpentSeconds) {
+            if ($aDay == $timeSpentSeconds) {
+                $sum[$date] = '1d';
+            } else {
+                $sum[$date] = $dateHelper->secondsToHuman($timeSpentSeconds);
+            }
+        }
+        ksort($sum);
+        array_unshift($sum, 'Total');
+        $rows[] = new TableSeparator();
+        $rows['Sum'] = $sum;
 
         // use the style for this table
         $table = new Table($output);
