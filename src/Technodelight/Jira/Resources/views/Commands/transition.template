@@ -5,4 +5,4 @@ Possible transitions:
 {{ end_depends }}
 <comment>link:</comment> {{ url }}
 {{ depends $success }}<comment>branches:</comment>
-{{ branches }}{{ end_depends }}
+    {{ branches }}{{ end_depends }}
