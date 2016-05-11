@@ -39,6 +39,11 @@ class Client
         return $this->httpClient->post($url, ['json' => $data])->json();
     }
 
+    public function put($url, $data = [])
+    {
+        return $this->httpClient->put($url, ['json' => $data])->json();
+    }
+
     public function get($url)
     {
         return $this->httpClient->get($url)->json();

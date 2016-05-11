@@ -29,6 +29,7 @@ class ShowCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
 
+        $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
         $renderer = $this->getService('technodelight.jira.issue_renderer');
         $renderer->setOutput($output);
         $renderer->render($issue);

@@ -21,6 +21,8 @@ class Api
 
     private $defaultIssueTypeFilter = ['Defect', 'Bug', 'Technical Sub-Task'];
 
+    private $myself;
+
     public function __construct(Client $client, SearchQueryBuilder $queryBuilder)
     {
         $this->client = $client;
@@ -32,7 +34,10 @@ class Api
      */
     public function user()
     {
-        return $this->client->get('myself');
+        if (!$this->myself) {
+            $this->myself = $this->client->get('myself');
+        }
+        return $this->myself;
     }
 
     /**
@@ -188,6 +193,17 @@ class Api
     }
 
     /**
+     * @param  string $issueKey
+     * @param  array  $data
+     *
+     * @return array
+     */
+    public function updateIssue($issueKey, array $data)
+    {
+        return $this->client->put(sprintf('issue/%s', $issueKey), $data);
+    }
+
+    /**
      * @param string $issueKey
      *
      * @return array
@@ -209,7 +225,9 @@ class Api
         return $this->client
             ->post(
                 sprintf('issue/%s/transitions', $issueKey),
-                ['transition' => ['id' => $transitionId]]
+                [
+                    'transition' => ['id' => $transitionId]
+                ]
             );
     }
 

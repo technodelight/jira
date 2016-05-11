@@ -35,6 +35,12 @@ class IssueTransitionCommand extends AbstractCommand
                 InputArgument::REQUIRED,
                 'Issue key (ie. PROJ-123)'
             )
+            ->addOption(
+                'assignee',
+                'a',
+                InputOption::VALUE_NONE,
+                'change assignee to you'
+            )
         ;
     }
 
@@ -48,6 +54,10 @@ class IssueTransitionCommand extends AbstractCommand
         try {
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
             $jira->performIssueTransition($issueKey, $transition['id']);
+            if ($input->getOption('assignee')) {
+                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()['name']]]]);
+                $issue = $jira->retrieveIssue($issueKey);
+            }
 
             $output->writeln(
                 sprintf(

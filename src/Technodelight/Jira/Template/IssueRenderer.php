@@ -287,7 +287,7 @@ class IssueRenderer
 
     private function retrieveGitBranches(Issue $issue)
     {
-        if ($this->output->getVerbosity() == 1) {
+        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             return [];
         }
 
@@ -301,7 +301,7 @@ class IssueRenderer
 
     private function retrieveHubIssues(Issue $issue)
     {
-        if ($this->output->getVerbosity() == 1) {
+        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             return [];
         }
         if (!isset($this->hubCache)) {
@@ -322,7 +322,7 @@ class IssueRenderer
 
     private function shorten($text, $maxLines = 2)
     {
-        if ($this->output->getVerbosity() >= 1) {
+        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             $lines = explode(PHP_EOL, $text);
             $text = implode(
                 PHP_EOL,
