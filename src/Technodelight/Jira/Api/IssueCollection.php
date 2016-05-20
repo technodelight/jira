@@ -58,4 +58,13 @@ class IssueCollection implements Iterator, Countable
         $item = current($this->issues);
         return $item !== false;
     }
+
+    public function find($issueKey)
+    {
+        foreach ($this as $issue) {
+            if ($issue->issueKey() == $issueKey) {
+                return $issue;
+            }
+        }
+    }
 }

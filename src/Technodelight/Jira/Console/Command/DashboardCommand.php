@@ -155,6 +155,7 @@ class DashboardCommand extends AbstractCommand
     private function renderDay(OutputInterface $output, array $logs)
     {
         $dateHelper = $this->getService('technodelight.jira.date_helper');
+        $templateHelper = $this->getService('technodelight.jira.template_helper');
 
         $rows = [];
         $totalTimes = [];
@@ -169,13 +170,28 @@ class DashboardCommand extends AbstractCommand
             }
             $rows[$log->issueKey()][] = ['comment' => $log->comment(), 'timeSpent' => $log->timeSpent()];
         }
+
+        $jira = $this->getService('technodelight.jira.api');
+        $issues = $jira->retrieveIssues(array_keys($rows));
+
         $output->writeln('');
         foreach ($rows as $issueKey => $records) {
-            if (count($records) > 1) {
-                $output->writeln(sprintf('<info>%s</info>: (%s)', $issueKey, $dateHelper->secondsToHuman($totalTimes[$issueKey])));
-            } else {
-                $output->writeln(sprintf('<info>%s</info>:', $issueKey));
+            $issue = $issues->find($issueKey);
+            // parent issue
+            $parentInfo = '';
+            if ($parent = $issue->parent()) {
+                $parentInfo = sprintf('<bg=yellow>[%s %s]</>', $parent->issueKey(), $parent->summary());
             }
+            // issue header
+            if (count($records) > 1) {
+                $output->writeln(
+                    sprintf('<info>%s</info> %s: (%s) ' . $parentInfo, $issueKey, $issue->summary(), $dateHelper->secondsToHuman($totalTimes[$issueKey]))
+                );
+            } else {
+                $output->writeln(sprintf('<info>%s</info> %s: ' . $parentInfo, $issueKey, $issue->summary()));
+            }
+
+            // logs
             foreach ($records as $record) {
                 $output->writeln(str_repeat(' ', 4) . '<comment>' . $record['timeSpent'] . '</comment>: ' . $record['comment']);
             }

@@ -23,6 +23,8 @@ class Api
 
     private $myself;
 
+    private $retrievedIssues = [];
+
     public function __construct(Client $client, SearchQueryBuilder $queryBuilder)
     {
         $this->client = $client;
@@ -188,8 +190,25 @@ class Api
      */
     public function retrieveIssue($issueKey)
     {
-        $result = $this->client->get(sprintf('issue/%s', $issueKey));
-        return Issue::fromArray($result);
+        if (!isset($this->retrievedIssues[$issueKey])) {
+            $this->retrievedIssues[$issueKey] = Issue::fromArray(
+                $this->client->get(sprintf('issue/%s', $issueKey))
+            );
+        }
+
+        return $this->retrievedIssues[$issueKey];
+    }
+
+    /**
+     * @param  array  $issueKeys
+     *
+     * @return IssueCollection
+     */
+    public function retrieveIssues(array $issueKeys)
+    {
+        $this->queryBuilder->resetActiveConditions();
+        $this->queryBuilder->issueKey($issueKeys);
+        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
     }
 
     /**
