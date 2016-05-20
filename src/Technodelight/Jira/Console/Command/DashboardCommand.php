@@ -83,7 +83,7 @@ class DashboardCommand extends AbstractCommand
 
         $output->writeln(
             sprintf(
-                'Total time logged: %s of %s (%d%%, %s missing)' . PHP_EOL,
+                'Total time logged: %s of %s (%0.2f%%, %s missing)' . PHP_EOL,
                 $dateHelper->secondsToHuman($summary),
                 $input->getOption('week') ? '5d' : '1d',
                 ($summary / $totalTimeInRange) * 100,
@@ -154,19 +154,33 @@ class DashboardCommand extends AbstractCommand
 
     private function renderDay(OutputInterface $output, array $logs)
     {
-        $rows = array();
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
+
+        $rows = [];
+        $totalTimes = [];
         foreach ($logs as $log) {
-            $rows[] = array(
-                $log->issueKey(),
-                $log->timeSpent(),
-                $this->shortenWorklogComment($log->comment(), 35)
-            );
+            if (!isset($rows[$log->issueKey()])) {
+                $rows[$log->issueKey()] = [];
+            }
+            if (!isset($totalTimes[$log->issueKey()])) {
+                $totalTimes[$log->issueKey()] = $dateHelper->humanToSeconds($log->timeSpent());
+            } else {
+                $totalTimes[$log->issueKey()]+= $dateHelper->humanToSeconds($log->timeSpent());
+            }
+            $rows[$log->issueKey()][] = ['comment' => $log->comment(), 'timeSpent' => $log->timeSpent()];
         }
-        $table = new Table($output);
-        $table
-            ->setHeaders(array('Issue', 'Work log', 'Comment'))
-            ->setRows($this->orderByDate($rows));
-        $table->render($output);
+        $output->writeln('');
+        foreach ($rows as $issueKey => $records) {
+            if (count($records) > 1) {
+                $output->writeln(sprintf('<info>%s</info>: (%s)', $issueKey, $dateHelper->secondsToHuman($totalTimes[$issueKey])));
+            } else {
+                $output->writeln(sprintf('<info>%s</info>:', $issueKey));
+            }
+            foreach ($records as $record) {
+                $output->writeln(str_repeat(' ', 4) . '<comment>' . $record['timeSpent'] . '</comment>: ' . $record['comment']);
+            }
+        }
+        $output->writeln('');
     }
 
     private function createProgressbar(OutputInterface $output, $steps)
