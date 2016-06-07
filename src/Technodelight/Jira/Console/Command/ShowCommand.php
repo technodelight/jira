@@ -17,10 +17,22 @@ class ShowCommand extends AbstractCommand
             ->setDescription('Show an issue')
             ->addArgument(
                 'issueKey',
-                InputArgument::REQUIRED,
-                'Issue key (ie. PROJ-123)'
+                InputArgument::OPTIONAL,
+                'Issue key (ie. PROJ-123), defaults to current issue, taken from branch name'
             )
         ;
+    }
+
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        $git = $this->getService('technodelight.jira.git_helper');
+        if (!$this->issueKeyArgument($input)) {
+            $issueKey = $git->issueKeyFromCurrentBranch();
+            if (empty($issueKey)) {
+                throw new \InvalidArgumentException('Cannot retrieve issue key from current branch');
+            }
+            $input->setArgument('issueKey', $issueKey);
+        }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

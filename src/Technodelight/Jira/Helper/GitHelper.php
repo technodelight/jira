@@ -4,15 +4,24 @@ namespace Technodelight\Jira\Helper;
 
 class GitHelper extends ShellCommandHelper
 {
-    public function log($pattern)
+    public function log($from, $to = 'head')
     {
-// log
-//      --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate>"
-//      --no-merges
-//      --date-order
-//      --reverse
-//      <parent>..<head sha1>
-
+        $logs = $this->shell(
+            'log'
+            . ' --format="<entry><hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate></entry>"'
+            . ' --no-merges'
+            . ' --date-order'
+            . ' --reverse'
+            . sprintf(' %s..%s', $from, $to)
+        );
+        $xml = simplexml_load_string(
+            sprintf('<root>%s</root>', implode('', $logs)),
+            null,
+            LIBXML_NOCDATA
+        );
+        $entries = $this->xml2array($xml);
+        $entries['entry'] = (array) $entries['entry'];
+        return $entries;
     }
 
     public function createBranch($branchName)
@@ -41,9 +50,17 @@ class GitHelper extends ShellCommandHelper
         return ltrim(end($list), '* ');
     }
 
+    public function parentBranch()
+    {
+        $parent = $this->shell(
+            'show-branch -a 2> /dev/null | sed "s/^ *//g" | grep -v "^\*" | head -1 | sed "s/.*\[\(.*\)\].*/\1/" | sed "s/[\^~].*//"'
+        );
+        return trim(end($parent));
+    }
+
     public function issueKeyFromCurrentBranch()
     {
-        if (preg_match('~^feature/([A-Z]+[0-9]+)-(.*)~', $this->currentBranch(), $matches)) {
+        if (preg_match('~^feature/([A-Z]+-[0-9]+)-(.*)~', $this->currentBranch(), $matches)) {
             return $matches[1];
         }
 
@@ -58,10 +75,13 @@ class GitHelper extends ShellCommandHelper
 
     public function commitMessages()
     {
-        // $parent = show-branch -a | sed 's/^ *//g' | grep -v "^\*" | head -1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
-        $parentCommit = implode(PHP_EOL, $this->shell('show-branch -a 2> /dev/null'));
-        if (preg_match('~\[([^\]]+)\]~', $parentCommit, $matches)) {
-            return $this->shell('log ' . $matches[1] . '..head --format=%s --no-merges');
+        if ($parent = $this->parentBranch()) {
+            return array_map(
+                function($entry) {
+                    return $entry['message'];
+                },
+                $this->log($parent)['entry']
+            );
         }
 
         return [];
@@ -75,5 +95,14 @@ class GitHelper extends ShellCommandHelper
     protected function getExecutable()
     {
         return '/usr/bin/env git';
+    }
+
+    private function xml2array($xmlObject, $out = [])
+    {
+        foreach ((array) $xmlObject as $index => $node) {
+            $out[$index] = (is_object($node) || is_array($node)) ? $this->xml2array($node) : (string) $node;
+        }
+
+        return $out;
     }
 }
