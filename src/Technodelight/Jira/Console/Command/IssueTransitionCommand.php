@@ -6,6 +6,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
@@ -41,6 +43,12 @@ class IssueTransitionCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'change assignee to you'
             )
+            ->addOption(
+                'branch',
+                'b',
+                InputOption::VALUE_NONE,
+                'generate/choose branch'
+            )
         ;
     }
 
@@ -50,6 +58,7 @@ class IssueTransitionCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
+        $git = $this->getService('technodelight.jira.git_helper');
 
         try {
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
@@ -74,6 +83,27 @@ class IssueTransitionCommand extends AbstractCommand
             $success = false;
         }
 
+        if ($input->getOption('branch')) {
+            $branches = $this->gitBranchesForIssue($issue);
+            if (empty($branches)) {
+                $branchName = $this->generateBranchName($issue);
+                $output->writeln('Checking out to new branch: ' . $branchName);
+                $git->createBranch($branchName);
+            } else {
+                $helper = $this->getHelper('question');
+                $question = new ChoiceQuestion(
+                    'Select branch to checkout to',
+                    $branches,
+                    0
+                );
+                $question->setErrorMessage('Branch %s is invalid.');
+
+                $branchName = $helper->ask($input, $output, $question);
+                $output->writeln('Checking out to: ' . $branchName);
+                $git->switchBranch($branchName);
+            }
+        }
+
         $output->writeln(
             Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/transition.template')->render(
                 [
@@ -84,9 +114,7 @@ class IssueTransitionCommand extends AbstractCommand
                     'status' => $issue->status(),
                     'asignee' => $issue->assignee(),
                     'url' => $issue->url(),
-                    'branches' => $this->getService('technodelight.jira.template_helper')->tabulate(
-                        $this->retrieveGitBranches($issue)
-                    ),
+                    'branches' => $this->getService('technodelight.jira.template_helper')->tabulate($this->retrieveGitBranches($issue)),
                 ]
             )
         );
@@ -115,12 +143,22 @@ class IssueTransitionCommand extends AbstractCommand
         );
     }
 
+    private function gitBranchesForIssue(Issue $issue)
+    {
+        return $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber());
+    }
+
+    private function generateBranchName(Issue $issue)
+    {
+        return $this->getService('technodelight.jira.git_branchname_generator')->fromIssue($issue);
+    }
+
     private function retrieveGitBranches(Issue $issue)
     {
-        $branches = $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber());
+        $branches = $this->gitBranchesForIssue($issue);
         if (empty($branches)) {
             $branches = [
-                $this->getService('technodelight.jira.git_branchname_generator')->fromIssue($issue) . ' (generated)'
+                $this->generateBranchName($issue) . ' (generated)'
             ];
         }
 

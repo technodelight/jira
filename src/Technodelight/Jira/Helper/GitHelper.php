@@ -15,6 +15,16 @@ class GitHelper extends ShellCommandHelper
 
     }
 
+    public function createBranch($branchName)
+    {
+        $this->shell(sprintf('checkout -b %s', $branchName));
+    }
+
+    public function switchBranch($branchName)
+    {
+        $this->shell(sprintf('checkout %s', $branchName));
+    }
+
     public function branches($pattern = '')
     {
         return array_map(
