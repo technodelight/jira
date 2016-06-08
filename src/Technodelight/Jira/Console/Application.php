@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+
 use Technodelight\Jira\Api\Api as JiraApi;
 use Technodelight\Jira\Api\Client as JiraClient;
 use Technodelight\Jira\Configuration\Configuration;
@@ -19,6 +20,7 @@ use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
+use Technodelight\Jira\Console\Command\SearchCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -117,6 +119,7 @@ class Application extends BaseApp
         foreach ($filters as $alias => $jql) {
             $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
         }
+        $commands[] = new SearchCommand($this->container());
 
         return $commands;
     }
