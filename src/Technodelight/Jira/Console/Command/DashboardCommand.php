@@ -83,11 +83,11 @@ class DashboardCommand extends AbstractCommand
 
         $output->writeln(
             sprintf(
-                'Total time logged: %s of %s (%0.2f%%, %s missing)' . PHP_EOL,
+                'Total time logged: %s of %s (%0.2f%%, %s)' . PHP_EOL,
                 $dateHelper->secondsToHuman($summary),
                 $input->getOption('week') ? '5d' : '1d',
                 ($summary / $totalTimeInRange) * 100,
-                $dateHelper->secondsToHuman($totalTimeInRange - $summary)
+                $this->missingTimeText($totalTimeInRange - $summary)
             )
         );
     }
@@ -282,5 +282,20 @@ class DashboardCommand extends AbstractCommand
     {
         $wrapped = explode(PHP_EOL, wordwrap($text, $length));
         return array_shift($wrapped) . (count($wrapped) >= 1 ? '..' : '');
+    }
+
+    private function missingTimeText($missingTime)
+    {
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
+        if ($missingTime >= 0) {
+            return sprintf(
+                '%s missing',
+                $dateHelper->secondsToHuman($missingTime)
+            );
+        }
+        return sprintf(
+            '<bg=red>%s overtime</>',
+            $dateHelper->secondsToHuman(abs($missingTime));
+        );
     }
 }
