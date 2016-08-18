@@ -295,7 +295,7 @@ class DashboardCommand extends AbstractCommand
         }
         return sprintf(
             '<bg=red>%s overtime</>',
-            $dateHelper->secondsToHuman(abs($missingTime));
+            $dateHelper->secondsToHuman(abs($missingTime))
         );
     }
 }
