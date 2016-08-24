@@ -44,6 +44,14 @@ class AbstractCommand extends Command
         if (isset($aliases[$issueKey])) {
             $issueKey = $aliases[$issueKey];
         }
+        if (empty($issueKey)) {
+            $git = $this->getService('technodelight.jira.git_helper');
+            $issueKey = $git->issueKeyFromCurrentBranch();
+            if (empty($issueKey)) {
+                throw new \InvalidArgumentException('Cannot retrieve issue key from current branch nor from command line argument');
+            }
+        }
+
         return $issueKey;
     }
 

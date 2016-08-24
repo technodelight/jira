@@ -34,14 +34,20 @@ class IssueTransitionCommand extends AbstractCommand
             ->setDescription($this->transitionName)
             ->addArgument(
                 'issueKey',
-                InputArgument::REQUIRED,
+                InputArgument::OPTIONAL,
                 'Issue key (ie. PROJ-123)'
             )
             ->addOption(
-                'assignee',
+                'assign',
                 'a',
                 InputOption::VALUE_NONE,
                 'change assignee to you'
+            )
+            ->addOption(
+                'unassign',
+                'u',
+                InputOption::VALUE_NONE,
+                'unassign issue'
             )
             ->addOption(
                 'branch',
@@ -63,8 +69,12 @@ class IssueTransitionCommand extends AbstractCommand
         try {
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
             $jira->performIssueTransition($issueKey, $transition['id']);
-            if ($input->getOption('assignee')) {
+            if ($input->getOption('assign')) {
                 $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()['name']]]]);
+                $issue = $jira->retrieveIssue($issueKey);
+            } else
+            if ($input->getOption('unassign')) {
+                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
                 $issue = $jira->retrieveIssue($issueKey);
             }
 

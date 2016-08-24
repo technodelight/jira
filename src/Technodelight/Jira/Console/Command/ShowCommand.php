@@ -23,18 +23,6 @@ class ShowCommand extends AbstractCommand
         ;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        $git = $this->getService('technodelight.jira.git_helper');
-        if (!$this->issueKeyArgument($input)) {
-            $issueKey = $git->issueKeyFromCurrentBranch();
-            if (empty($issueKey)) {
-                throw new \InvalidArgumentException('Cannot retrieve issue key from current branch');
-            }
-            $input->setArgument('issueKey', $issueKey);
-        }
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input);
