@@ -20,6 +20,8 @@ use \UnexpectedValueException;
 
 class IssueTransitionCommand extends AbstractCommand
 {
+    const TRANSITION_DESCRIPTION = 'Move issue to %s';
+
     private $transitionName;
 
     /**
@@ -29,19 +31,19 @@ class IssueTransitionCommand extends AbstractCommand
      */
     public function __construct(ContainerBuilder $container, $name, $transitionName)
     {
-        parent::__construct($container, $name);
         if (empty($transitionName)) {
             throw new UnexpectedValueException(
                 sprintf('Undefined transition: "%s"', $name)
             );
         }
         $this->transitionName = $transitionName;
+        parent::__construct($container, $name);
     }
 
     protected function configure()
     {
         $this
-            ->setDescription($this->transitionName)
+            ->setDescription(sprintf(self::TRANSITION_DESCRIPTION, $this->transitionName))
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,
