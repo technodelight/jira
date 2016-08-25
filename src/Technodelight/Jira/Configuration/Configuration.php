@@ -31,27 +31,49 @@ class Configuration
     /**
      * @var array
      */
-    private $transitions;
-
-    /**
-     * @var array
-     */
-    private $filters;
-
-    /**
-     * @var array
-     */
     private $aliases;
+
+    /**
+     * @var array
+     */
+    private $transitions = [
+        'pick' => 'Picked up by dev',
+    ];
+
+    /**
+     * @var array
+     */
+    private $filters = [
+        'todo' => 'project = {{ project }} and status = Open',
+    ];
+
+    /**
+     * @var array
+     */
+    private $issueTypeGroups = [
+        'bugs' => ['Defect', 'Bug'],
+        'tasks' => ['Technical Sub-Task', 'Story'],
+        'stories' => ['Story'],
+    ];
 
     protected function __construct(array $ini = [])
     {
-        $this->username = $this->setIniField($ini, 'username');
-        $this->password = $this->setIniField($ini, 'password');
-        $this->domain = $this->setIniField($ini, 'domain');
-        $this->project = $this->setIniField($ini, 'project');
-        $this->transitions = $this->setIniField($ini, 'transitions');
-        $this->filters = $this->setIniField($ini, 'filters');
-        $this->aliases = $this->setIniField($ini, 'aliases');
+        $this->username = $this->parseIniField($ini, 'username');
+        $this->password = $this->parseIniField($ini, 'password');
+        $this->domain = $this->parseIniField($ini, 'domain');
+        $this->project = $this->parseIniField($ini, 'project');
+        $this->transitions = $this->parseIniField($ini, 'transitions');
+        $this->aliases = $this->parseIniField($ini, 'aliases');
+
+        if ($transitions = $this->parseIniField($ini, 'transitions')) {
+            $this->transitions = $transitions + $this->transitions;
+        }
+        if ($filters = $this->parseIniField($ini, 'filters')) {
+            $this->filters = $filters + $this->filters;
+        }
+        if ($issueTypeGroups = $this->parseIniField($ini, 'issue-type-groups')) {
+            $this->issueTypeGroups = $issueTypeGroups + $this->issueTypeGroups;
+        }
     }
 
     public static function initFromDirectory($iniFilePath)
@@ -81,19 +103,11 @@ class Configuration
 
     public function transitions()
     {
-        if (!is_array($this->transitions)) {
-            $this->transitions = [];
-        }
-
         return $this->transitions;
     }
 
     public function filters()
     {
-        if (!is_array($this->filters)) {
-            $this->filters = [];
-        }
-
         return $this->filters;
     }
 
@@ -106,6 +120,11 @@ class Configuration
         return $this->aliases;
     }
 
+    public function issueTypeGroups()
+    {
+        return $this->issueTypeGroups;
+    }
+
     public function merge(Configuration $configuration)
     {
         $fields = array_keys(get_object_vars($this));
@@ -116,10 +135,17 @@ class Configuration
         }
     }
 
-    protected function setIniField(array $ini, $field)
+    protected function parseIniField(array $ini, $field)
     {
         if (!empty($ini[$field])) {
-            return $ini[$field];
+            if (is_array($ini[$field])) {
+                foreach ($ini[$field] as $subField => $value) {
+                    $ini[$field][$subField] = $this->parseIniField($ini[$field], $subField);
+                }
+                return $ini[$field];
+            }
+
+            return json_decode($ini[$field], true) ?: $ini[$field];
         }
     }
 

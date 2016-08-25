@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
@@ -20,16 +20,26 @@ use \UnexpectedValueException;
 
 class IssueTransitionCommand extends AbstractCommand
 {
-    protected function configure()
+    private $transitionName;
+
+    /**
+     * Constructor.
+     *
+     * @throws LogicException When the command name is empty
+     */
+    public function __construct(ContainerBuilder $container, $name, $transitionName)
     {
-        $transitions = $this->getService('technodelight.jira.config')->transitions();
-        if (!isset($transitions[$this->getName()])) {
+        parent::__construct($container, $name);
+        if (empty($transitionName)) {
             throw new UnexpectedValueException(
-                sprintf('Undefined transition: "%s"', $this->getName())
+                sprintf('Undefined transition: "%s"', $name)
             );
         }
-        $this->transitionName = $transitions[$this->getName()];
+        $this->transitionName = $transitionName;
+    }
 
+    protected function configure()
+    {
         $this
             ->setDescription($this->transitionName)
             ->addArgument(

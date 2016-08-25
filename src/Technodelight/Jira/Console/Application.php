@@ -102,22 +102,18 @@ class Application extends BaseApp
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
-        $commands[] = new TodoCommand($this->container());
+        // $commands[] = new TodoCommand($this->container());
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
         $commands[] = new ShowCommand($this->container());
 
-        $transitions = $this->config()->transitions();
-        if (empty($transitions)) {
-            $transitions = ['pick' => 'Picked up by dev'];
-        }
-        foreach ($transitions as $alias => $transitionName) {
-            $commands[] = new IssueTransitionCommand($this->container(), $alias);
+        foreach ($this->config()->transitions() as $alias => $transitionName) {
+            $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitionName);
         }
         $filters = $this->config()->filters();
         foreach ($filters as $alias => $jql) {
-            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
+            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql, $this->config()->issueTypeGroups());
         }
         $commands[] = new SearchCommand($this->container());
 
