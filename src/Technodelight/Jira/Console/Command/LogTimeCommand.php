@@ -52,14 +52,9 @@ class LogTimeCommand extends AbstractCommand
 
         if (!$issueKey = $this->issueKeyArgument($input)) {
             $issues = $this->retrieveInProgressIssues();
-            // prepend current branch issue
-            if ($currentIssue = $gitHelper->issueKeyFromCurrentBranch()) {
-                array_unshift($issues, $currentIssue);
-            }
-
             $index = $dialog->select(
                 $output,
-                PHP_EOL . 'Choose an issue to log time to',
+                PHP_EOL . '<comment>Choose an issue to log time to:</>',
                 $issues,
                 0
             );
@@ -70,9 +65,9 @@ class LogTimeCommand extends AbstractCommand
         if (!$input->getArgument('time')) {
             $timeSpent = $dialog->askAndValidate(
                 $output,
-                PHP_EOL . 'Please enter the time you want to log: ',
+                PHP_EOL . '<comment>Please enter the time you want to log against <info>' . $issueKey .'</info>:</> ',
                 function ($answer) {
-                    if (!preg_match('~[0-9hmd.]~', $answer)) {
+                    if (!preg_match('~^[0-9hmd.]+$~', $answer)) {
                         throw new \RuntimeException(
                             "It's not possible to log '$answer' as time, as it's not matching the allowed format."
                         );
@@ -87,25 +82,25 @@ class LogTimeCommand extends AbstractCommand
             $input->setArgument('time', $timeSpent);
         }
 
-        if (!$input->getOption('comment')) {
-            $commitMessages = $this->retrieveGitCommitMessages();
-            if (!empty($commitMessages)) {
-                $commitMessagesSummary = PHP_EOL . 'What you have done so far: (based on your git commit messages):' . PHP_EOL
-                    . $templateHelper->tabulate(wordwrap($this->retrieveGitCommitMessages())) . PHP_EOL;
-            } else {
-                $commitMessagesSummary = PHP_EOL;
+        if (!$input->getArgument('comment')) {
+
+            if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
+                $commitMessagesSummary = PHP_EOL . '<comment>What you have done so far: (based on your git commit messages):</>' . PHP_EOL
+                    . str_repeat(' ', 2) . $templateHelper->tabulate(wordwrap($commitMessages), 2) . PHP_EOL . PHP_EOL;
             }
+
             $comment = $dialog->ask(
                 $output,
-                PHP_EOL . "Do you want to add a comment on your work log?" . PHP_EOL
-                . "If you leave it empty, the comment will be 'Worked on issue $issueKey'" . PHP_EOL
-                . $commitMessagesSummary,
+                PHP_EOL . "<comment>Do you want to add a comment on your work log?</>" . PHP_EOL
+                . $commitMessagesSummary
+                . "If you leave the comment empty, the description will still be set to the default 'Worked on issue $issueKey' message" . PHP_EOL
+                . PHP_EOL
+                . '<comment>Comment:</> ',
                 false
             );
 
-            $input->setOption('comment', $comment);
+            $input->setArgument('comment', $comment);
         }
-
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -165,9 +160,23 @@ class LogTimeCommand extends AbstractCommand
         return $issueKeys;
     }
 
-    private function retrieveGitCommitMessages()
+    private function retrieveGitCommitMessages($issueKey)
     {
-        return implode(PHP_EOL, $this->getService('technodelight.jira.git_helper')->commitMessages());
+        $messages = array_filter(
+            $this->getService('technodelight.jira.git_helper')->commitEntries(),
+            function (array $entry) use ($issueKey) {
+                return strpos($entry['message'], $issueKey) !== false;
+            }
+        );
+        return implode(
+            PHP_EOL,
+            array_map(
+                function (array $entry) use ($issueKey) {
+                    return ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', '- ', $entry['message']));
+                },
+                $messages
+            )
+        );
     }
 
     private function deDoubleNewlineize($string)

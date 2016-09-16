@@ -19,8 +19,14 @@ class GitHelper extends ShellCommandHelper
             null,
             LIBXML_NOCDATA
         );
+
         $entries = $this->xml2array($xml);
-        $entries['entry'] = (array) $entries['entry'];
+        if (isset($entries['entry']['message'])) {
+            $entries = array($entries['entry']);
+        } else {
+            $entries = $entries['entry'];
+        }
+
         return $entries;
     }
 
@@ -73,15 +79,10 @@ class GitHelper extends ShellCommandHelper
         return trim(end($tld));
     }
 
-    public function commitMessages()
+    public function commitEntries()
     {
         if ($parent = $this->parentBranch()) {
-            return array_map(
-                function($entry) {
-                    return $entry['message'];
-                },
-                $this->log($parent)['entry']
-            );
+            return $this->log($parent);
         }
 
         return [];
