@@ -72,7 +72,7 @@ class LogTimeCommand extends AbstractCommand
                 $output,
                 PHP_EOL . 'Please enter the time you want to log: ',
                 function ($answer) {
-                    if (!preg_match('~[0-9hmd ]~', $answer)) {
+                    if (!preg_match('~[0-9hmd.]~', $answer)) {
                         throw new \RuntimeException(
                             "It's not possible to log '$answer' as time, as it's not matching the allowed format."
                         );
@@ -87,24 +87,24 @@ class LogTimeCommand extends AbstractCommand
             $input->setArgument('time', $timeSpent);
         }
 
-        // if (!$input->getOption('comment')) {
-        //     $commitMessages = $this->retrieveGitCommitMessages();
-        //     if (!empty($commitMessages)) {
-        //         $commitMessagesSummary = PHP_EOL . 'What you have done so far: (based on your git commit messages):' . PHP_EOL
-        //             . $templateHelper->tabulate(wordwrap($this->retrieveGitCommitMessages())) . PHP_EOL;
-        //     } else {
-        //         $commitMessagesSummary = PHP_EOL;
-        //     }
-        //     $comment = $dialog->ask(
-        //         $output,
-        //         PHP_EOL . "Do you want to add a comment on your work log?" . PHP_EOL
-        //         . "If you leave it empty, the comment will be 'Worked on issue $issueKey'" . PHP_EOL
-        //         . $commitMessagesSummary,
-        //         false
-        //     );
+        if (!$input->getOption('comment')) {
+            $commitMessages = $this->retrieveGitCommitMessages();
+            if (!empty($commitMessages)) {
+                $commitMessagesSummary = PHP_EOL . 'What you have done so far: (based on your git commit messages):' . PHP_EOL
+                    . $templateHelper->tabulate(wordwrap($this->retrieveGitCommitMessages())) . PHP_EOL;
+            } else {
+                $commitMessagesSummary = PHP_EOL;
+            }
+            $comment = $dialog->ask(
+                $output,
+                PHP_EOL . "Do you want to add a comment on your work log?" . PHP_EOL
+                . "If you leave it empty, the comment will be 'Worked on issue $issueKey'" . PHP_EOL
+                . $commitMessagesSummary,
+                false
+            );
 
-        //     $input->setOption('comment', $comment);
-        // }
+            $input->setOption('comment', $comment);
+        }
 
     }
 
