@@ -22,12 +22,12 @@ class GitHelper extends ShellCommandHelper
 
         $entries = $this->xml2array($xml);
         if (isset($entries['entry']['message'])) {
-            $entries = array($entries['entry']);
-        } else {
-            $entries = $entries['entry'];
+            return array($entries['entry']);
+        } elseif (isset($entries['entry'])) {
+            return $entries['entry'];
         }
 
-        return $entries;
+        return [];
     }
 
     public function createBranch($branchName)
