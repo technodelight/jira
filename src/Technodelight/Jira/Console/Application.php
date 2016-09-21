@@ -2,25 +2,25 @@
 
 namespace Technodelight\Jira\Console;
 
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-
 use Technodelight\Jira\Api\Api as JiraApi;
 use Technodelight\Jira\Api\Client as JiraClient;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Configuration\GlobalConfiguration;
+use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
-use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\IssueFilterCommand;
+use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
-use Technodelight\Jira\Console\Command\TodoCommand;
-use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
+use Technodelight\Jira\Console\Command\ShowCommand;
+use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -107,6 +107,7 @@ class Application extends BaseApp
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
         $commands[] = new ShowCommand($this->container());
+        $commands[] = new BrowseIssueCommand($this->container());
 
         foreach ($this->config()->transitions() as $alias => $transitionName) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitionName);
