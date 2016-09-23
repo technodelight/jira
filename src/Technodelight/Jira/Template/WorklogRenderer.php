@@ -35,6 +35,7 @@ class WorklogRenderer
         foreach ($worklogs as $record) {
             $output[] = $template->render(
                 [
+                    'worklogId' => $record->id(),
                     'author' => $record->author(),
                     'timeSpent' => $record->timeSpent(),
                     'date' => $record->date(),

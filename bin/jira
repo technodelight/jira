@@ -8,5 +8,5 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Technodelight\Jira\Console\Application;
 
-$app = new Application('JIRA CLI', '0.1.0');
+$app = new Application('JIRA CLI', '0.2.0');
 $app->run();

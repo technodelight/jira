@@ -6,11 +6,12 @@ use Technodelight\Jira\Helper\DateHelper;
 
 class Worklog
 {
-    private $issueKey, $author, $comment, $date, $timeSpent, $timeSpentSeconds;
+    private $issueKey, $worklogId, $author, $comment, $date, $timeSpent, $timeSpentSeconds;
 
-    private function __construct($issueKey, $author, $comment, $date, $timeSpent, $timeSpentSeconds)
+    private function __construct($issueKey, $worklogId, $author, $comment, $date, $timeSpent, $timeSpentSeconds)
     {
         $this->issueKey = $issueKey;
+        $this->worklogId = $worklogId;
         $this->author = $author;
         $this->comment = $comment;
         $this->date = $date;
@@ -27,6 +28,7 @@ class Worklog
     {
         return new self(
             $issueKey,
+            $record['id'],
             $record['author']['displayName'],
             isset($record['comment']) ? $record['comment'] : null,
             DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d'),
@@ -38,6 +40,11 @@ class Worklog
     public function issueKey()
     {
         return $this->issueKey;
+    }
+
+    public function id()
+    {
+        return $this->worklogId;
     }
 
     public function author()

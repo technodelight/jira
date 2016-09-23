@@ -81,20 +81,24 @@ class IssueTransitionCommand extends AbstractCommand
         try {
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
             $jira->performIssueTransition($issueKey, $transition['id']);
+            $actionString = '';
             if ($input->getOption('assign')) {
                 $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()['name']]]]);
                 $issue = $jira->retrieveIssue($issueKey);
+                $actionString = ' and has been assigned to you';
             } else
             if ($input->getOption('unassign')) {
                 $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
                 $issue = $jira->retrieveIssue($issueKey);
+                $actionString = ' and has been unassigned';
             }
 
             $output->writeln(
                 sprintf(
-                    'Task <info>%s</info> has been successfully moved to <comment>%s</comment>',
+                    'Task <info>%s</info> has been successfully moved to <comment>%s</comment>%s',
                     $issueKey,
-                    $this->transitionName
+                    $this->transitionName,
+                    $actionString
                 )
             );
             $success = true;
@@ -167,7 +171,12 @@ class IssueTransitionCommand extends AbstractCommand
 
     private function gitBranchesForIssue(Issue $issue)
     {
-        return $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber());
+        return array_map(
+            function (array $branchData) {
+                return $branchData['name'];
+            },
+            $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber())
+        );
     }
 
     private function generateBranchName(Issue $issue)

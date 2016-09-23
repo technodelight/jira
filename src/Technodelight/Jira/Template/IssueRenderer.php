@@ -293,10 +293,15 @@ class IssueRenderer
 
         $branches = $this->git->branches($issue->ticketNumber());
         if (empty($branches)) {
-            $branches = [$this->gitBranchnameGenerator->fromIssue($issue) . ' (generated)'];
+            return [$this->gitBranchnameGenerator->fromIssue($issue) . ' (generated)'];
+        } else {
+            return array_map(
+                function(array $branchData) {
+                    return $branchData['name'];
+                },
+                $branches
+            );
         }
-
-        return $branches;
     }
 
     private function retrieveHubIssues(Issue $issue)

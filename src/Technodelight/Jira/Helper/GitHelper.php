@@ -4,6 +4,8 @@ namespace Technodelight\Jira\Helper;
 
 class GitHelper extends ShellCommandHelper
 {
+    private $remotes;
+
     public function log($from, $to = 'head')
     {
         $logs = $this->shell(
@@ -42,9 +44,28 @@ class GitHelper extends ShellCommandHelper
 
     public function branches($pattern = '')
     {
+        $self = $this;
+        $remotes = array_map(function($remote) { return $remote . '/'; }, $this->remotes());
         return array_map(
-            function($row) {
-                return str_replace('remotes/', '', $row);
+            function($branchDef) use ($remotes, $self) {
+                $type = 'checkout';
+                $current = false;
+                $remote = false;
+                if (strpos($branchDef, 'remotes/') !== false) {
+                    $type = 'switch';
+                    $remote = true;
+                }
+                if (strpos($branchDef, '* ') !== false) {
+                    $current = true;
+                }
+                $name = trim(str_replace($remotes, '', str_replace('remotes/', '', $branchDef)), '* ');
+                return [
+                    'name' => $name,
+                    'type' => $type,
+                    'current' => $current,
+                    'remote' => $remote,
+                    'issueKey' => $self->issueKeyFromBranch($name),
+                ];
             },
             $this->shell('branch -a ' . ($pattern ? sprintf('| grep "%s"', $pattern) : ''))
         );
@@ -53,7 +74,11 @@ class GitHelper extends ShellCommandHelper
     public function currentBranch()
     {
         $list = $this->branches('* ');
-        return ltrim(end($list), '* ');
+        foreach ($list as $branch) {
+            if ($branch['current']) {
+                return $branch['name'];
+            }
+        }
     }
 
     public function parentBranch()
@@ -66,7 +91,12 @@ class GitHelper extends ShellCommandHelper
 
     public function issueKeyFromCurrentBranch()
     {
-        if (preg_match('~^feature/([A-Z]+-[0-9]+)-(.*)~', $this->currentBranch(), $matches)) {
+        return $this->issueKeyFromBranch($this->currentBranch());
+    }
+
+    private function issueKeyFromBranch($branchName)
+    {
+        if (preg_match('~^feature/([A-Z]+-[0-9]+)-(.*)~', $branchName, $matches)) {
             return $matches[1];
         }
 
@@ -86,6 +116,17 @@ class GitHelper extends ShellCommandHelper
         }
 
         return [];
+    }
+
+    public function remotes()
+    {
+        if (!$this->remotes) {
+            $this->remotes = array_map(
+                'trim',
+                $this->shell('remote')
+            );
+        }
+        return $this->remotes;
     }
 
     public function getName()

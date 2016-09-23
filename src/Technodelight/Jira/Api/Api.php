@@ -75,7 +75,7 @@ class Api
             $params['newEstimate'] = $newEstimate;
         }
 
-        return $this->client->post(
+        $jiraRecord = $this->client->post(
             sprintf('issue/%s/worklog', $issueKey) . '?' . http_build_query($params),
             [
                 'comment' => $comment,
@@ -83,6 +83,7 @@ class Api
                 'timeSpent' => $timeSpent,
             ]
         );
+        return Worklog::fromArray($jiraRecord, $issueKey);
     }
 
     /**

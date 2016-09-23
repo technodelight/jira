@@ -35,13 +35,6 @@ class ShowCommand extends AbstractCommand
         $renderer->render($issue);
     }
 
-    private function retrieveWorklogs($issues, $limit)
-    {
-        return $this->getService('technodelight.jira.api')->retrieveIssuesWorklogs(
-            $this->issueKeys($issues), $limit
-        );
-    }
-
     private function issueKeys($issues)
     {
         return array_map(

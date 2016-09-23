@@ -168,7 +168,7 @@ class DashboardCommand extends AbstractCommand
             } else {
                 $totalTimes[$log->issueKey()]+= $dateHelper->humanToSeconds($log->timeSpent());
             }
-            $rows[$log->issueKey()][] = ['comment' => $log->comment(), 'timeSpent' => $log->timeSpent()];
+            $rows[$log->issueKey()][] = ['worklogId' => $log->id(), 'comment' => $log->comment(), 'timeSpent' => $log->timeSpent()];
         }
 
         $jira = $this->getService('technodelight.jira.api');
@@ -193,7 +193,14 @@ class DashboardCommand extends AbstractCommand
 
             // logs
             foreach ($records as $record) {
-                $output->writeln(str_repeat(' ', 4) . '<comment>' . $record['timeSpent'] . '</comment>: ' . $record['comment']);
+                $output->writeln(
+                    sprintf(
+                        '    <comment>%s</comment>: %s <fg=black>(%d)</>',
+                        $record['timeSpent'],
+                        $record['comment'],
+                        $record['worklogId']
+                    )
+                );
             }
         }
         $output->writeln('');

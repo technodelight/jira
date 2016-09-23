@@ -117,7 +117,7 @@ class LogTimeCommand extends AbstractCommand
             return $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
         }
 
-        $jira->worklog(
+        $worklog = $jira->worklog(
             $issueKey,
             $timeSpent,
             $comment,
@@ -130,6 +130,7 @@ class LogTimeCommand extends AbstractCommand
 
         $currentWorklogDetails = [
             'issueKey' => $issue->issueKey(),
+            'worklogId' => $worklog->id(),
             'issueUrl' => $issue->url(),
             'logged' => $timeSpent,
             'startDay' => date('Y-m-d H:i:s', strtotime($startDay)),
