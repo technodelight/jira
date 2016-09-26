@@ -58,24 +58,26 @@ Please bear in mind this app is still in development phase and it may contain bu
   But, may be better to retrieve branch name using the git helper instead of using `head`
   TODO: find Parent branch, find feature branch and use ie. `log <...> develop..feature/PROJ-321-something`
 + add `--asignee` and `--unassign` option to the `IssueTransition` command, default assignee to `currentUser()`
-- fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
-- Phar auto update https://github.com/box-project/amend
 + add `show` command to render a given issue, regardless of it's state
 + add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
   merge with existing dashboard logic around percentages and remaining time, display other user logs only on verbosity=verbose
-- refactor to use `symfony/config` to load configuration files as allows more flexibility
++ render worklog id/link after added to the issue, probably list every link per worklog in the worklog history renderer
 + add `list-issues` (`IssuesFilterCommand`) command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
++ make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
++ aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
+- TODO: move the below todo list to github by creating issues
+- show ci-status for PRs when available
+- refactor to use `symfony/config` to load configuration files as allows more flexibility
+- fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
+- Phar auto update https://github.com/box-project/amend
 - add `--groupby=<field>` for issue lists
 - reduce build size and time: rework build process to exclude non-php/tests files from vendor https://github.com/secondtruth/php-phar-compiler
   collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
   Move away from phar-composer?
 - refactor time spent summary collector logic to it's own class
-+ render worklog id/link after added to the issue, probably list every link per worklog in the worklog history renderer
 - improve branch name generator to shorten feature branch name
-+ make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
 - add proper error handling if no configuration found, trigger `init` command
 - add `init` command, which guides the user throughout the initial/per project setup
-+ aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
   create `issueKeyResolver` to handle this config
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
   for autocomplete, introduce issueKeyAwareCommand interface and add some logic to commands regarding the filters required to return a list of issues

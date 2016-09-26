@@ -298,7 +298,7 @@ class IssueRenderer
             return array_unique(
                 array_map(
                     function(array $branchData) {
-                        return $branchData['name'];
+                        return sprintf('%s (%s)', $branchData['name'], $branchData['remote'] ? 'remote' : 'local');
                     },
                     $branches
                 )
