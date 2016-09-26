@@ -52,23 +52,42 @@ class Worklog
         return $this->author;
     }
 
-    public function comment()
+    public function comment($comment = null)
     {
+        if ($comment) {
+            $this->comment = $comment;
+            return $this;
+        }
         return $this->comment;
     }
 
-    public function date()
+    public function date($date = null)
     {
+        if ($date) {
+            $this->date = $date;
+            return $this;
+        }
         return $this->date;
     }
 
-    public function timeSpent()
+    public function timeSpent($timeSpent = null)
     {
+        if ($timeSpent) {
+            $this->timeSpent = $timeSpent;
+            $this->timeSpentSeconds = null;
+            return $this;
+        }
         return $this->timeSpent;
     }
 
     public function timeSpentSeconds()
     {
         return $this->timeSpentSeconds;
+    }
+
+    public function isSame(Worklog $log)
+    {
+        return [$log->timeSpent, $log->comment, $log->date, $log->author()]
+            == [$this->timeSpent, $this->comment, $this->date, $this->author()];
     }
 }

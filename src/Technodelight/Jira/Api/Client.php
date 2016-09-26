@@ -49,6 +49,11 @@ class Client
         return $this->httpClient->get($url)->json();
     }
 
+    public function delete($url)
+    {
+        return $this->httpClient->delete($url)->json();
+    }
+
     public function multiGet(array $urls)
     {
         $requests = [];

@@ -22,7 +22,7 @@ class LogTimeCommand extends AbstractCommand
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,
-                'Issue key, like PROJ-123'
+                'Issue key, like PROJ-123 OR worklog ID'
             )
             ->addArgument(
                 'time',
@@ -38,6 +38,12 @@ class LogTimeCommand extends AbstractCommand
                 'date',
                 InputArgument::OPTIONAL,
                 'Day to put your log to, like \'yesterday 12:00\' or \'Y-m-d\''
+            )
+            ->addOption(
+                'delete',
+                'd',
+                InputOption::VALUE_NONE,
+                'Delete worklog'
             )
         ;
     }
@@ -62,6 +68,15 @@ class LogTimeCommand extends AbstractCommand
             $input->setArgument('issueKey', $issueKey);
         }
 
+        if ($input->getOption('delete')) {
+            return;
+        }
+
+        $worklog = false;
+        if (intval($issueKey) == $issueKey) {
+            $worklog = $jira->retrieveWorklogs([$issueKey])->current();
+        }
+
         if (!$input->getArgument('time')) {
             $timeSpent = $dialog->askAndValidate(
                 $output,
@@ -76,14 +91,14 @@ class LogTimeCommand extends AbstractCommand
                     return $answer;
                 },
                 false,
-                '1d'
+                $worklog ? $worklog->timeSpent() : '1d'
             );
 
             $input->setArgument('time', $timeSpent);
         }
 
         if (!$input->getArgument('comment')) {
-
+            $commitMessagesSummary = '';
             if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
                 $commitMessagesSummary = PHP_EOL . '<comment>What you have done so far: (based on your git commit messages):</>' . PHP_EOL
                     . str_repeat(' ', 2) . $templateHelper->tabulate(wordwrap($commitMessages), 2) . PHP_EOL . PHP_EOL;
@@ -93,8 +108,11 @@ class LogTimeCommand extends AbstractCommand
                 $output,
                 PHP_EOL . "<comment>Do you want to add a comment on your work log?</>" . PHP_EOL
                 . $commitMessagesSummary
-                . "If you leave the comment empty, the description will still be set to the default 'Worked on issue $issueKey' message" . PHP_EOL
-                . PHP_EOL
+                . "If you leave the comment empty, the description will" .
+                    ($worklog
+                        ? "be left as '{$worklog->comment()}'"
+                        : "still be set to the default 'Worked on issue $issueKey' message")
+                . PHP_EOL . PHP_EOL
                 . '<comment>Comment:</> ',
                 false
             );
@@ -109,26 +127,87 @@ class LogTimeCommand extends AbstractCommand
         $dateHelper = $this->getService('technodelight.jira.date_helper');
 
         $issueKey = $this->issueKeyArgument($input);
-        $timeSpent = $input->getArgument('time');
-        $comment = $input->getArgument('comment') ?: sprintf('Worked on issue %s', $issueKey);
-        $startDay = $input->getArgument('date') ?: 'today';
+        $timeSpent = $input->getArgument('time') ?: null;
+        $comment = $input->getArgument('comment') ?: null;
+        $startDay = $input->getArgument('date') ?: null;
 
-        if (!$issueKey || !$timeSpent) {
-            return $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
+        if (intval($issueKey) == $issueKey) {
+            try {
+                if ($input->getOption('delete')) {
+                    $this->deleteWorklog($issueKey);
+                    $output->writeln(
+                        sprintf('<comment>Worklog <info>%d</info> has been deleted successfully</comment>', $issueKey)
+                    );
+                } else {
+                    $this->updateWorklog($issueKey, $timeSpent, $comment, $startDay);
+                    $output->writeln(
+                        sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKey)
+                    );
+                }
+            } catch (\Exception $exc) {
+                $output->writeln(
+                    sprintf('<error>Something bad happened</error>', $issueKey)
+                );
+                $output->writeln(sprintf('<error>%s</error>', $exc->getMessage()));
+            }
+        } else {
+            if (!$timeSpent) {
+                return $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
+            }
+
+            $output->writeln(
+                $this->deDoubleNewlineize(
+                    $template->render($this->logNewWork($issueKey, $timeSpent, $comment, $startDay))
+                )
+            );
+        }
+    }
+
+    private function deleteWorklog($worklogId)
+    {
+        $jira = $this->getService('technodelight.jira.api');
+        $worklog = $jira->retrieveWorklogs([$worklogId])->current();
+        $jira->deleteWorklog($worklog);
+        return true;
+    }
+
+    private function updateWorklog($worklogId, $timeSpent, $comment, $startDay)
+    {
+        $jira = $this->getService('technodelight.jira.api');
+
+        $worklog = $jira->retrieveWorklogs([$worklogId])->current();
+        $updatedWorklog = clone $worklog;
+        if ($timeSpent) {
+            $updatedWorklog->timeSpent($timeSpent);
+        }
+        if ($comment) {
+            $updatedWorklog->comment($comment);
+        }
+        if ($startDay) {
+            $updatedWorklog->date($startDay);
         }
 
+        if (!$worklog->isSame($updatedWorklog)) {
+            $jira->updateWorklog($updatedWorklog);
+            return true;
+        }
+    }
+
+    private function logNewWork($issueKey, $timeSpent, $comment, $startDay)
+    {
+        $jira = $this->getService('technodelight.jira.api');
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
         $worklog = $jira->worklog(
             $issueKey,
             $timeSpent,
-            $comment,
-            $this->startDayToJiraFormat($startDay)
+            $comment ?: sprintf('Worked on issue %s', $issueKey),
+            DateHelper::dateTimeToToJira($startDay ?: 'today')
         );
 
         $issue = $jira->retrieveIssue($issueKey);
         $template = Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/logtime.template');
-        $worklogs = $jira->retrieveIssueWorklogs($issueKey);
 
-        $currentWorklogDetails = [
+        return [
             'issueKey' => $issue->issueKey(),
             'worklogId' => $worklog->id(),
             'issueUrl' => $issue->url(),
@@ -136,12 +215,8 @@ class LogTimeCommand extends AbstractCommand
             'startDay' => date('Y-m-d H:i:s', strtotime($startDay)),
             'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
             'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
-            'worklogs' => $this->renderWorklogs($worklogs),
+            'worklogs' => $this->renderWorklogs($jira->retrieveIssueWorklogs($issueKey)),
         ];
-
-        $output->writeln(
-            $this->deDoubleNewlineize($template->render($currentWorklogDetails))
-        );
     }
 
     private function renderWorklogs($worklogs)
@@ -152,13 +227,12 @@ class LogTimeCommand extends AbstractCommand
     private function retrieveInProgressIssues()
     {
         $project = $this->getService('technodelight.jira.config')->project();
-        $issues = $this->getService('technodelight.jira.api')->inprogressIssues($project, true);
-        $issueKeys = [];
-        foreach ($issues as $issue) {
-            $issueKeys[] = $issue->issueKey();
-        }
-
-        return $issueKeys;
+        return array_map(
+            function (Issue $issue) {
+                return $issue->issueKey();
+            },
+            $this->getService('technodelight.jira.api')->inprogressIssues($project, true)
+        );
     }
 
     private function retrieveGitCommitMessages($issueKey)
@@ -183,14 +257,5 @@ class LogTimeCommand extends AbstractCommand
     private function deDoubleNewlineize($string)
     {
         return str_replace(PHP_EOL . PHP_EOL, PHP_EOL, $string);
-    }
-
-    private function startDayToJiraFormat($datetimeString)
-    {
-        $date = new \DateTime($datetimeString);
-        if ($date->format('H:i:s') == '00:00:00') {
-            $date->setTime(12, 0, 0);
-        }
-        return $date->format('Y-m-d\TH:i:s.000O');
     }
 }

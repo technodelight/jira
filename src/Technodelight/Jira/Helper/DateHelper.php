@@ -22,6 +22,15 @@ class DateHelper
         return DateTime::createFromFormat(DateTime::ISO8601, $dateString);
     }
 
+    public static function dateTimeToToJira($datetime)
+    {
+        $date = ($datetime instanceof \DateTime) ? $datetime : new \DateTime($datetime);
+        if ($date->format('H:i:s') == '00:00:00') {
+            $date->setTime(12, 0, 0);
+        }
+        return $date->format('Y-m-d\TH:i:s.000O');
+    }
+
     public function secondsToHuman($seconds)
     {
         if ($seconds === 0) {

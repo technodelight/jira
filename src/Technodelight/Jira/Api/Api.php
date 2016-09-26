@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Api;
 
 use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Helper\DateHelper;
 
 class Api
 {
@@ -84,6 +85,36 @@ class Api
             ]
         );
         return Worklog::fromArray($jiraRecord, $issueKey);
+    }
+
+    public function retrieveWorklogs(array $worklogIds)
+    {
+        $records = $this->client->post(
+            'worklog/list?expand=properties',
+            ['ids' => $worklogIds]
+        );
+        $logs = [];
+        foreach ($records as $logRecord) {
+            yield Worklog::fromArray($logRecord, $logRecord['issueId']);
+        }
+    }
+
+    public function updateWorklog(Worklog $worklog)
+    {
+        $jiraRecord = $this->client->put(
+            sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey(), $worklog->id()),
+            [
+                'comment' => $worklog->comment(),
+                'started' => DateHelper::dateTimeToToJira($worklog->date()),
+                'timeSpent' => $worklog->timeSpent(),
+            ]
+        );
+        return Worklog::fromArray($jiraRecord, $jiraRecord['issueId']);
+    }
+
+    public function deleteWorklog(Worklog $worklog)
+    {
+        $this->client->delete(sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey(), $worklog->id()));
     }
 
     /**
