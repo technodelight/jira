@@ -1,3 +1,25 @@
+# JIRA in command line
+
+This is a proof-of-concept state command line application which allows you to do JIRA actions and helps your daily workflow.
+In short, what it does:
+- do any kind of transitions for an issue, defined by your custom aliases (`pick="Picked up by Dev"`)
+- create static search queries and recall them by using your custom alias (`to-qa='project = PROJ and status = "QA Approved/Pending Deploy to UAT"'`)
+- search issues on-demand by using `jira search`
+- log work against an issue (`jira log PROJ-123 1h "worklog comment" yesterday`)
+- list your daily/weekly worklog in a nice manner (`jira dashboard` and `jira dashboard -w`)
+- list your / your team's work in progress issues (`jira in-progress` with `-a` to show your team's progress)
+- render issue details in terminal (`jira show` with optional issue ID)
+- open your issue by issue ID in your default browser (`jira browse`)
+And other powerful features such as:
+- guess issue ID from your current GIT branch (works with all the commands where an issue key is required!)
+- list commit messages as hint when you log your time interactively (by typing `jira log` on issue branch)
+- auto-generate branch name from issue summary, auto-checkout to branch (by specifying `-b` option, ie. `jira pick PROJ-123 -b`)
+- change assignee on transition (`-a` to assign it to you, `-u` to unassign)
+- show branches and open pull requests for issue (you need github's `hub` tool available for PR list)
+- refer to issues by aliases (`meeting=GEN-123` where GEN-123 is a general ticket you use for meetings)
+
+Please bear in mind this app is still in development phase and it may contain bugs, however it's pretty stable most of the time.
+
 # TODO:
 
 + extract templating to technodelight/simplate w/ javascript, add `depends`
@@ -31,15 +53,15 @@
 + refactor to use service container (http://symfony.com/doc/current/components/dependency_injection/introduction.html)
 + ability to add worklog to given day
 + parse remote branches for tasks, modify branchname generator to base on remotes first
-- `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
++ `git log --format="<hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message>" develop..head` should show your commits differing from develop,
   would be helpful for the worklog message -> *will working only if you're on the correct feature branch*
   But, may be better to retrieve branch name using the git helper instead of using `head`
   TODO: find Parent branch, find feature branch and use ie. `log <...> develop..feature/PROJ-321-something`
-- add `--asignee` and `--unassign` option to the `IssueTransition` command, default assignee to `currentUser()`
++ add `--asignee` and `--unassign` option to the `IssueTransition` command, default assignee to `currentUser()`
 - fix query builder condition, to pass array and generate value with `join('","')` instead of doing this in the builder model itself
 - Phar auto update https://github.com/box-project/amend
 + add `show` command to render a given issue, regardless of it's state
-- add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
++ add `work` command which shows `yesterday`s work logs (issue: at time: - message) grouped by worklog authors and date
   merge with existing dashboard logic around percentages and remaining time, display other user logs only on verbosity=verbose
 - refactor to use `symfony/config` to load configuration files as allows more flexibility
 + add `list-issues` (`IssuesFilterCommand`) command, should be configurable like the transitions, but with queries `todo="sprint in openSprints()..."`
@@ -48,19 +70,19 @@
   collect paths from packages under `autoload->exclude_*`, use `composer install --no-dev` -------> `.box.json` ?
   Move away from phar-composer?
 - refactor time spent summary collector logic to it's own class
-- render worklog id/link after added to the issue, probably list every link per worklog in the worklog history renderer
++ render worklog id/link after added to the issue, probably list every link per worklog in the worklog history renderer
 - improve branch name generator to shorten feature branch name
-- make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
++ make the default worklog message to the "main" message section parsed from commit messages and render them in the WL comment as unordered list (`- parsed commit message`)
 - add proper error handling if no configuration found, trigger `init` command
 - add `init` command, which guides the user throughout the initial/per project setup
-- aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
++ aliasable tickets configuration (`[issue-aliases]` config section, accepts alias=issueKey configs like 'standup=PROJ-123')
   create `issueKeyResolver` to handle this config
 - add cli autocomplete to commands ie. `jira pick PROJ-<tab` (check if `/transitions` returns the initial state of an issue (ie. `Open`) and filter issues based on this initial state)
   for autocomplete, introduce issueKeyAwareCommand interface and add some logic to commands regarding the filters required to return a list of issues
 - refactor commands to extract business logic into separate action classes
 - add progress bar to in progress issues (original estimate vs time spent)
 - show last update time per issue using `php-time-ago`
-- render/handle colors from jira description/comments `{color:red}something{/color}`
+- render/handle colors from jira description/comments `{color:red}something{color}`
 - handle multiple projects at once, change `project` arguments to receive multiple projects separated by comma
 ```
     [projects]

@@ -295,11 +295,13 @@ class IssueRenderer
         if (empty($branches)) {
             return [$this->gitBranchnameGenerator->fromIssue($issue) . ' (generated)'];
         } else {
-            return array_map(
-                function(array $branchData) {
-                    return $branchData['name'];
-                },
-                $branches
+            return array_unique(
+                array_map(
+                    function(array $branchData) {
+                        return $branchData['name'];
+                    },
+                    $branches
+                )
             );
         }
     }
