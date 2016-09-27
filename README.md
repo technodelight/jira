@@ -10,6 +10,7 @@ In short, what it does:
 - list your / your team's work in progress issues (`jira in-progress` with `-a` to show your team's progress)
 - render issue details in terminal (`jira show` with optional issue ID)
 - open your issue by issue ID in your default browser (`jira browse`)
+
 And other powerful features such as:
 - guess issue ID from your current GIT branch (works with all the commands where an issue key is required!)
 - list commit messages as hint when you log your time interactively (by typing `jira log` on issue branch)
@@ -18,7 +19,7 @@ And other powerful features such as:
 - show branches and open pull requests for issue (you need github's `hub` tool available for PR list)
 - refer to issues by aliases (`meeting=GEN-123` where GEN-123 is a general ticket you use for meetings)
 
-Please bear in mind this app is still in development phase and it may contain bugs, however it's pretty stable most of the time.
+Please bear in mind *this app is still in development phase* and it may contain bugs, although it's pretty much stable most of the time.
 
 # TODO:
 
