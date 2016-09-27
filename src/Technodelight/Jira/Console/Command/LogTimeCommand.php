@@ -73,7 +73,7 @@ class LogTimeCommand extends AbstractCommand
         }
 
         $worklog = false;
-        if (intval($issueKey) == $issueKey) {
+        if (intval($issueKey)) {
             $worklog = $jira->retrieveWorklogs([$issueKey])->current();
         }
 
@@ -131,7 +131,7 @@ class LogTimeCommand extends AbstractCommand
         $comment = $input->getArgument('comment') ?: null;
         $startDay = $input->getArgument('date') ?: null;
 
-        if (intval($issueKey) == $issueKey) {
+        if (intval($issueKey)) {
             try {
                 if ($input->getOption('delete')) {
                     $this->deleteWorklog($issueKey);
@@ -155,6 +155,7 @@ class LogTimeCommand extends AbstractCommand
                 return $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
             }
 
+            $template = Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/logtime.template');
             $output->writeln(
                 $this->deDoubleNewlineize(
                     $template->render($this->logNewWork($issueKey, $timeSpent, $comment, $startDay))
@@ -201,18 +202,17 @@ class LogTimeCommand extends AbstractCommand
             $issueKey,
             $timeSpent,
             $comment ?: sprintf('Worked on issue %s', $issueKey),
-            DateHelper::dateTimeToToJira($startDay ?: 'today')
+            DateHelper::dateTimeToJira($startDay ?: 'today')
         );
 
         $issue = $jira->retrieveIssue($issueKey);
-        $template = Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/logtime.template');
 
         return [
             'issueKey' => $issue->issueKey(),
             'worklogId' => $worklog->id(),
             'issueUrl' => $issue->url(),
             'logged' => $timeSpent,
-            'startDay' => date('Y-m-d H:i:s', strtotime($startDay)),
+            'startDay' => date('Y-m-d H:i:s', strtotime($startDay ?: 'today')),
             'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
             'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
             'worklogs' => $this->renderWorklogs($jira->retrieveIssueWorklogs($issueKey)),

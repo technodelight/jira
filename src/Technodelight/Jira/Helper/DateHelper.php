@@ -22,7 +22,7 @@ class DateHelper
         return DateTime::createFromFormat(DateTime::ISO8601, $dateString);
     }
 
-    public static function dateTimeToToJira($datetime)
+    public static function dateTimeToJira($datetime)
     {
         $date = ($datetime instanceof \DateTime) ? $datetime : new \DateTime($datetime);
         if ($date->format('H:i:s') == '00:00:00') {
