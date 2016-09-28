@@ -21,6 +21,24 @@ And other powerful features such as:
 
 Please bear in mind *this app is still in development phase* and it may contain bugs, although it's pretty much stable most of the time.
 
+# Installation
+1. By downloading latest release
+Check out the releases tab and download the latest `jira.phar`.
+Or, build your own using `phar-composer`:
+```
+phar-composer.phar build technodelight/jira
+```
+Then place it to somewhere, make it executable:
+```
+chmod +x /path/to/downloads/jira.phar
+mv /path/to/downloads/jira.phar /path/to/somewhere/jira
+```
+You just need to add the above path to your bash profile (or simply move it to somewhere which is already in `$PATH`:
+```
+PATH=~/path/to/somewhere:$PATH
+```
+(This step varies across different shells, please refer to the respective manuals)
+
 
 # Resources
 - https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
