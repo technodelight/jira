@@ -105,7 +105,7 @@ class Api
             sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey(), $worklog->id()),
             [
                 'comment' => $worklog->comment(),
-                'started' => DateHelper::dateTimeToToJira($worklog->date()),
+                'started' => DateHelper::dateTimeToJira($worklog->date()),
                 'timeSpent' => $worklog->timeSpent(),
             ]
         );
