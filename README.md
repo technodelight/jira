@@ -25,6 +25,7 @@ Please bear in mind *this app is still in development phase* and it may contain 
 ### 1. Get the phar
 
   a) Check out the github releases tab and download the latest `jira.phar`.
+  
   b) Or, build your own using `phar-composer`:
   ```
   phar-composer.phar build technodelight/jira
