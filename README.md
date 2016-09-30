@@ -1,7 +1,20 @@
 # JIRA in command line
 
-This is a proof-of-concept state command line application which allows you to do JIRA actions and helps your daily workflow.
-In short, what it does:
+This is a command line application _in a proof-of-concept state_ which allows you to do JIRA actions and helps your daily workflow.
+
+For example you could pick a task, develop it, log your time, create a PR and move to tech review stage, everything from command line.
+```
+$> jira to-pick # alias of a static search filter, listing every ticket in "Ready to develop" stage
+$> git checkout develop
+$> jira pick PROJ-123 -ab # transition command, where pick stands for "Picked up by dev", -a assigns the ticket to you and -b creates a git branch generated from the ticket summary
+$> git commit -a # work, add your stuff as time goes
+$> git push origin head; hub pr -b develop # your work is done, create a PR (using github's cli tool)
+$> jira log # guessed from the feature branch name, allows you to interactively log your time, with giving you hints using your previous commits
+$> jira dev-to # transition command, where dev-to stands for "Dev lead to check"
+# loop
+```
+
+Features list, in short:
 - do any kind of transitions for an issue, defined by your custom aliases (`pick="Picked up by Dev"`)
 - create static search queries and recall them by using your custom alias (`to-qa='project = PROJ and status = "QA Approved/Pending Deploy to UAT"'`)
 - search issues on-demand by using `jira search`
