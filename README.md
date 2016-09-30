@@ -18,7 +18,7 @@ Features list, in short:
 - do any kind of transitions for an issue, defined by your custom aliases (`pick="Picked up by Dev"`)
 - create static search queries and recall them by using your custom alias (`to-qa='project = PROJ and status = "QA Approved/Pending Deploy to UAT"'`)
 - search issues on-demand by using `jira search`
-- log work against an issue (`jira log PROJ-123 1h "worklog comment" yesterday`)
+- log new work/edit existing records against an issue (`jira log PROJ-123 1h "worklog comment" yesterday`)
 - list your daily/weekly worklog in a nice manner (`jira dashboard` and `jira dashboard -w`)
 - list your / your team's work in progress issues (`jira in-progress` with `-a` to show your team's progress)
 - render issue details in terminal (`jira show` with optional issue ID)
