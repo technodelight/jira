@@ -1,5 +1,7 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} {{ summary }}
-    {{ depends $assignee != 'Unassigned' }}<comment>assignee:</comment> {{ assignee }} {{ end_depends }}<info>{{ depends $estimate != 'none' }}estimate: {{ estimate }}, {{ end_depends }}spent: {{ spent }}{{ depends $remaining != 'none' && !empty($remaining) }}, remaining: {{ remaining }}{{ end_depends }}</info>
+    {{ depends $assignee != 'Unassigned' }}<comment>assignee:</comment> {{ assignee }} {{ end_depends }}
+        {{ depends !$progress }}<info>{{ end_depends }}{{ depends $estimate != 'none' && !$progress }}estimate: {{ estimate }}, {{ end_depends }}{{ depends !$progress }}spent: {{ spent }}{{ end_depends }}{{ depends $remaining != 'none' && !empty($remaining) && !$progress }}, remaining: {{ remaining }}{{ end_depends }}{{ depends !$progress }}</info>{{ end_depends }}
+    {{ depends !empty($progress) }}{{ progress }}{{ end_depends }}
     {{ depends !empty($description) }}<comment>description:</comment>
         {{ description }}{{ end_depends }}
     <comment>link:</comment> {{ url }}
