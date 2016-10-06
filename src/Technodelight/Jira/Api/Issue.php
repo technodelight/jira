@@ -16,6 +16,13 @@ class Issue
     private $parent;
 
     /**
+     * Subtasks
+     *
+     * @var array
+     */
+    private $subtasks;
+
+    /**
      * Worklogs, if all fields are returned by API
      *
      * @var array
@@ -201,6 +208,19 @@ class Issue
         }
 
         return $this->parent;
+    }
+
+    public function subtasks()
+    {
+        if (($subtasks = $this->findField('subtasks')) && !isset($this->subtasks)) {
+            $this->subtasks = [];
+            foreach ($subtasks as $subtask) {
+                $this->subtasks[] = Issue::fromArray($subtask);
+            }
+            var_dump($this->subtasks);
+        }
+
+        return $this->subtasks ?: [];
     }
 
     public static function fromArray($resultArray)

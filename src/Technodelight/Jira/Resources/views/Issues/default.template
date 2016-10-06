@@ -4,6 +4,9 @@
         {{ description }}{{ end_depends }}
     <comment>link:</comment> {{ url }}
     {{ depends ($verbosity >= 64) }}
+    {{ depends ($verbosity >= 64 && !empty($subTasks)) }}
+    <comment>subtasks:</comment>
+        {{ subTasks }}{{ end_depends }}
     <comment>branches:</comment>
         {{ branches }}
     {{ end_depends }}
