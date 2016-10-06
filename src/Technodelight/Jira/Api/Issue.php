@@ -217,7 +217,6 @@ class Issue
             foreach ($subtasks as $subtask) {
                 $this->subtasks[] = Issue::fromArray($subtask);
             }
-            var_dump($this->subtasks);
         }
 
         return $this->subtasks ?: [];

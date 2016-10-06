@@ -3,10 +3,10 @@
     {{ depends !empty($description) }}<comment>description:</comment>
         {{ description }}{{ end_depends }}
     <comment>link:</comment> {{ url }}
-    {{ depends ($verbosity >= 64) }}
     {{ depends ($verbosity >= 64 && !empty($subTasks)) }}
     <comment>subtasks:</comment>
         {{ subTasks }}{{ end_depends }}
+    {{ depends ($verbosity >= 64) }}
     <comment>branches:</comment>
         {{ branches }}
     {{ end_depends }}
