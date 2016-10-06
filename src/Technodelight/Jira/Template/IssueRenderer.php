@@ -177,6 +177,7 @@ class IssueRenderer
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
+                'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
 
                 'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
                 'hubIssues' => $this->tabulate(implode(PHP_EOL, $this->retrieveHubIssues($issue)), 8),
@@ -208,6 +209,19 @@ class IssueRenderer
     {
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
             return $this->commentRenderer->renderComments($issue->comments());
+        }
+
+        return '';
+    }
+
+    private function renderSubTasks(Issue $issue)
+    {
+        if ($subtasks = $issue->subtasks()) {
+            $rendered = [];
+            foreach ($subtasks as $subtask) {
+                $rendered[] = sprintf('<info>%s</> %s (%s)', $subtask->issueKey(), $subtask->summary(), $subtask->url());
+            }
+            return join(PHP_EOL, $rendered);
         }
 
         return '';
