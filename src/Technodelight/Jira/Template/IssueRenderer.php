@@ -180,6 +180,8 @@ class IssueRenderer
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
+                'reporter' => $issue->reporter(),
+                'parent' => $this->tabulate($this->renderRelatedTask($issue->parent()), 8),
                 'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
 
                 'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
@@ -222,12 +224,17 @@ class IssueRenderer
         if ($subtasks = $issue->subtasks()) {
             $rendered = [];
             foreach ($subtasks as $subtask) {
-                $rendered[] = sprintf('<info>%s</> %s (%s)', $subtask->issueKey(), $subtask->summary(), $subtask->url());
+                $rendered[] = $this->renderRelatedTask($subtask);
             }
             return join(PHP_EOL, $rendered);
         }
 
         return '';
+    }
+
+    private function renderRelatedTask(Issue $related)
+    {
+        return sprintf('<info>%s</> %s (%s)', $related->issueKey(), $related->summary(), $related->url())
     }
 
     private function renderProgress(Issue $issue)

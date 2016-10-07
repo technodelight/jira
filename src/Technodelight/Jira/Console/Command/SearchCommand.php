@@ -2,13 +2,13 @@
 
 namespace Technodelight\Jira\Console\Command;
 
+use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class SearchCommand extends AbstractCommand
 {
@@ -27,12 +27,29 @@ class SearchCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $jql = $input->getArgument('jql');
-        /** @var Technodelight\Jira\Api\Api $jira */
-        $jira = $this->getService('technodelight.jira.api');
-        /** @var Technodelight\Template\IssueRenderer $renderer */
-        $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->setOutput($output);
-        $renderer->renderIssues($jira->search($jql, Api::FIELDS_ALL));
+        try {
+            $jql = $input->getArgument('jql');
+            /** @var Technodelight\Jira\Api\Api $jira */
+            $jira = $this->getService('technodelight.jira.api');
+            $issueCollection = $jira->search($jql, Api::FIELDS_ALL);
+            if (!count($issueCollection)) {
+                throw new \RuntimeException(
+                    sprintf('<error>No issues matching your query</> "%s"', $jql)
+                );
+            }
+
+            /** @var Technodelight\Template\IssueRenderer $renderer */
+            $renderer = $this->getService('technodelight.jira.issue_renderer');
+            $renderer->setOutput($output);
+            $renderer->renderIssues($issueCollection);
+
+        } catch(\Exception $exception) {
+            if ($exception instanceof ClientException) {
+                throw new \InvalidArgumentException(
+                    sprintf('<error>There is an error in your query</> "%s"', $jql)
+                );
+            }
+            throw $exception;
+        }
     }
 }
