@@ -3,6 +3,8 @@
 namespace Technodelight\Jira\Template;
 
 use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\IssueCollection;
@@ -172,6 +174,7 @@ class IssueRenderer
                 'estimate' => $this->secondsToHuman($issue->estimate()),
                 'spent' => $this->secondsToHuman($issue->timeSpent()),
                 'remaining' => $this->secondsToHuman($issue->remainingEstimate()),
+                'progress' => $this->renderProgress($issue),
 
                 'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
                 'environment' => $issue->environment(),
@@ -225,6 +228,36 @@ class IssueRenderer
         }
 
         return '';
+    }
+
+    private function renderProgress(Issue $issue)
+    {
+        if (strtolower($issue->status()) != 'in progress') {
+            return '';
+        }
+
+        $out = new BufferedOutput($this->output->getVerbosity(), true, $this->output->getFormatter());
+        $issueProgress = $issue->progress();
+        $progress = new ProgressBar($out, $issueProgress['total']);
+        $progress->setFormat('        <info>%message%</> %bar% %percent%%');
+        $progress->setBarCharacter('<bg=green> </>');
+        $progress->setEmptyBarCharacter('<bg=white> </>');
+        $progress->setProgressCharacter('<bg=green> </>');
+        $progress->setBarWidth(50);
+        $progress->setProgress($issueProgress['progress']);
+        $estimate = $this->secondsToHuman($issue->estimate());
+        $spent = $this->secondsToHuman($issue->timeSpent());
+        $remaining = $this->secondsToHuman($issue->remainingEstimate());
+        $progress->setMessage(
+            sprintf(
+                '%sspent: %s%s',
+                $estimate != 'none' ? 'estimate: ' . $estimate . ', ' : '',
+                $spent,
+                $remaining != 'none' && !empty($remaining) ? ', remaining: ' . $remaining : ''
+            )
+        );
+        $progress->display();
+        return $out->fetch();
     }
 
     private function issueWorklogs(Issue $issue)
