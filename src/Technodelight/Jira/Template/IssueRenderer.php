@@ -234,7 +234,7 @@ class IssueRenderer
 
     private function renderRelatedTask(Issue $related)
     {
-        return sprintf('<info>%s</> %s (%s)', $related->issueKey(), $related->summary(), $related->url())
+        return sprintf('<info>%s</> %s (%s)', $related->issueKey(), $related->summary(), $related->url());
     }
 
     private function renderProgress(Issue $issue)
