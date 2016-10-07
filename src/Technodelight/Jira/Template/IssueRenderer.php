@@ -21,6 +21,9 @@ use Technodelight\Simplate;
 
 class IssueRenderer
 {
+    const PROGRESS_FORMAT_IN_PROGRESS = '        <info>%message%</> %bar% %percent%%';
+    const PROGRESS_FORMAT_DEFAULT = '        <info>%message%</>';
+
     /**
      * @var GitHelper
      */
@@ -171,9 +174,9 @@ class IssueRenderer
                 'issueType' => $this->formatIssueType($issue->issueType()),
                 'url' => $issue->url(),
                 'summary' => $this->tabulate(wordwrap($issue->summary()), 8),
-                'estimate' => $this->secondsToHuman($issue->estimate()),
-                'spent' => $this->secondsToHuman($issue->timeSpent()),
-                'remaining' => $this->secondsToHuman($issue->remainingEstimate()),
+                // 'estimate' => $this->secondsToHuman($issue->estimate()),
+                // 'spent' => $this->secondsToHuman($issue->timeSpent()),
+                // 'remaining' => $this->secondsToHuman($issue->remainingEstimate()),
                 'progress' => $this->renderProgress($issue),
 
                 'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
@@ -181,7 +184,7 @@ class IssueRenderer
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
                 'reporter' => $issue->reporter(),
-                'parent' => $this->tabulate($this->renderRelatedTask($issue->parent()), 8),
+                'parent' => $this->tabulate($this->renderParentTask($issue), 8),
                 'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
 
                 'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
@@ -219,6 +222,15 @@ class IssueRenderer
         return '';
     }
 
+    private function renderParentTask(Issue $issue)
+    {
+        if ($parent = $issue->parent()) {
+            return $this->renderRelatedTask($parent);
+        }
+
+        return '';
+    }
+
     private function renderSubTasks(Issue $issue)
     {
         if ($subtasks = $issue->subtasks()) {
@@ -240,13 +252,15 @@ class IssueRenderer
     private function renderProgress(Issue $issue)
     {
         if (strtolower($issue->status()) != 'in progress') {
-            return '';
+            $format = self::PROGRESS_FORMAT_DEFAULT;
+        } else {
+            $format = self::PROGRESS_FORMAT_IN_PROGRESS;
         }
 
         $out = new BufferedOutput($this->output->getVerbosity(), true, $this->output->getFormatter());
         $issueProgress = $issue->progress();
         $progress = new ProgressBar($out, $issueProgress['total']);
-        $progress->setFormat('        <info>%message%</> %bar% %percent%%');
+        $progress->setFormat($format);
         $progress->setBarCharacter('<bg=green> </>');
         $progress->setEmptyBarCharacter('<bg=white> </>');
         $progress->setProgressCharacter('<bg=green> </>');
