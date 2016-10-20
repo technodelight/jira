@@ -97,12 +97,6 @@ class IssueRenderer
      */
     private $worklogs = [];
 
-    /**
-     * @var array
-     */
-    private $hubCache;
-
-
     public function __construct(
         Application $app,
         FormatterHelper $formatterHelper,
@@ -379,17 +373,54 @@ class IssueRenderer
         if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             return [];
         }
-        if (!isset($this->hubCache)) {
-            $this->hubCache = $this->hub->issues();
+
+        $issues = $this->hub->issues();
+        $matchingIssues = array_filter($issues, function($hubIssue) use($issue) {
+            return strpos($hubIssue['title'], $issue->issueKey()) === 0;
+        });
+        $prIds = array_map(
+            function ($hubIssue) {
+                return $hubIssue['number'];
+            },
+            $matchingIssues
+        );
+        $statuses = [];
+        foreach ($prIds as $id) {
+            $commits = $this->hub->prCommits($id);
+            $last = end($commits);
+            $combined = $this->hub->statusCombined($last['sha']);
+            $statuses[$id] = [];
+            foreach ($combined['statuses'] as $status) {
+                switch ($status['state']) {
+                    case 'success': $color = 'green'; $mark = '√'; break;
+                    case 'pending': $color = 'yellow'; $mark = '*'; break;
+                    case 'failed': $color = 'red'; $mark = 'X'; break;
+                    default: $color = 'default'; $mark = '?'; break;
+                }
+                $statuses[$id][] = sprintf(
+                    '    <bg=%s;fg=black> %s </> (%s) %s <fg=black>(%s)</>',
+                    $color,
+                    $mark,
+                    $status['context'],
+                    $status['description'],
+                    $status['target_url']
+                );
+            }
         }
 
-        $matchingIssues = array_filter($this->hubCache, function($hubIssue) use($issue) {
-            return strpos($hubIssue['text'], $issue->issueKey()) === 0;
-        });
-
         return array_map(
-            function($hubIssue) {
-                return $hubIssue['link'];
+            function($hubIssue) use ($statuses) {
+                return (join(PHP_EOL, array_filter([
+                    sprintf(
+                        '<fg=yellow>[ %s ]</> #%d %s <fg=green>(%s)</> <fg=black>(%s)</>',
+                        $hubIssue['state'] == 'open' ? ' open ' : 'closed',
+                        $hubIssue['number'],
+                        $hubIssue['title'],
+                        $hubIssue['user']['login'],
+                        $hubIssue['html_url']
+                    ),
+                    isset($statuses[$hubIssue['number']]) ? join(PHP_EOL, $statuses[$hubIssue['number']]) : ''
+                ])));
             },
             $matchingIssues
         );

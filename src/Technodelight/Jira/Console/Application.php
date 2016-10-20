@@ -222,7 +222,7 @@ class Application extends BaseApp
     public function getDefaultHelperSet()
     {
         $helperSet = parent::getDefaultHelperSet();
-        $helperSet->set(new HubHelper);
+        // $helperSet->set($this->container->get('technodelight.jira.hub_helper'));
         $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;

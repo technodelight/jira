@@ -15,7 +15,7 @@ class Shell
     {
         $shellCommand = sprintf('%s %s', $this->executable, $command);
         exec($shellCommand, $result, $returnVar);
-        if (!$returnVar) {
+        if (!empty($returnVar)) {
             throw new \RuntimeException(
                 sprintf(
                     'Error code %d during running "%s"',

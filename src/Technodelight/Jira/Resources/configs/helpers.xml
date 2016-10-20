@@ -6,7 +6,10 @@
     <services>
         <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper" />
         <service id="technodelight.jira.git_helper" class="Technodelight\Jira\Helper\GitHelper" />
-        <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper" />
+        <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper">
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.github.api" />
+        </service>
         <service id="technodelight.jira.pluralize_helper" class="Technodelight\Jira\Helper\PluralizeHelper" />
         <service id="technodelight.jira.shell_command_helper" class="Technodelight\Jira\Helper\ShellCommandHelper" />
         <service id="technodelight.jira.template_helper" class="Technodelight\Jira\Helper\TemplateHelper" />

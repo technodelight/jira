@@ -21,6 +21,11 @@ class Configuration
     /**
      * @var string
      */
+    private $githubToken;
+
+    /**
+     * @var string
+     */
     private $domain;
 
     /**
@@ -60,6 +65,7 @@ class Configuration
     {
         $this->username = $this->parseIniField($ini, 'username');
         $this->password = $this->parseIniField($ini, 'password');
+        $this->githubToken = $this->parseIniField($ini, 'github-token');
         $this->domain = $this->parseIniField($ini, 'domain');
         $this->project = $this->parseIniField($ini, 'project');
         $this->transitions = $this->parseIniField($ini, 'transitions');
@@ -89,6 +95,11 @@ class Configuration
     public function password()
     {
         return $this->password;
+    }
+
+    public function githubToken()
+    {
+        return $this->githubToken;
     }
 
     public function domain()

@@ -14,6 +14,18 @@
             <argument type="service" id="technodelight.jira.api_client" />
             <argument type="service" id="technodelight.jira.api_search_query_builder" />
         </service>
+        <service id="technodelight.gitshell.shell" class="Technodelight\Jira\Api\Shell\Shell">
+            <argument>/usr/bin/env git</argument>
+        </service>
+        <service id="technodelight.gitshell.api" class="Technodelight\Jira\Api\GitShell\Api">
+            <argument type="service" id="technodelight.gitshell.shell" />
+        </service>
+        <service id="technodelight.github.api_builder" class="Technodelight\Jira\Api\GitHub\ApiBuilder">
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <service id="technodelight.github.api" class="GitHub\Client">
+            <factory method="build" service="technodelight.github.api_builder" />
+        </service>
     </services>
 
 </container>

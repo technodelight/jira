@@ -2,25 +2,23 @@
 
 namespace Technodelight\Jira\Helper;
 
-class HubHelper extends ShellCommandHelper
+use GitHub\Client as Hub;
+use Technodelight\Jira\Api\GitShell\Api as Git;
+use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Api\IssueCollection;
+
+class HubHelper
 {
-    private $issuesCache;
+    private $git;
+    private $hub;
+    private $owner;
+    private $repo;
 
-    public function issues()
+    public function __construct(Git $git, Hub $hub)
     {
-        if (!isset($this->issuesCache)) {
-            $issues = array_map('trim', $this->shell('issue'));
-            $result = [];
-            foreach ($issues as $lineIdx => $row) {
-                $signature = $this->parseIssueSignature($row);
-                if (!empty($signature)) {
-                    $result[$signature['pr']] = $signature;
-                }
-            }
-            $this->issuesCache = $result;
-        }
-
-        return $this->issuesCache;
+        $this->git = $git;
+        $this->hub = $hub;
+        $this->setupOwnerAndRepo();
     }
 
     public function getName()
@@ -28,17 +26,34 @@ class HubHelper extends ShellCommandHelper
         return 'hub';
     }
 
-    private function parseIssueSignature($row)
+    public function issues()
     {
-        if (preg_match('~([0-9]+)\]\s(.*) \( (https://github.com/.*) \)$~', $row, $matches)) {
-            return ['pr' => $matches[1], 'text' => $matches[2], 'link' => $matches[3]];
+        if (!isset($this->issuesCache)) {
+            $result = $this->hub->api('issue')->all($this->owner, $this->repo, array('state' => 'all')); /// <<< TODO !!!
+            $this->issuesCache = $result;
         }
 
-        return [];
+        return $this->issuesCache;
     }
 
-    protected function getExecutable()
+    public function prCommits($number)
     {
-        return '/usr/bin/env hub';
+        return $this->hub->api('pr')->commits($this->owner, $this->repo, $number);
+    }
+
+    public function statusCombined($ref)
+    {
+        return $this->hub->api('repo')->statuses()->combined($this->owner, $this->repo, $ref);
+    }
+
+    private function setupOwnerAndRepo()
+    {
+        foreach ($this->git->remotes(true) as $remote => $types) {
+            if (isset($types['push'])) {
+                $this->owner = $types['push']['owner'];
+                $this->repo = $types['push']['repo'];
+                break;
+            }
+        }
     }
 }

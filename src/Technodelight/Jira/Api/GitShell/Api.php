@@ -12,6 +12,7 @@ class Api
     const LOG_FORMAT = '"<entry><hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate></entry>"';
     private $shell;
     private $remotes;
+    private $verboseRemotes;
     private $tld;
 
     public function __construct(Shell $shell)
@@ -46,8 +47,33 @@ class Api
         $this->shell->exec(Command::create()->withArgument('checkout')->withArgument($branch));
     }
 
-    public function remotes()
+    public function remotes($verbose = false)
     {
+        if ($verbose) {
+            if (!$this->verboseRemotes) {
+                $remotesDef = $this->shell->exec(Command::create()->withArgument('remote')->withOption('v'));
+                $this->verboseRemotes = [];
+                foreach ($remotesDef as $def) {
+                    if (preg_match('~([a-z0-9]+)\t([^:]+):([^/]+)/(.*).git \((fetch|push)\)~', $def, $matches)) {
+                        $remote = $matches[1];
+                        $userHost = $matches[2];
+                        $owner = $matches[3];
+                        $repo = $matches[4];
+                        $type = $matches[5];
+                        if (!isset($this->verboseRemotes[$remote])) {
+                            $this->verboseRemotes[$remote] = [];
+                        }
+                        $this->verboseRemotes[$remote][$type] = [
+                            'owner' => $owner,
+                            'repo' => $repo,
+                            'userHost' => $userHost,
+                            'url' => sprintf('%s:%s/%s.git', $userHost, $owner, $repo)
+                        ];
+                    }
+                }
+            }
+            return $this->verboseRemotes;
+        }
         if (!$this->remotes) {
             $this->remotes = $this->shell->exec(Command::create()->withArgument('remote'));
         }
@@ -107,7 +133,7 @@ class Api
                     ->withArgument('sed')->withArgument('"s/.*\[\(.*\)\].*/\1/"')
                 ->pipe()
                     ->withArgument('sed')->withArgument('"s/[\^~].*//"')
-        )
+        );
         // $parent = $this->shell->exec(
         //     'show-branch -a 2> /dev/null | sed "s/^ *//g" | grep -v "^\*" | head -1 | sed "s/.*\[\(.*\)\].*/\1/" | sed "s/[\^~].*//"'
         // );
@@ -121,5 +147,10 @@ class Api
             $this->tld = end($tld);
         }
         return $this->tld;
+    }
+
+    public function repoDetails()
+    {
+
     }
 }
