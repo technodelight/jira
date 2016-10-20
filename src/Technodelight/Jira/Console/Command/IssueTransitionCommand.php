@@ -173,7 +173,7 @@ class IssueTransitionCommand extends AbstractCommand
     {
         return array_map(
             function (array $branchData) {
-                return $branchData['name'];
+                return sprintf('%s (%s)', $branchData['name'], $branchData['remote'] ? 'remote' : 'local');
             },
             $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber())
         );
