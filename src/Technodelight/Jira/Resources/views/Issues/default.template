@@ -1,9 +1,8 @@
-<info>{{ issueNumber }}:</info> {{ issueType }} {{ summary }}
+<info>{{ issueNumber }}:</info> {{ issueType }} {{ summary }} <fg=black>({{ url }})</>
     {{ depends $assignee != 'Unassigned' }}<comment>assignee:</comment> {{ assignee }} {{ end_depends }}{{ depends $reporter }}, <comment>reported by</comment> {{ reporter }}{{ end_depends }}
     {{ depends !empty($progress) }}{{ progress }}{{ end_depends }}
     {{ depends !empty($description) }}<comment>description:</comment>
         {{ description }}{{ end_depends }}
-    <comment>link:</comment> {{ url }}
     {{ depends ($verbosity >= 64 && !empty($parent)) }}
     <comment>parent task:</comment>
         {{ parent }}{{ end_depends }}

@@ -240,7 +240,7 @@ class IssueRenderer
 
     private function renderRelatedTask(Issue $related)
     {
-        return sprintf('<info>%s</> %s (%s)', $related->issueKey(), $related->summary(), $related->url());
+        return sprintf('<info>%s</> %s <fg=black>(%s)</>', $related->issueKey(), $related->summary(), $related->url());
     }
 
     private function renderProgress(Issue $issue)
@@ -392,14 +392,13 @@ class IssueRenderer
             $statuses[$id] = [];
             foreach ($combined['statuses'] as $status) {
                 switch ($status['state']) {
-                    case 'success': $color = 'green'; $mark = '√'; break;
-                    case 'pending': $color = 'yellow'; $mark = '*'; break;
-                    case 'failed': $color = 'red'; $mark = 'X'; break;
-                    default: $color = 'default'; $mark = '?'; break;
+                    case 'success': $mark = '✅'; break;
+                    case 'pending': $mark = '⌛'; break;
+                    case 'failure': $mark = '❌'; break;
+                    default: $mark = '❔'; break;
                 }
                 $statuses[$id][] = sprintf(
-                    '    <bg=%s;fg=black> %s </> (%s) %s <fg=black>(%s)</>',
-                    $color,
+                    '    %s  (%s) %s <fg=black>(%s)</>',
                     $mark,
                     $status['context'],
                     $status['description'],
