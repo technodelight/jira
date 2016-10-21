@@ -1,5 +1,7 @@
 # JIRA in command line
 
+[![Build Status](https://travis-ci.org/technodelight/jira.svg?branch=master)](https://travis-ci.org/technodelight/jira)
+
 This is a command line application _in a proof-of-concept state_ which allows you to do JIRA actions and helps your daily workflow.
 
 For example you could pick a task, develop it, log your time, create a PR and move to tech review stage, everything from command line.
