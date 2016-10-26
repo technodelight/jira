@@ -37,7 +37,7 @@ class LogTimeCommand extends AbstractCommand
             ->addArgument(
                 'date',
                 InputArgument::OPTIONAL,
-                'Day to put your log to, like \'yesterday 12:00\' or \'Y-m-d\''
+                'Date to put your log to, like \'yesterday 12:00\' or \'' . date('Y-m-d') . '\''
             )
             ->addOption(
                 'delete',
@@ -80,9 +80,10 @@ class LogTimeCommand extends AbstractCommand
         if (!$input->getArgument('time')) {
             $timeSpent = $dialog->askAndValidate(
                 $output,
-                PHP_EOL . '<comment>Please enter the time you want to log against <info>' . $issueKey .'</info>:</> ',
+                ($worklog ? "You logged '{$worklog->timeSpent()}' previously. Leave the time empty to keep this value." : '')
+                . PHP_EOL . '<comment>Please enter the time you want to log against <info>' . $issueKey .'</info>:</> ',
                 function ($answer) {
-                    if (!preg_match('~^[0-9hmd.]+$~', $answer)) {
+                    if (!preg_match('~^[0-9hmd. ]+$~', $answer)) {
                         throw new \RuntimeException(
                             "It's not possible to log '$answer' as time, as it's not matching the allowed format."
                         );
