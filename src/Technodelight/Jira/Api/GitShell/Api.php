@@ -10,6 +10,7 @@ use Technodelight\Jira\Api\Shell\Shell;
 class Api
 {
     const LOG_FORMAT = '"<entry><hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate></entry>"';
+    const VERBOSE_REMOTE_REGEX = '~([a-z0-9]+)\t([^:]+):([^/]+)/(.*).git \((fetch|push)\)~';
     private $shell;
     private $remotes;
     private $verboseRemotes;
@@ -54,7 +55,7 @@ class Api
                 $remotesDef = $this->shell->exec(Command::create()->withArgument('remote')->withOption('v'));
                 $this->verboseRemotes = [];
                 foreach ($remotesDef as $def) {
-                    if (preg_match('~([a-z0-9]+)\t([^:]+):([^/]+)/(.*).git \((fetch|push)\)~', $def, $matches)) {
+                    if (preg_match(self::VERBOSE_REMOTE_REGEX, $def, $matches)) {
                         $remote = $matches[1];
                         $userHost = $matches[2];
                         $owner = $matches[3];
@@ -147,10 +148,5 @@ class Api
             $this->tld = end($tld);
         }
         return $this->tld;
-    }
-
-    public function repoDetails()
-    {
-
     }
 }

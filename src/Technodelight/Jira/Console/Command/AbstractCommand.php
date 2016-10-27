@@ -48,31 +48,12 @@ class AbstractCommand extends Command
 
     public function issueKeyOption(InputInterface $input)
     {
-        $aliases = $this->getService('technodelight.jira.config')->aliases();
-        $issueKey = $input->hasOption('issueKey') ? $input->getOption('issueKey') : '';
-        if (isset($aliases[$issueKey])) {
-            $issueKey = $aliases[$issueKey];
-        }
-
-        return $issueKey;
+        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->option($input);
     }
 
     public function issueKeyArgument(InputInterface $input)
     {
-        $aliases = $this->getService('technodelight.jira.config')->aliases();
-        $issueKey = $input->getArgument('issueKey');
-        if (isset($aliases[$issueKey])) {
-            $issueKey = $aliases[$issueKey];
-        }
-        if (empty($issueKey)) {
-            $git = $this->getService('technodelight.jira.git_helper');
-            $issueKey = $git->issueKeyFromCurrentBranch();
-            if (empty($issueKey)) {
-                throw new \InvalidArgumentException('Cannot retrieve issue key from current branch nor from command line argument');
-            }
-        }
-
-        return $issueKey;
+        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->argument($input);
     }
 
     protected function getService($id)

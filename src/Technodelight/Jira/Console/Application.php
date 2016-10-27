@@ -49,6 +49,7 @@ class Application extends BaseApp
         'helpers.xml',
         'renderers.xml',
         'api.xml',
+        'console.xml',
     ];
 
     /**
@@ -102,7 +103,6 @@ class Application extends BaseApp
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
-        // $commands[] = new TodoCommand($this->container());
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
