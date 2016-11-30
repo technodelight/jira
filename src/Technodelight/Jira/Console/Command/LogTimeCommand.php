@@ -100,19 +100,21 @@ class LogTimeCommand extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             $commitMessagesSummary = '';
+            $defaultMessage = "Worked on issue $issueKey";
             if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
                 $commitMessagesSummary = PHP_EOL . '<comment>What you have done so far: (based on your git commit messages):</>' . PHP_EOL
-                    . str_repeat(' ', 2) . $templateHelper->tabulate(wordwrap($commitMessages), 2) . PHP_EOL . PHP_EOL;
+                    . str_repeat(' ', 2) . $templateHelper->tabulate(wordwrap(implode(PHP_EOL, $commitMessages)), 2) . PHP_EOL . PHP_EOL;
+                if (count($commitMessages) == 1) {
+                    $defaultMessage = trim(reset($commitMessages), '- ');
+                }
             }
 
             $comment = $dialog->ask(
                 $output,
                 PHP_EOL . "<comment>Do you want to add a comment on your work log?</>" . PHP_EOL
                 . $commitMessagesSummary
-                . "If you leave the comment empty, the description will" .
-                    ($worklog
-                        ? "be left as '{$worklog->comment()}'"
-                        : "still be set to the default 'Worked on issue $issueKey' message")
+                . "If you leave the comment empty, the description will " .
+                    ($worklog ? "be left as '{$worklog->comment()}'" : "be set to '$defaultMessage'")
                 . PHP_EOL . PHP_EOL
                 . '<comment>Comment:</> ',
                 false
@@ -244,14 +246,11 @@ class LogTimeCommand extends AbstractCommand
                 return strpos($entry['message'], $issueKey) !== false;
             }
         );
-        return implode(
-            PHP_EOL,
-            array_map(
-                function (array $entry) use ($issueKey) {
-                    return ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', '- ', $entry['message']));
-                },
-                $messages
-            )
+        return array_map(
+            function (array $entry) use ($issueKey) {
+                return ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', '- ', $entry['message']));
+            },
+            $messages
         );
     }
 
