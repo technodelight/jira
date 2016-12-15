@@ -239,7 +239,8 @@ class DashboardCommand extends AbstractCommand
                 if ($log->author() != $username) {
                     return false;
                 }
-                if ($log->date() >= $from && $log->date() <= $to) {
+                $date = date('Y-m-d', strtotime($log->date()));
+                if ($date >= $from && $date <= $to) {
                     return $log;
                 }
             }
