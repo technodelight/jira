@@ -45,6 +45,12 @@ class LogTimeCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Delete worklog'
             )
+            ->addOption(
+                'move',
+                'm',
+                InputOption::VALUE_REQUIRED,
+                'Move worklog to another date'
+            )
         ;
     }
 
@@ -68,7 +74,7 @@ class LogTimeCommand extends AbstractCommand
             $input->setArgument('issueKey', $issueKey);
         }
 
-        if ($input->getOption('delete')) {
+        if ($input->getOption('delete') || $input->getOption('move')) {
             return;
         }
 
@@ -120,7 +126,7 @@ class LogTimeCommand extends AbstractCommand
                 false
             );
 
-            $input->setArgument('comment', $comment);
+            $input->setArgument('comment', $comment ?: $defaultMessage);
         }
     }
 
@@ -132,7 +138,7 @@ class LogTimeCommand extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $startDay = $input->getArgument('date') ?: null;
+        $startDay = $input->getArgument('date') ?: $input->getOption('move');
 
         if (intval($issueKey)) {
             try {
@@ -205,7 +211,7 @@ class LogTimeCommand extends AbstractCommand
             $issueKey,
             $timeSpent,
             $comment ?: sprintf('Worked on issue %s', $issueKey),
-            DateHelper::dateTimeToJira($startDay ?: 'today')
+            $startDay ?: 'today'
         );
 
         $issue = $jira->retrieveIssue($issueKey);

@@ -80,7 +80,7 @@ class Api
             sprintf('issue/%s/worklog', $issueKey) . '?' . http_build_query($params),
             [
                 'comment' => $comment,
-                'started' => $started,
+                'started' => DateHelper::dateTimeToJira($started),
                 'timeSpent' => $timeSpent,
             ]
         );
