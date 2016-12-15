@@ -31,7 +31,7 @@ class Worklog
             $record['id'],
             $record['author']['displayName'],
             isset($record['comment']) ? $record['comment'] : null,
-            DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d'),
+            DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d H:i:s'),
             $record['timeSpent'],
             $record['timeSpentSeconds']
         );
