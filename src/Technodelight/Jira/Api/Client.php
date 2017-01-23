@@ -2,104 +2,12 @@
 
 namespace Technodelight\Jira\Api;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Pool;
-
-use Technodelight\Jira\Configuration\Configuration;
-
-class Client
+interface Client
 {
-    /**
-     * @var GuzzleClient
-     */
-    private $client;
-
-    /**
-     * @var Configuration
-     */
-    private $configuration;
-
-    /**
-     * @param Configuration $config
-     */
-    public function __construct(Configuration $config)
-    {
-        $this->httpClient = new GuzzleClient(
-            [
-                'base_url' => $this->apiUrl($config->domain()),
-                'defaults' => [
-                    'auth' => [$config->username(), $config->password()]
-                ]
-            ]
-        );
-    }
-
-    public function post($url, $data = [])
-    {
-        return $this->httpClient->post($url, ['json' => $data])->json();
-    }
-
-    public function put($url, $data = [])
-    {
-        return $this->httpClient->put($url, ['json' => $data])->json();
-    }
-
-    public function get($url)
-    {
-        return $this->httpClient->get($url)->json();
-    }
-
-    public function delete($url)
-    {
-        return $this->httpClient->delete($url)->json();
-    }
-
-    public function multiGet(array $urls)
-    {
-        $requests = [];
-        foreach ($urls as $url) {
-            $requests[] = $this->httpClient->createRequest('GET', $url);
-        }
-
-        // Results is a GuzzleHttp\BatchResults object.
-        $results = Pool::batch($this->httpClient, $requests);
-
-        $resultArray = [];
-        // Retrieve all successful responses
-        foreach ($results->getSuccessful() as $response) {
-            $resultArray[$response->getEffectiveUrl()] = $response->json();
-        }
-
-        return $resultArray;
-    }
-
-    /**
-     * @param string $jql
-     * @param string|null $fields
-     *
-     * @return array
-     */
-    public function search($jql, $fields = null, $expand = null)
-    {
-        return $this->httpClient->get(
-            sprintf(
-                'search%s',
-                $fields || $expand ? '?' . http_build_query(
-                    array_filter([
-                        'fields' => $fields,
-                        'expand' => $expand
-                    ])
-                ) : ''
-            ),
-            ['query' => ['jql' => $jql]]
-        )->json();
-    }
-
-    private function apiUrl($projectDomain)
-    {
-        return sprintf(
-            'https://%s/rest/api/2/',
-            $projectDomain
-        );
-    }
+    public function post($url, $data = []);
+    public function put($url, $data = []);
+    public function get($url);
+    public function delete($url);
+    public function multiGet(array $urls);
+    public function search($jql, $fields = null, $expand = null);
 }

@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -121,6 +122,23 @@ class Application extends BaseApp
         return $commands;
     }
 
+    public function doRun(InputInterface $input, OutputInterface $output)
+    {
+        if (true === $input->hasParameterOption(array('--debug', '-d'))) {
+            $GLOBALS['magical_debug_mode'] = true;
+            $start = microtime(true);
+            $startMem = memory_get_usage(true);
+            $result = parent::doRun($input, $output);
+            $end = microtime(true) - $start;
+            $endMem = memory_get_usage(true);
+            $output->writeLn(sprintf('%1.4f s, mem %s', $end, $this->formatBytes($endMem - $startMem)));
+            return $result;
+        } else {
+            $GLOBALS['magical_debug_mode'] = false;
+            return parent::doRun($input, $output);
+        }
+    }
+
     /**
      * @return Configuration
      */
@@ -222,7 +240,6 @@ class Application extends BaseApp
     public function getDefaultHelperSet()
     {
         $helperSet = parent::getDefaultHelperSet();
-        // $helperSet->set($this->container->get('technodelight.jira.hub_helper'));
         $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;
@@ -242,6 +259,13 @@ class Application extends BaseApp
         return $this->baseDir . DIRECTORY_SEPARATOR . $this->path($this->directories[$alias]);
     }
 
+    protected function getDefaultInputDefinition()
+    {
+        $input = parent::getDefaultInputDefinition();
+        $input->addOption(new InputOption('--debug', '-d', InputOption::VALUE_NONE, 'Enable debug mode'));
+        return $input;
+    }
+
     private function path(array $parts)
     {
         return implode(DIRECTORY_SEPARATOR, $parts);
@@ -255,5 +279,13 @@ class Application extends BaseApp
             'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
             'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
         ];
+    }
+
+    private function formatBytes($size, $precision = 4)
+    {
+        $base = log($size, 1024);
+        $suffixes = array('', 'K', 'M', 'G', 'T');
+
+        return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
     }
 }
