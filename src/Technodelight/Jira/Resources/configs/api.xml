@@ -5,7 +5,7 @@
 
     <services>
         <!-- jira -->
-        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\Client">
+        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\HttpClient">
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <service public="false" id="technodelight.jira.api_search_query_builder">
