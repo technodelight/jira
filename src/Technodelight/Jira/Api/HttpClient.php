@@ -40,7 +40,7 @@ class HttpClient implements Client
         $this->debugStat->start('post', $url, $data);
         $result = $this->httpClient->post($url, ['json' => $data])->json();
         $this->debugStat->stop();
-        return $results;
+        return $result;
     }
 
     public function put($url, $data = [])

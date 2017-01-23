@@ -262,7 +262,7 @@ class Application extends BaseApp
     protected function getDefaultInputDefinition()
     {
         $input = parent::getDefaultInputDefinition();
-        $input->addOption(new InputOption('--debug', '-d', InputOption::VALUE_NONE, 'Enable debug mode'));
+        $input->addOption(new InputOption('--debug', '-D', InputOption::VALUE_NONE, 'Enable debug mode'));
         return $input;
     }
 
