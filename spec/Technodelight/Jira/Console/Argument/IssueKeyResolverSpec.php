@@ -14,8 +14,11 @@ use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 
 class IssueKeyResolverSpec extends ObjectBehavior
 {
-    function let(Git $git, Configuration $configuration)
+    function let(Git $git, Configuration $configuration, InputInterface $input)
     {
+        $input->hasArgument(IssueKeyResolver::ARGUMENT)->willReturn(true);
+        $input->hasOption(IssueKeyResolver::OPTION)->willReturn(true);
+
         $this->beConstructedWith($git, $configuration);
     }
 

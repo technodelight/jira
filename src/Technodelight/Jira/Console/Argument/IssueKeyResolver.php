@@ -23,11 +23,17 @@ class IssueKeyResolver
 
     public function argument(InputInterface $input)
     {
+        if (!$input->hasArgument(self::ARGUMENT)) {
+            return null;
+        }
         return $this->resolve($input->getArgument(self::ARGUMENT));
     }
 
     public function option(InputInterface $input)
     {
+        if (!$input->hasOption(self::OPTION)) {
+            return null;
+        }
         return $this->resolve($input->getOption(self::OPTION));
     }
 
