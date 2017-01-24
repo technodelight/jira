@@ -115,7 +115,7 @@ class Application extends BaseApp
         }
         $filters = $this->config()->filters();
         foreach ($filters as $alias => $jql) {
-            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql, $this->config()->issueTypeGroups());
+            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
         }
         $commands[] = new SearchCommand($this->container());
 

@@ -106,7 +106,7 @@ class LogTimeCommand extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             $commitMessagesSummary = '';
-            $defaultMessage = "Worked on issue $issueKey";
+            $defaultMessage = null;
             if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
                 $commitMessagesSummary = PHP_EOL . '<comment>What you have done so far: (based on your git commit messages):</>' . PHP_EOL
                     . str_repeat(' ', 2) . $templateHelper->tabulate(wordwrap(implode(PHP_EOL, $commitMessages)), 2) . PHP_EOL . PHP_EOL;
@@ -125,6 +125,7 @@ class LogTimeCommand extends AbstractCommand
                 . '<comment>Comment:</> ',
                 false
             );
+            $comment = trim($comment);
 
             $input->setArgument('comment', $comment ?: $defaultMessage);
         }

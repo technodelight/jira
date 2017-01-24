@@ -52,15 +52,6 @@ class Configuration
         'todo' => 'project = {{ project }} and status = Open',
     ];
 
-    /**
-     * @var array
-     */
-    private $issueTypeGroups = [
-        'bugs' => ['Defect', 'Bug'],
-        'tasks' => ['Technical Sub-Task', 'Story'],
-        'stories' => ['Story'],
-    ];
-
     protected function __construct(array $ini = [])
     {
         $this->username = $this->parseIniField($ini, 'username');
@@ -76,9 +67,6 @@ class Configuration
         }
         if ($filters = $this->parseIniField($ini, 'filters')) {
             $this->filters = $filters + $this->filters;
-        }
-        if ($issueTypeGroups = $this->parseIniField($ini, 'issue-type-groups')) {
-            $this->issueTypeGroups = $issueTypeGroups + $this->issueTypeGroups;
         }
     }
 
@@ -129,11 +117,6 @@ class Configuration
         }
 
         return $this->aliases;
-    }
-
-    public function issueTypeGroups()
-    {
-        return $this->issueTypeGroups;
     }
 
     public function merge(Configuration $configuration)
