@@ -28,6 +28,9 @@ class IssueFilterCommand extends AbstractCommand
      */
     public function __construct(ContainerBuilder $container, $name, $jql)
     {
+        if (empty($jql)) {
+            throw new \InvalidArgumentException('JQL is empty');
+        }
         $this->jql = $jql;
 
         parent::__construct($container, $name);

@@ -27,29 +27,7 @@ class SearchCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        try {
-            $jql = $input->getArgument('jql');
-            /** @var Technodelight\Jira\Api\Api $jira */
-            $jira = $this->getService('technodelight.jira.api');
-            $issueCollection = $jira->search($jql, Api::FIELDS_ALL);
-            if (!count($issueCollection)) {
-                throw new \RuntimeException(
-                    sprintf('<error>No issues matching your query</> "%s"', $jql)
-                );
-            }
-
-            /** @var Technodelight\Template\IssueRenderer $renderer */
-            $renderer = $this->getService('technodelight.jira.issue_renderer');
-            $renderer->setOutput($output);
-            $renderer->renderIssues($issueCollection);
-
-        } catch(\Exception $exception) {
-            if ($exception instanceof ClientException) {
-                throw new \InvalidArgumentException(
-                    sprintf('<error>There is an error in your query</> "%s"', $jql)
-                );
-            }
-            throw $exception;
-        }
+        $command = new IssueFilterCommand($this->container, 'run', $input->getArgument('jql') ?: null);
+        $command->execute($input, $output);
     }
 }
