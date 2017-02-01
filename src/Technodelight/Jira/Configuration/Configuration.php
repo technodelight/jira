@@ -39,6 +39,11 @@ class Configuration
     private $aliases;
 
     /**
+     * @var mixed
+     */
+    private $yesterdayAsFriday;
+
+    /**
      * @var array
      */
     private $transitions = [
@@ -61,6 +66,7 @@ class Configuration
         $this->project = $this->parseIniField($ini, 'project');
         $this->transitions = $this->parseIniField($ini, 'transitions');
         $this->aliases = $this->parseIniField($ini, 'aliases');
+        $this->yesterdayAsFriday = $this->parseIniField($ini, 'yesterday-as-friday');
 
         if ($transitions = $this->parseIniField($ini, 'transitions')) {
             $this->transitions = $transitions + $this->transitions;
@@ -117,6 +123,11 @@ class Configuration
         }
 
         return $this->aliases;
+    }
+
+    public function yesterdayAsFriday()
+    {
+        return in_array(strtolower($this->yesterdayAsFriday), ['on', 'true', '1']);
     }
 
     public function merge(Configuration $configuration)

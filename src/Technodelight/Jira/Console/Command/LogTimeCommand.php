@@ -212,7 +212,7 @@ class LogTimeCommand extends AbstractCommand
             $issueKey,
             $timeSpent,
             $comment ?: sprintf('Worked on issue %s', $issueKey),
-            $startDay ?: 'today'
+            $startDay ?: 'now'
         );
 
         $issue = $jira->retrieveIssue($issueKey);
@@ -222,7 +222,7 @@ class LogTimeCommand extends AbstractCommand
             'worklogId' => $worklog->id(),
             'issueUrl' => $issue->url(),
             'logged' => $timeSpent,
-            'startDay' => date('Y-m-d H:i:s', strtotime($startDay ?: 'today')),
+            'startDay' => date('Y-m-d H:i:s', strtotime($startDay ?: 'now')),
             'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
             'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
             'worklogs' => $this->renderWorklogs($jira->retrieveIssueWorklogs($issueKey)),
