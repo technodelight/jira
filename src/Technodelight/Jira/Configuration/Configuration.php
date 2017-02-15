@@ -44,6 +44,11 @@ class Configuration
     private $yesterdayAsFriday;
 
     /**
+     * @var string
+     */
+    private $defaultWorklogTimestamp = 'now';
+
+    /**
      * @var array
      */
     private $transitions = [
@@ -67,6 +72,7 @@ class Configuration
         $this->transitions = $this->parseIniField($ini, 'transitions');
         $this->aliases = $this->parseIniField($ini, 'aliases');
         $this->yesterdayAsFriday = $this->parseIniField($ini, 'yesterday-as-friday');
+        $this->defaultWorklogTimestamp = $this->parseIniField($ini, 'default-worklog-timestamp') ?: $this->defaultWorklogTimestamp;
 
         if ($transitions = $this->parseIniField($ini, 'transitions')) {
             $this->transitions = $transitions + $this->transitions;
@@ -128,6 +134,11 @@ class Configuration
     public function yesterdayAsFriday()
     {
         return in_array(strtolower($this->yesterdayAsFriday), ['on', 'true', '1']);
+    }
+
+    public function defaultWorklogTimestamp()
+    {
+        return $this->defaultWorklogTimestamp;
     }
 
     public function merge(Configuration $configuration)

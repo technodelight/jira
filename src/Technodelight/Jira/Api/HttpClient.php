@@ -3,8 +3,9 @@
 namespace Technodelight\Jira\Api;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Event\BeforeEvent;
+use GuzzleHttp\Event\CompleteEvent;
 use GuzzleHttp\Pool;
-
 use Technodelight\Jira\Configuration\Configuration;
 
 class HttpClient implements Client
@@ -69,10 +70,18 @@ class HttpClient implements Client
 
     public function multiGet(array $urls)
     {
-        $this->debugStat->start('multiGet', '', $urls);
+        $debugStats = [];
         $requests = [];
         foreach ($urls as $url) {
-            $requests[] = $this->httpClient->createRequest('GET', $url);
+            $debugStats[$url] = new DebugStat(false);
+            $request = $this->httpClient->createRequest('GET', $url);
+            $request->getEmitter()->on('before', function(BeforeEvent $e) use($url, $debugStats) {
+                $debugStats[$url]->start('multiGet', $url);
+            });
+            $request->getEmitter()->on('complete', function(CompleteEvent $e) use ($url, $debugStats) {
+                $debugStats[$url]->stop();
+            });
+            $requests[] = $request;
         }
 
         // Results is a GuzzleHttp\BatchResults object.
@@ -83,7 +92,10 @@ class HttpClient implements Client
         foreach ($results->getSuccessful() as $response) {
             $resultArray[$response->getEffectiveUrl()] = $response->json();
         }
-        $this->debugStat->stop();
+        // Measure calls
+        foreach ($debugStats as $debugStat) {
+            $this->debugStat->merge($debugStat);
+        }
         return $resultArray;
     }
 

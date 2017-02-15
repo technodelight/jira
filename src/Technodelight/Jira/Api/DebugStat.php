@@ -31,12 +31,19 @@ class DebugStat
         }
     }
 
-    public function __construct()
+    public function __construct($registerShutdown = true)
     {
         if ($GLOBALS['magical_debug_mode']) {
             $this->enabled = true;
-            register_shutdown_function([$this, 'printout']);
+            if ($registerShutdown) {
+                register_shutdown_function([$this, 'printout']);
+            }
         }
+    }
+
+    public function merge(DebugStat $debugStat)
+    {
+        $this->stat = array_merge($this->stat, $debugStat->stat);
     }
 
     public function printout()
@@ -52,32 +59,6 @@ class DebugStat
                 $stats[$id]['calls']++;
             }
         }
-
-        foreach ($stats as $id => $stat) {
-            $div = [];
-            if ($stat['method'] == 'multiGet') {
-                foreach ($stat['data'] as $url) {
-                    $div[] = [
-                        'method' => 'multiGet',
-                        'url' => $url,
-                        'data' => null,
-                        'time' => $stat['time'] / count($stat['data']),
-                        'calls' => $stat['calls']
-                    ];
-                }
-                unset($stats[$id]);
-            }
-            foreach ($div as $measure) {
-                $stats[] = $measure;
-            }
-        }
-
-        usort($stats, function($a, $b) {
-            if ($a['time'] == $b['time']) {
-                return 0;
-            }
-            return $a['time'] < $b['time'] ? 1 : -1;
-        });
 
         $totalCalls = 0;
         $totalTime = 0;
