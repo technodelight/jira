@@ -60,7 +60,6 @@ class LogTimeCommand extends AbstractCommand
         $gitHelper = $this->getService('technodelight.jira.git_helper');
         $templateHelper = $this->getService('technodelight.jira.template_helper');
         $jira = $this->getService('technodelight.jira.api');
-        $project = $this->getService('technodelight.jira.config')->project();
 
         if (!$issueKey = $this->issueKeyArgument($input)) {
             $issues = $this->retrieveInProgressIssues();
@@ -91,7 +90,7 @@ class LogTimeCommand extends AbstractCommand
                 function ($answer) {
                     if (!preg_match('~^[0-9hmd. ]+$~', $answer)) {
                         throw new \RuntimeException(
-                            "It's not possible to log '$answer' as time, as it's not matching the allowed format."
+                            "It's not possible to log '$answer' as time, as it's not matching the allowed format (numbers, dot and h/m/d as hours/minutes/days)."
                         );
                     }
 
@@ -139,7 +138,10 @@ class LogTimeCommand extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $startDay = $input->getArgument('date') ?: $input->getOption('move');
+        $startDay = $input->getOption('move');
+        if (!$startDay) {
+            $startDay = $this->dateArgument($input);
+        }
 
         if (intval($issueKey)) {
             try {
@@ -212,7 +214,7 @@ class LogTimeCommand extends AbstractCommand
             $issueKey,
             $timeSpent,
             $comment ?: sprintf('Worked on issue %s', $issueKey),
-            $startDay ?: 'today'
+            $startDay
         );
 
         $issue = $jira->retrieveIssue($issueKey);
@@ -222,16 +224,16 @@ class LogTimeCommand extends AbstractCommand
             'worklogId' => $worklog->id(),
             'issueUrl' => $issue->url(),
             'logged' => $timeSpent,
-            'startDay' => date('Y-m-d H:i:s', strtotime($startDay ?: 'today')),
+            'startDay' => date('Y-m-d H:i:s', strtotime($startDay)),
             'estimate' => $dateHelper->secondsToHuman($issue->estimate()),
             'spent' => $dateHelper->secondsToHuman($issue->timeSpent()),
-            'worklogs' => $this->renderWorklogs($jira->retrieveIssueWorklogs($issueKey)),
+            'worklogs' => $this->renderWorklogs($jira->retrieveIssueWorklogs($issueKey, 10)),
         ];
     }
 
     private function renderWorklogs($worklogs)
     {
-        return $this->getService('technodelight.jira.worklog_renderer')->renderWorklogs(array_slice($worklogs, -10));
+        return $this->getService('technodelight.jira.worklog_renderer')->renderWorklogs($worklogs);
     }
 
     private function retrieveInProgressIssues()

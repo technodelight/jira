@@ -8,6 +8,9 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.config" />
         </service>
+        <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
     </services>
 
 </container>

@@ -7,7 +7,7 @@ use Technodelight\Jira\Api\GitShell\Api as Git;
 use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
-class IssueKeyResolver
+class IssueKeyResolver implements Resolver
 {
     private $git;
     private $configuration;

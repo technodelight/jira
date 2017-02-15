@@ -130,7 +130,7 @@ class Application extends BaseApp
             $startMem = memory_get_usage(true);
             $result = parent::doRun($input, $output);
             $end = microtime(true) - $start;
-            $endMem = memory_get_usage(true);
+            $endMem = memory_get_peak_usage(true);
             $output->writeLn(sprintf('%1.4f s, mem %s', $end, $this->formatBytes($endMem - $startMem)));
             return $result;
         } else {

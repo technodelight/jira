@@ -38,7 +38,7 @@ class DashboardCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $date = $input->getArgument('date');
+        $date = $this->dateArgument($input);
         $from = $this->defineFrom($date, $input->getOption('week'));
         $to = $this->defineTo($date, $input->getOption('week'));
 
