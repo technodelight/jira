@@ -56,6 +56,11 @@ class AbstractCommand extends Command
         return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->argument($input);
     }
 
+    public function dateArgument(InputInterface $input)
+    {
+        return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->argument($input);
+    }
+
     protected function getService($id)
     {
         return $this->container->get($id);

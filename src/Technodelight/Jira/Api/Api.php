@@ -151,10 +151,10 @@ class Api
      *
      * @return Worklog[]
      */
-    public function retrieveIssueWorklogs($issueKey)
+    public function retrieveIssueWorklogs($issueKey, $limit = null)
     {
         try {
-            $response = $this->client->get(sprintf('issue/%s/worklog', $issueKey));
+            $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
 
             $results = [];
             foreach ($response['worklogs'] as $jiraRecord) {

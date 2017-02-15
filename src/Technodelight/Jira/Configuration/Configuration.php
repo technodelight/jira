@@ -41,7 +41,7 @@ class Configuration
     /**
      * @var mixed
      */
-    private $yesterdayAsFriday;
+    private $yesterdayAsWeekday;
 
     /**
      * @var string
@@ -71,7 +71,7 @@ class Configuration
         $this->project = $this->parseIniField($ini, 'project');
         $this->transitions = $this->parseIniField($ini, 'transitions');
         $this->aliases = $this->parseIniField($ini, 'aliases');
-        $this->yesterdayAsFriday = $this->parseIniField($ini, 'yesterday-as-friday');
+        $this->yesterdayAsWeekday = $this->parseIniField($ini, 'yesterday-as-weekday');
         $this->defaultWorklogTimestamp = $this->parseIniField($ini, 'default-worklog-timestamp') ?: $this->defaultWorklogTimestamp;
 
         if ($transitions = $this->parseIniField($ini, 'transitions')) {
@@ -131,9 +131,9 @@ class Configuration
         return $this->aliases;
     }
 
-    public function yesterdayAsFriday()
+    public function yesterdayAsWeekday()
     {
-        return in_array(strtolower($this->yesterdayAsFriday), ['on', 'true', '1']);
+        return in_array(strtolower($this->yesterdayAsWeekday), ['on', 'true', '1']);
     }
 
     public function defaultWorklogTimestamp()
