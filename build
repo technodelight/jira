@@ -28,7 +28,6 @@ $pharFile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
 
 echo 'Building phar...'.PHP_EOL;
 `box build`;
-`chmod +x $pharFile`;
 
 copy($pharFile, '/usr/local/bin/jira');
 copy($pharFile, getenv('HOME') . '/Dropbox/jira.phar');

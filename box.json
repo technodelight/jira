@@ -1,7 +1,9 @@
 {
     "directories": ["src"],
+    "files": ["bin/.version"],
     "main": "bin/jira",
     "output": "jira.phar",
+    "chmod": "0755",
     "finder": [
         {
             "name": "*.php",
