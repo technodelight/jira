@@ -36,12 +36,17 @@ echo 'Building phar...'.PHP_EOL;
 `cd $dir && box build`;
 $builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
 $outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
-`chmod +x $builtfile`;
+chmod($builtfile, 0755);
+chmod($outfile, 0755);
 copy($builtfile, $outfile);
 
 if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
-    copy($outfile, '/usr/local/bin/jira');
-    copy($outfile, getenv('HOME') . '/Dropbox/jira.phar');
+    if (!copy($outfile, '/usr/local/bin/jira')) {
+        die ("Cannot copy $outfile to /usr/local/bin/jira");
+    }
+    if (!copy($outfile, getenv('HOME') . '/Dropbox/jira.phar')) {
+        die ("Cannot copy $outfile to " . getenv('HOME') . "/Dropbox/jira.phar");
+    }
 }
 echo "Seems to be done!" . PHP_EOL . PHP_EOL;
 
