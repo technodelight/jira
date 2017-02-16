@@ -1,13 +1,16 @@
 {
     "directories": ["src"],
-    "files": ["bin/.version"],
+    "files": [
+      "bin/.version",
+      "vendor/symfony/dependency-injection/Loader/schema/dic/services/services-1.0.xsd"
+    ],
     "main": "bin/jira",
     "output": "jira.phar",
     "chmod": "0755",
     "finder": [
         {
-            "name": "*.php",
-            "exclude": ["tests", "spec", "features"],
+            "name": "*.*",
+            "exclude": ["tests", "spec", "features", "*.md"],
             "in": "vendor"
         }
     ],

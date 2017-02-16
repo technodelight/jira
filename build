@@ -3,7 +3,6 @@
 
 $start = microtime(true);
 require './vendor/autoload.php';
-ini_set('phar.readonly', 0);
 
 function formatBytes($size, $precision = 4)
 {
@@ -11,6 +10,13 @@ function formatBytes($size, $precision = 4)
     $suffixes = array('', 'K', 'M', 'G', 'T');
 
     return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+}
+
+$tools = ['git', 'box', 'unzip', 'composer', 'wget'];
+foreach ($tools as $tool) {
+    if (!trim(`which $tool`)) {
+        die ("Please install $tool globally to continue");
+    }
 }
 
 $version = trim(`git describe --abbrev=0 --tags`);
@@ -27,8 +33,9 @@ file_put_contents($dir . '/bin/.version', $version);
 $pharFile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
 
 echo 'Building phar...'.PHP_EOL;
-`box build`;
+`cd $dir && box build`;
 
+copy($dir . '/jira.phar', $pharFile);
 copy($pharFile, '/usr/local/bin/jira');
 copy($pharFile, getenv('HOME') . '/Dropbox/jira.phar');
 echo "Seems to be done!" . PHP_EOL . PHP_EOL;
