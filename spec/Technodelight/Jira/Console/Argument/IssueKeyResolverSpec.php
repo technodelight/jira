@@ -7,14 +7,14 @@ use Prophecy\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\Jira\Api\GitShell\Api as Git;
 use Technodelight\Jira\Api\GitShell\Branch;
-use Technodelight\Jira\Configuration\Configuration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 
 class IssueKeyResolverSpec extends ObjectBehavior
 {
-    function let(Git $git, Configuration $configuration, InputInterface $input)
+    function let(Git $git, ApplicationConfiguration $configuration, InputInterface $input)
     {
         $input->hasArgument(IssueKeyResolver::ARGUMENT)->willReturn(true);
         $input->hasOption(IssueKeyResolver::OPTION)->willReturn(true);
@@ -43,7 +43,7 @@ class IssueKeyResolverSpec extends ObjectBehavior
         $this->option($input)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }
 
-    function it_can_resolve_aliases_from_configuration(Configuration $configuration, InputInterface $input)
+    function it_can_resolve_aliases_from_configuration(ApplicationConfiguration $configuration, InputInterface $input)
     {
         $configuration->aliases()->willReturn(['something' => 'PROJ-123']);
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('something');

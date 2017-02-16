@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Configuration\Configuration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
 class IssueKeyResolver implements Resolver
@@ -15,7 +15,7 @@ class IssueKeyResolver implements Resolver
     const ARGUMENT = 'issueKey';
     const OPTION = 'issueKey';
 
-    public function __construct(Git $git, Configuration $configuration)
+    public function __construct(Git $git, ApplicationConfiguration $configuration)
     {
         $this->git = $git;
         $this->configuration = $configuration;
