@@ -30,14 +30,16 @@ chdir($dir);
 `cd jira-master && composer install --no-dev -o`;
 $dir.= '/jira-master';
 file_put_contents($dir . '/bin/.version', $version);
-$pharFile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
+
 
 echo 'Building phar...'.PHP_EOL;
 `cd $dir && box build`;
+$builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
+$outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
 
-copy($dir . '/jira.phar', $pharFile);
-copy($pharFile, '/usr/local/bin/jira');
-copy($pharFile, getenv('HOME') . '/Dropbox/jira.phar');
+copy($builtfile, $outfile);
+copy($outfile, '/usr/local/bin/jira');
+copy($outfile, getenv('HOME') . '/Dropbox/jira.phar');
 echo "Seems to be done!" . PHP_EOL . PHP_EOL;
 
-printf ('%s (%s), %.4f seconds', $pharFile, formatBytes(filesize($pharFile), 2), microtime(true) - $start);
+printf ('%s (%s), %.4f seconds', $outfile, formatBytes(filesize($outfile), 2), microtime(true) - $start);
