@@ -18,7 +18,11 @@ class FilenameProvider
 
     public function localFile()
     {
-        return $this->git->topLevelDirectory() . DIRECTORY_SEPARATOR . self::FILENAME;
+        try {
+            return $this->git->topLevelDirectory() . DIRECTORY_SEPARATOR . self::FILENAME;
+        } catch (\Exception $exc) {
+            return __DIR__;
+        }
     }
 
     public function globalFile() {
