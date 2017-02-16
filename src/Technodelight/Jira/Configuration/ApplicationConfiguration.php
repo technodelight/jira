@@ -17,7 +17,7 @@ class ApplicationConfiguration
 
     public function username()
     {
-        return $this->function;
+        return $this->username;
     }
 
     public function password()

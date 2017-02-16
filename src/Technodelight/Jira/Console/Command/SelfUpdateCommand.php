@@ -8,6 +8,8 @@ use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class SelfUpdateCommand extends AbstractCommand
 {
+    const DEFAULT_LOCAL_BIN_JIRA = '/usr/local/bin/jira';
+
     protected function configure()
     {
         $this
@@ -20,7 +22,7 @@ class SelfUpdateCommand extends AbstractCommand
     {
         $git = $this->getService('technodelight.github.api');
         $dialog = $this->getService('console.dialog_helper');
-        $runningFile = \Phar::running(false) ?: '/usr/local/bin/jira';
+        $runningFile = \Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
         $release = $git->api('repo')->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
