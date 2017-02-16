@@ -22,6 +22,7 @@ use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
+use Technodelight\Jira\Console\Command\SelfUpdateCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Helper\DateHelper;
@@ -128,6 +129,7 @@ class Application extends BaseApp
     {
         $commands = parent::getDefaultCommands();
         $commands[] = new InitCommand($this->container());
+        $commands[] = new SelfUpdateCommand($this->container());
 
         return $commands;
     }
