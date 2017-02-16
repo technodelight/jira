@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Console\Application;
 
 try {
-    $app = new Application('JIRA CLI', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version'));
+    $app = new Application('JIRA CLI', trim(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version')));
     $app->addDomainCommands();
     $app->run();
 } catch (Technodelight\Jira\Configuration\Symfony\MissingConfigurationException $exc) {
