@@ -36,7 +36,7 @@ echo 'Building phar...'.PHP_EOL;
 `cd $dir && box build`;
 $builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
 $outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
-
+`chmod +x $outfile`;
 copy($builtfile, $outfile);
 
 if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
