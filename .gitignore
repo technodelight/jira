@@ -1,3 +1,4 @@
 /vendor/
 jira.ini
 jira.phar
+.jira.yml

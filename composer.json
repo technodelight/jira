@@ -9,7 +9,7 @@
         "stecman/symfony-console-completion": "^0.5.1",
         "guzzlehttp/guzzle": "5.3",
         "technodelight/simplate": "dev-master",
-        "symfony/config": "^2.7",
+        "symfony/config": "^3.2",
         "symfony/dependency-injection": "^2.7",
         "sirprize/queried": "^0.1.0",
         "knplabs/github-api": "^1.7"
