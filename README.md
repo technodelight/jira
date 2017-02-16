@@ -61,33 +61,10 @@ Please bear in mind *this app is still in development phase* and it may contain 
   (This step varies across different shells, please refer to the respective manuals)
 
 # Configuration
-You can have per-project and global configurations, which then ends up as a merged configuration.
-For example if you manage multiple projects on the same jira instance, you could add your details into the global configuration file (`$HOME/jira.ini`)
-```
-username=<username>
-password=<password>
-domain=jira.example.com
-```
-For per-project settings you could add ticket aliases, static search queries in the following format:
-```
-project=PROJ
+You can have per-project and global configurations, which would be merged as it was one.
+For example if you manage multiple projects on the same jira instance, you could add your login details into the global configuration file (`$HOME/.jira.yml`), while having issue aliases and transitions in your per-project one.
+Initialising the configuration is as easy as running the `init` command in your project directory, or using `init -g` to generate an empty global (user specific) configuration file.
 
-[transitions]
-to-dev="Ready to Develop"
-pick="Picked up by Dev"
-oops="Oops"
-dev-to-check="Dev Lead to Check"
-push-back="Needs more work"
-qa="QA to Check"
-pass-qa="Pending Deploy to UAT"
-
-[aliases]
-standup="PROJ-123"
-meeting="PROJ-124"
-
-[filters]
-to-qa='project = PROJ and status in (QA, "Tech Approved") and issuetype = Story and sprint in openSprints() order by updatedDate asc'
-```
 The `transitions` and `filters` would appear as new commands, while the issue aliases could be used for issue related actions (time tracking for example).
 
 # Resources
