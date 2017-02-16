@@ -3,13 +3,13 @@
 namespace Technodelight\Jira\Api\GitHub;
 
 use Github\Client;
-use Technodelight\Jira\Configuration\Configuration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class ApiBuilder
 {
     private $configuration;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(ApplicationConfiguration $configuration)
     {
         $this->configuration = $configuration;
     }

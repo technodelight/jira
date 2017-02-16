@@ -9,7 +9,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;

@@ -6,7 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Event\BeforeEvent;
 use GuzzleHttp\Event\CompleteEvent;
 use GuzzleHttp\Pool;
-use Technodelight\Jira\Configuration\Configuration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class HttpClient implements Client
 {
@@ -16,14 +16,14 @@ class HttpClient implements Client
     private $client;
 
     /**
-     * @var Configuration
+     * @var ApplicationConfiguration
      */
     private $configuration;
 
     /**
-     * @param Configuration $config
+     * @param ApplicationConfiguration $config
      */
-    public function __construct(Configuration $config)
+    public function __construct(ApplicationConfiguration $config)
     {
         $this->httpClient = new GuzzleClient(
             [
