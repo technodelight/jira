@@ -4,6 +4,25 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <!-- config -->
+        <service id="technodelight.jira.configuration.symfony.filename_provider" class="Technodelight\Jira\Configuration\Symfony\FilenameProvider">
+            <argument type="service" id="technodelight.gitshell.api" />
+        </service>
+        <service id="technodelight.jira.configuration.symfony.configuration_loader" class="Technodelight\Jira\Configuration\Symfony\ConfigurationLoader">
+            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+        </service>
+        <service id="technodelight.jira.configuration.symfony.configuration_dumper" class="Technodelight\Jira\Configuration\Symfony\ConfigurationDumper">
+            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+        </service>
+        <service id="technodelight.jira.configuration.symfony.application_configuration_builder" class="Technodelight\Jira\Configuration\Symfony\ApplicationConfigurationBuilder">
+            <argument type="service" id="technodelight.jira.configuration.symfony.configuration_loader" />
+        </service>
+        <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration">
+            <factory service="technodelight.jira.configuration.symfony.application_configuration_builder" method="build" />
+        </service>
+        <!-- config -->
+
+        <!-- argument resolvers -->
         <service id="technodelight.jira.console.argument.issue_key_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.config" />
@@ -11,6 +30,7 @@
         <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
             <argument type="service" id="technodelight.jira.config" />
         </service>
+        <!-- argument resolvers -->
     </services>
 
 </container>

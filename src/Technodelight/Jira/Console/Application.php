@@ -4,17 +4,19 @@ namespace Technodelight\Jira\Console;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application as BaseApp;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\Api as JiraApi;
 use Technodelight\Jira\Api\Client as JiraClient;
-use Technodelight\Jira\Configuration\Configuration;
-use Technodelight\Jira\Configuration\GlobalConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
+use Technodelight\Jira\Console\Command\InitCommand;
 use Technodelight\Jira\Console\Command\IssueFilterCommand;
 use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
@@ -101,9 +103,9 @@ class Application extends BaseApp
         parent::__construct($name, $version);
     }
 
-    protected function getDefaultCommands()
+    public function addDomainCommands()
     {
-        $commands = parent::getDefaultCommands();
+        $commands = [];
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
@@ -118,6 +120,14 @@ class Application extends BaseApp
             $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
         }
         $commands[] = new SearchCommand($this->container());
+
+        $this->addCommands($commands);
+    }
+
+    protected function getDefaultCommands()
+    {
+        $commands = parent::getDefaultCommands();
+        $commands[] = new InitCommand($this->container());
 
         return $commands;
     }
@@ -140,20 +150,11 @@ class Application extends BaseApp
     }
 
     /**
-     * @return Configuration
+     * @return ApplicationConfiguration
      */
     public function config()
     {
-        if (!isset($this->config)) {
-            $git = new GitHelper;
-            // init configuration
-            $config = GlobalConfiguration::initFromDirectory(getenv('HOME'));
-            $projectConfig = Configuration::initFromDirectory($git->topLevelDirectory());
-            $config->merge($projectConfig);
-            $this->config = $config;
-        }
-
-        return $this->config;
+        return $this->container()->get('technodelight.jira.config');
     }
 
     /**
@@ -274,7 +275,6 @@ class Application extends BaseApp
     private function syntheticContainerServices()
     {
         return [
-            'technodelight.jira.config' => $this->config(),
             'technodelight.jira.app' => $this,
             'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
             'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
