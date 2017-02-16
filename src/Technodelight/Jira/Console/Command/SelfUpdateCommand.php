@@ -26,7 +26,7 @@ class SelfUpdateCommand extends AbstractCommand
         $release = $git->api('repo')->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
-        if (version_compare($currentVersion, $release['tag_name'], '>')) {
+        if (version_compare($currentVersion, $release['tag_name'], '<')) {
             $output->writeln('✨ <comment>Yay, let\'s do an update!</comment>✨');
             $output->writeln('');
             $output->writeln("<info>{$release['tag_name']}</info> {$release['name']}");
