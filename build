@@ -1,0 +1,37 @@
+#!/usr/bin/env php
+<?php
+
+$start = microtime(true);
+require './vendor/autoload.php';
+ini_set('phar.readonly', 0);
+
+function formatBytes($size, $precision = 4)
+{
+    $base = log($size, 1024);
+    $suffixes = array('', 'K', 'M', 'G', 'T');
+
+    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+}
+
+$version = trim(`git describe --abbrev=0 --tags`);
+$output = new Symfony\Component\Console\Output\ConsoleOutput;
+
+$dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . uniqid();
+mkdir($dir, 0733, true);
+passthru("wget https://codeload.github.com/technodelight/jira/zip/master -O $dir/zipball.zip");
+chdir($dir);
+`unzip zipball.zip`;
+`cd jira-master && composer install --no-dev -o`;
+$dir.= '/jira-master';
+file_put_contents($dir . '/bin/.version', $version);
+$pharFile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
+
+echo 'Building phar...'.PHP_EOL;
+`box build`;
+`chmod +x $pharFile`;
+
+copy($pharFile, '/usr/local/bin/jira');
+copy($pharFile, getenv('HOME') . '/Dropbox/jira.phar');
+echo "Seems to be done!" . PHP_EOL . PHP_EOL;
+
+printf ('%s (%s), %.4f seconds', $pharFile, formatBytes(filesize($pharFile), 2), microtime(true) - $start);
