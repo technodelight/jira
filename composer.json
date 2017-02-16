@@ -12,7 +12,8 @@
         "symfony/config": "^3.2",
         "symfony/dependency-injection": "^2.7",
         "sirprize/queried": "^0.1.0",
-        "knplabs/github-api": "^1.7"
+        "knplabs/github-api": "^1.7",
+        "symfony/yaml": "^3.2"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4"

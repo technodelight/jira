@@ -1,5 +1,6 @@
 /vendor/
 jira.ini
 jira.phar
+jira*.phar
 .jira.yml
 bin/.version

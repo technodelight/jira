@@ -15,7 +15,7 @@ function formatBytes($size, $precision = 4)
 $tools = ['git', 'box', 'unzip', 'composer', 'wget'];
 foreach ($tools as $tool) {
     if (!trim(`which $tool`)) {
-        die ("Please install $tool globally to continue");
+        die("Please install $tool into \$PATH to continue");
     }
 }
 
@@ -38,8 +38,11 @@ $builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
 $outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
 
 copy($builtfile, $outfile);
-copy($outfile, '/usr/local/bin/jira');
-copy($outfile, getenv('HOME') . '/Dropbox/jira.phar');
+
+if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
+    copy($outfile, '/usr/local/bin/jira');
+    copy($outfile, getenv('HOME') . '/Dropbox/jira.phar');
+}
 echo "Seems to be done!" . PHP_EOL . PHP_EOL;
 
 printf ('%s (%s), %.4f seconds', $outfile, formatBytes(filesize($outfile), 2), microtime(true) - $start);

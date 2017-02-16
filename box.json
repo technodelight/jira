@@ -10,7 +10,7 @@
     "finder": [
         {
             "name": "*.*",
-            "exclude": ["tests", "spec", "features", "*.md"],
+            "exclude": ["tests", "spec", "features", "example", "doc", "docs", "*.md", "*.rst", "*.txt"],
             "in": "vendor"
         }
     ],
