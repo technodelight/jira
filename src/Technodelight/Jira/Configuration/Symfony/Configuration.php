@@ -91,6 +91,10 @@ class Configuration implements ConfigurationInterface
                     ->info('Default worklog timestamp to use if date is omitted')
                     ->defaultValue('now')
                 ->end()
+                ->scalarNode('cacheTtl')
+                    ->info('keep API data in caches')
+                    ->defaultValue(15 * 60)
+                ->end()
             ->end();
 
         return $rootNode;

@@ -10,6 +10,8 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class HttpClient implements Client
 {
+    const API_PATH = '/rest/api/2/';
+
     /**
      * @var GuzzleClient
      */
@@ -23,13 +25,14 @@ class HttpClient implements Client
     /**
      * @param ApplicationConfiguration $config
      */
-    public function __construct(ApplicationConfiguration $config)
+    public function __construct(ApplicationConfiguration $configuration)
     {
+        $this->configuration = $configuration;
         $this->httpClient = new GuzzleClient(
             [
-                'base_url' => $this->apiUrl($config->domain()),
+                'base_url' => $this->apiUrl($configuration->domain()),
                 'defaults' => [
-                    'auth' => [$config->username(), $config->password()]
+                    'auth' => [$configuration->username(), $configuration->password()]
                 ]
             ]
         );
@@ -124,11 +127,18 @@ class HttpClient implements Client
         return $result;
     }
 
+    public function effectiveUrlFromFull($fullUrl)
+    {
+        $baseUrl = $this->apiUrl($this->configuration->domain());
+        return substr($fullUrl, strlen($baseUrl));
+    }
+
     private function apiUrl($projectDomain)
     {
         return sprintf(
-            'https://%s/rest/api/2/',
-            $projectDomain
+            'https://%s%s',
+            $projectDomain,
+            self::API_PATH
         );
     }
 }

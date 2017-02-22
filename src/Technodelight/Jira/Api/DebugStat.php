@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Api;
 
 class DebugStat
 {
-    private $stat;
+    private $stat = [];
     private $measure;
     private $start;
 
