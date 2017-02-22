@@ -83,11 +83,6 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->info('Project specific settings')
             ->children()
-                ->scalarNode('projectKey')
-                    ->info('The project key, like PROJ')
-                    ->example('PROJ')
-                    ->cannotBeEmpty()
-                ->end()
                 ->scalarNode('yesterdayAsWeekday')
                     ->info('Using \'yesterday\' means last workday on monday')
                     ->defaultTrue()

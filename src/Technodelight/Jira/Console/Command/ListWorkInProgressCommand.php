@@ -32,16 +32,37 @@ class ListWorkInProgressCommand extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        $dialog = $this->getService('console.dialog_helper');
+
         // ensure we display every information for in progress issues
         if ($output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE && !$input->getOption('all')) {
             $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
+        }
+
+        if ($input->getOption('all') && !$input->getArgument('project')) {
+            $projects = $this->getService('technodelight.jira.api')->projects(10);
+            $index = $dialog->select(
+                $output,
+                PHP_EOL . '<comment>Choose a project to list members process:</>',
+                array_map(
+                    function(array $project) {
+                        return sprintf('<info>%s</info> %s', $project['key'], $project['name']);
+                    },
+                    $projects
+                ),
+                0
+            );
+            $project = $projects[$index]['key'];
+            $input->setArgument('project', $project);
         }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $project = $this->projectArgument($input);
-        $issues = $this->getService('technodelight.jira.api')->inprogressIssues($project, $input->getOption('all'));
+        $issues = $this->getService('technodelight.jira.api')->inprogressIssues(
+            $input->getArgument('project'),
+            $input->getOption('all')
+        );
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
@@ -50,9 +71,10 @@ class ListWorkInProgressCommand extends AbstractCommand
 
         $output->writeln(
             sprintf(
-                'You have %d in progress %s' . PHP_EOL,
+                'You have %d in progress %s%s' . PHP_EOL,
                 count($issues),
-                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues))
+                $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues)),
+                $input->getOption('all') ? (sprintf(' on project <info>%s</info>', $input->getArgument('project'))) : ''
             )
         );
 

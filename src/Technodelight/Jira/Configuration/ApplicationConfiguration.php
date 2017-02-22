@@ -35,11 +35,6 @@ class ApplicationConfiguration
         return $this->domain;
     }
 
-    public function project()
-    {
-        return $this->project;
-    }
-
     public function yesterdayAsWeekday()
     {
         return $this->yesterdayAsWeekday;
@@ -72,7 +67,6 @@ class ApplicationConfiguration
         $configuration->password = $config['credentials']['password'];
         $configuration->domain = $config['credentials']['domain'];
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
-        $configuration->project = $config['project']['projectKey'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
         $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');

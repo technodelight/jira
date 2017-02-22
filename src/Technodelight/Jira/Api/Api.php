@@ -54,6 +54,19 @@ class Api
     }
 
     /**
+     * Return available projects
+     * $recent returns the most recent x amount
+     *
+     * @param  int|null $recent
+     *
+     * @return array
+     */
+    public function projects($recent = null)
+    {
+        return $this->client->get('project' . ($recent ? '?recent=' . (int) $recent : ''));
+    }
+
+    /**
      * Log work against ticket
      *
      * $adjustEstimate options:
@@ -127,7 +140,7 @@ class Api
     {
         $requests = [];
         foreach ($issueKeys as $issueKey) {
-            $requests[] = sprintf('issue/%s/worklog', $issueKey);
+            $requests[] = sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey);
         }
         $responses = $this->client->multiGet($requests);
         $worklogs = [];
@@ -191,13 +204,14 @@ class Api
      *
      * @return IssueCollection
      */
-    public function inprogressIssues($projectCode, $all = false)
+    public function inprogressIssues($projectCode = null, $all = false)
     {
         $this->queryBuilder->resetActiveConditions();
-        $this->queryBuilder->project($projectCode);
         $this->queryBuilder->status('In Progress');
         if (!$all) {
             $this->queryBuilder->assignee(self::CURRENT_USER);
+        } else {
+            $this->queryBuilder->project($projectCode);
         }
 
         return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
