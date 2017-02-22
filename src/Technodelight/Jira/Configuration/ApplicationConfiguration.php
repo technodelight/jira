@@ -12,6 +12,7 @@ class ApplicationConfiguration
     private $aliases;
     private $yesterdayAsWeekday;
     private $defaultWorklogTimestamp;
+    private $cacheTtl;
     private $transitions;
     private $filters;
 
@@ -35,11 +36,6 @@ class ApplicationConfiguration
         return $this->domain;
     }
 
-    public function project()
-    {
-        return $this->project;
-    }
-
     public function yesterdayAsWeekday()
     {
         return $this->yesterdayAsWeekday;
@@ -48,6 +44,11 @@ class ApplicationConfiguration
     public function defaultWorklogTimestamp()
     {
         return $this->defaultWorklogTimestamp;
+    }
+
+    public function cacheTtl()
+    {
+        return $this->cacheTtl;
     }
 
     public function transitions()
@@ -72,9 +73,9 @@ class ApplicationConfiguration
         $configuration->password = $config['credentials']['password'];
         $configuration->domain = $config['credentials']['domain'];
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
-        $configuration->project = $config['project']['projectKey'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
+        $configuration->cacheTtl = $config['project']['cacheTtl'];
         $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');
         $configuration->aliases = self::flattenArray($config['aliases'], 'alias','issueKey');
         $configuration->filters = self::flattenArray($config['filters'], 'command', 'jql');

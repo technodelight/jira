@@ -83,11 +83,6 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->info('Project specific settings')
             ->children()
-                ->scalarNode('projectKey')
-                    ->info('The project key, like PROJ')
-                    ->example('PROJ')
-                    ->cannotBeEmpty()
-                ->end()
                 ->scalarNode('yesterdayAsWeekday')
                     ->info('Using \'yesterday\' means last workday on monday')
                     ->defaultTrue()
@@ -95,6 +90,10 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('defaultWorklogTimestamp')
                     ->info('Default worklog timestamp to use if date is omitted')
                     ->defaultValue('now')
+                ->end()
+                ->scalarNode('cacheTtl')
+                    ->info('keep API data in caches')
+                    ->defaultValue(15 * 60)
                 ->end()
             ->end();
 

@@ -28,24 +28,6 @@ class AbstractCommand extends Command
         parent::__construct($name);
     }
 
-    public function projectOption(InputInterface $input)
-    {
-        $project = $this->getService('technodelight.jira.config')->project();
-        if ($input->hasOption('project') && $input->getOption('project')) {
-            $project = $input->getOption('project');
-        }
-        return $project;
-    }
-
-    public function projectArgument(InputInterface $input)
-    {
-        $project = $this->getService('technodelight.jira.config')->project();
-        if ($input->getArgument('project')) {
-            $project = $input->getArgument('project');
-        }
-        return $project;
-    }
-
     public function issueKeyOption(InputInterface $input)
     {
         return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->option($input);

@@ -31,13 +31,6 @@ class Builder
         $this->registerDefaultConditions();
     }
 
-    private function registerDefaultConditions()
-    {
-        foreach ($this->defaultConditions as $name => $def) {
-            $this->registerCondition($name, $def);
-        }
-    }
-
     public static function factory()
     {
         return new self(new BaseQuery);
@@ -51,23 +44,20 @@ class Builder
             $name,
             $this->createCondition($clause, $operator, $paramsList)
         );
+        return $this;
     }
 
-    private function parseParamsListFromClause($clause)
-    {
-        if (preg_match_all('~\s*:([A-Za-z]+)\s*~', $clause, $matches)) {
-            return $matches[1];
-        }
-    }
 
     public function resetActiveConditions()
     {
         $this->baseQuery->resetActiveConditions();
+        return $this;
     }
 
     public function project($project)
     {
         $this->baseQuery->activateCondition('project', ['project' => $project]);
+        return $this;
     }
 
     public function issueKey($issueKey)
@@ -75,7 +65,11 @@ class Builder
         if (!is_array($issueKey)) {
             $issueKey = [$issueKey];
         }
+        if (empty($issueKey)) {
+            throw new \InvalidArgumentException('issueKey cannot be empty!');
+        }
         $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join('","', $issueKey)]);
+        return $this;
     }
 
     public function issueType($issueType)
@@ -84,16 +78,19 @@ class Builder
             $issueType = [$issueType];
         }
         $this->baseQuery->activateCondition('issueType', ['issueTypes' => join('","', $issueType)]);
+        return $this;
     }
 
     public function status($status)
     {
         $this->baseQuery->activateCondition('status', ['status' => $status]);
+        return $this;
     }
 
     public function sprint($sprint)
     {
         $this->baseQuery->activateCondition('sprint', ['sprint' => $sprint]);
+        return $this;
     }
 
     public function worklogDate($from, $to)
@@ -102,26 +99,31 @@ class Builder
             'worklogDate',
             ['from' => $from, 'to' => $to]
         );
+        return $this;
     }
 
     public function worklogAuthor($worklogAuthor)
     {
         $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => $worklogAuthor]);
+        return $this;
     }
 
     public function assignee($assignee)
     {
         $this->baseQuery->activateCondition('assignee', ['assignee' => $assignee]);
+        return $this;
     }
 
     public function orderAsc($field)
     {
         $this->baseQuery->activateCondition('orderByAsc', ['field' => $field]);
+        return $this;
     }
 
     public function orderDesc($field)
     {
         $this->baseQuery->activateCondition('orderByDesc', ['field' => $field]);
+        return $this;
     }
 
     public function assemble()
@@ -153,4 +155,17 @@ class Builder
         return $condition;
     }
 
+    private function registerDefaultConditions()
+    {
+        foreach ($this->defaultConditions as $name => $def) {
+            $this->registerCondition($name, $def);
+        }
+    }
+
+    private function parseParamsListFromClause($clause)
+    {
+        if (preg_match_all('~\s*:([A-Za-z]+)\s*~', $clause, $matches)) {
+            return $matches[1];
+        }
+    }
 }

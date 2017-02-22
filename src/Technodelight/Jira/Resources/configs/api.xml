@@ -5,15 +5,20 @@
 
     <services>
         <!-- jira -->
+        <service public="false" id="technodelight.jira.api_cache_storage.builder" class="Technodelight\Jira\Api\ApiCacheStorageBuilder" />
+        <service public="false" id="technodelight.jira.api_cache_storage" class="ICanBoogie\Storage\Storage">
+            <factory service="technodelight.jira.api_cache_storage.builder" method="build" />
+        </service>
         <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\HttpClient">
             <argument type="service" id="technodelight.jira.config" />
         </service>
-        <service public="false" id="technodelight.jira.api_search_query_builder">
-            <factory method="factory" class="Technodelight\Jira\Api\SearchQuery\Builder" />
+        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\CachedHttpClient">
+            <argument type="service" id="technodelight.jira.api_client" />
+            <argument type="service" id="technodelight.jira.api_cache_storage" />
+            <argument type="service" id="technodelight.jira.config" />
         </service>
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
-            <argument type="service" id="technodelight.jira.api_client" />
-            <argument type="service" id="technodelight.jira.api_search_query_builder" />
+            <argument type="service" id="technodelight.jira.cached_api_client" />
         </service>
         <!-- jira -->
         <!-- git -->

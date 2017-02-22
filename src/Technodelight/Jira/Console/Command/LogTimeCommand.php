@@ -156,6 +156,8 @@ class LogTimeCommand extends AbstractCommand
                         sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKey)
                     );
                 }
+            } catch (\UnexpectedValueException $exc) {
+                $output->writeln($exc->getMessage());
             } catch (\Exception $exc) {
                 $output->writeln(
                     sprintf('<error>Something bad happened</error>', $issueKey)
@@ -179,30 +181,38 @@ class LogTimeCommand extends AbstractCommand
     private function deleteWorklog($worklogId)
     {
         $jira = $this->getService('technodelight.jira.api');
-        $worklog = $jira->retrieveWorklogs([$worklogId])->current();
-        $jira->deleteWorklog($worklog);
-        return true;
+        if ($worklog = $jira->retrieveWorklogs([$worklogId])->current()) {
+            $jira->deleteWorklog($worklog);
+            return true;
+        } else {
+            throw new \UnexpectedValueException(sprintf('Cannot delete worklog <info>%d</info>, it may have been deleted already.', $worklogId));
+        }
     }
 
     private function updateWorklog($worklogId, $timeSpent, $comment, $startDay)
     {
         $jira = $this->getService('technodelight.jira.api');
 
-        $worklog = $jira->retrieveWorklogs([$worklogId])->current();
-        $updatedWorklog = clone $worklog;
-        if ($timeSpent) {
-            $updatedWorklog->timeSpent($timeSpent);
-        }
-        if ($comment) {
-            $updatedWorklog->comment($comment);
-        }
-        if ($startDay) {
-            $updatedWorklog->date($startDay);
-        }
+        if ($worklog = $jira->retrieveWorklogs([$worklogId])->current()) {
+            $updatedWorklog = clone $worklog;
+            if ($timeSpent) {
+                $updatedWorklog->timeSpent($timeSpent);
+            }
+            if ($comment) {
+                $updatedWorklog->comment($comment);
+            }
+            if ($startDay) {
+                $updatedWorklog->date($startDay);
+            }
 
-        if (!$worklog->isSame($updatedWorklog)) {
-            $jira->updateWorklog($updatedWorklog);
-            return true;
+            if (!$worklog->isSame($updatedWorklog)) {
+                $jira->updateWorklog($updatedWorklog);
+                return true;
+            } else {
+                throw new \UnexpectedValueException(sprintf('Cannot update worklog <info>%d</info> as it looks like exactly the previous one.', $worklogId));
+            }
+        } else {
+            throw new \UnexpectedValueException(sprintf('Cannot update worklog <info>%d</info>, it may have been deleted.', $worklogId));
         }
     }
 

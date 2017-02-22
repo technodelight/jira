@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Api;
 
-use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Api\SearchQuery\Builder;
 use Technodelight\Jira\Helper\DateHelper;
 
 class Api
@@ -15,10 +15,6 @@ class Api
      * @var Client
      */
     private $client;
-    /**
-     * @var SearchQueryBuilder
-     */
-    private $queryBuilder;
 
     private $defaultIssueTypeFilter = ['Defect', 'Bug', 'Technical Sub-Task'];
 
@@ -26,10 +22,9 @@ class Api
 
     private $retrievedIssues = [];
 
-    public function __construct(Client $client, SearchQueryBuilder $queryBuilder)
+    public function __construct(Client $client)
     {
         $this->client = $client;
-        $this->queryBuilder = $queryBuilder;
     }
 
     /**
@@ -51,6 +46,19 @@ class Api
     public function project($projectCode)
     {
         return $this->client->get('project/' . $projectCode);
+    }
+
+    /**
+     * Return available projects
+     * $recent returns the most recent x amount
+     *
+     * @param  int|null $recent
+     *
+     * @return array
+     */
+    public function projects($recent = null)
+    {
+        return $this->client->get('project' . ($recent ? '?recent=' . (int) $recent : ''));
     }
 
     /**
@@ -127,12 +135,13 @@ class Api
     {
         $requests = [];
         foreach ($issueKeys as $issueKey) {
-            $requests[] = sprintf('issue/%s/worklog', $issueKey);
+            $requests[] = sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey);
         }
+
         $responses = $this->client->multiGet($requests);
         $worklogs = [];
         foreach ($responses as $url => $response) {
-            if (preg_match('~.+/issue/([^/]+)/worklog~', $url, $matches)) {
+            if (preg_match('~issue/([^/]+)/worklog~', $url, $matches)) {
                 $issueKey = $matches[1];
                 if (!is_null($limit)) {
                     $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
@@ -157,6 +166,9 @@ class Api
             $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
 
             $results = [];
+            if (!is_null($limit)) {
+                $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
+            }
             foreach ($response['worklogs'] as $jiraRecord) {
                 $results[] = Worklog::fromArray($jiraRecord, $issueKey);
             }
@@ -178,11 +190,11 @@ class Api
      */
     public function retrieveIssuesHavingWorklogsForUser($from, $to, $user = null)
     {
-        $this->queryBuilder->resetActiveConditions();
-        $this->queryBuilder->worklogAuthor($user ?: self::CURRENT_USER);
-        $this->queryBuilder->worklogDate($from, $to);
+        $query = Builder::factory()
+            ->worklogAuthor($user ?: self::CURRENT_USER)
+            ->worklogDate($from, $to);
 
-        return $this->search($this->queryBuilder->assemble(), 'issueKey');
+        return $this->search($query->assemble(), 'issueKey');
     }
 
     /**
@@ -191,28 +203,29 @@ class Api
      *
      * @return IssueCollection
      */
-    public function inprogressIssues($projectCode, $all = false)
+    public function inprogressIssues($projectCode = null, $all = false)
     {
-        $this->queryBuilder->resetActiveConditions();
-        $this->queryBuilder->project($projectCode);
-        $this->queryBuilder->status('In Progress');
+        $query = Builder::factory()
+            ->status('In Progress');
         if (!$all) {
-            $this->queryBuilder->assignee(self::CURRENT_USER);
+            $query->assignee(self::CURRENT_USER);
+        } else {
+            $query->project($projectCode);
         }
 
-        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
+        return $this->search($query->assemble(), self::FIELDS_ALL);
     }
 
     public function filterIssuesByStatusAndType($projectCode, $status, array $issueTypes = [])
     {
-        $this->queryBuilder->resetActiveConditions();
-        $this->queryBuilder->project($projectCode);
-        $this->queryBuilder->status($status);
-        $this->queryBuilder->sprint(self::SPRINT_OPEN_SPRINTS);
-        $this->queryBuilder->issueType($issueTypes ?: $this->defaultIssueTypeFilter);
-        $this->queryBuilder->orderDesc('priority');
+        $query = Builder::factory()
+            ->project($projectCode)
+            ->status($status)
+            ->sprint(self::SPRINT_OPEN_SPRINTS)
+            ->issueType($issueTypes ?: $this->defaultIssueTypeFilter)
+            ->orderDesc('priority');
 
-        return $this->search($this->queryBuilder->assemble());
+        return $this->search($query->assemble());
     }
 
     /**
@@ -238,9 +251,9 @@ class Api
      */
     public function retrieveIssues(array $issueKeys)
     {
-        $this->queryBuilder->resetActiveConditions();
-        $this->queryBuilder->issueKey($issueKeys);
-        return $this->search($this->queryBuilder->assemble(), self::FIELDS_ALL);
+        $query = Builder::factory()
+            ->issueKey($issueKeys);
+        return $this->search($query->assemble(), self::FIELDS_ALL);
     }
 
     /**
