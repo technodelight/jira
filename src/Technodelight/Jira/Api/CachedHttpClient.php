@@ -28,25 +28,21 @@ class CachedHttpClient implements Client
 
     public function post($url, $data = [])
     {
-        $key = $this->urlKey($url);
-        $this->storage->eliminate($key);
-        $this->purgeIssueEndpoints($url);
-        $result = $this->httpClient->post($url, $data);
-        return $result;
+        $key = $this->keyify($url);
+        $this->storage->clear();
+        return $this->httpClient->post($url, $data);
     }
 
     public function put($url, $data = [])
     {
-        $key = $this->urlKey($url);
-        $this->storage->eliminate($key);
-        $this->purgeIssueEndpoints($url);
-        $result = $this->httpClient->put($url, $data);
-        return $result;
+        $key = $this->keyify($url);
+        $this->storage->clear();
+        return $this->httpClient->put($url, $data);
     }
 
     public function get($url)
     {
-        $key = $this->urlKey($url);
+        $key = $this->keyify($url);
         if ($this->storage->exists($key)) {
             return $this->storage->retrieve($key);
         }
@@ -57,10 +53,8 @@ class CachedHttpClient implements Client
 
     public function delete($url)
     {
-        $key = $this->urlKey($url);
-        $this->storage->eliminate($key);
-        $this->purgeIssueEndpoints($url);
-
+        $key = $this->keyify($url);
+        $this->storage->clear();
         return $this->httpClient->delete($url);
     }
 
@@ -69,8 +63,8 @@ class CachedHttpClient implements Client
         $cachedResults = [];
         $uncachedUrls = [];
         foreach ($urls as $idx => $url) {
-            if ($this->storage->exists($this->urlKey($url))) {
-                $cachedResults[$url] = $this->storage->retrieve($this->urlKey($url));
+            if ($this->storage->exists($this->keyify($url))) {
+                $cachedResults[$url] = $this->storage->retrieve($this->keyify($url));
             } else {
                 $uncachedUrls[] = $url;
             }
@@ -78,7 +72,7 @@ class CachedHttpClient implements Client
         $results = [];
         foreach ($this->httpClient->multiGet($uncachedUrls) as $url => $result) {
             $key = $this->httpClient->effectiveUrlFromFull($url);
-            $this->storage->store($this->urlKey($key), $result, $this->configuration->cacheTtl());
+            $this->storage->store($this->keyify($key), $result, $this->configuration->cacheTtl());
             $results[$key] = $result;
         }
         $mergedResults = [];
@@ -97,42 +91,6 @@ class CachedHttpClient implements Client
         $result = $this->httpClient->search($jql, $fields, $expand);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
         return $result;
-    }
-
-    private function purgeIssueEndpoints($url)
-    {
-        if ($issueKey = $this->issueKeyFromUrl($url)) {
-            if (intval($issueKey) == $issueKey) {
-                $issue = $this->httpClient->get('issue/' . $issueKey . '?fields=key');
-                $issueKey = $issue['key'];
-            }
-            foreach ($this->issueEndpoints as $endpoint) {
-                $this->storage->eliminate($this->urlKey(sprintf($endpoint, $issueKey)));
-            }
-        }
-    }
-
-    private function urlKey($url)
-    {
-        if ($issueKey = $this->issueKeyFromUrl($url)) {
-            return parse_url($url, PHP_URL_PATH);
-        }
-
-        return $url;
-    }
-
-    private function issueKeyFromUrl($url)
-    {
-        $issueKey = null;
-        if (preg_match('~issue/([^/]+)~', $url, $match)) {
-            if (strpos($match[1], '/') !== false) {
-                $issueKey = substr($match[1], strpos($match[1], '/'));
-            } else {
-                $issueKey = $match[1];
-            }
-        }
-
-        return $issueKey;
     }
 
     private function keyify()
