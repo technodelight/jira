@@ -18,10 +18,6 @@ class Api
 
     private $defaultIssueTypeFilter = ['Defect', 'Bug', 'Technical Sub-Task'];
 
-    private $myself;
-
-    private $retrievedIssues = [];
-
     public function __construct(Client $client)
     {
         $this->client = $client;
@@ -32,10 +28,7 @@ class Api
      */
     public function user()
     {
-        if (!$this->myself) {
-            $this->myself = $this->client->get('myself');
-        }
-        return $this->myself;
+        return $this->client->get('myself');
     }
 
     /**
@@ -235,13 +228,9 @@ class Api
      */
     public function retrieveIssue($issueKey)
     {
-        if (!isset($this->retrievedIssues[$issueKey])) {
-            $this->retrievedIssues[$issueKey] = Issue::fromArray(
-                $this->client->get(sprintf('issue/%s', $issueKey))
-            );
-        }
-
-        return $this->retrievedIssues[$issueKey];
+        return Issue::fromArray(
+            $this->client->get(sprintf('issue/%s', $issueKey))
+        );
     }
 
     /**

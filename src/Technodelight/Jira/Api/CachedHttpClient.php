@@ -71,7 +71,7 @@ class CachedHttpClient implements Client
         }
         $results = [];
         foreach ($this->httpClient->multiGet($uncachedUrls) as $url => $result) {
-            $key = $this->httpClient->effectiveUrlFromFull($url);
+            $key = $url;
             $this->storage->store($this->keyify($key), $result, $this->configuration->cacheTtl());
             $results[$key] = $result;
         }

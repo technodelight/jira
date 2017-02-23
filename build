@@ -17,7 +17,7 @@ function cp($in, $out, $mod = null)
     echo sprintf("Copy %s to %s", $in, $out) . PHP_EOL;
     $out = copy($in, $out);
     if (!$out) {
-        echo sprintf('  Something bad happened...') . PHP_EOL, 
+        echo sprintf('  Something bad happened...') . PHP_EOL,
     }
     if ($mod) chmod($out, $mod);
     return $out;
@@ -43,15 +43,17 @@ $dir.= '/jira-master';
 file_put_contents($dir . '/bin/.version', $version);
 
 
-$builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
+$buildfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
 echo 'Building phar... ';
 `cd $dir && box build`;
-if (!is_file($builtfile)) die('Phar has not built!');
+if (!is_file($buildfile)) die('Phar has not built!');
 echo 'done.' . PHP_EOL;
 echo 'Copying files' . PHP_EOL;
-$outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
-cp($builtfile, $outfile, 0755);
-cp($outfile, __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar', 0755);
+$releasefile = __DIR__ . DIRECTORY_SEPARATOR . 'builds' . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($buildfile)) . '.phar';
+$currentbuildfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
+
+cp($buildfile, $releasefile, 0755);
+cp($releasefile, $currentbuildfile, 0755);
 
 if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
     if (!cp($outfile, '/usr/local/bin/jira')) {

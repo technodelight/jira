@@ -138,10 +138,7 @@ class LogTimeCommand extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $startDay = $input->getOption('move');
-        if (!$startDay) {
-            $startDay = $this->dateArgument($input);
-        }
+        $worklogDate = $input->getOption('move');
 
         if (intval($issueKey)) {
             try {
@@ -151,7 +148,7 @@ class LogTimeCommand extends AbstractCommand
                         sprintf('<comment>Worklog <info>%d</info> has been deleted successfully</comment>', $issueKey)
                     );
                 } else {
-                    $this->updateWorklog($issueKey, $timeSpent, $comment, $startDay);
+                    $this->updateWorklog($issueKey, $timeSpent, $comment, $worklogDate);
                     $output->writeln(
                         sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKey)
                     );
@@ -172,7 +169,7 @@ class LogTimeCommand extends AbstractCommand
             $template = Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/logtime.template');
             $output->writeln(
                 $this->deDoubleNewlineize(
-                    $template->render($this->logNewWork($issueKey, $timeSpent, $comment, $startDay))
+                    $template->render($this->logNewWork($issueKey, $timeSpent, $comment, $this->dateArgument($input)))
                 )
             );
         }
