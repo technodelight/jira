@@ -19,7 +19,7 @@ class IssueCollection implements Iterator, Countable
         }
     }
 
-    public static function fromSearchArray($resultArray)
+    public static function fromSearchArray(array $resultArray)
     {
         return new self(
             $resultArray['startAt'],
