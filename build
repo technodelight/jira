@@ -17,7 +17,7 @@ function cp($in, $out, $mod = null)
     echo sprintf("Copy %s to %s", $in, $out) . PHP_EOL;
     $out = copy($in, $out);
     if (!$out) {
-        echo sprintf('  Something bad happened...') . PHP_EOL,
+        echo sprintf('  Something bad happened...') . PHP_EOL;
     }
     if ($mod) chmod($out, $mod);
     return $out;
