@@ -1,7 +1,6 @@
 {
     "name": "technodelight/jira",
     "description": "JIRA PHP console application for day-to-day development",
-    "minimum-stability": "dev",
     "license": "MIT",
     "require": {
         "php": ">= 5.6",
