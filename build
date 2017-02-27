@@ -2,7 +2,7 @@
 <?php
 
 $start = microtime(true);
-require './vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
 function formatBytes($size, $precision = 4)
 {
@@ -10,6 +10,17 @@ function formatBytes($size, $precision = 4)
     $suffixes = array('', 'K', 'M', 'G', 'T');
 
     return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+}
+
+function cp($in, $out, $mod = null)
+{
+    echo sprintf("Copy %s to %s", $in, $out) . PHP_EOL;
+    $out = copy($in, $out);
+    if (!$out) {
+        echo sprintf('  Something bad happened...') . PHP_EOL,
+    }
+    if ($mod) chmod($out, $mod);
+    return $out;
 }
 
 $tools = ['git', 'box', 'unzip', 'composer', 'wget'];
@@ -32,21 +43,26 @@ $dir.= '/jira-master';
 file_put_contents($dir . '/bin/.version', $version);
 
 
-echo 'Building phar...'.PHP_EOL;
+$buildfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
+echo 'Building phar... ';
 `cd $dir && box build`;
-$builtfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
-$outfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($builtfile)) . '.phar';
-copy($builtfile, $outfile);
-chmod($outfile, 0755);
+if (!is_file($buildfile)) die('Phar has not built!');
+echo 'done.' . PHP_EOL;
+echo 'Copying files' . PHP_EOL;
+$releasefile = __DIR__ . DIRECTORY_SEPARATOR . 'builds' . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($buildfile)) . '.phar';
+$currentbuildfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
+
+cp($buildfile, $releasefile, 0755);
+cp($releasefile, $currentbuildfile, 0755);
 
 if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
-    if (!copy($outfile, '/usr/local/bin/jira')) {
+    if (!cp($outfile, '/usr/local/bin/jira')) {
         die ("Cannot copy $outfile to /usr/local/bin/jira");
     }
-    if (!copy($outfile, getenv('HOME') . '/Dropbox/jira.phar')) {
+    if (!cp($outfile, getenv('HOME') . '/Dropbox/jira.phar')) {
         die ("Cannot copy $outfile to " . getenv('HOME') . "/Dropbox/jira.phar");
     }
 }
-echo "Seems to be done!" . PHP_EOL . PHP_EOL;
+echo "Seems to be done properly!" . PHP_EOL . PHP_EOL;
 
 printf ('%s (%s), %.4f seconds', $outfile, formatBytes(filesize($outfile), 2), microtime(true) - $start);

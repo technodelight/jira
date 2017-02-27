@@ -21,7 +21,7 @@ class ConfigurationLoader
             new Configuration,
             $this->loadValidConfigurationYamls(
                 [
-                    $this->filenameProvider->localFile() => true,
+                    $this->filenameProvider->localFile() => false,
                     $this->filenameProvider->globalFile() => false,
                 ]
             )

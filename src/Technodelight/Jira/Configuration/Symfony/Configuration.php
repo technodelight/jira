@@ -65,7 +65,7 @@ class Configuration implements ConfigurationInterface
             ->info('Third party integration configs')
             ->children()
                 ->arrayNode('github')
-                    ->info('GitHub credentials - used to retrieve pull request data, including webhook statuses')
+                    ->info('GitHub credentials - used to retrieve pull request data, including webhook statuses. Visit this page to generate a token: https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool')
                     ->children()
                         ->scalarNode('apiToken')->isRequired()->end()
                     ->end()
@@ -82,6 +82,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->info('Project specific settings')
+            ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('yesterdayAsWeekday')
                     ->info('Using \'yesterday\' means last workday on monday')

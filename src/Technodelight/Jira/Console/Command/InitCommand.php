@@ -32,11 +32,22 @@ class InitCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dumper = $this->getService('technodelight.jira.configuration.symfony.configuration_dumper');
+        $dialog = $this->getService('console.dialog_helper');
+
         if ($input->getOption('global')) {
             $path = $dumper->dumpGlobal();
         } else {
             $path = $dumper->dumpLocal();
         }
         $output->writeLn('Sample configuration has been written to ' . $path);
+
+        $consent = $dialog->askConfirmation(
+            $output,
+            PHP_EOL . "<question>Do you want to edit it now? (y/N)</question>",
+            false
+        );
+        if ($consent) {
+            passthru(getenv('EDITOR') . ' ' . $path);
+        }
     }
 }

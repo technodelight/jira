@@ -8,6 +8,7 @@ use Technodelight\Jira\Configuration\Symfony\Configuration;
 class ConfigurationDumper
 {
     private $filenameProvider;
+    private $globalProps = ['credentials', 'integrations', 'project'];
 
     public function __construct($filenameProvider)
     {
@@ -16,12 +17,12 @@ class ConfigurationDumper
 
     public function dumpLocal()
     {
-        return $this->dump($this->filenameProvider->localFile());
+        return $this->dump($this->filenameProvider->localFile(), false);
     }
 
     public function dumpGlobal()
     {
-        return $this->dump($this->filenameProvider->globalFile());
+        return $this->dump($this->filenameProvider->globalFile(), true);
     }
 
     private function dump($path)
@@ -39,12 +40,15 @@ class ConfigurationDumper
         return $path;
     }
 
-    private function putContents($path)
+    private function putContents($path, $isGlobal)
     {
         $configuration = new Configuration;
         $config = $configuration->getConfigTreeBuilder()->buildTree();
         $written = 0;
         foreach ($config->getChildren() as $child) {
+            if ($isGlobal && !in_array($child->getName(), $this->globalProps)) {
+                continue;
+            }
             $written+= (int) file_put_contents($path, (new YamlReferenceDumper)->dumpAtPath($configuration, $child->getName()), FILE_APPEND);
         }
         return $written;

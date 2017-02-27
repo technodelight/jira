@@ -25,9 +25,9 @@ class Issue
     /**
      * Worklogs, if all fields are returned by API
      *
-     * @var array
+     * @var WorklogCollection
      */
-    private $worklogs = [];
+    private $worklogs;
 
     /**
      * Comments, if any
@@ -36,12 +36,14 @@ class Issue
      */
     private $comments = [];
 
-    public function __construct($id, $link, $key, $fields)
+    public function id()
     {
-        $this->id = $id;
-        $this->link = $link;
-        $this->key = $key;
-        $this->fields = $fields;
+        return $this->id;
+    }
+
+    public function key()
+    {
+        return $this->key;
     }
 
     public function ticketNumber()
@@ -172,18 +174,28 @@ class Issue
         }
     }
 
+    /**
+     * @return WorklogCollection
+     */
     public function worklogs()
     {
-        if ($field = $this->findField('worklog') && empty($this->worklogs)) {
-            $logs = $field['worklogs'];
-            if (!empty($logs)) {
-                foreach ($logs as $logArray) {
-                    $this->worklogs[] = Worklog::fromArray($logArray);
-                }
-            }
+        if ($this->worklogs) {
+            return $this->worklogs;
         }
 
-        return $this->worklogs;
+        if ($field = $this->findField('worklog')) {
+            $this->worklogs = WorklogCollection::fromIssueArray($this, $field['worklogs']);
+        }
+        return $this->worklogs ?: WorklogCollection::createEmpty();
+    }
+
+    public function assignWorklogs(WorklogCollection $worklogs)
+    {
+        if (!$this->worklogs) {
+            $this->worklogs = $worklogs;
+        } else {
+            throw new \RuntimeException('Issue contains worklogs already, assigning worklogs is forbidden');
+        }
     }
 
     public function comments()
@@ -224,11 +236,20 @@ class Issue
 
     public static function fromArray($resultArray)
     {
-        return new self($resultArray['id'], $resultArray['self'], $resultArray['key'], isset($resultArray['fields']) ? $resultArray['fields'] : []);
+        $issue = new self;
+        $issue->id = $resultArray['id'];
+        $issue->link = $resultArray['self'];
+        $issue->key = $resultArray['key'];
+        $issue->fields = isset($resultArray['fields']) ? $resultArray['fields'] : [];
+        return $issue;
     }
 
     private function findField($name)
     {
         return isset($this->fields[$name]) ? $this->fields[$name] : false;
+    }
+
+    private function __construct()
+    {
     }
 }
