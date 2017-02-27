@@ -35,38 +35,29 @@ class HttpClient implements Client
                 'auth' => [$configuration->username(), $configuration->password()]
             ]
         );
-        $this->debugStat  = new DebugStat;
     }
 
     public function post($url, $data = [])
     {
-        $this->debugStat->start('post', $url, $data);
         $result = $this->httpClient->post($url, ['json' => $data]);
-        $this->debugStat->stop();
         return json_decode($result->getBody(), true);
     }
 
     public function put($url, $data = [])
     {
-        $this->debugStat->start('put', $url, $data);
         $result = $this->httpClient->put($url, ['json' => $data]);
-        $this->debugStat->stop();
         return json_decode($result->getBody(), true);
     }
 
     public function get($url)
     {
-        $this->debugStat->start('get', $url);
         $result = $this->httpClient->get($url);
-        $this->debugStat->stop();
         return json_decode($result->getBody(), true);
     }
 
     public function delete($url)
     {
-        $this->debugStat->start('delete', $url);
         $result = $this->httpClient->delete($url);
-        $this->debugStat->stop();
         return json_decode($result->getBody(), true);
     }
 
@@ -95,22 +86,22 @@ class HttpClient implements Client
      *
      * @return array
      */
-    public function search($jql, $fields = null, $expand = null)
+    public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
-        $this->debugStat->start('search', $jql);
-        $result = $this->httpClient->get(
+        $result = $this->httpClient->post(
             sprintf(
                 'search%s',
                 $fields || $expand ? '?' . http_build_query(
                     array_filter([
                         'fields' => $fields,
-                        'expand' => $expand
+                        'expand' => $expand ? join(',', $expand) : null,
+                        'properties' => $properties ? join(',', $properties) : null
                     ])
                 ) : ''
             ),
-            ['query' => ['jql' => $jql]]
+            ['json' => ['jql' => $jql]]
         );
-        $this->debugStat->stop();
+
         return json_decode($result->getBody(), true);
     }
 

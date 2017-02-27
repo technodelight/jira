@@ -24,11 +24,11 @@ class Api
     }
 
     /**
-     * @return array
+     * @return User
      */
     public function user()
     {
-        return $this->client->get('myself');
+        return User::fromArray($this->client->get('myself'));
     }
 
     /**
@@ -49,9 +49,9 @@ class Api
      *
      * @return array
      */
-    public function projects($recent = null)
+    public function projects($numberOfRecent = null)
     {
-        return $this->client->get('project' . ($recent ? '?recent=' . (int) $recent : ''));
+        return $this->client->get('project' . ($numberOfRecent ? '?recent=' . (int) $numberOfRecent : ''));
     }
 
     /**
@@ -119,75 +119,80 @@ class Api
     }
 
     /**
-     * @param  array $issueKeys
-     * @param  int|null $limit
-     *
-     * @return Worklog[]
-     */
-    public function retrieveIssuesWorklogs(array $issueKeys, $limit = null)
-    {
-        $requests = [];
-        foreach ($issueKeys as $issueKey) {
-            $requests[] = sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey);
-        }
-
-        $responses = $this->client->multiGet($requests);
-        $worklogs = [];
-        foreach ($responses as $url => $response) {
-            if (preg_match('~issue/([^/]+)/worklog~', $url, $matches)) {
-                $issueKey = $matches[1];
-                if (!is_null($limit)) {
-                    $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
-                }
-                foreach ($response['worklogs'] as $jiraRecord) {
-                    $worklogs[] = Worklog::fromArray($jiraRecord, $issueKey);
-                }
-            }
-        }
-
-        return $worklogs;
-    }
-
-    /**
      * @param string $issueKey
      *
-     * @return Worklog[]
+     * @return WorklogCollection
      */
     public function retrieveIssueWorklogs($issueKey, $limit = null)
     {
         try {
             $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
 
-            $results = [];
+            $results = WorklogCollection::createEmpty();
             if (!is_null($limit)) {
                 $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
             }
             foreach ($response['worklogs'] as $jiraRecord) {
-                $results[] = Worklog::fromArray($jiraRecord, $issueKey);
+                $results->push(Worklog::fromArray($jiraRecord, $issueKey));
             }
 
             return $results;
         } catch (Exception $exception) {
-            return [];
+            return WorklogCollection::createEmpty();
         }
     }
 
     /**
-     * Retrieve issues having worklog after given date on
-     *
-     * @param string $from could be startOfWeek or startOfDay
-     * @param string $to could be startOfWeek or startOfDay
-     * @param string|null $user username or currentUser() by default
-     *
-     * @return array
+     * @param  IssueCollection $issues
+     * @param  int|null $limit
      */
-    public function retrieveIssuesHavingWorklogsForUser($from, $to, $user = null)
+    public function fetchAndAssignWorklogsToIssues(IssueCollection $issues, $from = null, $to = null, $username = null, $limit = null)
+    {
+        $requests = [];
+        foreach ($issues->keys() as $issueKey) {
+            $requests[] = sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey);
+        }
+
+        $responses = $this->client->multiGet($requests);
+        foreach ($responses as $requestUrl => $response) {
+            list (, $issueKey, ) = explode('/', $requestUrl, 3);
+            $issue = $issues->find($issueKey);
+            $worklogs = WorklogCollection::fromIssueArray($issue, $response['worklogs']);
+            if ($from && $to) {
+                $worklogs = $worklogs->filterByDate($from, $to);
+            }
+            if ($username) {
+                $worklogs = $worklogs->filterByUser($username);
+            }
+            if ($limit) {
+                $worklogs = $worklogs->filterByLimit($limit);
+            }
+            $issue->assignWorklogs($worklogs);
+        }
+    }
+
+    /**
+     * Find issues with matching worklogs for user
+     *
+     * @param string $from could be startOfWeek, startOfDay, Y-m-d
+     * @param string $to could be startOfWeek, startOfDay, Y-m-d
+     * @param string|null $username username or currentUser() by default. Must be a username given.
+     * @param int|null $limit
+     *
+     * @return IssueCollection
+     */
+    public function findUserIssuesWithWorklogs($from, $to, $username = null, $limit = null)
     {
         $query = Builder::factory()
-            ->worklogAuthor($user ?: self::CURRENT_USER)
             ->worklogDate($from, $to);
+        if ($username) {
+            $query->worklogAuthor($username);
+        }
 
-        return $this->search($query->assemble(), 'issueKey');
+        $issues = $this->search($query->assemble(), 'issueKey');
+        $this->fetchAndAssignWorklogsToIssues($issues, $from, $to, $username, $limit);
+
+        return $issues;
     }
 
     /**
@@ -207,18 +212,6 @@ class Api
         }
 
         return $this->search($query->assemble(), self::FIELDS_ALL);
-    }
-
-    public function filterIssuesByStatusAndType($projectCode, $status, array $issueTypes = [])
-    {
-        $query = Builder::factory()
-            ->project($projectCode)
-            ->status($status)
-            ->sprint(self::SPRINT_OPEN_SPRINTS)
-            ->issueType($issueTypes ?: $this->defaultIssueTypeFilter)
-            ->orderDesc('priority');
-
-        return $this->search($query->assemble());
     }
 
     /**
@@ -288,16 +281,18 @@ class Api
      * @param string $jql
      * @param string|null $fields
      * @param array|null $expand
+     * @param array|null $properties
      *
      * @return IssueCollection
      */
-    public function search($jql, $fields = null, array $expand = null)
+    public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
         return IssueCollection::fromSearchArray(
             $this->client->search(
                 $jql,
                 $fields,
-                !empty($expand) ? join(',', $expand) : null
+                $expand,
+                $properties
             )
         );
     }

@@ -137,7 +137,7 @@ class Application extends BaseApp
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         if (true === $input->hasParameterOption(array('--debug', '-d'))) {
-            $GLOBALS['magical_debug_mode'] = true;
+
             $start = microtime(true);
             $startMem = memory_get_usage(true);
             $result = parent::doRun($input, $output);

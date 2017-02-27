@@ -13,8 +13,6 @@ class CachedHttpClient implements Client
     private $storage;
     private $configuration;
 
-    private $issueEndpoints = ['issue/%s', 'issue/%s/worklog', 'issue/%s/transitions'];
-
     public function __construct(
         HttpClient $httpClient,
         Storage $storage,
@@ -29,7 +27,9 @@ class CachedHttpClient implements Client
     public function post($url, $data = [])
     {
         $key = $this->keyify($url);
-        $this->storage->clear();
+        if (strpos('worklog/list', $url) === false && strpos('search', $url) === false) {
+            $this->storage->clear();
+        }
         return $this->httpClient->post($url, $data);
     }
 
@@ -43,8 +43,12 @@ class CachedHttpClient implements Client
     public function get($url)
     {
         $key = $this->keyify($url);
-        if ($this->storage->exists($key)) {
-            return $this->storage->retrieve($key);
+        if ($this->storage->exists($key) && $value = $this->storage->retrieve($key)) {
+            if (!is_null($value)) {
+                return $value;
+            } else {
+                $this->storage->eliminate($key);
+            }
         }
         $result = $this->httpClient->get($url);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
@@ -82,13 +86,13 @@ class CachedHttpClient implements Client
         return $mergedResults;
     }
 
-    public function search($jql, $fields = null, $expand = null)
+    public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
-        $key = $this->keyify($jql, (string) $fields, (string) $expand);
+        $key = $this->keyify($jql, (string) $fields, serialize($expand), serialize($properties));
         if ($this->storage->exists($key)) {
             return $this->storage->retrieve($key);
         }
-        $result = $this->httpClient->search($jql, $fields, $expand);
+        $result = $this->httpClient->search($jql, $fields, $expand, $properties);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
         return $result;
     }
