@@ -35,5 +35,6 @@
     "config": {
       "bin-dir": "bin"
     },
+    "autoload-dev": {"psr-0": {"": "features/bootstrap"}},
     "bin": ["bin/jira"]
 }

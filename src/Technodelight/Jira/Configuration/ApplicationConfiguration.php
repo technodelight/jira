@@ -8,7 +8,6 @@ class ApplicationConfiguration
     private $password;
     private $githubToken;
     private $domain;
-    private $project;
     private $aliases;
     private $yesterdayAsWeekday;
     private $defaultWorklogTimestamp;
