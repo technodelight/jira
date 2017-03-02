@@ -5,4 +5,4 @@ default:
                 - %paths.base%/features/integration/
 
             contexts:
-              - DashboardContext
+              - ApplicationContext
