@@ -1,7 +1,9 @@
 <?php
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\PyStringNode;
 use Fixture\GitHub\TestHttpClient;
+use Fixture\Shell\TestShell;
 
 class GithubContext implements Context
 {
@@ -16,6 +18,14 @@ class GithubContext implements Context
     public function githubReturnsFixtureForPath($fixture, $method, $path)
     {
         TestHttpClient::$fixtures[$method][$path] = $this->read($fixture);
+    }
+
+    /**
+     * @Given Git command :command returns:
+     */
+    public function gitCommandReturns($command, PyStringNode $node)
+    {
+        TestShell::$fixtures[$command] = $node->getStrings();
     }
 
     private function read($fixture)

@@ -10,12 +10,21 @@ class Command
     const PREFIX_OPT = '-';
     const PREFIX_LONGOPT = '--';
 
+    private $exec;
     private $args = [];
     private $squashOptions = false;
 
-    public static function create()
+    public static function create($exec = null)
     {
-        return new self;
+        $command = new self;
+        $command->exec = $exec;
+        return $command;
+    }
+
+    public function withExec($exec)
+    {
+        $this->exec = $exec;
+        return $this;
     }
 
     public function withArgument($argument)
@@ -35,9 +44,9 @@ class Command
         return $this;
     }
 
-    public function pipe()
+    public function pipe(Command $command)
     {
-        $this->arg(self::TYPE_STANDALONE, '|');
+        $this->arg(self::TYPE_STANDALONE, '| ' . $command);
 
         return $this;
     }
@@ -64,7 +73,7 @@ class Command
 
     public function __toString()
     {
-        $parts = [];
+        $parts = [$this->exec];
         $args = $this->args;
         if ($this->squashOptions) {
             $opts = [];
@@ -81,7 +90,7 @@ class Command
             $parts[] = $this->render($arg);
         }
 
-        return join(' ', $parts);
+        return join(' ', array_filter($parts));
     }
 
     private function arg($type, $name, $value = null)

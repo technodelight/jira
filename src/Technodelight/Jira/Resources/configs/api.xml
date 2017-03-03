@@ -22,7 +22,7 @@
         </service>
         <!-- jira -->
         <!-- git -->
-        <service public="false" id="technodelight.gitshell.shell" class="Technodelight\Jira\Api\Shell\Shell">
+        <service public="false" id="technodelight.gitshell.shell" class="Technodelight\Jira\Api\Shell\NativeShell">
             <argument>/usr/bin/env git</argument>
         </service>
         <service id="technodelight.gitshell.api" class="Technodelight\Jira\Api\GitShell\Api">

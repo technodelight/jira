@@ -10,7 +10,7 @@ use Technodelight\Jira\Api\Shell\Shell;
 class Api
 {
     const LOG_FORMAT = '"<entry><hash><![CDATA[%H]]></hash><message><![CDATA[%B]]></message><authorName>%aN</authorName><authorDate>%at</authorDate></entry>"';
-    const VERBOSE_REMOTE_REGEX = '~([a-z0-9]+)\t([^:]+):([^/]+)/(.*).git \((fetch|push)\)~';
+    const VERBOSE_REMOTE_REGEX = '~([a-z0-9]+)\s+([^:]+):([^/]+)/(.*).git \((fetch|push)\)~';
     private $shell;
     private $remotes;
     private $verboseRemotes;
@@ -55,12 +55,9 @@ class Api
                 $remotesDef = $this->shell->exec(Command::create()->withArgument('remote')->withOption('v'));
                 $this->verboseRemotes = [];
                 foreach ($remotesDef as $def) {
-                    if (preg_match(self::VERBOSE_REMOTE_REGEX, $def, $matches)) {
-                        $remote = $matches[1];
-                        $userHost = $matches[2];
-                        $owner = $matches[3];
-                        $repo = $matches[4];
-                        $type = $matches[5];
+                    if (preg_match(self::VERBOSE_REMOTE_REGEX, trim($def), $matches)) {
+                        list (,$remote, $userHost, $owner, $repo, $type) = $matches;
+
                         if (!isset($this->verboseRemotes[$remote])) {
                             $this->verboseRemotes[$remote] = [];
                         }
@@ -71,6 +68,11 @@ class Api
                             'url' => sprintf('%s:%s/%s.git', $userHost, $owner, $repo)
                         ];
                     }
+                }
+                if (!$this->verboseRemotes) {
+                    throw new \RuntimeException('No git remote found!');
+                    //TODO: turn off github integration this case!
+                    // also turn off github integration if remote is not github!
                 }
             }
             return $this->verboseRemotes;
@@ -124,16 +126,21 @@ class Api
         $parent = $this->shell->exec(
             Command::create()
                 ->withArgument('show-branch')->withOption('a')->withStdErrTo('/dev/null')
-                ->pipe()
-                    ->withArgument('sed')->withArgument('"s/^ *//g"')
-                ->pipe()
-                    ->withArgument('grep')->withOption('v')->withArgument('"^\*"')
-                ->pipe()
-                    ->withArgument('head')->withOption('1')
-                ->pipe()
-                    ->withArgument('sed')->withArgument('"s/.*\[\(.*\)\].*/\1/"')
-                ->pipe()
-                    ->withArgument('sed')->withArgument('"s/[\^~].*//"')
+                ->pipe(
+                    Command::create('sed')->withArgument('"s/^ *//g"')
+                )
+                ->pipe(
+                    Command::create('grep')->withOption('v')->withArgument('"^\*"')
+                )
+                ->pipe(
+                    Command::create('head')->withOption('1')
+                )
+                ->pipe(
+                    Command::create('sed')->withArgument('"s/.*\[\(.*\)\].*/\1/"')
+                )
+                ->pipe(
+                    Command::create('sed')->withArgument('"s/[\^~].*//"')
+                )
         );
         // $parent = $this->shell->exec(
         //     'show-branch -a 2> /dev/null | sed "s/^ *//g" | grep -v "^\*" | head -1 | sed "s/.*\[\(.*\)\].*/\1/" | sed "s/[\^~].*//"'
