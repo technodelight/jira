@@ -88,7 +88,9 @@ class Api
         $remotes = $this->remotes();
         $command = Command::create()->withArgument('branch')->withOption('a');
         if ($pattern) {
-            $command->pipe()->withArgument('grep')->withArgument(escapeshellarg($pattern));
+            $command->pipe(
+                Command::create('grep')->withArgument(escapeshellarg($pattern))
+            );
         }
         return array_map(
             function($branchDef) use ($remotes) {
