@@ -4,14 +4,14 @@ namespace Fixture;
 
 use Fixture\GitHub\TestHttpClient;
 use Github\Client;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration as AppConf;
 
 class GithubClientBuilder
 {
     private $testHttpClient;
     private $configuration;
 
-    public function __construct(ApplicationConfiguration $configuration, TestHttpClient $testHttpClient)
+    public function __construct(AppConf $configuration, TestHttpClient $testHttpClient)
     {
         $this->configuration = $configuration;
         $this->testHttpClient = $testHttpClient;
