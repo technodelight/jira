@@ -10,6 +10,16 @@
             <argument type="service" id="fixture.jira_fixture_client" />
         </service>
         <!-- jira -->
+        <!-- hub -->
+        <service id="fixture.github.test_http_client" class="Fixture\Github\TestHttpClient" />
+        <service id="fixture.github_client_builder" class="Fixture\GitHubClientBuilder">
+            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="fixture.github.test_http_client" />
+        </service>
+        <service id="technodelight.github.api" class="GitHub\Client">
+            <factory service="fixture.github_client_builder" method="build" />
+        </service>
+        <!-- hub -->
     </services>
 
 </container>

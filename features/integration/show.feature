@@ -1,6 +1,7 @@
 Feature: An issue could be rendered
 
 Scenario: I want to see the details of an issue
+  Given GitHub returns "issues" fixture for "get" path "repos/technodelight/jira/issues"
   When I run the application with the following input:
   | command     | show       |
   | issueKey    | GEN-359    |

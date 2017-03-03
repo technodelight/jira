@@ -6,6 +6,7 @@ use Technodelight\Jira\Api\Client;
 
 class JiraFixtureClient implements Client
 {
+    const FIXTURE_PATH = '../fixtures/jira/';
     const ERROR_NO_SUCH_FIXTURE = 'No such fixture: "%s"';
     const ERROR_CANNOT_WRITE_FIXTURE = 'Fixture assertion failed: "%s"';
     const ERROR_CANNOT_UNSERIALIZE_FIXTURE = 'Fixture unserialization failure: "%s"';
@@ -58,7 +59,7 @@ class JiraFixtureClient implements Client
 
     private function read($url)
     {
-        $filename = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . $this->keyify($url);
+        $filename = __DIR__ . '/' . self::FIXTURE_PATH . $this->keyify($url);
         if (!is_readable($filename)) {
             throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url));
         }
