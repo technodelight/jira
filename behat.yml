@@ -1,0 +1,9 @@
+default:
+    suites:
+        integration:
+            paths:
+                - %paths.base%/features/integration/
+
+            contexts:
+              - ApplicationContext
+              - GithubContext

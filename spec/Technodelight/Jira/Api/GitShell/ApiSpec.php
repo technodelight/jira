@@ -89,7 +89,7 @@ class ApiSpec extends ObjectBehavior
         $shell->exec($command)->shouldBeCalled()->willReturn(['origin']);
         $this->remotes()->shouldReturn(['origin']);
 
-        $command = Command::create()->withArgument('branch')->withOption('a')->pipe()->withArgument('grep')->withArgument('\'something\'');
+        $command = Command::create()->withArgument('branch')->withOption('a')->pipe(Command::create('grep')->withArgument('\'something\''));
         $shell->exec($command)->shouldBeCalled()->willReturn(['remotes/origin/feature/something', 'feature/something']);
 
         $branchRemote = Branch::fromArray(['name'=>'feature/something', 'remote' => 'origin', 'current' => false]);

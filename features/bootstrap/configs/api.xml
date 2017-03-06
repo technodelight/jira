@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- jira -->
+        <service public="false" id="fixture.jira_fixture_client" class="Fixture\JiraFixtureClient" />
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+            <argument type="service" id="fixture.jira_fixture_client" />
+        </service>
+        <!-- jira -->
+        <!-- git -->
+        <service public="false" id="technodelight.gitshell.shell" class="Fixture\Shell\TestShell">
+            <argument>/usr/bin/env git</argument>
+        </service>
+        <!-- git -->
+        <!-- hub -->
+        <service id="fixture.github.test_http_client" class="Fixture\Github\TestHttpClient" />
+        <service id="fixture.github_client_builder" class="Fixture\GithubClientBuilder">
+            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="fixture.github.test_http_client" />
+        </service>
+        <service id="technodelight.github.api" class="GitHub\Client">
+            <factory service="fixture.github_client_builder" method="build" />
+        </service>
+        <!-- hub -->
+    </services>
+
+</container>

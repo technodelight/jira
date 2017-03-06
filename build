@@ -15,12 +15,12 @@ function formatBytes($size, $precision = 4)
 function cp($in, $out, $mod = null)
 {
     echo sprintf("Copy %s to %s", $in, $out) . PHP_EOL;
-    $out = copy($in, $out);
-    if (!$out) {
+    $res = copy($in, $out);
+    if (!$res) {
         echo sprintf('  Something bad happened...') . PHP_EOL;
     }
-    if ($mod) chmod($out, $mod);
-    return $out;
+    if ($res && $mod) chmod($out, $mod);
+    return $res;
 }
 
 $tools = ['git', 'box', 'unzip', 'composer', 'wget'];
@@ -56,13 +56,13 @@ cp($buildfile, $releasefile, 0755);
 cp($releasefile, $currentbuildfile, 0755);
 
 if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
-    if (!cp($outfile, '/usr/local/bin/jira')) {
-        die ("Cannot copy $outfile to /usr/local/bin/jira");
+    if (!cp($releasefile, '/usr/local/bin/jira')) {
+        die ("Cannot copy $releasefile to /usr/local/bin/jira");
     }
-    if (!cp($outfile, getenv('HOME') . '/Dropbox/jira.phar')) {
-        die ("Cannot copy $outfile to " . getenv('HOME') . "/Dropbox/jira.phar");
+    if (!cp($releasefile, getenv('HOME') . '/Dropbox/jira.phar')) {
+        die ("Cannot copy $releasefile to " . getenv('HOME') . "/Dropbox/jira.phar");
     }
 }
 echo "Seems to be done properly!" . PHP_EOL . PHP_EOL;
 
-printf ('%s (%s), %.4f seconds', $outfile, formatBytes(filesize($outfile), 2), microtime(true) - $start);
+printf ('%s (%s), %.4f seconds', $releasefile, formatBytes(filesize($releasefile), 2), microtime(true) - $start);

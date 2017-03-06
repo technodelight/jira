@@ -91,15 +91,18 @@ class Application extends BaseApp
      */
     protected $jira;
 
+    protected $isTesting = false;
+
     /**
      * Constructor.
      *
      * @param string $name    The name of the application
      * @param string $version The version of the application
      */
-    public function __construct($name = 'UNKNOWN', $version = 'UNKNOWN')
+    public function __construct($name = 'UNKNOWN', $version = 'UNKNOWN', $isTesting = false)
     {
         $this->baseDir = $this->path([__DIR__, '..']);
+        $this->isTesting = $isTesting;
 
         parent::__construct($name, $version);
     }
@@ -146,7 +149,6 @@ class Application extends BaseApp
             $output->writeLn(sprintf('%1.4f s, mem %s', $end, $this->formatBytes($endMem - $startMem)));
             return $result;
         } else {
-            $GLOBALS['magical_debug_mode'] = false;
             return parent::doRun($input, $output);
         }
     }
@@ -173,6 +175,14 @@ class Application extends BaseApp
             $loader = new XmlFileLoader($this->container, new FileLocator($this->directory('configs')));
             foreach ($this->diFiles as $fileName) {
                 $loader->load($fileName);
+            }
+            if ($this->isTesting) {
+                $testingLoader = new XmlFileLoader($this->container, new FileLocator([$this->baseDir . '/../../../features/bootstrap/configs']));
+                foreach ($this->diFiles as $fileName) {
+                    if (is_file($this->baseDir . '/../../../features/bootstrap/configs/' . $fileName)) {
+                        $testingLoader->load($fileName);
+                    }
+                }
             }
         }
 

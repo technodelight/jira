@@ -43,12 +43,9 @@ class CachedHttpClient implements Client
     public function get($url)
     {
         $key = $this->keyify($url);
-        if ($this->storage->exists($key) && $value = $this->storage->retrieve($key)) {
-            if (!is_null($value)) {
-                return $value;
-            } else {
-                $this->storage->eliminate($key);
-            }
+        $result = $this->storage->retrieve($key);
+        if (!is_null($result)) {
+            return $result;
         }
         $result = $this->httpClient->get($url);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
@@ -67,8 +64,9 @@ class CachedHttpClient implements Client
         $cachedResults = [];
         $uncachedUrls = [];
         foreach ($urls as $idx => $url) {
-            if ($this->storage->exists($this->keyify($url))) {
-                $cachedResults[$url] = $this->storage->retrieve($this->keyify($url));
+            $result = $this->storage->retrieve($this->keyify($url));
+            if (!is_null($result)) {
+                $cachedResults[$url] = $result;
             } else {
                 $uncachedUrls[] = $url;
             }
@@ -89,8 +87,9 @@ class CachedHttpClient implements Client
     public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
         $key = $this->keyify($jql, (string) $fields, serialize($expand), serialize($properties));
-        if ($this->storage->exists($key)) {
-            return $this->storage->retrieve($key);
+        $result = $this->storage->retrieve($key);
+        if (!is_null($result)) {
+            return $result;
         }
         $result = $this->httpClient->search($jql, $fields, $expand, $properties);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
@@ -99,6 +98,7 @@ class CachedHttpClient implements Client
 
     private function keyify()
     {
-        return md5(implode('', func_get_args()));
+        return implode('', func_get_args());
+        // return md5(implode('', func_get_args()));
     }
 }
