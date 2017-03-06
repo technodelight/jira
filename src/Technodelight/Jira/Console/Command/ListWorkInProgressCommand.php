@@ -2,11 +2,11 @@
 
 namespace Technodelight\Jira\Console\Command;
 
+use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Template\IssueRenderer;
 
 class ListWorkInProgressCommand extends AbstractCommand
@@ -32,6 +32,7 @@ class ListWorkInProgressCommand extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        /** @var DialogHelper $dialog */
         $dialog = $this->getService('console.dialog_helper');
 
         // ensure we display every information for in progress issues
@@ -66,7 +67,7 @@ class ListWorkInProgressCommand extends AbstractCommand
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
-            return;
+            return 0;
         }
 
         $output->writeln(
@@ -78,29 +79,11 @@ class ListWorkInProgressCommand extends AbstractCommand
             )
         );
 
+        /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
         $renderer->setOutput($output);
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $renderer->addWorklogs(
-                $this->retrieveWorklogs($issues, $output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG ? null : 10)
-            );
-        }
         $renderer->renderIssues($issues);
-    }
 
-    private function retrieveWorklogs($issues, $limit)
-    {
-        return $this->getService('technodelight.jira.api')->retrieveIssuesWorklogs(
-            $this->issueKeys($issues), $limit
-        );
-    }
-
-    private function issueKeys($issues)
-    {
-        $issueKeys = [];
-        foreach ($issues as $issue) {
-            $issueKeys[] = $issue->issueKey();
-        }
-        return $issueKeys;
+        return 0;
     }
 }

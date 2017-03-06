@@ -2,14 +2,11 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Api;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Simplate;
+use Technodelight\Jira\Template\IssueRenderer;
 
 class IssueFilterCommand extends AbstractCommand
 {
@@ -24,7 +21,7 @@ class IssueFilterCommand extends AbstractCommand
      * @param string $name The name of the command; passing null means it must be set in configure()
      * @param string $jql JQL Filter to use
      *
-     * @throws LogicException When the command name is empty
+     * @throws \LogicException When the command name is empty
      */
     public function __construct(ContainerBuilder $container, $name, $jql)
     {
@@ -45,9 +42,9 @@ class IssueFilterCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var Technodelight\Jira\Api\Api $jira */
+        /** @var Api $jira */
         $jira = $this->getService('technodelight.jira.api');
-        /** @var Technodelight\Template\IssueRenderer $renderer */
+        /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
         $renderer->setOutput($output);
         $renderer->renderIssues($jira->search($this->jql, Api::FIELDS_ALL));
