@@ -151,11 +151,13 @@ class LogTimeCommand extends AbstractCommand
                 }
             } catch (\UnexpectedValueException $exc) {
                 $output->writeln($exc->getMessage());
+                return 1;
             } catch (\Exception $exc) {
                 $output->writeln(
                     sprintf('<error>Something bad happened</error>', $issueKey)
                 );
                 $output->writeln(sprintf('<error>%s</error>', $exc->getMessage()));
+                return 1;
             }
         } else {
             if (!$timeSpent) {
@@ -169,6 +171,8 @@ class LogTimeCommand extends AbstractCommand
                 )
             );
         }
+
+        return 0;
     }
 
     private function deleteWorklog($worklogId)
