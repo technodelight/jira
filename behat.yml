@@ -7,3 +7,4 @@ default:
             contexts:
               - ApplicationContext
               - GithubContext
+              - JiraContext

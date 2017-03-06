@@ -16,8 +16,6 @@ class Api
      */
     private $client;
 
-    private $defaultIssueTypeFilter = ['Defect', 'Bug', 'Technical Sub-Task'];
-
     public function __construct(Client $client)
     {
         $this->client = $client;
@@ -94,7 +92,6 @@ class Api
             'worklog/list?expand=properties',
             ['ids' => $worklogIds]
         );
-        $logs = [];
         foreach ($records as $logRecord) {
             yield Worklog::fromArray($logRecord, $logRecord['issueId']);
         }
@@ -127,7 +124,6 @@ class Api
     {
         try {
             $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
-
             $results = WorklogCollection::createEmpty();
             if (!is_null($limit)) {
                 $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
@@ -137,7 +133,7 @@ class Api
             }
 
             return $results;
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             return WorklogCollection::createEmpty();
         }
     }

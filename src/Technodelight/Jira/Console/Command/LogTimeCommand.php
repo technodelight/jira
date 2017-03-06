@@ -6,11 +6,10 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Jira\Template\WorklogRenderer;
+use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Api\Worklog;
 use Technodelight\Simplate;
-use UnexpectedValueException;
 
 class LogTimeCommand extends AbstractCommand
 {
@@ -57,7 +56,6 @@ class LogTimeCommand extends AbstractCommand
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $dialog = $this->getService('console.dialog_helper');
-        $gitHelper = $this->getService('technodelight.jira.git_helper');
         $templateHelper = $this->getService('technodelight.jira.template_helper');
         $jira = $this->getService('technodelight.jira.api');
 
@@ -79,6 +77,7 @@ class LogTimeCommand extends AbstractCommand
 
         $worklog = false;
         if (intval($issueKey)) {
+            /** @var Worklog $worklog */
             $worklog = $jira->retrieveWorklogs([$issueKey])->current();
         }
 
@@ -132,9 +131,6 @@ class LogTimeCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $jira = $this->getService('technodelight.jira.api');
-        $dateHelper = $this->getService('technodelight.jira.date_helper');
-
         $issueKey = $this->issueKeyArgument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
@@ -190,6 +186,7 @@ class LogTimeCommand extends AbstractCommand
     {
         $jira = $this->getService('technodelight.jira.api');
 
+        /** @var Worklog $worklog */
         if ($worklog = $jira->retrieveWorklogs([$worklogId])->current()) {
             $updatedWorklog = clone $worklog;
             if ($timeSpent) {
@@ -215,6 +212,7 @@ class LogTimeCommand extends AbstractCommand
 
     private function logNewWork($issueKey, $timeSpent, $comment, $startDay)
     {
+        /** @var Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $dateHelper = $this->getService('technodelight.jira.date_helper');
         $worklog = $jira->worklog(
