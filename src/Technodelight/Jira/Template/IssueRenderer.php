@@ -177,7 +177,6 @@ class IssueRenderer
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
-                'reporter' => $issue->reporter(),
                 'parent' => $this->tabulate($this->renderParentTask($issue), 8),
                 'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
 
@@ -185,7 +184,7 @@ class IssueRenderer
                 'hubIssues' => $this->tabulate(implode(PHP_EOL, $this->retrieveHubIssues($issue)), 8),
                 'verbosity' => $this->output->getVerbosity(),
                 'worklogs' => $this->tabulate(
-                    $this->worklogRenderer->renderWorklogs($this->issueWorklogs($issue))
+                    $this->worklogRenderer->renderWorklogs($issue->worklogs())
                 ),
                 'comments' => $this->tabulate($this->renderComments($issue)),
             ]
@@ -273,13 +272,6 @@ class IssueRenderer
         );
         $progress->display();
         return $out->fetch();
-    }
-
-    private function issueWorklogs(Issue $issue)
-    {
-        return array_filter($this->worklogs, function(Worklog $worklog) use ($issue) {
-            return $worklog->issueKey() == $issue->issueKey();
-        });
     }
 
     private function getTemplateInstanceForIssue(Issue $issue)

@@ -119,4 +119,12 @@ class WorklogCollection implements Iterator, Countable
         });
         return WorklogCollection::fromIterator($iterator);
     }
+
+    public function filterByIssueKey($issueKey)
+    {
+        $iterator = new \CallbackFilterIterator($this, function(Worklog $log) use ($issueKey) {
+            return $log->issueKey() == $issueKey;
+        });
+        return WorklogCollection::fromIterator($iterator);
+    }
 }
