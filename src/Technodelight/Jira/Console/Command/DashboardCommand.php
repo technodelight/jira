@@ -5,15 +5,14 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\IssueCollection;
-use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\WorklogCollection;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Helper\DateHelper;
 
 class DashboardCommand extends AbstractCommand
 {
@@ -43,6 +42,7 @@ class DashboardCommand extends AbstractCommand
         $from = $this->defineFrom($date, $input->getOption('week'));
         $to = $this->defineTo($date, $input->getOption('week'));
 
+        /** @var Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $dateHelper = $this->getService('technodelight.jira.date_helper');
         $pluralizeHelper = $this->getService('technodelight.jira.pluralize_helper');
@@ -101,41 +101,40 @@ class DashboardCommand extends AbstractCommand
     private function renderWeek(OutputInterface $output, WorklogCollection $logs)
     {
         $rows = [];
-        $headers = [];
         $dates = [];
         foreach ($logs as $log) {
-            $dates[$log->date()] = date(
-                'l',
-                strtotime($log->date())
-            );
+            $day = date('l', strtotime($log->date()));
+            $dates[$day] = $day;
         }
         ksort($dates);
         $headers = ['Issue' => 'Issue'] + $dates;
 
         foreach ($logs as $log) {
+            $day = date('l', strtotime($log->date()));
             if (!isset($rows[$log->issueKey()])) {
                 $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
                 $rows[$log->issueKey()]['Issue'] = $log->issueKey();
             }
-            if (!isset($rows[$log->issueKey()][$log->date()])) {
-                $rows[$log->issueKey()][$log->date()] = '';
+            if (!isset($rows[$log->issueKey()][$day])) {
+                $rows[$log->issueKey()][$day] = '';
             }
-            $rows[$log->issueKey()][$log->date()].= sprintf(
+            $rows[$log->issueKey()][$day].= sprintf(
                 PHP_EOL . '%s %s',
                 $log->timeSpent(),
                 $this->shortenWorklogComment($log->comment())
             );
-            $rows[$log->issueKey()][$log->date()] = trim($rows[$log->issueKey()][$log->date()]);
-            if (!isset($rows['Sum'][$log->date()])) {
-                $rows['Sum'][$log->date()] = 0;
+            $rows[$log->issueKey()][$day] = trim($rows[$log->issueKey()][$day]);
+            if (!isset($rows['Sum'][$day])) {
+                $rows['Sum'][$day] = 0;
             }
-            $rows['Sum'][$log->date()]+= $log->timeSpentSeconds();
+            $rows['Sum'][$day]+= $log->timeSpentSeconds();
         }
 
         // sum logged / max seconds
         $sum = $rows['Sum'];
         unset($rows['Sum']);
         ksort($rows);
+        /** @var DateHelper $dateHelper */
         $dateHelper = $this->getService('technodelight.jira.date_helper');
         $aDay = $dateHelper->humanToSeconds('1d');
         foreach ($sum as $date => $timeSpentSeconds) {
@@ -160,8 +159,8 @@ class DashboardCommand extends AbstractCommand
 
     private function renderDay(OutputInterface $output, WorklogCollection $logs)
     {
+        /** @var DateHelper $dateHelper */
         $dateHelper = $this->getService('technodelight.jira.date_helper');
-        $templateHelper = $this->getService('technodelight.jira.template_helper');
 
         $rows = [];
         $totalTimes = [];
@@ -181,6 +180,7 @@ class DashboardCommand extends AbstractCommand
 
         $output->writeln('');
         foreach ($rows as $issueKey => $records) {
+            /** @var Issue $issue */
             $issue = $issues[$issueKey];
             // parent issue
             $parentInfo = '';

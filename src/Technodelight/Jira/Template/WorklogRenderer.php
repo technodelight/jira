@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Template;
 
+use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Api\WorklogCollection;
 use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
@@ -27,7 +29,7 @@ class WorklogRenderer
     /**
      * @param Worklog[] $worklogs
      */
-    public function renderWorklogs(array $worklogs)
+    public function renderWorklogs(WorklogCollection $worklogs)
     {
         $template = Simplate::fromFile($this->viewsDir . DIRECTORY_SEPARATOR . 'Commands/worklog.template');
 

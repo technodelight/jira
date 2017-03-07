@@ -6,6 +6,8 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration as BaseAppConf;
 
 class ApplicationConfiguration extends BaseAppConf
 {
+    private static $transitions = [];
+
     public function username()
     {
         return 'zgal';
@@ -43,7 +45,7 @@ class ApplicationConfiguration extends BaseAppConf
 
     public function transitions()
     {
-        return [];
+        return self::$transitions;
     }
 
     public function aliases()

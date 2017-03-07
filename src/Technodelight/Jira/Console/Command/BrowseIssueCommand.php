@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class BrowseIssueCommand extends AbstractCommand
 {

@@ -26,7 +26,6 @@ class CachedHttpClient implements Client
 
     public function post($url, $data = [])
     {
-        $key = $this->keyify($url);
         if (strpos('worklog/list', $url) === false && strpos('search', $url) === false) {
             $this->storage->clear();
         }
@@ -35,7 +34,6 @@ class CachedHttpClient implements Client
 
     public function put($url, $data = [])
     {
-        $key = $this->keyify($url);
         $this->storage->clear();
         return $this->httpClient->put($url, $data);
     }
@@ -54,7 +52,6 @@ class CachedHttpClient implements Client
 
     public function delete($url)
     {
-        $key = $this->keyify($url);
         $this->storage->clear();
         return $this->httpClient->delete($url);
     }
