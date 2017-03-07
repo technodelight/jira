@@ -36,14 +36,20 @@ class SelfUpdateCommand extends AbstractCommand
             $output->writeln("Release date is {$release['published_at']}");
             $consent = $dialog->askConfirmation(
                 $output,
-                PHP_EOL . "<question>Do you want to perform an update now?</question> [y/N]",
+                PHP_EOL . "<comment>Do you want to perform an update now?</comment> [y/N]",
                 false
             );
-            if ($consent && $runningFile && $this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
-                $output->writeln("<info>Successfully updated to {$release['tag_name']}</info>");
-            } else {
-                $output->writeln("<error>Something unexpected happened during update.</error>");
+            if (!is_writable($runningFile)) {
+                $output->writeln("<error>Can't write file {$runningFile}.</error>");
                 return 1;
+            }
+            if ($consent) {
+                if ($this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
+                    $output->writeln("<info>Successfully updated to {$release['tag_name']}</info>");
+                } else {
+                    $output->writeln("<error>Something unexpected happened during update.</error>");
+                    return 1;
+                }
             }
         } else {
             $output->writeln('👍 You are using the latest <info>' . $currentVersion . '</info> version');
@@ -53,9 +59,7 @@ class SelfUpdateCommand extends AbstractCommand
 
     private function update(OutputInterface $output, $runningFile, $newReleaseUrl)
     {
-        $progress = new ProgressBar($output);
-        $progress->setMessage('Connecting...');
-        $progress->display();
+        $progress = $this->createProgressBar($output);
 
         $ch = curl_init($newReleaseUrl);
         $f = fopen($runningFile, 'w');
@@ -64,23 +68,33 @@ class SelfUpdateCommand extends AbstractCommand
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
         curl_setopt($ch, CURLOPT_FILE, $f);
         curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function($ch, $downloadTotal, $downloadedBytes) use ($progress) {
-            if (!$progress->getMaxSteps()) {
+            if ($progress->getMaxSteps() == 0) {
                 $progress->start($downloadTotal);
-                $progress->setMessage('Downloading...');
-            } else {
                 $progress->setProgress($downloadedBytes);
-                $progress->display();
+            } else {
+                $progress->setFormat('%bar% %percent%% %remaining%');
+                $progress->setProgress($downloadedBytes);
             }
         });
         curl_exec($ch);
         $err = curl_errno($ch);
         curl_close($ch);
         fclose($f);
-        $progress->setMessage('Downloaded.');
         $progress->finish();
-        $progress->display();
         $output->writeln('');
         chmod($runningFile, 0755);
         return $err == 0;
+    }
+
+    private function createProgressBar(OutputInterface $output)
+    {
+        $progress = new ProgressBar($output);
+        $progress->setFormat('%bar% %percent%%');
+        $progress->setBarCharacter('<bg=green> </>');
+        $progress->setEmptyBarCharacter('<bg=white> </>');
+        $progress->setProgressCharacter('<bg=green> </>');
+        $progress->setBarWidth(50);
+        $progress->setRedrawFrequency(100000);
+        return $progress;
     }
 }
