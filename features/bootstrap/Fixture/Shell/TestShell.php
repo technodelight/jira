@@ -18,18 +18,9 @@ class TestShell implements Shell
 
     public function exec(Command $command)
     {
-        $this->showRun(clone $command);
         if (isset(self::$fixtures[(string) $command])) {
             return self::$fixtures[(string) $command];
         }
         throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $command));
-    }
-
-    private function showRun(Command $command)
-    {
-        if ($this->exec) {
-            $command->withExec($this->exec);
-        }
-        echo "shell: $command" . PHP_EOL;
     }
 }
