@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Api;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Event\BeforeEvent;
 use GuzzleHttp\Event\CompleteEvent;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
@@ -88,21 +89,29 @@ class HttpClient implements Client
      */
     public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
-        $result = $this->httpClient->post(
-            sprintf(
-                'search%s',
-                $fields || $expand ? '?' . http_build_query(
-                    array_filter([
-                        'fields' => $fields,
-                        'expand' => $expand ? join(',', $expand) : null,
-                        'properties' => $properties ? join(',', $properties) : null
-                    ])
-                ) : ''
-            ),
-            ['json' => ['jql' => $jql]]
-        );
-
-        return json_decode($result->getBody(), true);
+        try {
+            $result = $this->httpClient->post(
+                sprintf(
+                    'search%s',
+                    $fields || $expand ? '?' . http_build_query(
+                            array_filter([
+                                'fields' => $fields,
+                                'expand' => $expand ? join(',', $expand) : null,
+                                'properties' => $properties ? join(',', $properties) : null
+                            ])
+                        ) : ''
+                ),
+                ['json' => ['jql' => $jql]]
+            );
+            return json_decode($result->getBody(), true);
+        } catch (ClientException $exception) {
+            // extract JQL error message
+            $message = $exception->getMessage();
+            if ($arrayResponse = json_decode($exception->getResponse()->getBody(), true)) {
+                $message = isset($arrayResponse['errorMessages']) ? join(',', $arrayResponse['errorMessages']) : $message;
+            }
+            throw new \BadMethodCallException($message);
+        }
     }
 
     private function apiUrl($projectDomain)

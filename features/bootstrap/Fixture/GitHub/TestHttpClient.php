@@ -45,7 +45,6 @@ class TestHttpClient implements HttpClientInterface
     public function get($path, array $parameters = array(), array $headers = array())
     {
         $this->requests['get'][] = $path;
-        $this->showRun('get', $path);
         if (isset(self::$fixtures['get'][$path])) {
             return new Response(200, ['content-type' => 'application/json'], self::$fixtures['get'][$path]);
         }
@@ -74,10 +73,5 @@ class TestHttpClient implements HttpClientInterface
     public function request($path, $body, $httpMethod = 'GET', array $headers = array())
     {
         $this->requests[$httpMethod][] = $path;
-    }
-
-    private function showRun($method, $path)
-    {
-        echo "github: $method $path" . PHP_EOL;
     }
 }

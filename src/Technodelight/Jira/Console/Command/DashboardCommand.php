@@ -101,33 +101,34 @@ class DashboardCommand extends AbstractCommand
     private function renderWeek(OutputInterface $output, WorklogCollection $logs)
     {
         $rows = [];
-        $dates = [];
+        $headers = ['Issue'];
         foreach ($logs as $log) {
             $day = date('l', strtotime($log->date()));
-            $dates[$day] = $day;
+            $dayNo = date('N', strtotime($log->date()));
+            $headers[$dayNo] = $day;
         }
-        ksort($dates);
-        $headers = ['Issue' => 'Issue'] + $dates;
+        ksort($headers);
 
         foreach ($logs as $log) {
-            $day = date('l', strtotime($log->date()));
+            $dayNo = date('N', strtotime($log->date()));
+
             if (!isset($rows[$log->issueKey()])) {
                 $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
-                $rows[$log->issueKey()]['Issue'] = $log->issueKey();
+                $rows[$log->issueKey()][0] = $log->issueKey();
             }
-            if (!isset($rows[$log->issueKey()][$day])) {
-                $rows[$log->issueKey()][$day] = '';
+            if (!isset($rows[$log->issueKey()][$dayNo])) {
+                $rows[$log->issueKey()][$dayNo] = '';
             }
-            $rows[$log->issueKey()][$day].= sprintf(
+            $rows[$log->issueKey()][$dayNo].= sprintf(
                 PHP_EOL . '%s %s',
                 $log->timeSpent(),
                 $this->shortenWorklogComment($log->comment())
             );
-            $rows[$log->issueKey()][$day] = trim($rows[$log->issueKey()][$day]);
-            if (!isset($rows['Sum'][$day])) {
-                $rows['Sum'][$day] = 0;
+            $rows[$log->issueKey()][$dayNo] = trim($rows[$log->issueKey()][$dayNo]);
+            if (!isset($rows['Sum'][$dayNo])) {
+                $rows['Sum'][$dayNo] = 0;
             }
-            $rows['Sum'][$day]+= $log->timeSpentSeconds();
+            $rows['Sum'][$dayNo]+= $log->timeSpentSeconds();
         }
 
         // sum logged / max seconds
