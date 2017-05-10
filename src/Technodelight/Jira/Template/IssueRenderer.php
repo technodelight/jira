@@ -293,16 +293,6 @@ class IssueRenderer
         return $this->templates[$templateId];
     }
 
-    private function wasParentDisplayed($parentIssueName)
-    {
-        if (!isset($this->displayedParentIssues[$parentIssueName])) {
-            $this->displayedParentIssues[$parentIssueName] = true;
-            return false;
-        }
-
-        return true;
-    }
-
     /**
      * @param  Issue[]  $issues
      *
@@ -365,7 +355,6 @@ class IssueRenderer
         if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             return [];
         }
-
         $issues = $this->hub->issues();
         $matchingIssues = array_filter($issues, function($hubIssue) use($issue) {
             return strpos($hubIssue['title'], $issue->issueKey()) === 0;
