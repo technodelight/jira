@@ -16,24 +16,36 @@ class ApplicationConfiguration
     private $defaultWorklogTimestamp;
     private $cacheTtl;
 
+    public function domain()
+    {
+        try {
+            return $this->instance('default')['domain'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->domain;
+        }
+    }
+
     public function username()
     {
-        return $this->username;
+        try {
+            return $this->instance('default')['username'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->username;
+        }
     }
 
     public function password()
     {
-        return $this->password;
+        try {
+            return $this->instance('default')['password'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->password;
+        }
     }
 
     public function githubToken()
     {
         return $this->githubToken;
-    }
-
-    public function domain()
-    {
-        return $this->domain;
     }
 
     public function instances()
