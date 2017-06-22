@@ -15,6 +15,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->append($this->credentialsSection())
+                ->append($this->instancesSection())
                 ->append($this->integrationsSection())
                 ->append($this->projectSection())
                 ->append($this->transitionsSection())
@@ -52,6 +53,43 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+
+        return $rootNode;
+    }
+
+    private function instancesSection()
+    {
+        $treeBuilder = new TreeBuilder();
+        $rootNode = $treeBuilder->root('instances');
+
+        $rootNode
+            ->info('Different JIRA instances to use')
+                ->prototype('array')
+                    ->normalizeKeys(false)
+                    ->children()
+                        ->scalarNode('name')
+                            ->info('Unique internal ID to use in command line arguments as reference (ie. --instance secondary)')
+                            ->example('secondary')
+                        ->end()
+                        ->scalarNode('domain')
+                            ->info('JIRA\'s domain without protocol, like something.atlassian.net')
+                            ->example('something.atlassian.net')
+                            ->cannotBeEmpty()
+                            ->isRequired()
+                        ->end()
+                        ->scalarNode('username')
+                            ->info('Instance JIRA username')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->scalarNode('password')
+                            ->info('Instance JIRA password')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
 
         return $rootNode;
     }
@@ -151,5 +189,4 @@ class Configuration implements ConfigurationInterface
 
         return $rootNode;
     }
-
 }
