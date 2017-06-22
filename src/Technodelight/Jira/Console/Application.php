@@ -4,31 +4,28 @@ namespace Technodelight\Jira\Console;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application as BaseApp;
-use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\Api as JiraApi;
-use Technodelight\Jira\Api\Client as JiraClient;
+use Technodelight\Jira\Api\HttpClient as JiraClient;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
 use Technodelight\Jira\Console\Command\InitCommand;
 use Technodelight\Jira\Console\Command\IssueFilterCommand;
 use Technodelight\Jira\Console\Command\IssueTransitionCommand;
+use Technodelight\Jira\Console\Command\ListInstancesCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
 use Technodelight\Jira\Console\Command\SelfUpdateCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
-use Technodelight\Jira\Console\Command\TodoCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
-use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 
@@ -62,7 +59,7 @@ class Application extends BaseApp
     private $container;
 
     /**
-     * @var Configuration
+     * @var ApplicationConfiguration
      */
     protected $config;
 
@@ -91,6 +88,9 @@ class Application extends BaseApp
      */
     protected $jira;
 
+    /**
+     * @var bool
+     */
     protected $isTesting = false;
 
     /**
@@ -110,6 +110,7 @@ class Application extends BaseApp
     public function addDomainCommands()
     {
         $commands = [];
+        $commands[] = new ListInstancesCommand($this->container());
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
@@ -139,6 +140,9 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
+        $this->container->setParameter('app.jira.debug', $input->getParameterOption(['--debug', '-d']));
+        $this->container->setParameter('app.jira.instance', $input->getParameterOption(['--instance', '-i']));
+
         if (true === $input->hasParameterOption(array('--debug', '-d'))) {
 
             $start = microtime(true);
@@ -276,6 +280,7 @@ class Application extends BaseApp
     {
         $input = parent::getDefaultInputDefinition();
         $input->addOption(new InputOption('--debug', '-D', InputOption::VALUE_NONE, 'Enable debug mode'));
+        $input->addOption(new InputOption('--instance', '-i', InputOption::VALUE_REQUIRED, 'Use an instance from config temporarily'));
         return $input;
     }
 
@@ -288,6 +293,7 @@ class Application extends BaseApp
     {
         return [
             'technodelight.jira.app' => $this,
+            'app.container' => $this->container,
             'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
             'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
         ];

@@ -4,25 +4,43 @@ namespace Technodelight\Jira\Configuration;
 
 class ApplicationConfiguration
 {
+    private $domain;
     private $username;
     private $password;
+    private $instances;
     private $githubToken;
-    private $domain;
     private $aliases;
+    private $transitions;
+    private $filters;
     private $yesterdayAsWeekday;
     private $defaultWorklogTimestamp;
     private $cacheTtl;
-    private $transitions;
-    private $filters;
+
+    public function domain()
+    {
+        try {
+            return $this->instance('default')['domain'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->domain;
+        }
+    }
 
     public function username()
     {
-        return $this->username;
+        try {
+            return $this->instance('default')['username'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->username;
+        }
     }
 
     public function password()
     {
-        return $this->password;
+        try {
+            return $this->instance('default')['password'];
+        } catch (\UnexpectedValueException $e) {
+            return $this->password;
+        }
     }
 
     public function githubToken()
@@ -30,9 +48,25 @@ class ApplicationConfiguration
         return $this->githubToken;
     }
 
-    public function domain()
+    public function instances()
     {
-        return $this->domain;
+        return $this->instances;
+    }
+
+    /**
+     * @param $instance
+     * @return array
+     * @throws \UnexpectedValueException
+     */
+    public function instance($instance)
+    {
+        if (!isset($this->instances[$instance])) {
+            throw new \UnexpectedValueException(
+                sprintf('No instance with name "%s" configured', $instance)
+            );
+        }
+
+        return $this->instances[$instance];
     }
 
     public function yesterdayAsWeekday()
@@ -71,6 +105,7 @@ class ApplicationConfiguration
         $configuration->username = $config['credentials']['username'];
         $configuration->password = $config['credentials']['password'];
         $configuration->domain = $config['credentials']['domain'];
+        $configuration->instances = self::useAttributeAsKey($config['instances'], 'name');
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
@@ -87,6 +122,15 @@ class ApplicationConfiguration
         $result = [];
         foreach ($array as $arr) {
             $result[$arr[$key]] = $arr[$valueKey];
+        }
+        return $result;
+    }
+
+    private static function useAttributeAsKey(array $array, $key)
+    {
+        $result = [];
+        foreach ($array as $arr) {
+            $result[$arr[$key]] = $arr;
         }
         return $result;
     }

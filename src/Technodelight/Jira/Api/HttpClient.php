@@ -3,12 +3,9 @@
 namespace Technodelight\Jira\Api;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Event\BeforeEvent;
-use GuzzleHttp\Event\CompleteEvent;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Pool;
 use GuzzleHttp\Promise;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Api\HttpClient\ConfigProvider;
 
 class HttpClient implements Client
 {
@@ -20,45 +17,39 @@ class HttpClient implements Client
     private $client;
 
     /**
-     * @var ApplicationConfiguration
+     * @var \Technodelight\Jira\Api\HttpClient\ConfigProvider
      */
-    private $configuration;
+    private $configProvider;
 
     /**
-     * @param ApplicationConfiguration $config
+     * @param ConfigProvider $configProvider
      */
-    public function __construct(ApplicationConfiguration $configuration)
+    public function __construct(ConfigProvider $configProvider)
     {
-        $this->configuration = $configuration;
-        $this->httpClient = new GuzzleClient(
-            [
-                'base_uri' => $this->apiUrl($configuration->domain()),
-                'auth' => [$configuration->username(), $configuration->password()]
-            ]
-        );
+        $this->configProvider = $configProvider;
     }
 
     public function post($url, $data = [])
     {
-        $result = $this->httpClient->post($url, ['json' => $data]);
+        $result = $this->httpClient()->post($url, ['json' => $data]);
         return json_decode($result->getBody(), true);
     }
 
     public function put($url, $data = [])
     {
-        $result = $this->httpClient->put($url, ['json' => $data]);
+        $result = $this->httpClient()->put($url, ['json' => $data]);
         return json_decode($result->getBody(), true);
     }
 
     public function get($url)
     {
-        $result = $this->httpClient->get($url);
+        $result = $this->httpClient()->get($url);
         return json_decode($result->getBody(), true);
     }
 
     public function delete($url)
     {
-        $result = $this->httpClient->delete($url);
+        $result = $this->httpClient()->delete($url);
         return json_decode($result->getBody(), true);
     }
 
@@ -66,7 +57,7 @@ class HttpClient implements Client
     {
         $promises = [];
         foreach ($urls as $url) {
-            $promises[$url] = $this->httpClient->getAsync($url);
+            $promises[$url] = $this->httpClient()->getAsync($url);
         }
 
         $responses = Promise\settle($promises)->wait();
@@ -90,7 +81,7 @@ class HttpClient implements Client
     public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
         try {
-            $result = $this->httpClient->post(
+            $result = $this->httpClient()->post(
                 sprintf(
                     'search%s',
                     $fields || $expand ? '?' . http_build_query(
@@ -121,5 +112,22 @@ class HttpClient implements Client
             $projectDomain,
             self::API_PATH
         );
+    }
+
+    /**
+     * @return GuzzleClient
+     */
+    private function httpClient()
+    {
+        if (!isset($this->httpClient)) {
+            $this->httpClient = new GuzzleClient(
+                [
+                    'base_uri' => $this->apiUrl($this->configProvider->domain()),
+                    'auth' => [$this->configProvider->username(), $this->configProvider->password()]
+                ]
+            );
+        }
+
+        return $this->httpClient;
     }
 }

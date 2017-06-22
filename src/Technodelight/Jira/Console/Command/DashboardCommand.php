@@ -155,7 +155,7 @@ class DashboardCommand extends AbstractCommand
         $table
             ->setHeaders(array_values($headers))
             ->setRows($rows);
-        $table->render($output);
+        $table->render();
     }
 
     private function renderDay(OutputInterface $output, WorklogCollection $logs)

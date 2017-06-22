@@ -31,6 +31,7 @@ class InitCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var \Technodelight\Jira\Configuration\Symfony\ConfigurationDumper $dumper */
         $dumper = $this->getService('technodelight.jira.configuration.symfony.configuration_dumper');
         $dialog = $this->getService('console.dialog_helper');
 
