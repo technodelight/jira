@@ -431,9 +431,26 @@ class IssueRenderer
 
     private function formatStatus($status, $statusCategory)
     {
-        $bgColor = $statusCategory['colorName'];
+        $bgColor = $this->extractProperColor($statusCategory['colorName']);
         $fgColor = 'black';
 
         return sprintf('<fg=%s;bg=%s>%s</>', $fgColor, $bgColor, $status);
+    }
+
+    private function extractProperColor($colorName)
+    {
+        if (!$color = $this->ensureProperColor($colorName)) {
+            $color = $this->ensureProperColor(substr($colorName, 0, strpos($colorName, '-')));
+        }
+
+        return isset($color) ? $color : 'default';
+    }
+
+    private function ensureProperColor($colorName)
+    {
+        $colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+        if (in_array(strtolower($colorName), $colors)) {
+            return strtolower($colorName);
+        }
     }
 }
