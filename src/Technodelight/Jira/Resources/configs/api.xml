@@ -23,6 +23,7 @@
         </service>
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
             <argument type="service" id="technodelight.jira.cached_api_client" />
+            <argument type="service" id="technodelight.jira.field_mapper"/>
         </service>
         <!-- jira -->
         <!-- git -->

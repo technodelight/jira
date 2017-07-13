@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Api;
 
 use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Helper\DateHelper;
 
 class Issue
 {
@@ -35,6 +36,11 @@ class Issue
      * @var array
      */
     private $comments = [];
+
+    /**
+     * @var \Technodelight\Jira\Api\FieldMapper|null
+     */
+    private $mapper;
 
     public function id()
     {
@@ -85,6 +91,13 @@ class Issue
     {
         if ($field = $this->findField('status')) {
             return $field['name'];
+        }
+    }
+
+    public function statusCategory()
+    {
+        if ($field = $this->findField('status')) {
+            return $field['statusCategory'];
         }
     }
 
@@ -234,19 +247,25 @@ class Issue
         return $this->subtasks ?: [];
     }
 
-    public static function fromArray($resultArray)
+    public static function fromArray($resultArray, FieldMapper $mapper = null)
     {
         $issue = new self;
         $issue->id = $resultArray['id'];
         $issue->link = $resultArray['self'];
         $issue->key = $resultArray['key'];
         $issue->fields = isset($resultArray['fields']) ? $resultArray['fields'] : [];
+        $issue->mapper = $mapper ?: new DefaultFieldMapper;
         return $issue;
     }
 
     private function findField($name)
     {
-        return isset($this->fields[$name]) ? $this->fields[$name] : false;
+        return isset($this->fields[$this->mapField($name)]) ? $this->fields[$this->mapField($name)] : false;
+    }
+
+    private function mapField($name)
+    {
+        return $this->mapper->map($name);
     }
 
     private function __construct()
