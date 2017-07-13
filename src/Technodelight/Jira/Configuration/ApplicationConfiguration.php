@@ -15,6 +15,7 @@ class ApplicationConfiguration
     private $yesterdayAsWeekday;
     private $defaultWorklogTimestamp;
     private $cacheTtl;
+    private $fieldMap;
 
     public function domain()
     {
@@ -51,6 +52,11 @@ class ApplicationConfiguration
     public function instances()
     {
         return $this->instances;
+    }
+
+    public function fieldMap()
+    {
+        return $this->fieldMap;
     }
 
     /**
@@ -110,6 +116,7 @@ class ApplicationConfiguration
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
         $configuration->cacheTtl = $config['project']['cacheTtl'];
+        $configuration->fieldMap = self::flattenArray($config['fieldMap'], 'field', 'map');
         $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');
         $configuration->aliases = self::flattenArray($config['aliases'], 'alias','issueKey');
         $configuration->filters = self::flattenArray($config['filters'], 'command', 'jql');

@@ -18,6 +18,7 @@ class Configuration implements ConfigurationInterface
                 ->append($this->instancesSection())
                 ->append($this->integrationsSection())
                 ->append($this->projectSection())
+                ->append($this->fieldMapSection())
                 ->append($this->transitionsSection())
                 ->append($this->aliasesSection())
                 ->append($this->filtersSection())
@@ -139,9 +140,27 @@ class Configuration implements ConfigurationInterface
         return $rootNode;
     }
 
+    private function fieldMapSection()
+    {
+        $treeBuilder = new TreeBuilder;
+        $rootNode = $treeBuilder->root('fieldMap');
+
+        $rootNode
+            ->info('Field mapping')
+            ->prototype('array')
+                ->children()
+                    ->scalarNode('field')->cannotBeEmpty()->isRequired()->end()
+                    ->scalarNode('map')->cannotBeEmpty()->isRequired()->end()
+                ->end()
+            ->end();
+        ;
+
+        return $rootNode;
+    }
+
     private function transitionsSection()
     {
-        $treeBuilder = new TreeBuilder();
+        $treeBuilder = new TreeBuilder;
         $rootNode = $treeBuilder->root('transitions');
 
         $rootNode
@@ -158,7 +177,7 @@ class Configuration implements ConfigurationInterface
 
     private function aliasesSection()
     {
-        $treeBuilder = new TreeBuilder();
+        $treeBuilder = new TreeBuilder;
         $rootNode = $treeBuilder->root('aliases');
 
         $rootNode
@@ -175,7 +194,7 @@ class Configuration implements ConfigurationInterface
 
     private function filtersSection()
     {
-        $treeBuilder = new TreeBuilder();
+        $treeBuilder = new TreeBuilder;
         $rootNode = $treeBuilder->root('filters');
 
         $rootNode

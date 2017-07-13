@@ -1,4 +1,5 @@
 <info>{{ issueNumber }}:</info> {{ issueType }} {{ summary }} <fg=black>({{ url }})</>
+    {{ status }}
     {{ depends $assignee != 'Unassigned' }}<comment>assignee:</comment> {{ assignee }} {{ end_depends }}{{ depends $reporter }}, <comment>reported by</comment> {{ reporter }}{{ end_depends }}
     {{ depends !empty($progress) }}{{ progress }}{{ end_depends }}
     {{ depends !empty($description) }}<comment>description:</comment>

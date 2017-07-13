@@ -9,23 +9,25 @@ class IssueCollection implements Iterator, Countable
 {
     private $startAt, $maxResults, $total, $issues = [];
 
-    public function __construct($startAt, $maxResults, $total, array $issues)
+    public function __construct($startAt, $maxResults, $total, array $issues, FieldMapper $fieldMapper = null)
     {
         $this->startAt = $startAt;
         $this->maxResults = $maxResults;
         $this->total = $total;
+        $mapper = $fieldMapper ?: new DefaultFieldMapper;
         foreach ($issues as $issue) {
-            $this->issues[] = Issue::fromArray($issue);
+            $this->issues[] = Issue::fromArray($issue, $mapper);
         }
     }
 
-    public static function fromSearchArray(array $resultArray)
+    public static function fromSearchArray(array $resultArray, FieldMapper $mapper = null)
     {
         return new self(
             $resultArray['startAt'],
             $resultArray['maxResults'],
             $resultArray['total'],
-            $resultArray['issues']
+            $resultArray['issues'],
+            $mapper
         );
     }
 

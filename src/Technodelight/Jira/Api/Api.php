@@ -2,7 +2,8 @@
 
 namespace Technodelight\Jira\Api;
 
-use Technodelight\Jira\Api\SearchQuery\Builder;
+use Technodelight\Jira\Api\FieldMapper;
+use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Helper\DateHelper;
 
 class Api
@@ -15,10 +16,15 @@ class Api
      * @var Client
      */
     private $client;
+    /**
+     * @var FieldMapper
+     */
+    private $mapper;
 
-    public function __construct(Client $client)
+    public function __construct(Client $client, FieldMapper $mapper)
     {
         $this->client = $client;
+        $this->mapper = $mapper;
     }
 
     /**
@@ -179,7 +185,7 @@ class Api
      */
     public function findUserIssuesWithWorklogs($from, $to, $username = null, $limit = null)
     {
-        $query = Builder::factory()
+        $query = SearchQueryBuilder::factory()
             ->worklogDate($from, $to);
         if ($username) {
             $query->worklogAuthor($username);
@@ -199,7 +205,7 @@ class Api
      */
     public function inprogressIssues($projectCode = null, $all = false)
     {
-        $query = Builder::factory()
+        $query = SearchQueryBuilder::factory()
             ->status('In Progress');
         if (!$all) {
             $query->assignee(self::CURRENT_USER);
@@ -218,7 +224,8 @@ class Api
     public function retrieveIssue($issueKey)
     {
         return Issue::fromArray(
-            $this->client->get(sprintf('issue/%s', $issueKey))
+            $this->client->get(sprintf('issue/%s', $issueKey)),
+            $this->mapper
         );
     }
 
@@ -229,7 +236,7 @@ class Api
      */
     public function retrieveIssues(array $issueKeys)
     {
-        $query = Builder::factory()
+        $query = SearchQueryBuilder::factory()
             ->issueKey($issueKeys);
         return $this->search($query->assemble(), self::FIELDS_ALL);
     }
@@ -289,7 +296,8 @@ class Api
                 $fields,
                 $expand,
                 $properties
-            )
+            ),
+            $this->mapper
         );
     }
 }

@@ -166,11 +166,9 @@ class IssueRenderer
             [
                 'issueNumber' => $issue->ticketNumber(),
                 'issueType' => $this->formatIssueType($issue->issueType()),
+                'status' => $this->formatStatus($issue->status(), $issue->statusCategory()),
                 'url' => $issue->url(),
                 'summary' => $this->tabulate(wordwrap($issue->summary()), 8),
-                // 'estimate' => $this->secondsToHuman($issue->estimate()),
-                // 'spent' => $this->secondsToHuman($issue->timeSpent()),
-                // 'remaining' => $this->secondsToHuman($issue->remainingEstimate()),
                 'progress' => $this->renderProgress($issue),
 
                 'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
@@ -429,5 +427,30 @@ class IssueRenderer
     private function secondsToHuman($seconds)
     {
         return $this->dateHelper->secondsToHuman($seconds);
+    }
+
+    private function formatStatus($status, $statusCategory)
+    {
+        $bgColor = $this->extractProperColor($statusCategory['colorName']);
+        $fgColor = 'black';
+
+        return sprintf('<fg=%s;bg=%s>%s</>', $fgColor, $bgColor, $status);
+    }
+
+    private function extractProperColor($colorName)
+    {
+        if (!$color = $this->ensureProperColor($colorName)) {
+            $color = $this->ensureProperColor(substr($colorName, 0, strpos($colorName, '-')));
+        }
+
+        return isset($color) ? $color : 'default';
+    }
+
+    private function ensureProperColor($colorName)
+    {
+        $colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+        if (in_array(strtolower($colorName), $colors)) {
+            return strtolower($colorName);
+        }
     }
 }
