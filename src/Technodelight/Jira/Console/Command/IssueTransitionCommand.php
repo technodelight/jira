@@ -114,7 +114,7 @@ class IssueTransitionCommand extends AbstractCommand
                 $output->writeln('Checking out to new branch: ' . $branchName);
                 $git->createBranch($branchName);
             } else {
-                $git->switchBranch($this->chooseBranch($input, $output, $issue));
+                $this->chooseBranch($input, $output, $issue);
             }
         }
 
@@ -190,7 +190,7 @@ class IssueTransitionCommand extends AbstractCommand
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @param Issue $issue
-     * @return string
+     * @return void
      * @throws \LogicException if can't select branch
      */
     private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
@@ -208,22 +208,32 @@ class IssueTransitionCommand extends AbstractCommand
         $branchName = $helper->ask($input, $output, $question);
 
         $selectedBranch = '';
-        $branches = $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber());
+        /** @var \Technodelight\Jira\Api\GitShell\Api $git */
+        $git = $this->getService('technodelight.gitshell.api');
+        $branches = $git->branches($issue->issueKey());
+        $new = false;
         foreach ($branches as $branch) {
+            /** @var \Technodelight\Jira\Api\GitShell\Branch $branch */
             if ($branchName == (string) $branch) {
-                /** @var \Technodelight\Jira\Api\GitShell\Branch $branch */
                 $selectedBranch = $branch->name();
+                break;
             }
         }
         if (!$selectedBranch && ($branchName == $generatedBranchOption)) {
             $selectedBranch = $this->generateBranchName($issue);
+            $new = true;
         }
         if (!$selectedBranch) {
             throw new \LogicException(sprintf('Cannot select branch %s', $branchName));
         }
-        $output->writeln('Checking out to: ' . $selectedBranch);
 
-        return $selectedBranch;
+        if ($new) {
+            $output->writeln('Checking out to new branch: ' . $selectedBranch);
+            $git->createBranch($selectedBranch);
+        } else {
+            $output->writeln('Checking out to: ' . $selectedBranch);
+            $git->switchBranch($selectedBranch);
+        }
     }
 
     /**
