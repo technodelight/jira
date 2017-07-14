@@ -144,9 +144,7 @@ class Api
                     Command::create('sed')->withArgument('"s/[\^~].*//"')
                 )
         );
-        // $parent = $this->shell->exec(
-        //     'show-branch -a 2> /dev/null | sed "s/^ *//g" | grep -v "^\*" | head -1 | sed "s/.*\[\(.*\)\].*/\1/" | sed "s/[\^~].*//"'
-        // );
+
         return end($parent);
     }
 
@@ -157,5 +155,25 @@ class Api
             $this->tld = end($tld);
         }
         return $this->tld;
+    }
+
+    /**
+     * Get name and status diff for current branch
+     *
+     * @param string|null $to
+     * @return \Technodelight\Jira\Api\GitShell\DiffEntry[]
+     */
+    public function diff($to = null)
+    {
+        return array_map(
+            function($row) {
+                return DiffEntry::fromString($row);
+            },
+            $this->shell->exec(
+                Command::create()
+                       ->withArgument('diff')->withArgument($to)
+                       ->withOption('name-status')
+            )
+        );
     }
 }

@@ -9,7 +9,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
@@ -78,6 +77,7 @@ class IssueTransitionCommand extends AbstractCommand
         $git = $this->getService('technodelight.jira.git_helper');
 
         try {
+            $this->checkGitChanges($output);
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
             $jira->performIssueTransition($issueKey, $transition['id']);
             $actionString = '';
@@ -254,5 +254,33 @@ class IssueTransitionCommand extends AbstractCommand
             }
         }
         return implode(PHP_EOL, $list);
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @throws \RuntimeException
+     */
+    private function checkGitChanges(OutputInterface $output)
+    {
+        /** @var \Technodelight\Jira\Api\GitShell\Api $git */
+        $git = $this->getService('technodelight.gitshell.api');
+        /** @var TemplateHelper $templateHelper */
+        $templateHelper = $this->getService('technodelight.jira.template_helper');
+        if ($diff = $git->diff()) {
+            /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
+            $dialog = $this->getService('console.dialog_helper');
+            $output->writeln('It seems you have the following uncommited changes on your current branch:');
+            foreach ($diff as $entry) {
+                $output->writeln(
+                    $templateHelper->tabulate(
+                        sprintf('<comment>%s</comment> %s', $entry->state(), $entry->file())
+                    )
+                );
+            }
+
+            if (!$dialog->askConfirmation($output, 'Do you want to continue? [Y/n] ')) {
+                throw new \RuntimeException('Please commit your changes first.');
+            }
+        }
     }
 }
