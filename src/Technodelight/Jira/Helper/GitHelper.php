@@ -2,6 +2,12 @@
 
 namespace Technodelight\Jira\Helper;
 
+/**
+ * Class GitHelper
+ *
+ * @package Technodelight\Jira\Helper
+ * @deprecated
+ */
 class GitHelper extends ShellCommandHelper
 {
     private $remotes;
