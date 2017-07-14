@@ -200,7 +200,7 @@ class IssueTransitionCommand extends AbstractCommand
         $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
         $question = new ChoiceQuestion(
             'Select branch to checkout to',
-            array_merge($this->gitBranchesForIssue($issue), [$this->generateBranchName($issue) , ' (generated)']),
+            array_merge($this->gitBranchesForIssue($issue), [$this->generateBranchName($issue) . ' (generated)']),
             0
         );
         $question->setErrorMessage('Branch %s is invalid.');
