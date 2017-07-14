@@ -1,7 +1,7 @@
 {{ depends !$success }}It seems the issue <info>{{ issueKey }}</info> is already <info>{{ status }}</info>, and currently assigned to <info>{{ asignee }}</info>
 
 Possible transitions:
-<info>{{ transitionsNames }}</info>
+    {{ transitionsNames }}
 {{ end_depends }}
 <comment>link:</comment> {{ url }}
 {{ depends $success }}<comment>branches:</comment>

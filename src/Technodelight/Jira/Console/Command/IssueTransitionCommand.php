@@ -9,11 +9,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Template\Template;
 use Technodelight\Simplate;
 use \UnexpectedValueException;
 
@@ -26,7 +24,7 @@ class IssueTransitionCommand extends AbstractCommand
     /**
      * Constructor.
      *
-     * @throws LogicException When the command name is empty
+     * @throws \UnexpectedValueException When the command name is empty
      */
     public function __construct(ContainerBuilder $container, $name, $transitionName)
     {
@@ -72,9 +70,11 @@ class IssueTransitionCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input);
+        /** @var \Technodelight\Jira\Api\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
+        /** @var GitHelper $git */
         $git = $this->getService('technodelight.jira.git_helper');
 
         try {
@@ -109,37 +109,28 @@ class IssueTransitionCommand extends AbstractCommand
         }
 
         if ($input->getOption('branch')) {
-            $branches = $this->gitBranchesForIssue($issue);
-            if (empty($branches)) {
+            if (!$this->gitBranchesForIssue($issue)) {
                 $branchName = $this->generateBranchName($issue);
                 $output->writeln('Checking out to new branch: ' . $branchName);
                 $git->createBranch($branchName);
             } else {
-                $helper = $this->getHelper('question');
-                $question = new ChoiceQuestion(
-                    'Select branch to checkout to',
-                    $branches,
-                    0
-                );
-                $question->setErrorMessage('Branch %s is invalid.');
-
-                $branchName = $helper->ask($input, $output, $question);
-                $output->writeln('Checking out to: ' . $branchName);
-                $git->switchBranch($branchName);
+                $git->switchBranch($this->chooseBranch($input, $output, $issue));
             }
         }
 
+        /** @var TemplateHelper $templateHelper */
+        $templateHelper = $this->getService('technodelight.jira.template_helper');
         $output->writeln(
             Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/transition.template')->render(
                 [
                     'success' => $success,
                     'issueKey' => $issue->ticketNumber(),
                     'transitionName' => $this->transitionName,
-                    'transitionsNames' => implode(', ', $this->transitionsNames($transitions)),
+                    'transitionsNames' => $templateHelper->tabulate($this->listTransitions($transitions, $issue)),
                     'status' => $issue->status(),
                     'asignee' => $issue->assignee(),
                     'url' => $issue->url(),
-                    'branches' => $this->getService('technodelight.jira.template_helper')->tabulate($this->retrieveGitBranches($issue)),
+                    'branches' => $templateHelper->tabulate($this->retrieveGitBranches($issue)),
                 ]
             )
         );
@@ -193,5 +184,75 @@ class IssueTransitionCommand extends AbstractCommand
         }
 
         return implode(PHP_EOL, $branches);
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param Issue $issue
+     * @return string
+     * @throws \LogicException if can't select branch
+     */
+    private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
+    {
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
+        $question = new ChoiceQuestion(
+            'Select branch to checkout to',
+            array_merge($this->gitBranchesForIssue($issue), [$this->generateBranchName($issue) , ' (generated)']),
+            0
+        );
+        $question->setErrorMessage('Branch %s is invalid.');
+
+        $branchName = $helper->ask($input, $output, $question);
+
+        $selectedBranch = '';
+        $branches = $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber());
+        foreach ($branches as $branch) {
+            if ($branchName == (string) $branch) {
+                /** @var \Technodelight\Jira\Api\GitShell\Branch $branch */
+                $selectedBranch = $branch->name();
+            }
+        }
+        if (!$selectedBranch && ($branchName == $generatedBranchOption)) {
+            $selectedBranch = $this->generateBranchName($issue);
+        }
+        if (!$selectedBranch) {
+            throw new \LogicException(sprintf('Cannot select branch %s', $branchName));
+        }
+        $output->writeln('Checking out to: ' . $selectedBranch);
+
+        return $selectedBranch;
+    }
+
+    /**
+     * @param array $transitions
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return string
+     */
+    private function listTransitions(array $transitions, Issue $issue)
+    {
+        $transitionNames = $this->transitionsNames($transitions);
+        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $config */
+        $config = $this->getService('technodelight.jira.config');
+        $transitionMap = $config->transitions();
+        $list = [];
+        foreach ($transitionNames as $transitionName) {
+            if ($command = array_search($transitionName, $transitionMap)) {
+                $list[] = sprintf(
+                    '- <info>%s</info> (jira %s %s)',
+                    $transitionName,
+                    $command,
+                    $issue->issueKey()
+                );
+            } else {
+                $list[] = sprintf(
+                    '- <info>%s</info>',
+                    $transitionName
+                );
+            }
+        }
+        return implode(PHP_EOL, $list);
     }
 }
