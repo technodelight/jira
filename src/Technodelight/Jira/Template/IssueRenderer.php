@@ -87,9 +87,9 @@ class IssueRenderer
      * @var array
      */
     private $issueTypeFormats = [
-        'Default' => '<fg=black;bg=blue>%s</>',
-        'Defect' => '<error>%s</error>',
-        'Bug' => '<error>%s</error>',
+        'Default' => '<fg=black;bg=blue> %s </>',
+        'Defect' => '<error> %s </error>',
+        'Bug' => '<error> %s </error>',
     ];
 
     /**
@@ -434,7 +434,7 @@ class IssueRenderer
         $bgColor = $this->extractProperColor($statusCategory['colorName']);
         $fgColor = 'black';
 
-        return sprintf('<fg=%s;bg=%s>%s</>', $fgColor, $bgColor, $status);
+        return sprintf('<fg=%s;bg=%s> %s </>', $fgColor, $bgColor, $status);
     }
 
     private function extractProperColor($colorName)
