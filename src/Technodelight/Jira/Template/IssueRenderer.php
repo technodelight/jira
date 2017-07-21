@@ -5,18 +5,18 @@ namespace Technodelight\Jira\Template;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\IssueCollection;
-use Technodelight\Jira\Api\Worklog;
 use Technodelight\Jira\Console\Application;
+use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\HubHelper;
+use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Template\CommentRenderer;
-use Technodelight\Jira\Template\WorklogRenderer;
 use Technodelight\Simplate;
 
 class IssueRenderer
@@ -76,6 +76,7 @@ class IssueRenderer
 
     /**
      * Templates per issue type
+     *
      * @var array
      */
     private $templates = [
@@ -84,6 +85,7 @@ class IssueRenderer
 
     /**
      * Formats for various issue types
+     *
      * @var array
      */
     private $issueTypeFormats = [
@@ -96,6 +98,10 @@ class IssueRenderer
      * @var array
      */
     private $worklogs = [];
+    /**
+     * @var \Technodelight\Jira\Helper\ColorExtractor
+     */
+    private $colorExtractor;
 
     public function __construct(
         Application $app,
@@ -106,7 +112,8 @@ class IssueRenderer
         HubHelper $hubHelper,
         GitBranchnameGenerator $gitBranchnameGenerator,
         WorklogRenderer $worklogRenderer,
-        CommentRenderer $commentRenderer
+        CommentRenderer $commentRenderer,
+        ColorExtractor $colorExtractor
     )
     {
         $this->viewsDir = $app->directory('views');
@@ -118,11 +125,14 @@ class IssueRenderer
         $this->gitBranchnameGenerator = $gitBranchnameGenerator;
         $this->worklogRenderer = $worklogRenderer;
         $this->commentRenderer = $commentRenderer;
+        $this->colorExtractor = $colorExtractor;
+        $this->output = new NullOutput;
     }
 
     public function setOutput(OutputInterface $output)
     {
         $this->output = $output;
+        $this->commentRenderer->setOutput($output);
     }
 
     /**
@@ -142,7 +152,6 @@ class IssueRenderer
      */
     public function renderIssues(IssueCollection $issues)
     {
-        $content = '';
         $groupedIssues = $this->groupByParent(iterator_to_array($issues));
         foreach ($groupedIssues as $issueGroup) {
             $this->output->writeln(
@@ -168,10 +177,10 @@ class IssueRenderer
                 'issueType' => $this->formatIssueType($issue->issueType()),
                 'status' => $this->formatStatus($issue->status(), $issue->statusCategory()),
                 'url' => $issue->url(),
-                'summary' => $this->tabulate(wordwrap($issue->summary()), 8),
+                'summary' => $this->tabulate($this->renderSummary($issue), 8),
                 'progress' => $this->renderProgress($issue),
 
-                'description' => $this->tabulate($this->shorten(wordwrap($issue->description()))),
+                'description' => $this->tabulate($this->renderDescription($issue)),
                 'environment' => $issue->environment(),
                 'reporter' => $issue->reporter(),
                 'assignee' => $issue->assignee(),
@@ -189,11 +198,11 @@ class IssueRenderer
         );
 
         $output = implode(
-            PHP_EOL,
-            array_filter(
-                array_map('rtrim', explode(PHP_EOL, $content))
-            )
-        ) . PHP_EOL;
+                PHP_EOL,
+                array_filter(
+                    array_map('rtrim', explode(PHP_EOL, $content))
+                )
+            ) . PHP_EOL;
         $this->output->writeln($output);
     }
 
@@ -201,7 +210,30 @@ class IssueRenderer
     {
         $format = isset($this->issueTypeFormats[$issueType])
             ? $issueType : 'Default';
+
         return sprintf($this->issueTypeFormats[$format], $issueType);
+    }
+
+    /**
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return string
+     */
+    private function renderSummary(Issue $issue)
+    {
+        $tagRenderer = new JiraTagConverter($this->output, $this->colorExtractor);
+
+        return wordwrap($tagRenderer->convert($issue->summary()));
+    }
+
+    /**
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return string
+     */
+    private function renderDescription(Issue $issue)
+    {
+        $tagRenderer = new JiraTagConverter($this->output, $this->colorExtractor);
+
+        return $this->shorten(wordwrap($tagRenderer->convert($issue->description())));
     }
 
     private function renderComments(Issue $issue)
@@ -229,6 +261,7 @@ class IssueRenderer
             foreach ($subtasks as $subtask) {
                 $rendered[] = $this->renderRelatedTask($subtask);
             }
+
             return join(PHP_EOL, $rendered);
         }
 
@@ -269,6 +302,7 @@ class IssueRenderer
             )
         );
         $progress->display();
+
         return $out->fetch();
     }
 
@@ -277,6 +311,7 @@ class IssueRenderer
         if (isset($this->templates[$issue->issueType()])) {
             return $this->getTemplateInstance($issue->issueType());
         }
+
         return $this->getTemplateInstance('Default');
     }
 
@@ -292,7 +327,7 @@ class IssueRenderer
     }
 
     /**
-     * @param  Issue[]  $issues
+     * @param  Issue[] $issues
      *
      * @return array issues grouped by parent
      */
@@ -300,16 +335,15 @@ class IssueRenderer
     {
         $groupedIssues = [];
         foreach ($issues as $issue) {
-            $parent = $issue->parent() ?: false;
-            $group = $parent ? $parent->ticketNumber() : 'Other issues';
+            $group = $issue->parent() ? $issue->parent()->issueKey() : 'Other issues';
             if (!isset($groupedIssues[$group])) {
                 $groupedIssues[$group] = [
                     'parentInfo' => array_filter(
-                        array(
+                        [
                             $group,
-                            $parent ? $parent->summary() : '',
-                            $parent ? $parent->url() : '',
-                        )
+                            $issue->parent() ? $issue->parent()->summary() : '',
+                            $issue->parent() ? $issue->parent()->url() : '',
+                        ]
                     ),
                     'issues' => []
                 ];
@@ -317,10 +351,11 @@ class IssueRenderer
             $groupedIssues[$group]['issues'][] = $issue;
         }
 
-        uksort($groupedIssues, function($a) {
+        uksort($groupedIssues, function ($a) {
             if ($a == 'Other issues') {
                 return 1;
             }
+
             return 0;
         });
 
@@ -339,7 +374,7 @@ class IssueRenderer
         } else {
             return array_unique(
                 array_map(
-                    function(array $branchData) {
+                    function (array $branchData) {
                         return sprintf('%s (%s)', $branchData['name'], $branchData['remote'] ? 'remote' : 'local');
                     },
                     $branches
@@ -354,7 +389,7 @@ class IssueRenderer
             return [];
         }
         $issues = $this->hub->issues();
-        $matchingIssues = array_filter($issues, function($hubIssue) use($issue) {
+        $matchingIssues = array_filter($issues, function ($hubIssue) use ($issue) {
             return strpos($hubIssue['title'], $issue->issueKey()) === 0;
         });
         $prIds = array_map(
@@ -371,10 +406,18 @@ class IssueRenderer
             $statuses[$id] = [];
             foreach ($combined['statuses'] as $status) {
                 switch ($status['state']) {
-                    case 'success': $mark = '✅'; break;
-                    case 'pending': $mark = '⌛'; break;
-                    case 'failure': $mark = '❌'; break;
-                    default: $mark = '❔'; break;
+                    case 'success':
+                        $mark = '✅';
+                        break;
+                    case 'pending':
+                        $mark = '⌛';
+                        break;
+                    case 'failure':
+                        $mark = '❌';
+                        break;
+                    default:
+                        $mark = '❔';
+                        break;
                 }
                 $statuses[$id][] = sprintf(
                     '    %s  (%s) %s <fg=black>(%s)</>',
@@ -387,7 +430,7 @@ class IssueRenderer
         }
 
         return array_map(
-            function($hubIssue) use ($statuses) {
+            function ($hubIssue) use ($statuses) {
                 return (join(PHP_EOL, array_filter([
                     sprintf(
                         '<fg=yellow>[ %s ]</> #%d %s <fg=green>(%s)</> <fg=black>(%s)</>',
@@ -409,11 +452,11 @@ class IssueRenderer
         if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
             $lines = explode(PHP_EOL, $text);
             $text = implode(
-                PHP_EOL,
-                array_filter(
-                    array_map('trim', array_slice($lines, 0, $maxLines))
-                )
-            ) . (count($lines) > $maxLines ? '...' : '');
+                    PHP_EOL,
+                    array_filter(
+                        array_map('trim', array_slice($lines, 0, $maxLines))
+                    )
+                ) . (count($lines) > $maxLines ? '...' : '');
         }
 
         return $this->templateHelper->tabulate($text);
@@ -439,18 +482,6 @@ class IssueRenderer
 
     private function extractProperColor($colorName)
     {
-        if (!$color = $this->ensureProperColor($colorName)) {
-            $color = $this->ensureProperColor(substr($colorName, 0, strpos($colorName, '-')));
-        }
-
-        return isset($color) ? $color : 'default';
-    }
-
-    private function ensureProperColor($colorName)
-    {
-        $colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
-        if (in_array(strtolower($colorName), $colors)) {
-            return strtolower($colorName);
-        }
+        return $this->colorExtractor->extractColor($colorName);
     }
 }

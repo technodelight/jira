@@ -7,6 +7,8 @@
         <service id="technodelight.jira.comment_renderer" class="Technodelight\Jira\Template\CommentRenderer">
             <argument type="service" id="technodelight.jira.app" />
             <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
 
         <service id="technodelight.jira.worklog_renderer" class="Technodelight\Jira\Template\WorklogRenderer">
@@ -24,6 +26,7 @@
             <argument type="service" id="technodelight.jira.git_branchname_generator" />
             <argument type="service" id="technodelight.jira.worklog_renderer" />
             <argument type="service" id="technodelight.jira.comment_renderer" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
     </services>
 
