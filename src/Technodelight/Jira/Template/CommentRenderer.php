@@ -2,8 +2,13 @@
 
 namespace Technodelight\Jira\Template;
 
+use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\Comment;
 use Technodelight\Jira\Console\Application;
+use Technodelight\Jira\Helper\ColorExtractor;
+use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
 
@@ -19,10 +24,32 @@ class CommentRenderer
      */
     private $viewsDir;
 
-    public function __construct(Application $app, TemplateHelper $templateHelper)
+    /**
+     * @var FormatterHelper
+     */
+    private $formatterHelper;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+    /**
+     * @var \Technodelight\Jira\Helper\ColorExtractor
+     */
+    private $colorExtractor;
+
+    public function __construct(Application $app, TemplateHelper $templateHelper, FormatterHelper $formatterHelper, ColorExtractor $colorExtractor)
     {
         $this->viewsDir = $app->directory('views');
         $this->templateHelper = $templateHelper;
+        $this->formatterHelper = $formatterHelper;
+        $this->output = new NullOutput;
+        $this->colorExtractor = $colorExtractor;
+    }
+
+    public function setOutput(OutputInterface $output)
+    {
+        $this->output = $output;
     }
 
     /**
@@ -50,45 +77,7 @@ class CommentRenderer
 
     private function renderTags($body)
     {
-        if ($numOfMatches = preg_match_all('~({code})(.*)({code})~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<fg=yellow>'.$matches[2][$i].'</>',
-                    $body
-                );
-            }
-        }
-        if ($numOfMatches = preg_match_all('~(\*)([^*]+)(\*)~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<fg=cyan>'.$matches[2][$i].'</>',
-                    $body
-                );
-            }
-        }
-        if ($numOfMatches = preg_match_all('~({color[^}]*})([^*]+)({color})~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    $matches[2][$i],
-                    $body
-                );
-            }
-        }
-        if ($numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<fg=cyan>' . $matches[2][$i] . '</>',
-                    $body
-                );
-            }
-        }
-
-        $body = str_replace('{panel}', '', $body);
-
-        return $body;
+        $tagRenderer = new JiraTagConverter($this->output, $this->colorExtractor);
+        return $tagRenderer->convert($body);
     }
 }
