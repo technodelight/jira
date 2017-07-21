@@ -4,13 +4,14 @@ namespace spec\Technodelight\Jira\Helper;
 
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Output\NullOutput;
+use Technodelight\Jira\Helper\ColorExtractor;
 
 class JiraTagConverterSpec extends ObjectBehavior
 {
     function let()
     {
         $output = new NullOutput();
-        $this->beConstructedWith($output);
+        $this->beConstructedWith($output, new ColorExtractor);
     }
 
     function it_does_not_convert_anything()
@@ -48,12 +49,14 @@ class JiraTagConverterSpec extends ObjectBehavior
     {
         $this->convert('{color:green}*GREEN BOLD*{color}')
              ->shouldReturn('<fg=green;options=bold>GREEN BOLD</>');
-        $this->convert('{color:green}*_GREEN BOLD UNDERSCORED_*{color}')
-             ->shouldReturn('<fg=green;options=bold,underscore>GREEN BOLD UNDERSCORED</>');
+        $this->convert('{color:green}*_GREEN BOLD UNDERSCORED_*{color} {color:green}*_GREEN BOLD UNDERSCORED_*{color}')
+             ->shouldReturn('<fg=green;options=bold,underscore>GREEN BOLD UNDERSCORED</> <fg=green;options=bold,underscore>GREEN BOLD UNDERSCORED</>');
         $this->convert('*_BOLDUNDERSCORE_* {color:green}_GREENUNDERSCORE_{color}')
              ->shouldReturn('<options=bold,underscore>BOLDUNDERSCORE</> <fg=green;options=underscore>GREENUNDERSCORE</>');
-        $this->convert('_{color:green}GREENUNDERSCORE_{color}_')
+        $this->convert('_{color:green}GREENUNDERSCORE{color}_')
              ->shouldReturn('<fg=green;options=underscore>GREENUNDERSCORE</>');
+        $this->convert('*_B_*' . PHP_EOL . '*_B_*')
+            ->shouldReturn('<options=bold,underscore>B</>'.PHP_EOL.'<options=bold,underscore>B</>');
     }
 
 }

@@ -54,15 +54,29 @@ class JiraTagConverter
     private function convertColor(&$body)
     {
         // color
-        if ($numOfMatches = preg_match_all('~({color[^}]*})(.+)({color})~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[0][$i],
-                    $this->formatColor($matches[2][$i], $matches[1][$i]),
-                    $body
-                );
+        $replacePairs = [];
+        $startColor = false;
+        $length = false;
+        for ($i = 0; $i < strlen($body); $i++) {
+            if ($body[$i] == '{') {
+                // check if it's a color
+                $peek = substr($body, $i + 1, strlen('color'));
+                if ($peek == 'color' && $startColor !== false && $length === false) {
+                    $length = $i + strlen('color}') - $startColor + 1;
+                }
+                if ($peek == 'color' && $startColor === false) {
+                    $startColor = $i;
+                }
+            }
+
+            if (preg_match('~({color[^}]*})(.*)({color})~', substr($body, $startColor, $length), $matches)) {
+                $replacePairs[substr($body, $startColor, $length)] = $this->formatColor($matches[2], $matches[1]);
+                $startColor = false;
+                $length = false;
             }
         }
+
+        $body = strtr($body, $replacePairs);
     }
 
     private function convertBoldUnderscore(&$body)
@@ -121,7 +135,9 @@ class JiraTagConverter
     private function mergeDefinitions($body)
     {
         // merge multiple closing tags
-        $body = preg_replace('~(</>[ ]*)+~', '</>', $body);
+        while (preg_match('~(</>[ ]*)+</>~u', $body)) {
+            $body = preg_replace('~(</>[ ]*)+</>~u', '</>', $body);
+        }
 
         // collect all definitions terminated by a closing tag
         $defs = [];
@@ -184,6 +200,7 @@ class JiraTagConverter
                 $body = preg_replace('~<' . (implode('>[ ]*<', array_map('preg_quote', $def))) . '>~', $newDefinition, $body);
             }
         }
+
         return $body;
     }
 
