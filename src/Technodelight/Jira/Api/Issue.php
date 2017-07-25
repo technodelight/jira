@@ -19,7 +19,7 @@ class Issue
     /**
      * Subtasks
      *
-     * @var array
+     * @var Issue[]
      */
     private $subtasks;
 
@@ -33,9 +33,14 @@ class Issue
     /**
      * Comments, if any
      *
-     * @var array
+     * @var Comment[]
      */
     private $comments = [];
+
+    /**
+     * @var Attachment[]
+     */
+    private $attachments = [];
 
     /**
      * @var \Technodelight\Jira\Api\FieldMapper|null
@@ -211,6 +216,16 @@ class Issue
         }
     }
 
+    public function attachments()
+    {
+        if (empty($this->attachments) && $attachments = $this->findField('attachment')) {
+            foreach ($attachments as $attachment) {
+                $this->attachments[] = Attachment::fromArray($attachment, $this);
+            }
+        }
+        return $this->attachments;
+    }
+
     public function comments()
     {
         if (isset($this->fields['comment']) && is_array($this->fields['comment']) && empty($this->comments)) {
@@ -255,6 +270,7 @@ class Issue
         $issue->key = $resultArray['key'];
         $issue->fields = isset($resultArray['fields']) ? $resultArray['fields'] : [];
         $issue->mapper = $mapper ?: new DefaultFieldMapper;
+
         return $issue;
     }
 
