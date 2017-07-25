@@ -102,6 +102,10 @@ class IssueRenderer
      * @var \Technodelight\Jira\Helper\ColorExtractor
      */
     private $colorExtractor;
+    /**
+     * @var \Technodelight\Jira\Template\AttachmentRenderer
+     */
+    private $attachmentRenderer;
 
     public function __construct(
         Application $app,
@@ -113,6 +117,7 @@ class IssueRenderer
         GitBranchnameGenerator $gitBranchnameGenerator,
         WorklogRenderer $worklogRenderer,
         CommentRenderer $commentRenderer,
+        AttachmentRenderer $attachmentRenderer,
         ColorExtractor $colorExtractor
     )
     {
@@ -127,6 +132,7 @@ class IssueRenderer
         $this->commentRenderer = $commentRenderer;
         $this->colorExtractor = $colorExtractor;
         $this->output = new NullOutput;
+        $this->attachmentRenderer = $attachmentRenderer;
     }
 
     public function setOutput(OutputInterface $output)
@@ -186,6 +192,7 @@ class IssueRenderer
                 'assignee' => $issue->assignee(),
                 'parent' => $this->tabulate($this->renderParentTask($issue), 8),
                 'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
+                'attachments' => $this->tabulate($this->renderAttachments($issue), 8),
 
                 'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
                 'hubIssues' => $this->tabulate(implode(PHP_EOL, $this->retrieveHubIssues($issue)), 8),
@@ -252,6 +259,11 @@ class IssueRenderer
         }
 
         return '';
+    }
+
+    private function renderAttachments(Issue $issue)
+    {
+        return $this->attachmentRenderer->renderAttachment($issue->attachments());
     }
 
     private function renderSubTasks(Issue $issue)

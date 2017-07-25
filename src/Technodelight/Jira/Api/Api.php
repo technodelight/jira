@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Api;
 
-use Technodelight\Jira\Api\FieldMapper;
 use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Helper\DateHelper;
 
@@ -299,5 +298,16 @@ class Api
             ),
             $this->mapper
         );
+    }
+
+    /**
+     * Download URL to target filename
+     *
+     * @param string $url
+     * @param string $filename
+     */
+    public function download($url, $filename)
+    {
+        $this->client->download($url, $filename);
     }
 }

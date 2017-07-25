@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\Api as JiraApi;
-use Technodelight\Jira\Api\HttpClient as JiraClient;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
@@ -23,6 +22,7 @@ use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
 use Technodelight\Jira\Console\Command\SelfUpdateCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
+use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -84,7 +84,7 @@ class Application extends BaseApp
     protected $templateHelper;
 
     /**
-     * @var JiraClient
+     * @var JiraApi
      */
     protected $jira;
 
@@ -116,6 +116,7 @@ class Application extends BaseApp
         $commands[] = new DashboardCommand($this->container());
         $commands[] = new ShowCommand($this->container());
         $commands[] = new BrowseIssueCommand($this->container());
+        $commands[] = new DownloadAttachmentCommand($this->container());
 
         foreach ($this->config()->transitions() as $alias => $transitionName) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitionName);
@@ -247,8 +248,8 @@ class Application extends BaseApp
     public function jira()
     {
         if (!isset($this->jira)) {
-            $client = new JiraClient($this->config());
-            $this->jira = new JiraApi($client);
+            /** @var \Technodelight\Jira\Api\Api jira */
+            $this->jira = $this->get('technodelight.jira.api');
         }
 
         return $this->jira;
@@ -304,6 +305,6 @@ class Application extends BaseApp
         $base = log($size, 1024);
         $suffixes = array('', 'K', 'M', 'G', 'T');
 
-        return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+        return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[(int) floor($base)];
     }
 }

@@ -26,8 +26,11 @@
             <argument type="service" id="technodelight.jira.git_branchname_generator" />
             <argument type="service" id="technodelight.jira.worklog_renderer" />
             <argument type="service" id="technodelight.jira.comment_renderer" />
+            <argument type="service" id="technodelight.jira.attachment_renderer" />
             <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
+
+        <service id="technodelight.jira.attachment_renderer" class="Technodelight\Jira\Template\AttachmentRenderer" />
     </services>
 
 </container>
