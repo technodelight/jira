@@ -9,11 +9,11 @@
     {{ depends ($verbosity >= 64 && !empty($subTasks)) }}
     <comment>subtasks:</comment>
         {{ subTasks }}{{ end_depends }}
-    {{ depends ($verbosity >= 64) }}
     {{ depends ($verbosity >= 64 && !empty($attachments)) }}
     <comment>attachments:</comment>
         {{ attachments }}
     {{ end_depends }}
+    {{ depends ($verbosity >= 64) }}
     <comment>branches:</comment>
         {{ branches }}
     {{ end_depends }}
