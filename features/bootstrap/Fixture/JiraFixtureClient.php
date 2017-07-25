@@ -50,6 +50,11 @@ class JiraFixtureClient implements Client
         return $this->read('get', $jql);
     }
 
+    public function download($url, $filename)
+    {
+        // ?
+    }
+
     public static function setup($method, $url, $response)
     {
         self::$setups[$method][$url] = $response;

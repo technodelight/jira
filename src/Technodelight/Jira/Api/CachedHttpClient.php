@@ -3,8 +3,6 @@
 namespace Technodelight\Jira\Api;
 
 use ICanBoogie\Storage\Storage;
-use Technodelight\Jira\Api\Api;
-use Technodelight\Jira\Api\HttpClient;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class CachedHttpClient implements Client
@@ -91,6 +89,11 @@ class CachedHttpClient implements Client
         $result = $this->httpClient->search($jql, $fields, $expand, $properties);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
         return $result;
+    }
+
+    public function download($url, $filename)
+    {
+        $this->httpClient->download($url, $filename);
     }
 
     private function keyify()

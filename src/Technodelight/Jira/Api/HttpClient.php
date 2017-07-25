@@ -14,7 +14,7 @@ class HttpClient implements Client
     /**
      * @var GuzzleClient
      */
-    private $client;
+    private $httpClient;
 
     /**
      * @var \Technodelight\Jira\Api\HttpClient\ConfigProvider
@@ -66,7 +66,9 @@ class HttpClient implements Client
             if ($settle['state'] != 'fulfilled') {
                 throw new \UnexpectedValueException('Something went wrong while querying JIRA!');
             }
-            $results[$url] = json_decode((string) $settle['value']->getBody(), true);
+            /** @var \Psr\Http\Message\ResponseInterface $value */
+            $value = $settle['value'];
+            $results[$url] = json_decode((string) $value->getBody(), true);
         }
 
         return $results;
@@ -103,6 +105,11 @@ class HttpClient implements Client
             }
             throw new \BadMethodCallException($message);
         }
+    }
+
+    public function download($url, $filename)
+    {
+        $this->httpClient()->get($url, ['save_to' => sprintf('./%s', $filename)]);
     }
 
     private function apiUrl($projectDomain)
