@@ -82,7 +82,7 @@ class IssueTransitionCommand extends AbstractCommand
             $jira->performIssueTransition($issueKey, $transition['id']);
             $actionString = '';
             if ($input->getOption('assign')) {
-                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()['name']]]]);
+                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()->name()]]]);
                 $issue = $jira->retrieveIssue($issueKey);
                 $actionString = ' and has been assigned to you';
             } else
