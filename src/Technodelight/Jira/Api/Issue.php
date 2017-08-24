@@ -42,11 +42,6 @@ class Issue
      */
     private $attachments = [];
 
-    /**
-     * @var \Technodelight\Jira\Api\FieldMapper|null
-     */
-    private $mapper;
-
     public function id()
     {
         return $this->id;
@@ -262,26 +257,20 @@ class Issue
         return $this->subtasks ?: [];
     }
 
-    public static function fromArray($resultArray, FieldMapper $mapper = null)
+    public static function fromArray($resultArray)
     {
         $issue = new self;
         $issue->id = $resultArray['id'];
         $issue->link = $resultArray['self'];
         $issue->key = $resultArray['key'];
         $issue->fields = isset($resultArray['fields']) ? $resultArray['fields'] : [];
-        $issue->mapper = $mapper ?: new DefaultFieldMapper;
 
         return $issue;
     }
 
     private function findField($name)
     {
-        return isset($this->fields[$this->mapField($name)]) ? $this->fields[$this->mapField($name)] : false;
-    }
-
-    private function mapField($name)
-    {
-        return $this->mapper->map($name);
+        return isset($this->fields[$name]) ? $this->fields[$name] : false;
     }
 
     private function __construct()

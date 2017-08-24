@@ -109,7 +109,7 @@ class HttpClient implements Client
 
     public function download($url, $filename)
     {
-        $this->httpClient()->get($url, ['save_to' => sprintf('./%s', $filename)]);
+        $this->httpClient()->get($url, ['save_to' => $filename]);
     }
 
     private function apiUrl($projectDomain)

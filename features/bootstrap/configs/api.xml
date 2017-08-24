@@ -8,7 +8,6 @@
         <service public="false" id="fixture.jira_fixture_client" class="Fixture\JiraFixtureClient" />
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
             <argument type="service" id="fixture.jira_fixture_client" />
-            <argument type="service" id="technodelight.jira.field_mapper"/>
         </service>
         <!-- jira -->
         <!-- git -->

@@ -18,7 +18,6 @@ class Configuration implements ConfigurationInterface
                 ->append($this->instancesSection())
                 ->append($this->integrationsSection())
                 ->append($this->projectSection())
-                ->append($this->fieldMapSection())
                 ->append($this->transitionsSection())
                 ->append($this->aliasesSection())
                 ->append($this->filtersSection())
@@ -136,24 +135,6 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(15 * 60)
                 ->end()
             ->end();
-
-        return $rootNode;
-    }
-
-    private function fieldMapSection()
-    {
-        $treeBuilder = new TreeBuilder;
-        $rootNode = $treeBuilder->root('fieldMap');
-
-        $rootNode
-            ->info('Field mapping')
-            ->prototype('array')
-                ->children()
-                    ->scalarNode('field')->cannotBeEmpty()->isRequired()->end()
-                    ->scalarNode('map')->cannotBeEmpty()->isRequired()->end()
-                ->end()
-            ->end();
-        ;
 
         return $rootNode;
     }

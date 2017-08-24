@@ -6,14 +6,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Api\Attachment;
 use Technodelight\Jira\Api\Issue;
 
 class DownloadAttachmentCommand extends AbstractCommand
 {
-    const SUCCESS_MESSAGE = '<info>File %s has been successfully downloaded.</info>';
-
-    const ERROR_MESSAGE = '<error> Something went wrong while downloading %s. </error>';
+    const SUCCESS_MESSAGE = 'File "%s" has been successfully downloaded to "%s" .';
+    const CANCEL_MESSAGE = 'Skipped downloading file "%s"';
+    const ERROR_MESSAGE = 'Something went wrong while downloading "%s."';
 
     protected function configure()
     {
@@ -29,6 +30,11 @@ class DownloadAttachmentCommand extends AbstractCommand
                 'filename',
                 InputArgument::OPTIONAL,
                 'Filename to download'
+            )
+            ->addArgument(
+                'targetPath',
+                InputArgument::OPTIONAL,
+                'Path to download the file to (defaults to current working directory)'
             )
         ;
     }
@@ -56,6 +62,13 @@ class DownloadAttachmentCommand extends AbstractCommand
             $filename = $helper->ask($input, $output, $question);
             $input->setArgument('filename', $filename);
         }
+        if (!$input->getArgument('targetPath')) {
+            $input->setArgument('targetPath', getcwd());
+        }
+        $input->setArgument(
+            'targetPath',
+            rtrim($input->getArgument('targetPath'), '/\\' . DIRECTORY_SEPARATOR)
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -66,14 +79,34 @@ class DownloadAttachmentCommand extends AbstractCommand
         /** @var \Technodelight\Jira\Api\Issue $issue */
         $issue = $jira->retrieveIssue($issueKey);
         $filename = $input->getArgument('filename');
+        /** @var \Symfony\Component\Console\Helper\FormatterHelper $formatter */
+        $formatter = $this->getHelper('formatter');
 
         try {
             // download file
             $attachmentUrl = $this->findAttachment($issue, $filename);
-            $jira->download($attachmentUrl, $filename);
-            $output->writeln(sprintf(self::SUCCESS_MESSAGE, $filename));
+            $targetFilePath = $input->getArgument('targetPath') . DIRECTORY_SEPARATOR . $filename;
+            if ($this->confirmDownload($input, $output, $targetFilePath)) {
+                $jira->download($attachmentUrl, $targetFilePath);
+                $output->writeln(
+                    $formatter->formatBlock(
+                        sprintf(self::SUCCESS_MESSAGE, $filename, $targetFilePath),
+                        'info'
+                    )
+                );
+            } else {
+                $output->writeln(
+                    $formatter->formatBlock(sprintf(self::CANCEL_MESSAGE, $filename), 'comment')
+                );
+            }
         } catch (\Exception $e) {
-            $output->writeln(sprintf(self::ERROR_MESSAGE, $filename));
+            $errors = [
+                sprintf(self::ERROR_MESSAGE, $filename),
+                $e->getMessage(),
+            ];
+            $output->writeln(
+                $formatter->formatBlock($errors, 'error', true)
+            );
         }
     }
 
@@ -86,7 +119,29 @@ class DownloadAttachmentCommand extends AbstractCommand
         }
 
         throw new \InvalidArgumentException(
-            sprintf('Attachment %s cannot be found', $filename)
+            sprintf('Attachment "%s" cannot be found', $filename)
         );
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param $targetFilePath
+     * @return bool
+     */
+    protected function confirmDownload(InputInterface $input, OutputInterface $output, $targetFilePath)
+    {
+
+        if (is_file($targetFilePath)) {
+            $question = new ConfirmationQuestion(
+                sprintf('File "%s" already exists, do you want to overwrite it?', $targetFilePath),
+                false
+            );
+            /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+            $helper = $this->getHelper('question');
+            return $helper->ask($input, $output, $question);
+        }
+
+        return true;
     }
 }

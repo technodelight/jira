@@ -15,15 +15,10 @@ class Api
      * @var Client
      */
     private $client;
-    /**
-     * @var FieldMapper
-     */
-    private $mapper;
 
-    public function __construct(Client $client, FieldMapper $mapper)
+    public function __construct(Client $client)
     {
         $this->client = $client;
-        $this->mapper = $mapper;
     }
 
     /**
@@ -222,10 +217,7 @@ class Api
      */
     public function retrieveIssue($issueKey)
     {
-        return Issue::fromArray(
-            $this->client->get(sprintf('issue/%s', $issueKey)),
-            $this->mapper
-        );
+        return Issue::fromArray($this->client->get(sprintf('issue/%s', $issueKey)));
     }
 
     /**
@@ -295,8 +287,7 @@ class Api
                 $fields,
                 $expand,
                 $properties
-            ),
-            $this->mapper
+            )
         );
     }
 
