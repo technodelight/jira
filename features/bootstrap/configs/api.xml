@@ -6,7 +6,7 @@
     <services>
         <!-- jira -->
         <service public="false" id="fixture.jira_fixture_client" class="Fixture\JiraFixtureClient" />
-        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="fixture.jira_fixture_client" />
         </service>
         <!-- jira -->

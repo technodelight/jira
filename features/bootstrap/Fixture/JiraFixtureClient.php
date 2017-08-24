@@ -2,7 +2,7 @@
 
 namespace Fixture;
 
-use Technodelight\Jira\Api\Client;
+use Technodelight\Jira\Api\JiraRestApi\Client;
 
 class JiraFixtureClient implements Client
 {

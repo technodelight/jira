@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\WorklogCollection;
 use Technodelight\Jira\Helper\DateHelper;
@@ -201,7 +201,7 @@ class DashboardCommand extends AbstractCommand
             foreach ($records as $record) {
                 $output->writeln(
                     sprintf(
-                        '    <comment>%s</comment>: %s <fg=black>(%d)</>',
+                        '    <comment>%s</comment>: %s <fg=black>(%d)</fg>',
                         $record['timeSpent'],
                         $record['comment'],
                         $record['worklogId']

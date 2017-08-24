@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api\SearchQuery;
+namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 use Sirprize\Queried\BaseQuery as SirprizeBaseQuery;
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise;
-use Technodelight\Jira\Api\HttpClient\ConfigProvider;
+use Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider;
 
 class HttpClient implements Client
 {
@@ -17,7 +17,7 @@ class HttpClient implements Client
     private $httpClient;
 
     /**
-     * @var \Technodelight\Jira\Api\HttpClient\ConfigProvider
+     * @var \Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider
      */
     private $configProvider;
 

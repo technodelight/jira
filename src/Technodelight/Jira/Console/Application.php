@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Technodelight\Jira\Api\Api as JiraApi;
+use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
@@ -248,7 +248,7 @@ class Application extends BaseApp
     public function jira()
     {
         if (!isset($this->jira)) {
-            /** @var \Technodelight\Jira\Api\Api jira */
+            /** @var \Technodelight\Jira\Api\JiraRestApi\Api jira */
             $this->jira = $this->get('technodelight.jira.api');
         }
 

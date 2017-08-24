@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Api\Worklog;
 use Technodelight\Simplate;

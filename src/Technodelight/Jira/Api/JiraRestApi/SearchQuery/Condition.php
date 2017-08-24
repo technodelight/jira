@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api\SearchQuery;
+namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 use Sirprize\Queried\Condition\BaseCondition;
 use Sirprize\Queried\Condition\Tokenizer;

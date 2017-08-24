@@ -1,9 +1,14 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Api\JiraRestApi;
 
-use Technodelight\Jira\Api\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Helper\DateHelper;
+use Technodelight\Jira\Api\User;
+use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Api\IssueCollection;
+use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Api\WorklogCollection;
 
 class Api
 {

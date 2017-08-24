@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api\HttpClient;
+namespace Technodelight\Jira\Api\JiraRestApi\HttpClient;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;

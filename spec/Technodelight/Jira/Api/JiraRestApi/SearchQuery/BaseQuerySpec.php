@@ -1,11 +1,9 @@
 <?php
 
-namespace spec\Technodelight\Jira\Api\SearchQuery;
+namespace spec\Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
-use Sirprize\Queried\BaseQuery;
-use Technodelight\Jira\Api\SearchQuery\Condition;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Condition;
 
 class BaseQuerySpec extends ObjectBehavior
 {

@@ -5,23 +5,24 @@
 
     <services>
         <!-- jira -->
-        <service public="false" id="technodelight.jira.api_cache_storage.builder" class="Technodelight\Jira\Api\ApiCacheStorageBuilder" />
+        <service public="false" id="technodelight.jira.api_cache_storage.builder" class="Technodelight\Jira\Api\JiraRestApi\ApiCacheStorageBuilder" />
+
         <service public="false" id="technodelight.jira.api_cache_storage" class="ICanBoogie\Storage\Storage">
             <factory service="technodelight.jira.api_cache_storage.builder" method="build" />
         </service>
-        <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Api\HttpClient\ConfigProvider">
+        <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider">
             <argument type="service" id="technodelight.jira.config" />
             <argument type="service" id="service_container" />
         </service>
-        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\HttpClient">
+        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\JiraRestApi\HttpClient">
             <argument type="service" id="technodelight.jira.api_client.config_provider" />
         </service>
-        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\CachedHttpClient">
+        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\JiraRestApi\CachedHttpClient">
             <argument type="service" id="technodelight.jira.api_client" />
             <argument type="service" id="technodelight.jira.api_cache_storage" />
             <argument type="service" id="technodelight.jira.config" />
         </service>
-        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="technodelight.jira.cached_api_client" />
         </service>
         <!-- jira -->

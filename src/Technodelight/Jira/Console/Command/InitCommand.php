@@ -2,16 +2,9 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use GuzzleHttp\Exception\ClientException;
-use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
-use Symfony\Component\Config\Definition\NodeInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
-use Technodelight\Jira\Configuration\Symfony\ConfigurationLoader;
 
 class InitCommand extends AbstractCommand
 {

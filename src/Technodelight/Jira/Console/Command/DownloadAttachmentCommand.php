@@ -74,7 +74,7 @@ class DownloadAttachmentCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input);
-        /** @var \Technodelight\Jira\Api\Api $jira */
+        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         /** @var \Technodelight\Jira\Api\Issue $issue */
         $issue = $jira->retrieveIssue($issueKey);

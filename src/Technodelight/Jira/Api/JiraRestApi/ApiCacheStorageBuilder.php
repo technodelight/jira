@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Api\JiraRestApi;
 
 use ICanBoogie\Storage\FileStorage;
 use ICanBoogie\Storage\RunTimeStorage;

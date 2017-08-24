@@ -1,9 +1,8 @@
 <?php
 
-namespace spec\Technodelight\Jira\Api\SearchQuery;
+namespace spec\Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 
 class ConditionSpec extends ObjectBehavior
 {

@@ -1,9 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api\SearchQuery;
-
-use Technodelight\Jira\Api\SearchQuery\BaseQuery;
-use Technodelight\Jira\Api\SearchQuery\Condition;
+namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 class Builder
 {
@@ -167,5 +164,6 @@ class Builder
         if (preg_match_all('~\s*:([A-Za-z]+)\s*~', $clause, $matches)) {
             return $matches[1];
         }
+        return '';
     }
 }
