@@ -43,6 +43,11 @@ class ApplicationConfiguration extends BaseAppConf
         return 0;
     }
 
+    public function oneDayAmount()
+    {
+        return 27000;
+    }
+
     public function transitions()
     {
         return self::$transitions;

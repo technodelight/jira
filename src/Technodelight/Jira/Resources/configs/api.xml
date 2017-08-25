@@ -26,6 +26,12 @@
             <argument type="service" id="technodelight.jira.cached_api_client" />
         </service>
         <!-- jira -->
+        <!-- tempo -->
+        <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
+            <factory class="Technodelight\Technodelight\Jira\Connector\TempoApiFactory" method="build" />
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <!-- tempo -->
         <!-- git -->
         <service public="false" id="technodelight.gitshell.shell" class="Technodelight\Jira\Api\Shell\NativeShell">
             <argument>/usr/bin/env git</argument>

@@ -13,7 +13,8 @@
         "sirprize/queried": "^0.1.0",
         "knplabs/github-api": "^1.7",
         "symfony/yaml": "^3.2",
-        "icanboogie/storage": "^2.1"
+        "icanboogie/storage": "^2.1",
+        "technodelight/seconds-to-none": "^0.1.0"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

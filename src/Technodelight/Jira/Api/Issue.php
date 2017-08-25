@@ -207,7 +207,7 @@ class Issue
         if (!$this->worklogs) {
             $this->worklogs = $worklogs;
         } else {
-            throw new \RuntimeException('Issue contains worklogs already, assigning worklogs is forbidden');
+            throw new \RuntimeException('Issue contains worklogs already, re-assigning worklogs is forbidden');
         }
     }
 

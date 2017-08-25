@@ -3,19 +3,19 @@
 namespace Technodelight\Jira\Api;
 
 use Technodelight\Jira\Helper\DateHelper;
+use Technodelight\SecondsToNone;
 
 class Worklog
 {
-    private $issueKey, $worklogId, $author, $comment, $date, $timeSpent, $timeSpentSeconds, $issue = null;
+    private $issueKey, $worklogId, $author, $comment, $date, $timeSpentSeconds, $issue = null;
 
-    private function __construct($issueKey, $worklogId, $author, $comment, $date, $timeSpent, $timeSpentSeconds)
+    private function __construct($issueKey, $worklogId, $author, $comment, $date, $timeSpentSeconds)
     {
         $this->issueKey = $issueKey;
         $this->worklogId = $worklogId;
         $this->author = User::fromArray($author);
         $this->comment = $comment;
         $this->date = $date;
-        $this->timeSpent = $timeSpent;
         $this->timeSpentSeconds = $timeSpentSeconds;
     }
 
@@ -31,8 +31,7 @@ class Worklog
             $record['id'],
             $record['author'],
             isset($record['comment']) ? $record['comment'] : null,
-            DateHelper::dateTimeFromJira($record['started'])->format('Y-m-d H:i:s'),
-            $record['timeSpent'],
+            $record['started'],
             $record['timeSpentSeconds']
         );
     }
@@ -59,11 +58,18 @@ class Worklog
         return $this->worklogId;
     }
 
+    /**
+     * @return User
+     */
     public function author()
     {
         return $this->author;
     }
 
+    /**
+     * @param string|null $comment
+     * @return string|$this
+     */
     public function comment($comment = null)
     {
         if ($comment) {
@@ -73,6 +79,10 @@ class Worklog
         return $this->comment;
     }
 
+    /**
+     * @param string|null $date
+     * @return string|$this
+     */
     public function date($date = null)
     {
         if ($date) {
@@ -82,14 +92,18 @@ class Worklog
         return $this->date;
     }
 
+    /**
+     * @param string|null $timeSpent set time spent using human text (1d2h)
+     * @deprecated
+     * @return string|$this
+     */
     public function timeSpent($timeSpent = null)
     {
         if ($timeSpent) {
-            $this->timeSpent = $timeSpent;
-            $this->timeSpentSeconds = null;
+            $this->timeSpentSeconds = (new SecondsToNone())->humanToSeconds($timeSpent);
             return $this;
         }
-        return $this->timeSpent;
+        return (new SecondsToNone)->secondsToHuman($this->timeSpentSeconds);
     }
 
     public function timeSpentSeconds()
@@ -99,7 +113,7 @@ class Worklog
 
     public function isSame(Worklog $log)
     {
-        return [$log->timeSpent, $log->comment, $log->date, $log->author()]
-            == [$this->timeSpent, $this->comment, $this->date, $this->author()];
+        return [$log->timeSpentSeconds, $log->comment, $log->date, $log->author()]
+            == [$this->timeSpentSeconds, $this->comment, $this->date, $this->author()];
     }
 }

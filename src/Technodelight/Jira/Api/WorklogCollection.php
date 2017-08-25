@@ -8,7 +8,12 @@ use Technodelight\Jira\Api\Worklog;
 
 class WorklogCollection implements Iterator, Countable
 {
-    private $startAt = 0, $maxResults = 0, $total = 0, $worklogs = [];
+    private $maxResults = 0;
+    private $total = 0;
+    /**
+     * @var Worklog[]
+     */
+    private $worklogs = [];
 
     private function __construct()
     {

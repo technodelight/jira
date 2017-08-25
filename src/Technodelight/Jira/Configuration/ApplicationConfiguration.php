@@ -15,7 +15,7 @@ class ApplicationConfiguration
     private $yesterdayAsWeekday;
     private $defaultWorklogTimestamp;
     private $cacheTtl;
-    private $fieldMap;
+    private $oneDay;
 
     public function domain()
     {
@@ -54,11 +54,6 @@ class ApplicationConfiguration
         return $this->instances;
     }
 
-    public function fieldMap()
-    {
-        return $this->fieldMap;
-    }
-
     /**
      * @param $instance
      * @return array
@@ -83,6 +78,11 @@ class ApplicationConfiguration
     public function defaultWorklogTimestamp()
     {
         return $this->defaultWorklogTimestamp;
+    }
+
+    public function oneDayAmount()
+    {
+        return $this->oneDay;
     }
 
     public function cacheTtl()
@@ -114,9 +114,9 @@ class ApplicationConfiguration
         $configuration->instances = self::useAttributeAsKey($config['instances'], 'name');
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
+        $configuration->oneDay = $config['project']['oneDay'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
         $configuration->cacheTtl = $config['project']['cacheTtl'];
-        $configuration->fieldMap = self::flattenArray($config['fieldMap'], 'field', 'map');
         $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');
         $configuration->aliases = self::flattenArray($config['aliases'], 'alias','issueKey');
         $configuration->filters = self::flattenArray($config['filters'], 'command', 'jql');

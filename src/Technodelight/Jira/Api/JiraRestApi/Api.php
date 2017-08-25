@@ -88,7 +88,7 @@ class Api
                 'timeSpent' => $timeSpent,
             ]
         );
-        return Worklog::fromArray($jiraRecord, $issueKey);
+        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $issueKey);
     }
 
     public function retrieveWorklogs(array $worklogIds)
@@ -98,7 +98,7 @@ class Api
             ['ids' => $worklogIds]
         );
         foreach ($records as $logRecord) {
-            yield Worklog::fromArray($logRecord, $logRecord['issueId']);
+            yield Worklog::fromArray($this->normaliseDateFields($logRecord), $logRecord['issueId']);
         }
     }
 
@@ -109,10 +109,10 @@ class Api
             [
                 'comment' => $worklog->comment(),
                 'started' => DateHelper::dateTimeToJira($worklog->date()),
-                'timeSpent' => $worklog->timeSpent(),
+                'timeSpentSeconds' => $worklog->timeSpentSeconds(),
             ]
         );
-        return Worklog::fromArray($jiraRecord, $jiraRecord['issueId']);
+        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $jiraRecord['issueId']);
     }
 
     public function deleteWorklog(Worklog $worklog)
@@ -134,7 +134,7 @@ class Api
                 $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
             }
             foreach ($response['worklogs'] as $jiraRecord) {
-                $results->push(Worklog::fromArray($jiraRecord, $issueKey));
+                $results->push(Worklog::fromArray($this->normaliseDateFields($jiraRecord), $issueKey));
             }
 
             return $results;
@@ -147,7 +147,7 @@ class Api
      * @param  IssueCollection $issues
      * @param  int|null $limit
      */
-    public function fetchAndAssignWorklogsToIssues(IssueCollection $issues, $from = null, $to = null, $username = null, $limit = null)
+    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, $from = null, $to = null, $username = null, $limit = null)
     {
         $requests = [];
         foreach ($issues->keys() as $issueKey) {
@@ -156,7 +156,7 @@ class Api
 
         $responses = $this->client->multiGet($requests);
         foreach ($responses as $requestUrl => $response) {
-            list (, $issueKey, ) = explode('/', $requestUrl, 3);
+            list ( ,$issueKey, ) = explode('/', $requestUrl, 3);
             $issue = $issues->find($issueKey);
             $worklogs = WorklogCollection::fromIssueArray($issue, $response['worklogs']);
             if ($from && $to) {
@@ -222,7 +222,9 @@ class Api
      */
     public function retrieveIssue($issueKey)
     {
-        return Issue::fromArray($this->client->get(sprintf('issue/%s', $issueKey)));
+        return Issue::fromArray(
+            $this->normaliseIssueArray($this->client->get(sprintf('issue/%s', $issueKey)))
+        );
     }
 
     /**
@@ -286,14 +288,16 @@ class Api
      */
     public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
-        return IssueCollection::fromSearchArray(
-            $this->client->search(
-                $jql,
-                $fields,
-                $expand,
-                $properties
-            )
+        $results = $this->client->search(
+            $jql,
+            $fields,
+            $expand,
+            $properties
         );
+        foreach ($results['issues'] as $k => $issueArray) {
+            $results['issues'][$k] = $this->normaliseIssueArray($issueArray);
+        }
+        return IssueCollection::fromSearchArray($results);
     }
 
     /**
@@ -305,5 +309,58 @@ class Api
     public function download($url, $filename)
     {
         $this->client->download($url, $filename);
+    }
+
+    /**
+     * @param array $jiraIssue
+     * @return array
+     */
+    private function normaliseIssueArray(array $jiraIssue)
+    {
+        $attachments = isset($jiraIssue['fields']['attachment']) ? $jiraIssue['fields']['attachment'] : [];
+        foreach ($attachments as $k => $attachment) {
+            $attachments[$k] = $this->normaliseDateFields($attachment);
+        }
+        $jiraIssue['fields']['attachment'] = $attachments;
+        $parent = !empty($jiraIssue['parent']) ? $jiraIssue['parent'] : null;
+        if ($parent) {
+            $jiraIssue['fields']['parent'] = $this->normaliseDateFields($parent);
+        }
+        $comments = isset($jiraIssue['fields']['comment']) ? $jiraIssue['fields']['comment'] : [];
+        if ($comments) {
+            foreach ($comments['comments'] as $k => $comment) {
+                $comments['comments'][$k] = $this->normaliseDateFields($comment);
+            }
+        }
+        $jiraIssue['fields']['comment'] = $comments;
+        $worklog = isset($jiraIssue['fields']['worklog']) ? $jiraIssue['fields']['worklog'] : [];
+        if ($worklog) {
+            foreach ($worklog['worklogs'] as $k => $comment) {
+                $worklog['worklogs'][$k] = $this->normaliseDateFields($comment);
+            }
+        }
+        $jiraIssue['fields']['worklog'] = $worklog;
+
+        return $jiraIssue;
+    }
+
+    private function normaliseDateFields(array $jiraItem)
+    {
+        $fields = ['created', 'started', 'updated', 'createdAt', 'startedAt', 'updatedAt'];
+        foreach ($fields as $field) {
+            if (isset($jiraItem[$field])) {
+                $jiraItem[$field] = $this->normaliseDate($jiraItem[$field]);
+            }
+        }
+        return $jiraItem;
+    }
+
+    /**
+     * @param string $jiraDate in idiot jira date format
+     * @return string in normal date format
+     */
+    private function normaliseDate($jiraDate)
+    {
+        return DateHelper::dateTimeFromJira($jiraDate)->format('Y-m-d H:i:s');
     }
 }

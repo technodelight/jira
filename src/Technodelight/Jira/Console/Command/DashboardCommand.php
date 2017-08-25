@@ -44,6 +44,7 @@ class DashboardCommand extends AbstractCommand
 
         /** @var Api $jira */
         $jira = $this->getService('technodelight.jira.api');
+        /** @var DateHelper $dateHelper */
         $dateHelper = $this->getService('technodelight.jira.date_helper');
         $pluralizeHelper = $this->getService('technodelight.jira.pluralize_helper');
         $user = $jira->user();
@@ -63,7 +64,7 @@ class DashboardCommand extends AbstractCommand
 
         $totalTimeInRange = $dateHelper->humanToSeconds($input->getOption('week') ? '5d' : '1d');
         $summary = $logs->totalTimeSpentSeconds();
-
+        var_dump($totalTimeInRange);
         // pure output of this command follows
         $output->writeln(
             sprintf(
@@ -121,7 +122,7 @@ class DashboardCommand extends AbstractCommand
             }
             $rows[$log->issueKey()][$dayNo].= sprintf(
                 PHP_EOL . '%s %s',
-                $log->timeSpent(),
+                $log->timeSpentSeconds(),
                 $this->shortenWorklogComment($log->comment())
             );
             $rows[$log->issueKey()][$dayNo] = trim($rows[$log->issueKey()][$dayNo]);

@@ -4,7 +4,13 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper" />
+        <service public="false" id="seconds_to_none.configuration" class="Technodelight\SecondsToNone\Config">
+            <factory class="Technodelight\Jira\Api\SecondsToNone\ConfigProvider" method="build"/>
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper">
+            <argument type="service" id="seconds_to_none.configuration" />
+        </service>
         <service id="technodelight.jira.git_helper" class="Technodelight\Jira\Helper\GitHelper" />
         <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper">
             <argument type="service" id="technodelight.gitshell.api" />

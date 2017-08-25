@@ -4,16 +4,18 @@ namespace Technodelight\Jira\Api;
 
 class User
 {
+    private $key, $name, $emailAddress, $avatarUrls, $displayName, $active, $timeZone, $locale;
+
     public static function fromArray(array $array)
     {
         $user = new self;
         $user->key = $array['key'];
         $user->name = $array['name'];
-        $user->emailAddress = $array['emailAddress'];
-        $user->avatarUrls = $array['avatarUrls'];
+        $user->emailAddress = isset($array['emailAddress']) ? $array['emailAddress'] : '';
+        $user->avatarUrls = isset($array['avatarUrls']) ? $array['avatarUrls'] : [];
         $user->displayName = $array['displayName'];
-        $user->active = $array['active'];
-        $user->timeZone = $array['timeZone'];
+        $user->active = isset($array['active']) ? $array['active'] : true;
+        $user->timeZone = isset($array['timeZone']) ? $array['timeZone'] : '';
         $user->locale = isset($array['locale']) ? $array['locale'] : null;
         return $user;
     }

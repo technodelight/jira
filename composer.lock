@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f042e680da759202fb326890d0c46b38",
+    "content-hash": "a76ee857fd5bd38a46d3fe27e29d91e0",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -1037,6 +1037,43 @@
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
             "time": "2017-02-16T22:46:52+00:00"
+        },
+        {
+            "name": "technodelight/seconds-to-none",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/seconds-to-none.git",
+                "reference": "a67424e49f4b6a28b62122442da77d330347e55b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/seconds-to-none/zipball/a67424e49f4b6a28b62122442da77d330347e55b",
+                "reference": "a67424e49f4b6a28b62122442da77d330347e55b",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpspec/nyan-formatters": "^1.0",
+                "phpspec/phpspec": "^2.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Technodelight\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gal",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Seconds to human / human to seconds",
+            "time": "2016-03-03T22:27:53+00:00"
         },
         {
             "name": "technodelight/simplate",

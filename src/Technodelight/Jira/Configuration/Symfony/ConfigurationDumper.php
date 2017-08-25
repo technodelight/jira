@@ -3,14 +3,13 @@
 namespace Technodelight\Jira\Configuration\Symfony;
 
 use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
 
 class ConfigurationDumper
 {
     private $filenameProvider;
     private $globalProps = ['credentials', 'integrations', 'project'];
 
-    public function __construct($filenameProvider)
+    public function __construct(FilenameProvider $filenameProvider)
     {
         $this->filenameProvider = $filenameProvider;
     }
@@ -25,12 +24,12 @@ class ConfigurationDumper
         return $this->dump($this->filenameProvider->globalFile(), true);
     }
 
-    private function dump($path)
+    private function dump($path, $isGlobal)
     {
         if (is_file($path)) {
             throw new \ErrorException('File already exists: ' . $path);
         }
-        if (!$this->putContents($path)) {
+        if (!$this->putContents($path, $isGlobal)) {
             throw new \ErrorException('Cannot write file ' . $path);
         }
         if (!chmod($path, 0600)) {
