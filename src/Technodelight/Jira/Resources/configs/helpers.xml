@@ -5,7 +5,7 @@
 
     <services>
         <service public="false" id="seconds_to_none.configuration" class="Technodelight\SecondsToNone\Config">
-            <factory class="Technodelight\Jira\Api\SecondsToNone\ConfigProvider" method="build"/>
+            <factory class="Technodelight\Jira\Connector\SecondsToNoneConfigProvider" method="build"/>
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper">

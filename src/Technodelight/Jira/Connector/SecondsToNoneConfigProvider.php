@@ -1,12 +1,12 @@
 <?php
 
-namespace Technodelight\Jira\Api\SecondsToNone;
+namespace Technodelight\Jira\Connector;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\SecondsToNone;
 use Technodelight\SecondsToNone\Config;
 
-class ConfigProvider
+class SecondsToNoneConfigProvider
 {
     private $oneDayAmount;
 

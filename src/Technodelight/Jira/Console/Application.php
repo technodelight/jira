@@ -28,6 +28,7 @@ use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Console\Command\ListAliasesCommand;
 
 class Application extends BaseApp
 {
@@ -111,6 +112,7 @@ class Application extends BaseApp
     {
         $commands = [];
         $commands[] = new ListInstancesCommand($this->container());
+        $commands[] = new ListAliasesCommand($this->container());
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
