@@ -37,11 +37,11 @@ class InitCommand extends AbstractCommand
 
         $consent = $dialog->askConfirmation(
             $output,
-            PHP_EOL . "<question>Do you want to edit it now? (y/N)</question>",
+            PHP_EOL . "<question>Do you want to open the file now? (y/N)</question>",
             false
         );
         if ($consent) {
-            passthru(getenv('EDITOR') . ' ' . $path);
+            passthru(sprintf('open %s', escapeshellarg($path)));
         }
     }
 }

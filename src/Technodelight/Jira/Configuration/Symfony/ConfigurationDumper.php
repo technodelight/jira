@@ -42,13 +42,17 @@ class ConfigurationDumper
     private function putContents($path, $isGlobal)
     {
         $configuration = new Configuration;
+        /** @var \Symfony\Component\Config\Definition\ArrayNode $config */
         $config = $configuration->getConfigTreeBuilder()->buildTree();
         $written = 0;
+        $referenceDumper = new YamlReferenceDumper;
+        file_put_contents($path, '');
         foreach ($config->getChildren() as $child) {
+            /** @var $child \Symfony\Component\Config\Definition\NodeInterface */
             if ($isGlobal && !in_array($child->getName(), $this->globalProps)) {
                 continue;
             }
-            $written+= (int) file_put_contents($path, (new YamlReferenceDumper)->dumpAtPath($configuration, $child->getName()), FILE_APPEND);
+            $written+= (int) file_put_contents($path, $referenceDumper->dumpNode($child), FILE_APPEND);
         }
         return $written;
     }
