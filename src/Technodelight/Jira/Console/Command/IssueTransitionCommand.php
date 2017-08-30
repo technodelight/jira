@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\Issue;
 use Technodelight\Jira\Helper\GitHelper;
@@ -110,7 +111,7 @@ class IssueTransitionCommand extends AbstractCommand
 
         if ($input->getOption('branch')) {
             if (!$this->gitBranchesForIssue($issue)) {
-                $branchName = $this->generateBranchName($issue);
+                $branchName = $this->getProperBranchName($input, $output, $issue);
                 $output->writeln('Checking out to new branch: ' . $branchName);
                 $git->createBranch($branchName);
             } else {
@@ -171,7 +172,12 @@ class IssueTransitionCommand extends AbstractCommand
 
     private function generateBranchName(Issue $issue)
     {
-        return $this->getService('technodelight.jira.git_branchname_generator')->fromIssue($issue);
+        return $this->branchnameGenerator()->fromIssue($issue);
+    }
+
+    private function generateBranchNameWithAutocomplete(Issue $issue)
+    {
+        return $this->branchnameGenerator()->fromIssueWithAutocomplete($issue);
     }
 
     private function retrieveGitBranches(Issue $issue)
@@ -179,7 +185,7 @@ class IssueTransitionCommand extends AbstractCommand
         $branches = $this->gitBranchesForIssue($issue);
         if (empty($branches)) {
             $branches = [
-                $this->generateBranchName($issue) . ' (generated)'
+                $this->generateBranchName($issue) . ' (generated)',
             ];
         }
 
@@ -220,7 +226,7 @@ class IssueTransitionCommand extends AbstractCommand
             }
         }
         if (!$selectedBranch && ($branchName == $generatedBranchOption)) {
-            $selectedBranch = $this->generateBranchName($issue);
+            $selectedBranch = $this->getProperBranchName($input, $output, $issue);
             $new = true;
         }
         if (!$selectedBranch) {
@@ -292,5 +298,48 @@ class IssueTransitionCommand extends AbstractCommand
                 throw new \RuntimeException('Please commit your changes first.');
             }
         }
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param string $branchName
+     * return bool
+     */
+    protected function isShorteningBranchNameConfirmed(InputInterface $input, OutputInterface $output, $branchName)
+    {
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $question = new ConfirmationQuestion(
+            'The generated branch name seems to be too long. Do you want to shorten it?' . PHP_EOL
+            . '(' . $branchName . ')' . PHP_EOL
+            . '[Y/n] ? ',
+            true
+        );
+        return $helper->ask($input, $output, $question);
+    }
+
+    /**
+     * @return \Technodelight\Jira\Helper\GitBranchnameGenerator
+     */
+    private function branchnameGenerator()
+    {
+        return $this->getService('technodelight.jira.git_branchname_generator');
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return string
+     */
+    private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue)
+    {
+        $selectedBranch = $this->generateBranchName($issue);
+        if ((strlen($selectedBranch) > 30) && $this->isShorteningBranchNameConfirmed($input, $output, $selectedBranch)) {
+            $selectedBranch = $this->generateBranchNameWithAutocomplete($issue);
+        }
+
+        return $selectedBranch;
     }
 }

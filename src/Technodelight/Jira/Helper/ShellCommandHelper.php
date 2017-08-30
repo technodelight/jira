@@ -4,6 +4,9 @@ namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Helper\Helper;
 
+/**
+ * @deprecated
+ */
 abstract class ShellCommandHelper extends Helper
 {
     abstract protected function getExecutable();
