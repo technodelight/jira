@@ -7,7 +7,7 @@ use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
 class ConfigurationDumper
 {
     private $filenameProvider;
-    private $globalProps = ['credentials', 'integrations', 'project'];
+    private $globalProps = ['credentials', 'integrations'];
 
     public function __construct(FilenameProvider $filenameProvider)
     {

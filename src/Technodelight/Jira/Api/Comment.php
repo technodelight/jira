@@ -49,11 +49,11 @@ class Comment
 
     public function created()
     {
-        return DateHelper::dateTimeFromJira($this->created);
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->created);
     }
 
-    public function udpated()
+    public function updated()
     {
-        return DateHelper::dateTimeFromJira($this->udpated);
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->updated);
     }
 }

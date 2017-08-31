@@ -81,26 +81,43 @@ class JiraTagConverter
 
     private function convertBoldUnderscore(&$body)
     {
-        // bold
-        if ($numOfMatches = preg_match_all('~(\*)([^*]+)(\*)~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<options=bold>'.$matches[2][$i].'</>',
-                    $body
-                );
+        $this->parseAndReplaceWith($body, '*', '<options=bold>');
+        $this->parseAndReplaceWith($body, '_', '<options=underscore>');
+    }
+
+    /**
+     * @param $body
+     * @param string $replaceChar
+     * @param string $wrapper
+     * @return string
+     */
+    private function parseAndReplaceWith(&$body, $replaceChar, $wrapper)
+    {
+        $replacePairs = [];
+        $startedAt = false;
+        for ($pos = 0; $pos < strlen($body); $pos++) {
+            $char = substr($body, $pos, 1);
+            $prevChar = $pos > 0 ? substr($body, $pos - 1, 1) : '';
+            $hasTerminateBefore = preg_match('~[^a-z0-9]{1}~', $prevChar) || empty($prevChar);
+            if (($char == $replaceChar) && ($startedAt === false) && $hasTerminateBefore == true) {
+                // tag started
+                $startedAt = $pos;
+            } else if (($startedAt !== false) && ($char == "\n" || $char == "\r")) {
+                // tag terminated by new line, null the previous position and start searching again
+                $startedAt = false;
+            } else if (($char == $replaceChar) && ($startedAt !== false)) {
+                // tag closing found, add to replacements
+                $text = substr($body, $startedAt, $pos - $startedAt + 1);
+                if (trim($text, $replaceChar) == '') {
+                    $startedAt = false;
+                    continue;
+                }
+                $replacePairs[$text] = $wrapper . trim($text, $replaceChar) . '</>';
+                $startedAt = false;
             }
         }
-        // underscore
-        if ($numOfMatches = preg_match_all('~(_)([^_]+)(_)~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<options=underscore>'.$matches[2][$i].'</>',
-                    $body
-                );
-            }
-        }
+
+        $body = strtr($body, $replacePairs);
     }
 
     private function convertMentions(&$body)
@@ -153,7 +170,7 @@ class JiraTagConverter
                 continue;
             }
             // end of prev defs
-            if ($char == '/') {
+            if ($char == '/' && $startTag !== false) {
                 $defs[] = $def;
                 $def = [];
                 $startTag = false;

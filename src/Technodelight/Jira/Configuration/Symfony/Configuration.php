@@ -183,7 +183,7 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('filters');
 
         $rootNode
-            ->info('Custom quick filters registered as commands')
+            ->info('Custom quick filters registered as commands. See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html')
             ->prototype('array')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
