@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "f1c825097fd83912359c0c204b135c68",
+    "content-hash": "c75152ffc716a3245c9bc64e8d49dbe8",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -1589,17 +1589,20 @@
         },
         {
             "name": "technodelight/seconds-to-none",
-            "version": "0.1.0",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/seconds-to-none.git",
-                "reference": "a67424e49f4b6a28b62122442da77d330347e55b"
+                "reference": "d109b5725710020d2c2bf1fb943bb35f7f8ef4c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/seconds-to-none/zipball/a67424e49f4b6a28b62122442da77d330347e55b",
-                "reference": "a67424e49f4b6a28b62122442da77d330347e55b",
+                "url": "https://api.github.com/repos/technodelight/seconds-to-none/zipball/d109b5725710020d2c2bf1fb943bb35f7f8ef4c3",
+                "reference": "d109b5725710020d2c2bf1fb943bb35f7f8ef4c3",
                 "shasum": ""
+            },
+            "require": {
+                "php": "^5.5 || ^7.0"
             },
             "require-dev": {
                 "phpspec/nyan-formatters": "^1.0",
@@ -1622,7 +1625,7 @@
                 }
             ],
             "description": "Seconds to human / human to seconds",
-            "time": "2016-03-03T22:27:53+00:00"
+            "time": "2017-09-05T08:57:59+00:00"
         },
         {
             "name": "technodelight/simplate",

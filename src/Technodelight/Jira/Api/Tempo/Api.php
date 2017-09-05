@@ -2,8 +2,8 @@
 
 namespace Technodelight\Jira\Api\Tempo;
 
-use Technodelight\Jira\Api\Worklog;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\WorklogCollection;
 
 class Api
 {

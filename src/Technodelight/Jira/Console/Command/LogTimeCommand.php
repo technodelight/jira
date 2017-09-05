@@ -7,8 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\Worklog;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Simplate;
 
 class LogTimeCommand extends AbstractCommand

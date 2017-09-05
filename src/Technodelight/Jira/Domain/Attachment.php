@@ -1,15 +1,13 @@
 <?php
 
-namespace Technodelight\Jira\Api;
-
-use Technodelight\Jira\Helper\DateHelper;
+namespace Technodelight\Jira\Domain;
 
 class Attachment
 {
     private $attachment = [];
 
     /**
-     * @var \Technodelight\Jira\Api\Issue
+     * @var Issue
      */
     private $issue;
 
@@ -41,7 +39,7 @@ class Attachment
 
     public function created()
     {
-        return DateHelper::dateTimeFromJira($this->attachment['created']);
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->attachment['created']);
     }
 
     public function size()

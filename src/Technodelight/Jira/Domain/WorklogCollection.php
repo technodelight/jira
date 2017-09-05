@@ -1,10 +1,9 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Domain;
 
 use Countable;
 use Iterator;
-use Technodelight\Jira\Api\Worklog;
 
 class WorklogCollection implements Iterator, Countable
 {

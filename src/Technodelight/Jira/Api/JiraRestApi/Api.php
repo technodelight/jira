@@ -4,11 +4,11 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Jira\Api\User;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\IssueCollection;
-use Technodelight\Jira\Api\Worklog;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Domain\User;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\IssueCollection;
+use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\WorklogCollection;
 
 class Api
 {
@@ -357,7 +357,7 @@ class Api
 
     /**
      * @param string $jiraDate in idiot jira date format
-     * @return string in normal date format
+     * @return string in normal Y-m-d H:i:s date format
      */
     private function normaliseDate($jiraDate)
     {

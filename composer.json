@@ -14,7 +14,7 @@
         "knplabs/github-api": "^1.7",
         "symfony/yaml": "^3.2",
         "icanboogie/storage": "^2.1",
-        "technodelight/seconds-to-none": "^0.1.0",
+        "technodelight/seconds-to-none": "^0.2.0",
         "hoa/console": "^3.17"
     },
     "require-dev": {

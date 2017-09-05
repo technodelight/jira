@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Helper;
 
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
-use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Domain\Issue;
 
 class GitBranchnameGenerator
 {

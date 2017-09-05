@@ -1,8 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api;
-
-use Technodelight\Jira\Helper\DateHelper;
+namespace Technodelight\Jira\Domain;
 
 class Comment
 {

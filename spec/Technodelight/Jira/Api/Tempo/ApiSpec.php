@@ -5,7 +5,7 @@ namespace spec\Technodelight\Jira\Api\Tempo;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Technodelight\Jira\Api\Tempo\Client;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Domain\WorklogCollection;
 
 class ApiSpec extends ObjectBehavior
 {

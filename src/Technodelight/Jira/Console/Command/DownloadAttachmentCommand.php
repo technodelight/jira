@@ -7,8 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Technodelight\Jira\Api\Attachment;
-use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Domain\Attachment;
+use Technodelight\Jira\Domain\Issue;
 
 class DownloadAttachmentCommand extends AbstractCommand
 {

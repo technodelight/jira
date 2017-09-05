@@ -1,9 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api;
-
-use Technodelight\Jira\Api\Worklog;
-use Technodelight\Jira\Helper\DateHelper;
+namespace Technodelight\Jira\Domain;
 
 class Issue
 {
@@ -79,12 +76,7 @@ class Issue
 
     public function created()
     {
-        $field = $this->findField('created');
-        if ($field) {
-            $field = DateHelper::dateTimeFromJira($field);
-        }
-
-        return $field;
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->findField('created'));
     }
 
     public function status()

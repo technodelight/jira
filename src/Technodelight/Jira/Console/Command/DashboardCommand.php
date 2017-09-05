@@ -10,8 +10,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Helper\DateHelper;
 
 class DashboardCommand extends AbstractCommand

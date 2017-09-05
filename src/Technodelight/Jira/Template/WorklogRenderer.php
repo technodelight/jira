@@ -2,8 +2,8 @@
 
 namespace Technodelight\Jira\Template;
 
-use Technodelight\Jira\Api\Worklog;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
@@ -40,7 +40,7 @@ class WorklogRenderer
                     'worklogId' => $record->id(),
                     'author' => $record->author(),
                     'timeSpent' => $record->timeSpent(),
-                    'date' => $record->date(),
+                    'date' => $record->date()->format('Y-m-d H:i:s'),
                     'comment' => $this->templateHelper->tabulate(wordwrap($record->comment()), 8),
                 ]
             );

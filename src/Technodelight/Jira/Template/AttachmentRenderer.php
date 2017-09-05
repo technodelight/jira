@@ -3,12 +3,12 @@
 namespace Technodelight\Jira\Template;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Attachment;
+use Technodelight\Jira\Domain\Attachment;
 
 class AttachmentRenderer
 {
     /**
-     * @param \Technodelight\Jira\Api\Attachment[] $attachments
+     * @param Attachment[] $attachments
      * @return string
      */
     public function renderAttachment(array $attachments)

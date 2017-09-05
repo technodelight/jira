@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Api\Shell;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 
 class CommandSpec extends ObjectBehavior
 {

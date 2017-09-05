@@ -1,10 +1,9 @@
 <?php
 
-namespace spec\Technodelight\Jira\Api;
+namespace spec\Technodelight\Jira\Domain;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
-use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Domain\Issue;
 
 class AttachmentSpec extends ObjectBehavior
 {
@@ -22,7 +21,7 @@ class AttachmentSpec extends ObjectBehavior
             "active" => true,
             "timeZone" => "Europe/London",
         ],
-        "created" => "2017-07-24T16:18:21.156+0200",
+        "created" => "2017-07-24 16:18:21",
         "size" => 203872,
         "mimeType" => "application/pdf",
         "content" => "https://fixture.jira.phar/secure/attachment/12345/attachment-filename.pdf",

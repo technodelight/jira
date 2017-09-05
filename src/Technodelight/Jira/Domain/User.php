@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Domain;
 
 class User
 {

@@ -1,8 +1,7 @@
 <?php
 
-namespace Technodelight\Jira\Api;
+namespace Technodelight\Jira\Domain;
 
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\SecondsToNone;
 
 class Worklog
@@ -81,7 +80,7 @@ class Worklog
 
     /**
      * @param string|null $date
-     * @return string|$this
+     * @return \Datetime|$this
      */
     public function date($date = null)
     {
@@ -89,7 +88,7 @@ class Worklog
             $this->date = $date;
             return $this;
         }
-        return $this->date;
+        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->date);
     }
 
     /**

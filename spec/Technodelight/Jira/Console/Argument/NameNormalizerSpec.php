@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Console\Argument;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 
 class NameNormalizerSpec extends ObjectBehavior
 {

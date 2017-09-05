@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Api\GitShell;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 
 class DiffEntrySpec extends ObjectBehavior
 {

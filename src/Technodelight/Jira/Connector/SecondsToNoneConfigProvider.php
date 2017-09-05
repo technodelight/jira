@@ -8,6 +8,8 @@ use Technodelight\SecondsToNone\Config;
 
 class SecondsToNoneConfigProvider
 {
+    const PATTERN = '%d%s';
+
     private $oneDayAmount;
 
     private function __construct(ApplicationConfiguration $config)
@@ -23,13 +25,7 @@ class SecondsToNoneConfigProvider
 
     private function buildConfig()
     {
-        return new Config([
-            'd' => $this->calculateOneDay(),
-            'h' => 3600,
-            'm' => 60,
-            's' => 1,
-            'none' => 0,
-        ]);
+        return new Config($this->buildMapping(), self::PATTERN);
     }
 
     private function calculateOneDay()
@@ -42,5 +38,19 @@ class SecondsToNoneConfigProvider
             return $amount;
         }
         return (new SecondsToNone())->humanToSeconds($this->oneDayAmount);
+    }
+
+    /**
+     * @return array
+     */
+    private function buildMapping()
+    {
+        return [
+            'd' => $this->calculateOneDay(),
+            'h' => 3600,
+            'm' => 60,
+            's' => 1,
+            'none' => 0,
+        ];
     }
 }

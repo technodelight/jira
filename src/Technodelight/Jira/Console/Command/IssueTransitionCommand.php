@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
