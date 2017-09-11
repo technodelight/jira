@@ -9,6 +9,7 @@ class ApplicationConfiguration
     private $password;
     private $instances;
     private $githubToken;
+    private $maxBranchNameLength;
     private $aliases;
     private $transitions;
     private $filters;
@@ -47,6 +48,14 @@ class ApplicationConfiguration
     public function githubToken()
     {
         return $this->githubToken;
+    }
+
+    /**
+     * @return int
+     */
+    public function maxBranchNameLength()
+    {
+        return $this->maxBranchNameLength;
     }
 
     public function instances()
@@ -113,6 +122,7 @@ class ApplicationConfiguration
         $configuration->domain = $config['credentials']['domain'];
         $configuration->instances = self::useAttributeAsKey($config['instances'], 'name');
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
+        $configuration->maxBranchNameLength = $config['integrations']['git']['maxBranchNameLength'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->oneDay = $config['project']['oneDay'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];

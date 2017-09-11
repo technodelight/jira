@@ -2,8 +2,6 @@
 
 namespace Technodelight\Jira\Api\GitShell;
 
-use Technodelight\Jira\Api\GitShell\Branch;
-use Technodelight\Jira\Api\GitShell\XmlToArray;
 use Technodelight\Jira\Api\Shell\Command;
 use Technodelight\Jira\Api\Shell\Shell;
 

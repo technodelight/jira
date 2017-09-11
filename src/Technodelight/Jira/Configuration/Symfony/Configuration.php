@@ -108,6 +108,15 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('apiToken')->isRequired()->end()
                     ->end()
                 ->end()
+                ->arrayNode('git')
+                    ->info('GIT related configurations')
+                    ->children()
+                        ->integerNode('maxBranchNameLength')
+                            ->info('Maximum branch name length where the tool starts complaining during automatic branch name generation (-b option for issue transition type commands). Defaults to 30')
+                            ->defaultValue(30)->treatNullLike(30)
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $rootNode;
