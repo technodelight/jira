@@ -55,9 +55,9 @@ class ApiSpec extends ObjectBehavior
     function it_returns_worklogs(Client $client)
     {
         $client->get(Argument::type('string'), Argument::type('array'))->shouldBeCalled()->willReturn([$this->record]);
-        $this->findWorklogs(self::DATE_FROM, self::DATE_TO)
+        $this->find(self::DATE_FROM, self::DATE_TO)
              ->shouldHaveType(WorklogCollection::class);
-        $this->findWorklogs(self::DATE_FROM, self::DATE_TO)
+        $this->find(self::DATE_FROM, self::DATE_TO)
              ->shouldHaveCount(1);
     }
 }

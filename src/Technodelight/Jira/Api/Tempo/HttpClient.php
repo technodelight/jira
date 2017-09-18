@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class HttpClient implements Client
 {
-    const REST_API_ENDPOINT_PATH = '/rest/tempo-timesheets/3';
+    const REST_API_ENDPOINT_PATH = '/rest/tempo-timesheets/3/';
 
     /**
      * @var string

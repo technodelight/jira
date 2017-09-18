@@ -52,6 +52,16 @@ class Worklog
         return $this->issue;
     }
 
+    public function assignIssue(Issue $issue)
+    {
+        if (!empty($this->issueKey) && $issue->issueKey() != $this->issueKey) {
+            throw new \UnexpectedValueException(
+                'Unable to assign issue'
+            );
+        }
+        $this->issue = $issue;
+    }
+
     public function id()
     {
         return $this->worklogId;
@@ -88,6 +98,7 @@ class Worklog
             $this->date = $date;
             return $this;
         }
+
         return \DateTime::createFromFormat('Y-m-d H:i:s', $this->date);
     }
 

@@ -17,6 +17,7 @@ class ApplicationConfiguration
     private $defaultWorklogTimestamp;
     private $cacheTtl;
     private $oneDay;
+    private $tempo;
 
     public function domain()
     {
@@ -58,13 +59,23 @@ class ApplicationConfiguration
         return $this->maxBranchNameLength;
     }
 
+    /**
+     * Tempo integration configs
+     *
+     * @return array
+     */
+    public function tempo()
+    {
+        return $this->tempo;
+    }
+
     public function instances()
     {
         return $this->instances;
     }
 
     /**
-     * @param $instance
+     * @param string $instance
      * @return array
      * @throws \UnexpectedValueException
      */
@@ -123,6 +134,7 @@ class ApplicationConfiguration
         $configuration->instances = self::useAttributeAsKey($config['instances'], 'name');
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
         $configuration->maxBranchNameLength = $config['integrations']['git']['maxBranchNameLength'];
+        $configuration->tempo = $config['integrations']['tempo'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->oneDay = $config['project']['oneDay'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];

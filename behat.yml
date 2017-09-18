@@ -5,6 +5,7 @@ default:
                 - %paths.base%/features/integration/
 
             contexts:
-              - ApplicationContext
-              - GithubContext
-              - JiraContext
+                - ApplicationContext
+                - GithubContext
+                - JiraContext
+                - TempoContext

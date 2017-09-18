@@ -78,8 +78,8 @@ class IssueTransitionCommand extends AbstractCommand
         $git = $this->gitShell();
 
         try {
-            $this->checkGitChanges($output);
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
+            $this->checkGitChanges($input, $output, $transition);
             $jira->performIssueTransition($issueKey, $transition['id']);
             $actionString = '';
             if ($input->getOption('assign')) {
@@ -199,7 +199,7 @@ class IssueTransitionCommand extends AbstractCommand
     private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->getHelper('question');
+        $helper = $this->questionHelper();
         $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
         $question = new ChoiceQuestion(
             'Select branch to checkout to',
@@ -270,18 +270,18 @@ class IssueTransitionCommand extends AbstractCommand
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param array $transition
      * @throws \RuntimeException
      */
-    private function checkGitChanges(OutputInterface $output)
+    private function checkGitChanges(InputInterface $input, OutputInterface $output, array $transition)
     {
         $git = $this->gitShell();
-
-        /** @var TemplateHelper $templateHelper */
+        $helper = $this->questionHelper();
         $templateHelper = $this->templateHelper();
+
         if ($diff = $git->diff()) {
-            /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-            $dialog = $this->getService('console.dialog_helper');
             $output->writeln('It seems you have the following uncommited changes on your current branch:');
             foreach ($diff as $entry) {
                 $output->writeln(
@@ -290,8 +290,15 @@ class IssueTransitionCommand extends AbstractCommand
                     )
                 );
             }
+            $question = new ConfirmationQuestion(
+                sprintf(
+                    'Are you sure you want to perform the <comment>%s</comment> transition?  [Y/n] ',
+                    $transition['name']
+                ),
+                true
+            );
 
-            if (!$dialog->askConfirmation($output, 'Do you want to continue? [Y/n] ')) {
+            if (!$helper->ask($input, $output, $question)) {
                 throw new \RuntimeException('Please commit your changes first.');
             }
         }
@@ -358,5 +365,13 @@ class IssueTransitionCommand extends AbstractCommand
     private function templateHelper()
     {
         return $this->getService('technodelight.jira.template_helper');
+    }
+
+    /**
+     * @return \Symfony\Component\Console\Helper\QuestionHelper
+     */
+    private function questionHelper()
+    {
+        return $this->getHelper('question');
     }
 }

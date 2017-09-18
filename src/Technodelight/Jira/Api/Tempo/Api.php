@@ -2,9 +2,6 @@
 
 namespace Technodelight\Jira\Api\Tempo;
 
-use Technodelight\Jira\Domain\Worklog;
-use Technodelight\Jira\Domain\WorklogCollection;
-
 class Api
 {
     const TEMPO_DATETIME_FORMAT = 'Y-m-d\TH:i:s.U';
@@ -18,30 +15,32 @@ class Api
         $this->client = $client;
     }
 
-    public function findWorklogs($dateFrom, $dateTo)
+    public function find($dateFrom, $dateTo)
     {
-        $worklogs = $this->client->get('/worklogs', ['dateFrom' => $dateFrom, 'dateTo' => $dateTo]);
-        $collection = WorklogCollection::createEmpty();
-        foreach ($worklogs as $worklog) {
-            $collection->push(
-                Worklog::fromArray([
-                    'id' => $worklog['id'],
-                    'author' => $worklog['author'],
-                    'comment' => isset($worklog['comment']) ? $worklog['comment'] : null,
-                    'started' => $this->convertDateFormat($worklog['dateStarted']),
-                    'timeSpentSeconds' => $worklog['timeSpentSeconds'],
-                ], $worklog['issue']['key'])
-            );
-        }
-        return $collection;
+        return $this->client->get('/worklogs', ['dateFrom' => $dateFrom, 'dateTo' => $dateTo]);
     }
 
-    /**
-     * @param string $date
-     * @return string
-     */
-    private function convertDateFormat($date)
+    public function create($issueKey, $startedAt, $timeSpentSeconds, $comment)
     {
-        return \DateTime::createFromFormat(self::TEMPO_DATETIME_FORMAT, $date)->format('Y-m-d H:i:s');
+        return $this->client->post('/worklogs', [
+            'issue' => ['key' => $issueKey],
+            'dateStarted' => $startedAt,
+            'timeSpentSeconds' => $timeSpentSeconds,
+            'comment' => $comment
+        ]);
+    }
+
+    public function update($worklogId, $startedAt, $timeSpentSeconds, $comment)
+    {
+        return $this->client->put('/' . $worklogId, [
+            'dateStarted' => $startedAt,
+            'timeSpentSeconds' => $timeSpentSeconds,
+            'comment' => $comment
+        ]);
+    }
+
+    public function delete($worklogId)
+    {
+        return $this->client->delete('/' . $worklogId);
     }
 }

@@ -28,8 +28,14 @@
         <!-- jira -->
         <!-- tempo -->
         <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
-            <factory class="Technodelight\Technodelight\Jira\Connector\TempoApiFactory" method="build" />
+            <factory class="Technodelight\Jira\Connector\TempoApiFactory" method="build" />
             <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <service id="technodelight.jira.api.tempo.api" class="Technodelight\Jira\Api\Tempo\Api">
+            <argument type="service" id="technodelight.jira.api.tempo.client" />
+        </service>
+        <service id="technodelight.jira.connector.tempo_worklog_handler" class="Technodelight\Jira\Connector\Tempo\WorklogHandler">
+            <argument type="service" id="technodelight.jira.api.tempo.api" />
         </service>
         <!-- tempo -->
         <!-- git -->
@@ -48,6 +54,16 @@
             <factory method="build" service="technodelight.github.api_builder" />
         </service>
         <!-- hub -->
+        <!-- worklog handler -->
+        <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
+            <argument type="service" id="technodelight.jira.config"/>
+            <argument type="service" id="technodelight.jira.connector.tempo_worklog_handler"/>
+        </service>
+        <service id="technodelight.jira.worklog_handler" class="Technodelight\Jira\Connector\WorklogHandler">
+            <factory service="technodelight.jira.connector.worklog_handler_factory" method="build"/>
+        </service>
+        <!-- worklog handler -->
+
     </services>
 
 </container>

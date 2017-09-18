@@ -8,6 +8,15 @@ class ApplicationConfiguration extends BaseAppConf
 {
     private static $transitions = [];
 
+    public static $useTempo = false;
+
+    public function tempo()
+    {
+        return [
+            'enabled' => self::$useTempo
+        ];
+    }
+
     public function username()
     {
         return 'zgal';

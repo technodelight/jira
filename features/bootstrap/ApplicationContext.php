@@ -12,12 +12,6 @@ class ApplicationContext implements Context
     private $exitCode;
     private $output;
 
-    public function __construct()
-    {
-        $this->app = new Application;
-        $this->app->setAutoExit(false);
-    }
-
     /**
      * @When I run the application with the following input:
      */
@@ -25,8 +19,8 @@ class ApplicationContext implements Context
     {
         $input = new ArrayInput($table->getRowsHash());
         $this->output = new BufferedOutput;
-        $this->app->addDomainCommands();
-        $this->exitCode = $this->app->run($input, $this->output);
+        $this->app()->addDomainCommands();
+        $this->exitCode = $this->app()->run($input, $this->output);
         print($this->output->fetch());
     }
 
@@ -38,5 +32,15 @@ class ApplicationContext implements Context
         if ($this->exitCode !== (int) $exitCode) {
             throw new \RuntimeException(sprintf("Expected exit code %d, got %d", $exitCode, $this->exitCode));
         }
+    }
+
+    public function app()
+    {
+        if (!isset($this->app)) {
+            $this->app = new Application;
+            $this->app->setAutoExit(false);
+        }
+
+        return $this->app;
     }
 }
