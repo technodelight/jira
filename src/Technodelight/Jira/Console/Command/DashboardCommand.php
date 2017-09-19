@@ -53,20 +53,21 @@ class DashboardCommand extends AbstractCommand
 
         /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
         $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
-        $logs = $worklogHandler->retrieve($from, $to);
+        $logs = $worklogHandler->find($from, $to);
         $issueKeys = [];
         foreach ($logs as $worklog) {
             $issueKeys[] = $worklog->issueKey();
         }
+        if (count($issueKeys) == 0) {
+            $output->writeln("You don't have any issues at the moment, which has worklog in range");
+            return;
+        }
 //        $issues = $jira->findUserIssuesWithWorklogs($from, $to, $user->name());
         $issues = $jira->retrieveIssues($issueKeys);
         foreach ($logs as $log) {
-            $log->assignIssue($issues->find($log->issueKey()));
-        }
-
-        if (count($issues) == 0) {
-            $output->writeln("You don't have any issues at the moment, which has worklog in range");
-            return;
+            if ($issue = $issues->find($log->issueKey())) {
+                $log->assignIssue($issue);
+            }
         }
 
         $totalTimeInRange = $dateHelper->humanToSeconds($input->getOption('week') ? '5d' : '1d');

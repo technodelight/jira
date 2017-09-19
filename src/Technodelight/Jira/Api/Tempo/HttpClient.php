@@ -126,8 +126,13 @@ class HttpClient implements Client
                     );
             }
         } catch (GuzzleClientException $e) {
+            $errorResponse = $this->decodeJsonResponse($e->getResponse());
             throw new ClientException(
-                sprintf('Error during %S API call' , strtoupper($method)), 0, $e
+                join(PHP_EOL, $errorResponse['errorMessages']) . PHP_EOL
+                . 'reasons: ' . PHP_EOL
+                . join(PHP_EOL, $errorResponse['reasons']),
+                0,
+                $e
             );
         }
     }

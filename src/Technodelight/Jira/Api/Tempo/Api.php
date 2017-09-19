@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Api\Tempo;
 
 class Api
 {
-    const TEMPO_DATETIME_FORMAT = 'Y-m-d\TH:i:s.U';
+    const TEMPO_DATETIME_FORMAT = 'Y-m-d\TH:i:s.B';
     /**
      * @var Client
      */
@@ -20,9 +20,15 @@ class Api
         return $this->client->get('/worklogs', ['dateFrom' => $dateFrom, 'dateTo' => $dateTo]);
     }
 
-    public function create($issueKey, $startedAt, $timeSpentSeconds, $comment)
+    public function retrieve($worklogId)
+    {
+        return $this->client->get('/worklogs/' . $worklogId);
+    }
+
+    public function create($issueKey, $authorName, $startedAt, $timeSpentSeconds, $comment)
     {
         return $this->client->post('/worklogs', [
+            'author' => ['name' => $authorName],
             'issue' => ['key' => $issueKey],
             'dateStarted' => $startedAt,
             'timeSpentSeconds' => $timeSpentSeconds,
@@ -32,7 +38,7 @@ class Api
 
     public function update($worklogId, $startedAt, $timeSpentSeconds, $comment)
     {
-        return $this->client->put('/' . $worklogId, [
+        return $this->client->put('/worklogs/' . $worklogId, [
             'dateStarted' => $startedAt,
             'timeSpentSeconds' => $timeSpentSeconds,
             'comment' => $comment
@@ -41,6 +47,6 @@ class Api
 
     public function delete($worklogId)
     {
-        return $this->client->delete('/' . $worklogId);
+        return $this->client->delete('/worklogs/' . $worklogId);
     }
 }

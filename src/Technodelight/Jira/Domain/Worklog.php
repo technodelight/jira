@@ -12,7 +12,11 @@ class Worklog
     {
         $this->issueKey = $issueKey;
         $this->worklogId = $worklogId;
-        $this->author = User::fromArray($author);
+        if (!empty($author) && is_array($author)) {
+            $this->author = User::fromArray($author);
+        } else {
+            $this->author = $author;
+        }
         $this->comment = $comment;
         $this->date = $date;
         $this->timeSpentSeconds = $timeSpentSeconds;
@@ -116,8 +120,15 @@ class Worklog
         return (new SecondsToNone)->secondsToHuman($this->timeSpentSeconds);
     }
 
-    public function timeSpentSeconds()
+    /**
+     * @param int|null $seconds
+     * @return int
+     */
+    public function timeSpentSeconds($seconds = null)
     {
+        if (!is_null($seconds)) {
+            $this->timeSpentSeconds = $seconds;
+        }
         return $this->timeSpentSeconds;
     }
 

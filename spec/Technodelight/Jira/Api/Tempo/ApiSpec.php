@@ -56,7 +56,7 @@ class ApiSpec extends ObjectBehavior
     {
         $client->get(Argument::type('string'), Argument::type('array'))->shouldBeCalled()->willReturn([$this->record]);
         $this->find(self::DATE_FROM, self::DATE_TO)
-             ->shouldHaveType(WorklogCollection::class);
+             ->shouldBeArray();
         $this->find(self::DATE_FROM, self::DATE_TO)
              ->shouldHaveCount(1);
     }

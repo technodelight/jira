@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Connector\Tempo;
 use DateTime;
 use Technodelight\Jira\Api\Tempo\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
-use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
@@ -27,7 +26,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param DateTime $to
      * @return WorklogCollection
      */
-    public function retrieve(DateTime $from, DateTime $to)
+    public function find(DateTime $from, DateTime $to)
     {
         $worklogs = $this->api->find(
             $from->format(self::DATETIME_FORMAT),
@@ -44,14 +43,24 @@ class WorklogHandler implements WorklogHandlerInterface
     }
 
     /**
-     * @param Issue $issue
+     * @param int $worklogId
+     * @return Worklog
+     */
+    public function retrieve($worklogId)
+    {
+        $response = $this->api->retrieve($worklogId);
+        return $this->worklogFromTempoArray($response);
+    }
+
+    /**
      * @param Worklog $worklog
      * @return Worklog
      */
-    public function create(Issue $issue, Worklog $worklog)
+    public function create(Worklog $worklog)
     {
         $response = $this->api->create(
-            $issue->issueKey(),
+            $worklog->issueKey(),
+            $worklog->author()->name(),
             $worklog->date()->format(Api::TEMPO_DATETIME_FORMAT),
             $worklog->timeSpentSeconds(),
             $worklog->comment()
@@ -74,6 +83,14 @@ class WorklogHandler implements WorklogHandlerInterface
         return $this->worklogFromTempoArray($response);
     }
 
+    /**
+     * @param \Technodelight\Jira\Domain\Worklog $worklog
+     * @return bool
+     */
+    public function delete(Worklog $worklog)
+    {
+        return $this->api->delete($worklog->id());
+    }
 
     /**
      * @param array $worklog
