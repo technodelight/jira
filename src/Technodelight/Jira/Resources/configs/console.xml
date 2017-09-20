@@ -20,10 +20,6 @@
         <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration">
             <factory service="technodelight.jira.configuration.symfony.application_configuration_builder" method="build" />
         </service>
-        <service id="technodelight.jira.config.field_mapper" class="Technodelight\Jira\Configuration\FieldMapper">
-            <argument type="service" id="technodelight.jira.config" />
-        </service>
-        <service id="technodelight.jira.field_mapper" alias="technodelight.jira.config.field_mapper" />
         <!-- config -->
 
         <!-- argument resolvers -->

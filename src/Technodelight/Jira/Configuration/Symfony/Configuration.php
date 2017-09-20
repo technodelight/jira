@@ -18,7 +18,6 @@ class Configuration implements ConfigurationInterface
                 ->append($this->instancesSection())
                 ->append($this->integrationsSection())
                 ->append($this->projectSection())
-                ->append($this->fieldMapSection())
                 ->append($this->transitionsSection())
                 ->append($this->aliasesSection())
                 ->append($this->filtersSection())
@@ -109,6 +108,24 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('apiToken')->isRequired()->end()
                     ->end()
                 ->end()
+                ->arrayNode('git')
+                    ->info('GIT related configurations')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->integerNode('maxBranchNameLength')
+                            ->info('Maximum branch name length where the tool starts complaining during automatic branch name generation (-b option for issue transition type commands). Defaults to 30')
+                            ->defaultValue(30)->treatNullLike(30)
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('tempo')
+                    ->info('Tempo timesheets (https://tempo.io/doc/timesheets/api/rest/latest)')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')->defaultFalse()->treatNullLike(false)->end()
+                        ->scalarNode('instances')->defaultNull()->example('secondary')->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $rootNode;
@@ -131,29 +148,15 @@ class Configuration implements ConfigurationInterface
                     ->info('Default worklog timestamp to use if date is omitted')
                     ->defaultValue('now')
                 ->end()
+                ->scalarNode('oneDay')
+                    ->info('Your work hours for a single day (valid values ie. "7 hours 30 minutes", 7.5 (treated as hours), 27000 (in seconds)')
+                    ->defaultValue(7.5 * 3600)
+                ->end()
                 ->scalarNode('cacheTtl')
                     ->info('keep API data in caches')
                     ->defaultValue(15 * 60)
                 ->end()
             ->end();
-
-        return $rootNode;
-    }
-
-    private function fieldMapSection()
-    {
-        $treeBuilder = new TreeBuilder;
-        $rootNode = $treeBuilder->root('fieldMap');
-
-        $rootNode
-            ->info('Field mapping')
-            ->prototype('array')
-                ->children()
-                    ->scalarNode('field')->cannotBeEmpty()->isRequired()->end()
-                    ->scalarNode('map')->cannotBeEmpty()->isRequired()->end()
-                ->end()
-            ->end();
-        ;
 
         return $rootNode;
     }
@@ -198,7 +201,7 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('filters');
 
         $rootNode
-            ->info('Custom quick filters registered as commands')
+            ->info('Custom quick filters registered as commands. See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html')
             ->prototype('array')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()

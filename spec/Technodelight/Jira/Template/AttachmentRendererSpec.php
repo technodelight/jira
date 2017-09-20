@@ -3,8 +3,8 @@
 namespace spec\Technodelight\Jira\Template;
 
 use PhpSpec\ObjectBehavior;
-use Technodelight\Jira\Api\Attachment;
-use Technodelight\Jira\Api\Issue;
+use Technodelight\Jira\Domain\Attachment;
+use Technodelight\Jira\Domain\Issue;
 
 class AttachmentRendererSpec extends ObjectBehavior
 {

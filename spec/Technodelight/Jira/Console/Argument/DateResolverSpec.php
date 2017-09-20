@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Console\Argument;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\Date;

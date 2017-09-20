@@ -2,7 +2,9 @@
 
 namespace Technodelight\Jira\Helper;
 
-use Technodelight\Jira\Api\Issue;
+use Hoa\Console\Readline\Autocompleter\Word;
+use Hoa\Console\Readline\Readline;
+use Technodelight\Jira\Domain\Issue;
 
 class GitBranchnameGenerator
 {
@@ -20,6 +22,22 @@ class GitBranchnameGenerator
                 strtolower($this->replace($this->remove($issue->summary())))
             )
         );
+    }
+
+    /**
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return string
+     */
+    public function fromIssueWithAutocomplete(Issue $issue)
+    {
+        $readline = new Readline;
+        $readline->setAutocompleter(new Word($this->getAutocompleteWords($issue)));
+        $branchName = $readline->readLine(sprintf(
+            $this->jiraPattern,
+            $issue->ticketNumber(),
+            ''
+        ));
+        return sprintf($this->jiraPattern, $issue->ticketNumber(), $branchName);
     }
 
     private function remove($summary)
@@ -40,5 +58,14 @@ class GitBranchnameGenerator
             $this->separator,
             trim($branchName, $this->separator)
         );
+    }
+
+    /**
+     * @param \Technodelight\Jira\Api\Issue $issue
+     * @return array
+     */
+    private function getAutocompleteWords(Issue $issue)
+    {
+        return explode($this->separator, strtolower($this->replace($this->remove($issue->summary()))));
     }
 }

@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Technodelight\Jira\Api\Api;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Template\IssueRenderer;
 
 class IssueFilterCommand extends AbstractCommand

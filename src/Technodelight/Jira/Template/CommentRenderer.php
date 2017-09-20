@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Template;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Comment;
+use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\JiraTagConverter;

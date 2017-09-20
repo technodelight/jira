@@ -8,6 +8,15 @@ class ApplicationConfiguration extends BaseAppConf
 {
     private static $transitions = [];
 
+    public static $useTempo = false;
+
+    public function tempo()
+    {
+        return [
+            'enabled' => self::$useTempo
+        ];
+    }
+
     public function username()
     {
         return 'zgal';
@@ -41,6 +50,11 @@ class ApplicationConfiguration extends BaseAppConf
     public function cacheTtl()
     {
         return 0;
+    }
+
+    public function oneDayAmount()
+    {
+        return 27000;
     }
 
     public function transitions()

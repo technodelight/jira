@@ -7,9 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
 use \UnexpectedValueException;
@@ -69,16 +71,15 @@ class IssueTransitionCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input);
-        /** @var \Technodelight\Jira\Api\Api $jira */
+        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
-        /** @var GitHelper $git */
-        $git = $this->getService('technodelight.jira.git_helper');
+        $git = $this->gitShell();
 
         try {
-            $this->checkGitChanges($output);
             $transition = $this->filterTransitionByName($transitions, $this->transitionName);
+            $this->checkGitChanges($input, $output, $transition);
             $jira->performIssueTransition($issueKey, $transition['id']);
             $actionString = '';
             if ($input->getOption('assign')) {
@@ -110,7 +111,7 @@ class IssueTransitionCommand extends AbstractCommand
 
         if ($input->getOption('branch')) {
             if (!$this->gitBranchesForIssue($issue)) {
-                $branchName = $this->generateBranchName($issue);
+                $branchName = $this->getProperBranchName($input, $output, $issue);
                 $output->writeln('Checking out to new branch: ' . $branchName);
                 $git->createBranch($branchName);
             } else {
@@ -138,12 +139,9 @@ class IssueTransitionCommand extends AbstractCommand
 
     private function transitionsNames(array $transitions)
     {
-        $names = [];
-        foreach ($transitions as $transition) {
-            $names[] = $transition['name'];
-        }
-
-        return $names;
+        return array_map(function($transition) {
+            return $transition['name'];
+        }, $transitions);
     }
 
     private function filterTransitionByName($transitions, $name)
@@ -162,16 +160,21 @@ class IssueTransitionCommand extends AbstractCommand
     private function gitBranchesForIssue(Issue $issue)
     {
         return array_map(
-            function (array $branchData) {
-                return sprintf('%s (%s)', $branchData['name'], $branchData['remote'] ? 'remote' : 'local');
+            function(Branch $branch) {
+                return sprintf('%s (%s)', $branch->name(), $branch->isRemote() ? 'remote' : 'local');
             },
-            $this->getService('technodelight.jira.git_helper')->branches($issue->ticketNumber())
+            $this->gitShell()->branches($issue->ticketNumber())
         );
     }
 
     private function generateBranchName(Issue $issue)
     {
-        return $this->getService('technodelight.jira.git_branchname_generator')->fromIssue($issue);
+        return $this->branchnameGenerator()->fromIssue($issue);
+    }
+
+    private function generateBranchNameWithAutocomplete(Issue $issue)
+    {
+        return $this->branchnameGenerator()->fromIssueWithAutocomplete($issue);
     }
 
     private function retrieveGitBranches(Issue $issue)
@@ -179,7 +182,7 @@ class IssueTransitionCommand extends AbstractCommand
         $branches = $this->gitBranchesForIssue($issue);
         if (empty($branches)) {
             $branches = [
-                $this->generateBranchName($issue) . ' (generated)'
+                $this->generateBranchName($issue) . ' (generated)',
             ];
         }
 
@@ -196,7 +199,7 @@ class IssueTransitionCommand extends AbstractCommand
     private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
     {
         /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->getHelper('question');
+        $helper = $this->questionHelper();
         $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
         $question = new ChoiceQuestion(
             'Select branch to checkout to',
@@ -208,19 +211,19 @@ class IssueTransitionCommand extends AbstractCommand
         $branchName = $helper->ask($input, $output, $question);
 
         $selectedBranch = '';
-        /** @var \Technodelight\Jira\Api\GitShell\Api $git */
-        $git = $this->getService('technodelight.gitshell.api');
+        /** @var GitShell $git */
+        $git = $this->gitShell();
         $branches = $git->branches($issue->issueKey());
         $new = false;
         foreach ($branches as $branch) {
-            /** @var \Technodelight\Jira\Api\GitShell\Branch $branch */
+            /** @var Branch $branch */
             if ($branchName == (string) $branch) {
                 $selectedBranch = $branch->name();
                 break;
             }
         }
         if (!$selectedBranch && ($branchName == $generatedBranchOption)) {
-            $selectedBranch = $this->generateBranchName($issue);
+            $selectedBranch = $this->getProperBranchName($input, $output, $issue);
             $new = true;
         }
         if (!$selectedBranch) {
@@ -238,7 +241,7 @@ class IssueTransitionCommand extends AbstractCommand
 
     /**
      * @param array $transitions
-     * @param \Technodelight\Jira\Api\Issue $issue
+     * @param \Technodelight\Jira\Domain\Issue $issue
      * @return string
      */
     private function listTransitions(array $transitions, Issue $issue)
@@ -267,18 +270,18 @@ class IssueTransitionCommand extends AbstractCommand
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param array $transition
      * @throws \RuntimeException
      */
-    private function checkGitChanges(OutputInterface $output)
+    private function checkGitChanges(InputInterface $input, OutputInterface $output, array $transition)
     {
-        /** @var \Technodelight\Jira\Api\GitShell\Api $git */
-        $git = $this->getService('technodelight.gitshell.api');
-        /** @var TemplateHelper $templateHelper */
-        $templateHelper = $this->getService('technodelight.jira.template_helper');
+        $git = $this->gitShell();
+        $helper = $this->questionHelper();
+        $templateHelper = $this->templateHelper();
+
         if ($diff = $git->diff()) {
-            /** @var \Symfony\Component\Console\Helper\DialogHelper $dialog */
-            $dialog = $this->getService('console.dialog_helper');
             $output->writeln('It seems you have the following uncommited changes on your current branch:');
             foreach ($diff as $entry) {
                 $output->writeln(
@@ -287,10 +290,88 @@ class IssueTransitionCommand extends AbstractCommand
                     )
                 );
             }
+            $question = new ConfirmationQuestion(
+                sprintf(
+                    'Are you sure you want to perform the <comment>%s</comment> transition?  [Y/n] ',
+                    $transition['name']
+                ),
+                true
+            );
 
-            if (!$dialog->askConfirmation($output, 'Do you want to continue? [Y/n] ')) {
+            if (!$helper->ask($input, $output, $question)) {
                 throw new \RuntimeException('Please commit your changes first.');
             }
         }
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param string $branchName
+     * return bool
+     */
+    protected function isShorteningBranchNameConfirmed(InputInterface $input, OutputInterface $output, $branchName)
+    {
+        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $question = new ConfirmationQuestion(
+            'The generated branch name seems to be too long. Do you want to shorten it?' . PHP_EOL
+            . '(' . $branchName . ')' . PHP_EOL
+            . '[Y/n] ? ',
+            true
+        );
+        return $helper->ask($input, $output, $question);
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @return string
+     */
+    private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue)
+    {
+        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $configuration */
+        $configuration = $this->getService('technodelight.jira.config');
+        $selectedBranch = $this->generateBranchName($issue);
+        if ((strlen($selectedBranch) > $configuration->maxBranchNameLength())
+            && $this->isShorteningBranchNameConfirmed($input, $output, $selectedBranch)) {
+            $selectedBranch = $this->generateBranchNameWithAutocomplete($issue);
+        }
+
+        return $selectedBranch;
+    }
+
+    /**
+     * @return \Technodelight\Jira\Helper\GitBranchnameGenerator
+     */
+    private function branchnameGenerator()
+    {
+        return $this->getService('technodelight.jira.git_branchname_generator');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\GitShell\Api
+     */
+    private function gitShell()
+    {
+        /** @var GitShell $git */
+        return $this->getService('technodelight.gitshell.api');
+    }
+
+    /**
+     * @return TemplateHelper
+     */
+    private function templateHelper()
+    {
+        return $this->getService('technodelight.jira.template_helper');
+    }
+
+    /**
+     * @return \Symfony\Component\Console\Helper\QuestionHelper
+     */
+    private function questionHelper()
+    {
+        return $this->getHelper('question');
     }
 }

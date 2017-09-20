@@ -6,9 +6,8 @@
     <services>
         <!-- jira -->
         <service public="false" id="fixture.jira_fixture_client" class="Fixture\JiraFixtureClient" />
-        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="fixture.jira_fixture_client" />
-            <argument type="service" id="technodelight.jira.field_mapper"/>
         </service>
         <!-- jira -->
         <!-- git -->
@@ -26,6 +25,12 @@
             <factory service="fixture.github_client_builder" method="build" />
         </service>
         <!-- hub -->
+        <!-- tempo -->
+        <service id="fixture.jira.api.tempo.test_http_client" class="Fixture\Tempo\TestHttpClient"/>
+        <service id="technodelight.jira.api.tempo.api" class="Technodelight\Jira\Api\Tempo\Api">
+            <argument type="service" id="fixture.jira.api.tempo.test_http_client" />
+        </service>
+        <!-- tempo -->
 
     </services>
 

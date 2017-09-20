@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command;
 
+use DateTime;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -9,9 +10,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Api;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\WorklogCollection;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\Argument\Date;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Helper\DateHelper;
 
 class DashboardCommand extends AbstractCommand
@@ -44,21 +47,27 @@ class DashboardCommand extends AbstractCommand
 
         /** @var Api $jira */
         $jira = $this->getService('technodelight.jira.api');
+        /** @var DateHelper $dateHelper */
         $dateHelper = $this->getService('technodelight.jira.date_helper');
         $pluralizeHelper = $this->getService('technodelight.jira.pluralize_helper');
-        $user = $jira->user();
 
-        $issues = $jira->findUserIssuesWithWorklogs($from, $to, $user->name());
-
-        if (count($issues) == 0) {
+        /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
+        $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
+        $logs = $worklogHandler->find($from, $to);
+        $issueKeys = [];
+        foreach ($logs as $worklog) {
+            $issueKeys[] = $worklog->issueKey();
+        }
+        if (count($issueKeys) == 0) {
             $output->writeln("You don't have any issues at the moment, which has worklog in range");
             return;
         }
-
-        // flatten worklogs
-        $logs = WorklogCollection::createEmpty();
-        foreach ($issues as $issue) {
-            $logs->merge($issue->worklogs());
+//        $issues = $jira->findUserIssuesWithWorklogs($from, $to, $user->name());
+        $issues = $jira->retrieveIssues($issueKeys);
+        foreach ($logs as $log) {
+            if ($issue = $issues->find($log->issueKey())) {
+                $log->assignIssue($issue);
+            }
         }
 
         $totalTimeInRange = $dateHelper->humanToSeconds($input->getOption('week') ? '5d' : '1d');
@@ -70,7 +79,7 @@ class DashboardCommand extends AbstractCommand
                 'You have been working on %d %s %s' . PHP_EOL,
                 count($issues),
                 $pluralizeHelper->pluralize('issue', count($issues)),
-                $from == $to ? "on $from" : "from $from to $to"
+                $from == $to ? sprintf('on %s', $from->format('Y-m-d')) : sprintf('from %s to %s', $from->format('Y-m-d'), $to->format('Y-m-d'))
             )
         );
         $progress = $this->createProgressbar($output, $totalTimeInRange);
@@ -100,17 +109,20 @@ class DashboardCommand extends AbstractCommand
 
     private function renderWeek(OutputInterface $output, WorklogCollection $logs)
     {
+        /** @var DateHelper $dateHelper */
+        $dateHelper = $this->getService('technodelight.jira.date_helper');
+
         $rows = [];
         $headers = ['Issue'];
         foreach ($logs as $log) {
-            $day = date('l', strtotime($log->date()));
-            $dayNo = date('N', strtotime($log->date()));
+            $day = $log->date()->format('l');
+            $dayNo = $log->date()->format('N');
             $headers[$dayNo] = $day;
         }
         ksort($headers);
 
         foreach ($logs as $log) {
-            $dayNo = date('N', strtotime($log->date()));
+            $dayNo = $log->date()->format('N');
 
             if (!isset($rows[$log->issueKey()])) {
                 $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
@@ -121,7 +133,7 @@ class DashboardCommand extends AbstractCommand
             }
             $rows[$log->issueKey()][$dayNo].= sprintf(
                 PHP_EOL . '%s %s',
-                $log->timeSpent(),
+                $dateHelper->secondsToHuman($log->timeSpentSeconds()),
                 $this->shortenWorklogComment($log->comment())
             );
             $rows[$log->issueKey()][$dayNo] = trim($rows[$log->issueKey()][$dayNo]);
@@ -135,8 +147,7 @@ class DashboardCommand extends AbstractCommand
         $sum = $rows['Sum'];
         unset($rows['Sum']);
         ksort($rows);
-        /** @var DateHelper $dateHelper */
-        $dateHelper = $this->getService('technodelight.jira.date_helper');
+
         $aDay = $dateHelper->humanToSeconds('1d');
         foreach ($sum as $date => $timeSpentSeconds) {
             if ($aDay == $timeSpentSeconds) {
@@ -154,7 +165,7 @@ class DashboardCommand extends AbstractCommand
         $table = new Table($output);
         $table
             ->setHeaders(array_values($headers))
-            ->setRows($rows);
+            ->setRows(array_values($rows));
         $table->render();
     }
 
@@ -183,6 +194,9 @@ class DashboardCommand extends AbstractCommand
         foreach ($rows as $issueKey => $records) {
             /** @var Issue $issue */
             $issue = $issues[$issueKey];
+            if (!$issue) {
+                continue;
+            }
             // parent issue
             $parentInfo = '';
             if ($parent = $issue->parent()) {
@@ -224,34 +238,27 @@ class DashboardCommand extends AbstractCommand
         return $progress;
     }
 
-    private function defineFrom($date, $weekFlag)
+    private function defineFrom($dateString, $weekFlag)
     {
-        if ($weekFlag) {
-            $date = $this->defineWeekStr($date, 1);
-        }
-        return date(
-            'Y-m-d',
-            strtotime($date)
-        );
+        return new DateTime($weekFlag ? $this->defineWeekStr($dateString, 1) : $dateString);
     }
 
-    private function defineTo($date, $weekFlag)
+    private function defineTo($dateString, $weekFlag)
     {
-        if ($weekFlag) {
-            $date = $this->defineWeekStr($date, 5);
-        }
-        return date(
-            'Y-m-d',
-            strtotime($date)
-        );
+        return new DateTime($weekFlag ? $this->defineWeekStr($dateString, 5) : $dateString);
     }
 
-    private function defineWeekStr($date, $day)
+    private function defineWeekStr($dateString, $day)
     {
-        $dayOfWeek = date('N', strtotime($date));
+        $dayOfWeek = date('N', strtotime($dateString));
         $operator = $day < $dayOfWeek ? '-' : '+';
         $delta = abs($dayOfWeek - $day);
-        return sprintf('%s %s %s day', $date, $operator, $delta);
+
+        $date = date('Y-m-d', strtotime($dateString));
+        return date(
+            'Y-m-d',
+            strtotime(sprintf('%s %s %s day', $date, $operator, $delta))
+        );
     }
 
     private function shortenWorklogComment($text, $length = 15)

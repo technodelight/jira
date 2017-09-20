@@ -5,27 +5,43 @@
 
     <services>
         <!-- jira -->
-        <service public="false" id="technodelight.jira.api_cache_storage.builder" class="Technodelight\Jira\Api\ApiCacheStorageBuilder" />
+        <service public="false" id="technodelight.jira.api_cache_storage.builder" class="Technodelight\Jira\Api\JiraRestApi\ApiCacheStorageBuilder" />
+
         <service public="false" id="technodelight.jira.api_cache_storage" class="ICanBoogie\Storage\Storage">
             <factory service="technodelight.jira.api_cache_storage.builder" method="build" />
         </service>
-        <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Api\HttpClient\ConfigProvider">
+        <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider">
             <argument type="service" id="technodelight.jira.config" />
             <argument type="service" id="service_container" />
         </service>
-        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\HttpClient">
+        <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\JiraRestApi\HttpClient">
             <argument type="service" id="technodelight.jira.api_client.config_provider" />
         </service>
-        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\CachedHttpClient">
+        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\JiraRestApi\CachedHttpClient">
             <argument type="service" id="technodelight.jira.api_client" />
             <argument type="service" id="technodelight.jira.api_cache_storage" />
             <argument type="service" id="technodelight.jira.config" />
         </service>
-        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\Api">
+        <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="technodelight.jira.cached_api_client" />
-            <argument type="service" id="technodelight.jira.field_mapper"/>
+        </service>
+        <service id="technodelight.jira.connector.jira_worklog_handler" class="Technodelight\Jira\Connector\Jira\WorklogHandler">
+            <argument type="service" id="technodelight.jira.api" />
         </service>
         <!-- jira -->
+        <!-- tempo -->
+        <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
+            <factory class="Technodelight\Jira\Connector\TempoApiFactory" method="build" />
+            <argument type="service" id="technodelight.jira.config" />
+            <argument type="string">%app.jira.instance%</argument>
+        </service>
+        <service id="technodelight.jira.api.tempo.api" class="Technodelight\Jira\Api\Tempo\Api">
+            <argument type="service" id="technodelight.jira.api.tempo.client" />
+        </service>
+        <service id="technodelight.jira.connector.tempo_worklog_handler" class="Technodelight\Jira\Connector\Tempo\WorklogHandler">
+            <argument type="service" id="technodelight.jira.api.tempo.api" />
+        </service>
+        <!-- tempo -->
         <!-- git -->
         <service public="false" id="technodelight.gitshell.shell" class="Technodelight\Jira\Api\Shell\NativeShell">
             <argument>/usr/bin/env git</argument>
@@ -42,6 +58,17 @@
             <factory method="build" service="technodelight.github.api_builder" />
         </service>
         <!-- hub -->
+        <!-- worklog handler -->
+        <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
+            <argument type="service" id="technodelight.jira.config"/>
+            <argument type="service" id="technodelight.jira.connector.tempo_worklog_handler"/>
+            <argument type="service" id="technodelight.jira.connector.jira_worklog_handler"/>
+        </service>
+        <service id="technodelight.jira.worklog_handler" class="Technodelight\Jira\Connector\WorklogHandler">
+            <factory service="technodelight.jira.connector.worklog_handler_factory" method="build"/>
+        </service>
+        <!-- worklog handler -->
+
     </services>
 
 </container>

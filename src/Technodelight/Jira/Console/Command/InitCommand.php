@@ -2,16 +2,9 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use GuzzleHttp\Exception\ClientException;
-use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
-use Symfony\Component\Config\Definition\NodeInterface;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
-use Technodelight\Jira\Configuration\Symfony\ConfigurationLoader;
 
 class InitCommand extends AbstractCommand
 {
@@ -44,11 +37,11 @@ class InitCommand extends AbstractCommand
 
         $consent = $dialog->askConfirmation(
             $output,
-            PHP_EOL . "<question>Do you want to edit it now? (y/N)</question>",
+            PHP_EOL . "<question>Do you want to open the file now? (y/N)</question>",
             false
         );
         if ($consent) {
-            passthru(getenv('EDITOR') . ' ' . $path);
+            passthru(sprintf('open %s', escapeshellarg($path)));
         }
     }
 }

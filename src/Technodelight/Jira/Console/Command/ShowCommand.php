@@ -4,9 +4,7 @@ namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class ShowCommand extends AbstractCommand
 {
@@ -33,15 +31,5 @@ class ShowCommand extends AbstractCommand
         $renderer = $this->getService('technodelight.jira.issue_renderer');
         $renderer->setOutput($output);
         $renderer->render($issue);
-    }
-
-    private function issueKeys($issues)
-    {
-        return array_map(
-            function($issue) {
-                return $issue->issueKey();
-            },
-            $issues
-        );
     }
 }

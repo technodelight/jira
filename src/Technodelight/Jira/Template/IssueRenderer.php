@@ -7,8 +7,8 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\IssueCollection;
+use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\DateHelper;
@@ -222,7 +222,7 @@ class IssueRenderer
     }
 
     /**
-     * @param \Technodelight\Jira\Api\Issue $issue
+     * @param Issue $issue
      * @return string
      */
     private function renderSummary(Issue $issue)
@@ -233,7 +233,7 @@ class IssueRenderer
     }
 
     /**
-     * @param \Technodelight\Jira\Api\Issue $issue
+     * @param Issue $issue
      * @return string
      */
     private function renderDescription(Issue $issue)

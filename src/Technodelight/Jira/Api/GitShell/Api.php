@@ -2,8 +2,6 @@
 
 namespace Technodelight\Jira\Api\GitShell;
 
-use Technodelight\Jira\Api\GitShell\Branch;
-use Technodelight\Jira\Api\GitShell\XmlToArray;
 use Technodelight\Jira\Api\Shell\Command;
 use Technodelight\Jira\Api\Shell\Shell;
 
@@ -32,7 +30,7 @@ class Api
             ->withArgument(sprintf('%s..%s', $from, $to));
 
         $converter = new XmlToArray('entry');
-        $entries = $converter->asArray(implode('', $this->shell->exec($command)));
+        $entries = $converter->asArray(implode(PHP_EOL, $this->shell->exec($command)));
         foreach ($entries['entry'] as $entry) {
             yield LogEntry::fromArray($entry);
         }

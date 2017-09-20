@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Console\Argument;
 use \DateTime;
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
-use Technodelight\Jira\Console\Argument\Date;
 
 class DateResolver implements Resolver
 {

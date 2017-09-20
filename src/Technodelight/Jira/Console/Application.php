@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Technodelight\Jira\Api\Api as JiraApi;
+use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
@@ -28,6 +28,7 @@ use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Console\Command\ListAliasesCommand;
 
 class Application extends BaseApp
 {
@@ -111,6 +112,7 @@ class Application extends BaseApp
     {
         $commands = [];
         $commands[] = new ListInstancesCommand($this->container());
+        $commands[] = new ListAliasesCommand($this->container());
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new LogTimeCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
@@ -248,7 +250,7 @@ class Application extends BaseApp
     public function jira()
     {
         if (!isset($this->jira)) {
-            /** @var \Technodelight\Jira\Api\Api jira */
+            /** @var \Technodelight\Jira\Api\JiraRestApi\Api jira */
             $this->jira = $this->get('technodelight.jira.api');
         }
 

@@ -7,6 +7,9 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
+/**
+ * @method \Technodelight\Jira\Console\Application getApplication()
+ */
 class AbstractCommand extends Command
 {
     /**
