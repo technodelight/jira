@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Api\GitShell;
 
 use Technodelight\Jira\Api\Shell\Command;
 use Technodelight\Jira\Api\Shell\Shell;
+use Technodelight\Jira\Api\Shell\ShellCommandException;
 
 class Api
 {
@@ -70,7 +71,6 @@ class Api
                 if (!$this->verboseRemotes) {
                     throw new \RuntimeException('No git remote found!');
                     //TODO: turn off github integration this case!
-                    // also turn off github integration if remote is not github!
                 }
             }
             return $this->verboseRemotes;
@@ -90,6 +90,16 @@ class Api
                 Command::create('grep')->withArgument(escapeshellarg($pattern))
             );
         }
+        try {
+            $branches = $this->shell->exec($command);
+        } catch (ShellCommandException $e) {
+            // ignore exception when grep returns "no lines", return code 1
+            if ($pattern && $e->getCode() == 1) {
+                $branches = $e->getResult();
+            } else {
+                throw $e;
+            }
+        }
         return array_map(
             function($branchDef) use ($remotes) {
                 $current = false;
@@ -107,7 +117,7 @@ class Api
                     'remote' => $remote,
                 ]);
             },
-            $this->shell->exec($command)
+            $branches
         );
     }
 
