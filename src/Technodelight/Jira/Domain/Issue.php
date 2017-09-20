@@ -215,7 +215,7 @@ class Issue
 
     public function comments()
     {
-        if (isset($this->fields['comment']) && is_array($this->fields['comment']) && empty($this->comments)) {
+        if (!empty($this->fields['comment']['comments']) && empty($this->comments)) {
             $comments = $this->fields['comment']['comments'];
             foreach ($comments as $commentArray) {
                 $this->comments[] = Comment::fromArray($commentArray);

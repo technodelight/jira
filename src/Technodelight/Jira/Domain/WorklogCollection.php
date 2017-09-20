@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Domain;
 
 use Countable;
+use DateTime;
 use Iterator;
 
 class WorklogCollection implements Iterator, Countable
@@ -115,11 +116,11 @@ class WorklogCollection implements Iterator, Countable
         return WorklogCollection::fromIterator($iterator);
     }
 
-    public function filterByDate($from, $to)
+    public function filterByDate(DateTime $from, DateTime $to)
     {
         $iterator = new \CallbackFilterIterator($this, function(Worklog $log) use ($from, $to) {
-            $date = date('Y-m-d', strtotime($log->date()));
-            return $date >= $from && $date <= $to;
+            $date = $log->date()->format('Y-m-d');
+            return $date >= $from->format('Y-m-d') && $date <= $to->format('Y-m-d');
         });
         return WorklogCollection::fromIterator($iterator);
     }

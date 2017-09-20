@@ -28,11 +28,10 @@ class WorklogHandler implements WorklogHandlerInterface
     public function find(DateTime $from, DateTime $to)
     {
         $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user()->name());
+
         $worklogCollection = WorklogCollection::createEmpty();
         foreach ($issues as $issue) {
-            foreach ($issue->worklogs() as $worklog) {
-                $worklogCollection->push($worklog);
-            }
+            $worklogCollection->merge($issue->worklogs());
         }
         return $worklogCollection;
     }

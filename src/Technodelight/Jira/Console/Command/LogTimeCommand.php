@@ -81,7 +81,6 @@ class LogTimeCommand extends AbstractCommand
         $worklog = false;
         if (intval($issueKey)) { // updating a worklog
             /** @var Worklog $worklog */
-//            $worklog = $jira->retrieveWorklogs([$issueKey])->current();
             $worklog = $worklogHandler->retrieve($issueKey);
             $issueKey = $worklog->issueKey();
         }

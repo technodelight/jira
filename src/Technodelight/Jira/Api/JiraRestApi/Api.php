@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Api\JiraRestApi;
 
+use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\User;
@@ -144,10 +145,13 @@ class Api
     }
 
     /**
-     * @param  IssueCollection $issues
-     * @param  int|null $limit
+     * @param \Technodelight\Jira\Domain\IssueCollection $issues
+     * @param \DateTime|null $from
+     * @param \DateTime|null $to
+     * @param string|null $username
+     * @param int|null $limit
      */
-    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, $from = null, $to = null, $username = null, $limit = null)
+    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, DateTime $from = null, DateTime $to = null, $username = null, $limit = null)
     {
         $requests = [];
         foreach ($issues->keys() as $issueKey) {
@@ -158,6 +162,9 @@ class Api
         foreach ($responses as $requestUrl => $response) {
             list ( ,$issueKey, ) = explode('/', $requestUrl, 3);
             $issue = $issues->find($issueKey);
+            foreach ($response['worklogs'] as $k => $log) {
+                $response['worklogs'][$k] = $this->normaliseDateFields($log);
+            }
             $worklogs = WorklogCollection::fromIssueArray($issue, $response['worklogs']);
             if ($from && $to) {
                 $worklogs = $worklogs->filterByDate($from, $to);
@@ -175,17 +182,17 @@ class Api
     /**
      * Find issues with matching worklogs for user
      *
-     * @param string $from could be startOfWeek, startOfDay, Y-m-d
-     * @param string $to could be startOfWeek, startOfDay, Y-m-d
+     * @param DateTime $from
+     * @param DateTime $to
      * @param string|null $username username or currentUser() by default. Must be a username given.
      * @param int|null $limit
      *
      * @return IssueCollection
      */
-    public function findUserIssuesWithWorklogs($from, $to, $username = null, $limit = null)
+    public function findUserIssuesWithWorklogs(DateTime $from, DateTime $to, $username = null, $limit = null)
     {
         $query = SearchQueryBuilder::factory()
-            ->worklogDate($from, $to);
+            ->worklogDate($from->format('Y-m-d'), $to->format('Y-m-d'));
         if ($username) {
             $query->worklogAuthor($username);
         }
@@ -288,16 +295,25 @@ class Api
      */
     public function search($jql, $fields = null, array $expand = null, array $properties = null)
     {
-        $results = $this->client->search(
-            $jql,
-            $fields,
-            $expand,
-            $properties
-        );
-        foreach ($results['issues'] as $k => $issueArray) {
-            $results['issues'][$k] = $this->normaliseIssueArray($issueArray);
+        try {
+            $results = $this->client->search(
+                $jql,
+                $fields,
+                $expand,
+                $properties
+            );
+            foreach ($results['issues'] as $k => $issueArray) {
+                $results['issues'][$k] = $this->normaliseIssueArray($issueArray);
+            }
+            return IssueCollection::fromSearchArray($results);
+        } catch (\Exception $e) {
+            throw new \BadMethodCallException(
+                $e->getMessage() . PHP_EOL
+                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html',
+                $e->getCode(),
+                $e
+            );
         }
-        return IssueCollection::fromSearchArray($results);
     }
 
     /**

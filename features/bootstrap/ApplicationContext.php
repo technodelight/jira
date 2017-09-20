@@ -17,7 +17,7 @@ class ApplicationContext implements Context
      */
     public function iRunTheApplicationWithTheFollowingInput(TableNode $table)
     {
-        $input = new ArrayInput($table->getRowsHash());
+        $input = new ArrayInput($table->getRowsHash() + ['-vvv']);
         $this->output = new BufferedOutput;
         $this->app()->addDomainCommands();
         $this->exitCode = $this->app()->run($input, $this->output);

@@ -26,7 +26,7 @@ class SearchCommand extends AbstractCommand
                 'save',
                 's',
                 InputOption::VALUE_OPTIONAL,
-                'Save the query so it could be recalled as a command'
+                'Save the query to the project jira.yml file so it could be used as a command'
             )
         ;
     }
@@ -55,8 +55,17 @@ class SearchCommand extends AbstractCommand
         $command = new IssueFilterCommand($this->container, 'run', $input->getArgument('jql') ?: null);
         $command->execute($input, $output);
         if ($filterName = $input->getOption('save')) {
-            // perform saving of that filter!
-            $output->writeln('here comes the --save ' . $filterName);
+            $this->saveFilterToConfiguration($output, $filterName);
         }
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param $filterName
+     */
+    protected function saveFilterToConfiguration(OutputInterface $output, $filterName)
+    {
+        // perform saving of that filter!
+        $output->writeln('here comes the --save ' . $filterName);
     }
 }
