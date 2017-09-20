@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Console\Command;
 
+use Hoa\Console\Readline\Autocompleter\Word;
+use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -110,13 +112,7 @@ class LogTimeCommand extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             $defaultMessage = $this->worklogCommentFromGitCommits($issueKey);
-
-            $comment = $dialog->ask(
-                $output,
-                $this->worklogCommentDialogText($worklog, $defaultMessage),
-                false
-            );
-            $comment = trim($comment);
+            $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $worklog, $issueKey);
 
             $input->setArgument('comment', $comment ?: $defaultMessage);
         }
@@ -343,6 +339,28 @@ EOL;
             $defaultMessage = join(', ', $messages);
         }
         return $defaultMessage;
+    }
+
+    private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $worklog, $issueKey)
+    {
+        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        $output->writeln($this->worklogCommentDialogText($worklog, $defaultMessage));
+        $readline = new Readline;
+        $readline->setAutocompleter(new Word($this->getAutocompleteWords($issue, $defaultMessage)));
+        $comment = $readline->readLine();
+        $output->write('</>');
+        return $comment;
+    }
+
+    private function getAutocompleteWords(Issue $issue, $defaultMessage)
+    {
+        $words = array_map(
+            function($string) {
+                return trim(trim($string, '-,'.PHP_EOL));
+            },
+            explode(' ', $defaultMessage . ' ' . $issue->description() . $issue->summary())
+        );
+        return array_unique(array_filter($words));
     }
 
     /**

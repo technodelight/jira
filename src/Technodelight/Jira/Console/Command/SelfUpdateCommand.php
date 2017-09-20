@@ -20,17 +20,15 @@ class SelfUpdateCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $git = $this->getService('technodelight.github.api');
         $dialog = $this->getService('console.dialog_helper');
         $runningFile = \Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
-        $release = $git->api('repo')->releases()->all('technodelight', 'jira')[0];
+        $release = $this->gitHubApi()->api('repo')->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
         if (version_compare($currentVersion, $release['tag_name'], '<') && isset($release['assets'][0])) {
             $output->writeln('✨ <comment>Yay, let\'s do an update!</comment>✨');
             $output->writeln('');
-            $output->writeln("<info>{$release['tag_name']}</info> {$release['name']}");
-            $output->writeln($release['body']);
+            $output->writeln($this->getReleaseNotesSince($currentVersion, $release['tag_name']));
             $output->writeln('');
             $output->writeln("Release date is {$release['published_at']}");
             $consent = $dialog->askConfirmation(
@@ -44,7 +42,7 @@ class SelfUpdateCommand extends AbstractCommand
             }
             if ($consent) {
                 if ($this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
-                    $output->writeln("<info>Successfully updated to {$release['tag_name']}</info>");
+                    $output->writeln("<info>Successfully updated to {$release['tag_name']}</info> 🤘");
                 } else {
                     $output->writeln("<error>Something unexpected happened during update.</error>");
                     return 1;
@@ -93,7 +91,36 @@ class SelfUpdateCommand extends AbstractCommand
         $progress->setEmptyBarCharacter('<bg=white> </>');
         $progress->setProgressCharacter('<bg=green> </>');
         $progress->setBarWidth(50);
-        $progress->setRedrawFrequency(100000);
+        $progress->setRedrawFrequency(500000);
         return $progress;
+    }
+
+    private function getReleaseNotesSince($currentVersion, $newVersion)
+    {
+        $releasesSince = array_filter(
+            array_reverse($this->gitHubApi()->api('repo')->releases()->all('technodelight', 'jira')),
+            function (array $release) use ($currentVersion, $newVersion) {
+                return version_compare($currentVersion, $release['tag_name'], '<') && isset($release['assets'][0])
+                    && version_compare($newVersion, $release['tag_name'], '>=');
+            }
+        );
+        $releaseNotes = [];
+        foreach ($releasesSince as $release) {
+            $releaseNotes[] = "<info>{$release['tag_name']}</info> {$release['name']} " . ($newVersion == $release['tag_name'] ? '<info>(latest)</>' : '');
+            $releaseNotes[] = '';
+            if (!empty(trim($release['body']))) {
+                $releaseNotes[] = trim($release['body']);
+                $releaseNotes[] = '';
+            }
+        }
+        return $releaseNotes;
+    }
+
+    /**
+     * @return object
+     */
+    protected function gitHubApi()
+    {
+        return $this->getService('technodelight.github.api');
     }
 }
