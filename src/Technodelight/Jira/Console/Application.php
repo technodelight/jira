@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
+use Technodelight\Jira\Console\Command\CommentCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
 use Technodelight\Jira\Console\Command\InitCommand;
 use Technodelight\Jira\Console\Command\IssueFilterCommand;
@@ -119,6 +120,7 @@ class Application extends BaseApp
         $commands[] = new ShowCommand($this->container());
         $commands[] = new BrowseIssueCommand($this->container());
         $commands[] = new DownloadAttachmentCommand($this->container());
+        $commands[] = new CommentCommand($this->container());
 
         foreach ($this->config()->transitions() as $alias => $transitionName) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitionName);

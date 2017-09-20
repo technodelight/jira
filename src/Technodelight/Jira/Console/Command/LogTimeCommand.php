@@ -12,6 +12,7 @@ use Technodelight\Jira\Api\GitShell\LogEntry;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Helper\AutocompleteHelper;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Simplate;
 
@@ -354,13 +355,8 @@ EOL;
 
     private function getAutocompleteWords(Issue $issue, $defaultMessage)
     {
-        $words = array_map(
-            function($string) {
-                return trim(trim($string, '-,'.PHP_EOL));
-            },
-            explode(' ', $defaultMessage . ' ' . $issue->description() . $issue->summary())
-        );
-        return array_unique(array_filter($words));
+        $helper = new AutocompleteHelper;
+        return $helper->getWords([$defaultMessage, $issue->description(), $issue->summary()]);
     }
 
     /**
