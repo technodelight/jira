@@ -17,15 +17,19 @@ class NativeShell implements Shell
             $command->withExec($this->executable);
         }
         exec((string) $command, $result, $returnVar);
+        $result = (array) array_filter(array_map('trim', (array) $result));
         if (!empty($returnVar)) {
-            throw new \RuntimeException(
+            throw new ShellCommandException(
                 sprintf(
                     'Error code %d during running "%s"',
                     $returnVar,
                     $command
-                )
+                ),
+                $returnVar,
+                null,
+                $result
             );
         }
-        return array_filter(array_map('trim', $result));
+        return $result;
     }
 }

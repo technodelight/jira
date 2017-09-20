@@ -14,7 +14,7 @@ class XmlToArray
     public function asArray($string)
     {
         $array = $this->xmlAsArray($this->stringAsXml($string));
-        if ($array[$this->nodeToForceArray] != array_values($array[$this->nodeToForceArray])) {
+        if (isset($array[$this->nodeToForceArray]) && $array[$this->nodeToForceArray] != array_values($array[$this->nodeToForceArray])) {
             $array[$this->nodeToForceArray] = [$array[$this->nodeToForceArray]];
         }
         return $array;
