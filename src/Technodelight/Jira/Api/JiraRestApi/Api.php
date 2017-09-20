@@ -67,13 +67,13 @@ class Api
      * "auto"- Default option. Will automatically adjust the value based on the new timeSpent specified on the worklog
      *
      * @param string $issueKey
-     * @param string $timeSpent like '2d'
+     * @param int $timeSpentSeconds
      * @param string $comment
      * @param string $adjustEstimate
      * @param string $newEstimate if adjustEstimate is 'new' this arg should be provided
      *
      */
-    public function worklog($issueKey, $timeSpent, $comment, $started, $adjustEstimate = 'auto', $newEstimate = null)
+    public function worklog($issueKey, $timeSpentSeconds, $comment, $started, $adjustEstimate = 'auto', $newEstimate = null)
     {
         $params = ['adjustEstimate' => $adjustEstimate];
         if ($newEstimate) {
@@ -85,7 +85,7 @@ class Api
             [
                 'comment' => $comment,
                 'started' => DateHelper::dateTimeToJira($started),
-                'timeSpent' => $timeSpent,
+                'timeSpentSeconds' => $timeSpentSeconds,
             ]
         );
         return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $issueKey);

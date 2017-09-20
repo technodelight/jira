@@ -34,16 +34,25 @@ class IssueCollection implements Iterator, Countable
         return count($this->issues);
     }
 
+    /**
+     * @return Issue
+     */
     public function current()
     {
         return current($this->issues);
     }
 
+    /**
+     * @return Issue|false
+     */
     public function next()
     {
         return next($this->issues);
     }
 
+    /**
+     * @return int|null
+     */
     public function key()
     {
         return key($this->issues);

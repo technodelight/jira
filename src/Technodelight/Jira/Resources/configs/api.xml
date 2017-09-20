@@ -25,6 +25,9 @@
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="technodelight.jira.cached_api_client" />
         </service>
+        <service id="technodelight.jira.connector.jira_worklog_handler" class="Technodelight\Jira\Connector\Jira\WorklogHandler">
+            <argument type="service" id="technodelight.jira.api" />
+        </service>
         <!-- jira -->
         <!-- tempo -->
         <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
@@ -59,6 +62,7 @@
         <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
             <argument type="service" id="technodelight.jira.config"/>
             <argument type="service" id="technodelight.jira.connector.tempo_worklog_handler"/>
+            <argument type="service" id="technodelight.jira.connector.jira_worklog_handler"/>
         </service>
         <service id="technodelight.jira.worklog_handler" class="Technodelight\Jira\Connector\WorklogHandler">
             <factory service="technodelight.jira.connector.worklog_handler_factory" method="build"/>
