@@ -32,6 +32,10 @@ class Api
 
         $converter = new XmlToArray('entry');
         $entries = $converter->asArray(implode(PHP_EOL, $this->shell->exec($command)));
+        if (empty($entries)) {
+            return [];
+        }
+
         foreach ($entries['entry'] as $entry) {
             yield LogEntry::fromArray($entry);
         }

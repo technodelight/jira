@@ -17,7 +17,7 @@ class NativeShell implements Shell
             $command->withExec($this->executable);
         }
         exec((string) $command, $result, $returnVar);
-        $result = array_filter(array_map('trim', $result));
+        $result = (array) array_filter(array_map('trim', (array) $result));
         if (!empty($returnVar)) {
             throw new ShellCommandException(
                 sprintf(
