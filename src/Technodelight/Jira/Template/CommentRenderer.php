@@ -68,6 +68,7 @@ class CommentRenderer
                     'author' => $comment->author(),
                     'body' => $this->templateHelper->tabulate(wordwrap($this->renderTags($comment->body())), 8),
                     'created' => $comment->created()->format('Y-m-d H:i:s'),
+                    'commentId' => $comment->id()
                 ]
             );
         }

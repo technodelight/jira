@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Issue;
@@ -325,6 +326,50 @@ class Api
     public function download($url, $filename)
     {
         $this->client->download($url, $filename);
+    }
+
+    /**
+     * @param string $issueKey
+     * @param string $comment
+     * @return \Technodelight\Jira\Domain\Comment
+     */
+    public function addComment($issueKey, $comment)
+    {
+        $response = $this->client->post(
+            sprintf('issue/%s/comment', $issueKey),
+            [
+                'body' => $comment
+            ]
+        );
+        return Comment::fromArray($this->normaliseDateFields($response));
+    }
+
+    /**
+     * @param string $issueKey
+     * @param string $commentId
+     * @param string $comment
+     * @return \Technodelight\Jira\Domain\Comment
+     */
+    public function updateComment($issueKey, $commentId, $comment)
+    {
+        $response = $this->client->put(
+            sprintf('issue/%s/comment/%s', $issueKey, $commentId),
+            [
+                'body' => $comment
+            ]
+        );
+        return Comment::fromArray($this->normaliseDateFields($response));
+    }
+
+    /**
+     * @param string $issueKey
+     * @param string $commentId
+     * @return bool
+     */
+    public function deleteComment($issueKey, $commentId)
+    {
+        $this->client->delete(sprintf('issue/%s/comment/%s', $issueKey, $commentId));
+        return true;
     }
 
     /**
