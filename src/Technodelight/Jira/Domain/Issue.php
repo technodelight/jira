@@ -116,6 +116,14 @@ class Issue
         return '';
     }
 
+    public function creatorUser()
+    {
+        $field = $this->findField('creator');
+        if (is_array($field)) {
+            return User::fromArray($field);
+        }
+    }
+
     public function assignee()
     {
         $field = $this->findField('assignee');
@@ -123,6 +131,14 @@ class Issue
             return $field['displayName'] ?: '?';
         }
         return 'Unassigned';
+    }
+
+    public function assigneeUser()
+    {
+        $field = $this->findField('assignee');
+        if (is_array($field)) {
+            return User::fromArray($field);
+        }
     }
 
     public function progress()

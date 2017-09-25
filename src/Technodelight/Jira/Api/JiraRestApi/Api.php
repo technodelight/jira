@@ -310,7 +310,8 @@ class Api
         } catch (\Exception $e) {
             throw new \BadMethodCallException(
                 $e->getMessage() . PHP_EOL
-                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html',
+                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html' . PHP_EOL
+                . 'Query was "' . $jql . '"',
                 $e->getCode(),
                 $e
             );

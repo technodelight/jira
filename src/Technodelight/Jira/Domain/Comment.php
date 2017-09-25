@@ -42,7 +42,7 @@ class Comment
 
     public function author()
     {
-        return $this->author['displayName'];
+        return User::fromArray($this->author);
     }
 
     public function created()
