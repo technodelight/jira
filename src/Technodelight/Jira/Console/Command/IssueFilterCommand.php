@@ -46,8 +46,7 @@ class IssueFilterCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->setOutput($output);
-        $renderer->renderIssues($jira->search($this->jql, Api::FIELDS_ALL));
+        $renderer->renderIssues($output, $jira->search($this->jql, Api::FIELDS_ALL));
     }
 
     private function descriptionFromJql()

@@ -4,8 +4,6 @@ namespace Technodelight\Jira\Helper;
 
 use GitHub\Client as Hub;
 use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Api\Issue;
-use Technodelight\Jira\Api\IssueCollection;
 
 class HubHelper
 {

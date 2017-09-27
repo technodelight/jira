@@ -1,7 +1,0 @@
-You have successfully logged <comment>{{ logged }}</comment> to issue <info>{{ issueKey }} on {{ startDay }}</info> ({{ worklogId }})
-{{ issueUrl }}
-
-Time spent: <comment>{{ spent }}</comment>, Remaining estimate: <comment>{{ estimate }}</comment>
-
-Logged work so far:
-{{ worklogs }}
