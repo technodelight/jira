@@ -83,7 +83,7 @@
                 <argument type="service" id="technodelight.jira.renderer.issue.header" />
                 <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
                 <argument type="service" id="technodelight.jira.renderer.issue.progress" />
-                <argument type="service" id="technodelight.jira.renderer.issue.description" />
+                <argument type="service" id="technodelight.jira.renderer.issue.description.full" />
                 <argument type="service" id="technodelight.jira.renderer.issue.issue_relations" />
                 <argument type="service" id="technodelight.jira.renderer.issue.attachment" />
                 <argument type="service" id="technodelight.jira.renderer.issue.branch" />

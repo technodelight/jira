@@ -104,7 +104,8 @@ class Api
             function($branchDef) use ($remotes) {
                 $current = false;
                 $remote = '';
-                if (preg_match('~(' . join('|', $remotes) . ')/([^/]+)/~', $branchDef, $matches)) {
+
+                if (preg_match('~(' . join('|', array_keys($remotes)) . ')/([^/]+)/~', $branchDef, $matches)) {
                     $remote = $matches[1];
                 }
                 if (strpos($branchDef, '* ') !== false) {

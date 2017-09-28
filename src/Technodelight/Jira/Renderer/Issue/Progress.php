@@ -11,8 +11,8 @@ use Technodelight\SecondsToNone;
 
 class Progress implements Renderer
 {
-    const PROGRESS_FORMAT_IN_PROGRESS = '        <info>%message%</> %bar% %percent%%';
-    const PROGRESS_FORMAT_DEFAULT = '        <info>%message%</>';
+    const PROGRESS_FORMAT_IN_PROGRESS = '<info>%message%</> %bar% %percent%%';
+    const PROGRESS_FORMAT_DEFAULT = '<info>%message%</>';
     const PROGRESS_BAR_WIDTH = 50;
     const PROGRESS_BAR_WORKED_CHAR = '<bg=green> </>';
     const PROGRESS_BAR_REMAINING_CHAR = '<bg=white> </>';
@@ -33,8 +33,9 @@ class Progress implements Renderer
 
     public function render(OutputInterface $output, Issue $issue)
     {
-        $output->write($this->templateHelper->tabulate(''));
+//        $output->write($this->templateHelper->tabulate(''));
         $this->getProgressBar($output, $issue)->display();
+        $output->writeln('');
     }
 
     /**
@@ -52,7 +53,7 @@ class Progress implements Renderer
         $progress->setProgressCharacter(self::PROGRESS_BAR_WORKED_CHAR);
         $progress->setBarWidth(self::PROGRESS_BAR_WIDTH);
         $progress->setProgress($issueProgress['progress']);
-        $progress->setMessage($this->getProgressBarMessage($issue));
+        $progress->setMessage($this->tab($this->tab($this->getProgressBarMessage($issue))));
 
         return $progress;
     }
@@ -80,5 +81,10 @@ class Progress implements Renderer
             return self::PROGRESS_FORMAT_DEFAULT;
         }
         return self::PROGRESS_FORMAT_IN_PROGRESS;
+    }
+
+    private function tab($string)
+    {
+        return $this->templateHelper->tabulate($string);
     }
 }

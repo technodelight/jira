@@ -28,8 +28,8 @@ class ShowCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
 
-        /** @var Renderer $renderer */
-        $renderer = $this->getService('technodelight.jira.renderer.issue.full');
-        $renderer->render($output, $issue);
+        /** @var \Technodelight\Jira\Template\IssueRenderer $renderer */
+        $renderer = $this->getService('technodelight.jira.issue_renderer');
+        $renderer->render($output, $issue, true);
     }
 }
