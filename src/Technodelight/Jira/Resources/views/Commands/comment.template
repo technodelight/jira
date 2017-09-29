@@ -1,2 +1,0 @@
-    <info>{{ author }}</info> ({{ created }}): <fg=black>({{ commentId }})</>
-        {{ body }}

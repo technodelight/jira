@@ -17,20 +17,83 @@
         </service>
 
         <service id="technodelight.jira.issue_renderer" class="Technodelight\Jira\Template\IssueRenderer">
-            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="technodelight.jira.renderer.issue.full" />
+            <argument type="service" id="technodelight.jira.renderer.issue.short" />
             <argument type="service" id="console.formatter_helper" />
-            <argument type="service" id="technodelight.jira.template_helper" />
-            <argument type="service" id="technodelight.jira.date_helper" />
-            <argument type="service" id="technodelight.jira.git_helper" />
-            <argument type="service" id="technodelight.jira.hub_helper" />
-            <argument type="service" id="technodelight.jira.git_branchname_generator" />
-            <argument type="service" id="technodelight.jira.worklog_renderer" />
-            <argument type="service" id="technodelight.jira.comment_renderer" />
-            <argument type="service" id="technodelight.jira.attachment_renderer" />
-            <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
 
         <service id="technodelight.jira.attachment_renderer" class="Technodelight\Jira\Template\AttachmentRenderer" />
+
+        <!-- new issue renderer -->
+        <service id="technodelight.jira.renderer.issue.header" class="Technodelight\Jira\Renderer\Issue\Header">
+            <argument type="service" id="technodelight.jira.color_extractor" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.user_details" class="Technodelight\Jira\Renderer\Issue\UserDetails">
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.progress" class="Technodelight\Jira\Renderer\Issue\Progress">
+            <argument type="service" id="seconds_to_none" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.description.full" class="Technodelight\Jira\Renderer\Issue\Description">
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="string">1</argument>
+        </service>
+        <service id="technodelight.jira.renderer.issue.description.short" class="Technodelight\Jira\Renderer\Issue\Description">
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="string">0</argument>
+        </service>
+        <service id="technodelight.jira.renderer.issue.description" alias="technodelight.jira.renderer.issue.description.short" />
+        <service id="technodelight.jira.renderer.issue.issue_relations" class="Technodelight\Jira\Renderer\Issue\IssueRelations">
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.attachment" class="Technodelight\Jira\Renderer\Issue\Attachment">
+            <argument type="service" id="technodelight.jira.template_helper"/>
+        </service>
+        <service id="technodelight.jira.renderer.issue.branch" class="Technodelight\Jira\Renderer\Issue\Branch">
+            <argument type="service" id="technodelight.jira.template_helper"/>
+            <argument type="service" id="technodelight.gitshell.api"/>
+            <argument type="service" id="technodelight.jira.git_branchname_generator"/>
+        </service>
+        <service id="technodelight.jira.renderer.issue.git_hub" class="Technodelight\Jira\Renderer\Issue\GitHub">
+            <argument type="service" id="technodelight.jira.template_helper"/>
+            <argument type="service" id="technodelight.jira.hub_helper"/>
+        </service>
+        <service id="technodelight.jira.renderer.issue.worklog" class="Technodelight\Jira\Renderer\Issue\Worklog">
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="seconds_to_none" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.comment" class="Technodelight\Jira\Renderer\Issue\Comment">
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
+        </service>
+
+        <service id="technodelight.jira.renderer.issue.short" class="Technodelight\Jira\Renderer\Issue\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.issue.header" />
+                <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
+                <argument type="service" id="technodelight.jira.renderer.issue.progress" />
+                <argument type="service" id="technodelight.jira.renderer.issue.description" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.issue.full" class="Technodelight\Jira\Renderer\Issue\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.issue.header" />
+                <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
+                <argument type="service" id="technodelight.jira.renderer.issue.progress" />
+                <argument type="service" id="technodelight.jira.renderer.issue.description.full" />
+                <argument type="service" id="technodelight.jira.renderer.issue.issue_relations" />
+                <argument type="service" id="technodelight.jira.renderer.issue.attachment" />
+                <argument type="service" id="technodelight.jira.renderer.issue.branch" />
+                <argument type="service" id="technodelight.jira.renderer.issue.git_hub" />
+                <argument type="service" id="technodelight.jira.renderer.issue.worklog" />
+                <argument type="service" id="technodelight.jira.renderer.issue.comment" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.issue" alias="technodelight.jira.renderer.issue.short"/>
+        <!-- new issue renderer -->
     </services>
 
 </container>

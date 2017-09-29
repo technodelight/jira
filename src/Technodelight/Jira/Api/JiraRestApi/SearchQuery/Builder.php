@@ -16,7 +16,9 @@ class Builder
         'issueType' => [Condition::OPERATOR_AND, 'issueType in (:issueTypes)'],
         'worklogDate' => [Condition::OPERATOR_AND, 'worklogDate >= :from AND worklogDate <= :to'],
         'worklogAuthor' => [Condition::OPERATOR_AND, 'worklogAuthor = :worklogAuthor'],
+        'updated' => [Condition::OPERATOR_AND, 'updated >= :from AND updated <= :to'],
         'assignee' => [Condition::OPERATOR_AND, 'assignee = :assignee'],
+        'assigneeWas' => [Condition::OPERATOR_AND, 'assignee was :assignee'],
         'sprint' => [Condition::OPERATOR_AND, 'Sprint in :sprint'],
         'orderByDesc' => [Condition::OPERATOR_ORDER_BY, ':field DESC'],
         'orderByAsc' => [Condition::OPERATOR_ORDER_BY, ':field ASC'],
@@ -105,9 +107,21 @@ class Builder
         return $this;
     }
 
+    public function updated($from, $to)
+    {
+        $this->baseQuery->activateCondition('updated', ['from' => $from, 'to' => $to]);
+        return $this;
+    }
+
     public function assignee($assignee)
     {
         $this->baseQuery->activateCondition('assignee', ['assignee' => $assignee]);
+        return $this;
+    }
+
+    public function assigneeWas($assignee)
+    {
+        $this->baseQuery->activateCondition('assigneeWas', ['assignee' => $assignee]);
         return $this;
     }
 

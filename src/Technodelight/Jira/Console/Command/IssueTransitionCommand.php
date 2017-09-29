@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\GitShell\Branch;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
+use Technodelight\Jira\Domain\Transition;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Simplate;
 use \UnexpectedValueException;
@@ -75,12 +76,11 @@ class IssueTransitionCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
-        $git = $this->gitShell();
 
         try {
-            $transition = $this->filterTransitionByName($transitions, $this->transitionName);
+            $transition = $this->findTransitionByName($transitions, $this->transitionName);
             $this->checkGitChanges($input, $output, $transition);
-            $jira->performIssueTransition($issueKey, $transition['id']);
+            $jira->performIssueTransition($issueKey, $transition->id());
             $actionString = '';
             if ($input->getOption('assign')) {
                 $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()->name()]]]);
@@ -101,14 +101,51 @@ class IssueTransitionCommand extends AbstractCommand
                     $actionString
                 )
             );
-            $success = true;
+            $output->writeln($this->renderSuccessMessage($issue));
+            $this->checkoutToBranch($input, $output, $issue);
         } catch (UnexpectedValueException $exception) {
             $output->writeln(
                 sprintf('<error>%s</error>' . PHP_EOL, $exception->getMessage())
             );
-            $success = false;
+            $output->writeln($this->renderUnsuccesfulMessage($issue, $transitions));
+            $this->checkoutToBranch($input, $output, $issue);
+            return 1;
         }
+    }
 
+    private function renderSuccessMessage(Issue $issue)
+    {
+        return [
+            "<comment>link:</comment> {$issue->url()}",
+            '<comment>branches:</comment>',
+            $this->tab($this->retrieveGitBranches($issue))
+        ];
+    }
+
+    /**
+     * @param Issue $issue
+     * @param Transition[] $transitions
+     * @return array
+     */
+    private function renderUnsuccesfulMessage(Issue $issue, array $transitions)
+    {
+        return [
+            "It seems the issue <info>{$issue->key()}</info> is already <info>{$issue->status()}</info>, and currently assigned to <info>{$issue->assignee()}</info>",
+            '',
+            'Possible transitions:',
+            $this->tab($this->listTransitions($issue, $transitions)),
+            "<comment>link:</comment> {$issue->url()}"
+        ];
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param Issue $issue
+     */
+    private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
+    {
+        $git = $this->gitShell();
         if ($input->getOption('branch')) {
             if (!$this->gitBranchesForIssue($issue)) {
                 $branchName = $this->getProperBranchName($input, $output, $issue);
@@ -118,36 +155,18 @@ class IssueTransitionCommand extends AbstractCommand
                 $this->chooseBranch($input, $output, $issue);
             }
         }
-
-        /** @var TemplateHelper $templateHelper */
-        $templateHelper = $this->getService('technodelight.jira.template_helper');
-        $output->writeln(
-            Simplate::fromFile($this->getApplication()->directory('views') . '/Commands/transition.template')->render(
-                [
-                    'success' => $success,
-                    'issueKey' => $issue->ticketNumber(),
-                    'transitionName' => $this->transitionName,
-                    'transitionsNames' => $templateHelper->tabulate($this->listTransitions($transitions, $issue)),
-                    'status' => $issue->status(),
-                    'asignee' => $issue->assignee(),
-                    'url' => $issue->url(),
-                    'branches' => $templateHelper->tabulate($this->retrieveGitBranches($issue)),
-                ]
-            )
-        );
     }
 
-    private function transitionsNames(array $transitions)
-    {
-        return array_map(function($transition) {
-            return $transition['name'];
-        }, $transitions);
-    }
-
-    private function filterTransitionByName($transitions, $name)
+    /**
+     * @param Transition[] $transitions
+     * @param string $name
+     * @return Transition
+     * @throws \UnexpectedValueException
+     */
+    private function findTransitionByName(array $transitions, $name)
     {
         foreach ($transitions as $transition) {
-            if ($transition['name'] == $name) {
+            if ($transition->name() == $name) {
                 return $transition;
             }
         }
@@ -240,42 +259,39 @@ class IssueTransitionCommand extends AbstractCommand
     }
 
     /**
-     * @param array $transitions
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @return string
+     * @param Issue $issue
+     * @param Transition[] $transitions
+     * @return array
      */
-    private function listTransitions(array $transitions, Issue $issue)
+    private function listTransitions(Issue $issue, array $transitions)
     {
-        $transitionNames = $this->transitionsNames($transitions);
-        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $config */
-        $config = $this->getService('technodelight.jira.config');
-        $transitionMap = $config->transitions();
+        $transitionMap = $this->config()->transitions();
         $list = [];
-        foreach ($transitionNames as $transitionName) {
-            if ($command = array_search($transitionName, $transitionMap)) {
-                $list[] = sprintf(
-                    '- <info>%s</info> (jira %s %s)',
-                    $transitionName,
-                    $command,
-                    $issue->issueKey()
-                );
-            } else {
-                $list[] = sprintf(
-                    '- <info>%s</info>',
-                    $transitionName
-                );
+        foreach ($transitions as $transition) {
+            $commandString = '';
+            if ($command = array_search($transition->name(), $transitionMap)) {
+                $commandString = "(jira $command {$issue->key()}";
             }
+            $list[] = sprintf(
+                '- <info>%s</info> %s' . PHP_EOL . '%s',
+                $transition->name(),
+                $commandString,
+                $this->tab($this->tab(
+                    wordwrap("Moves issue to <comment>{$transition->resolvesToName()}</comment>. {$transition->resolvesToDescription()}")
+                ))
+            );
         }
-        return implode(PHP_EOL, $list);
+
+        return $list;
     }
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @param array $transition
+     * @param Transition $transition
      * @throws \RuntimeException
      */
-    private function checkGitChanges(InputInterface $input, OutputInterface $output, array $transition)
+    private function checkGitChanges(InputInterface $input, OutputInterface $output, Transition $transition)
     {
         $git = $this->gitShell();
         $helper = $this->questionHelper();
@@ -293,7 +309,7 @@ class IssueTransitionCommand extends AbstractCommand
             $question = new ConfirmationQuestion(
                 sprintf(
                     'Are you sure you want to perform the <comment>%s</comment> transition?  [Y/n] ',
-                    $transition['name']
+                    $transition->name()
                 ),
                 true
             );
@@ -312,34 +328,46 @@ class IssueTransitionCommand extends AbstractCommand
      */
     protected function isShorteningBranchNameConfirmed(InputInterface $input, OutputInterface $output, $branchName)
     {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion(
-            'The generated branch name seems to be too long. Do you want to shorten it?' . PHP_EOL
-            . '(' . $branchName . ')' . PHP_EOL
-            . '[Y/n] ? ',
-            true
+        return $this->questionHelper()->ask(
+            $input,
+            $output,
+            new ConfirmationQuestion(
+                'The generated branch name seems to be too long. Do you want to shorten it?' . PHP_EOL
+                . '(' . $branchName . ')' . PHP_EOL
+                . '[Y/n] ? ',
+                true
+            )
         );
-        return $helper->ask($input, $output, $question);
     }
 
     /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param Issue $issue
      * @return string
      */
     private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue)
     {
-        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $configuration */
-        $configuration = $this->getService('technodelight.jira.config');
         $selectedBranch = $this->generateBranchName($issue);
-        if ((strlen($selectedBranch) > $configuration->maxBranchNameLength())
+        if ((strlen($selectedBranch) > $this->config()->maxBranchNameLength())
             && $this->isShorteningBranchNameConfirmed($input, $output, $selectedBranch)) {
             $selectedBranch = $this->generateBranchNameWithAutocomplete($issue);
         }
 
         return $selectedBranch;
+    }
+
+    private function tab($string)
+    {
+        return $this->templateHelper()->tabulate($string);
+    }
+
+    /**
+     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration
+     */
+    private function config()
+    {
+        return $this->getService('technodelight.jira.config');
     }
 
     /**

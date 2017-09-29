@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
+use Technodelight\Jira\Domain\Transition;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Issue;
@@ -261,12 +262,20 @@ class Api
     /**
      * @param string $issueKey
      *
-     * @return array
+     * @return Transition[]
      */
     public function retrievePossibleTransitionsForIssue($issueKey)
     {
         $result = $this->client->get(sprintf('issue/%s/transitions', $issueKey));
-        return isset($result['transitions']) ? $result['transitions'] : [];
+        if (isset($result['transitions'])) {
+            return array_map(
+                function(array $transition) {
+                    return Transition::fromArray($transition);
+                },
+                $result['transitions']
+            );
+        }
+        return [];
     }
 
     /**
@@ -310,7 +319,8 @@ class Api
         } catch (\Exception $e) {
             throw new \BadMethodCallException(
                 $e->getMessage() . PHP_EOL
-                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html',
+                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html' . PHP_EOL
+                . 'Query was "' . $jql . '"',
                 $e->getCode(),
                 $e
             );

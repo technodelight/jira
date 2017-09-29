@@ -81,8 +81,7 @@ class ListWorkInProgressCommand extends AbstractCommand
 
         /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->setOutput($output);
-        $renderer->renderIssues($issues);
+        $renderer->renderIssues($output, $issues);
 
         return 0;
     }

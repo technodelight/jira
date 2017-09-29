@@ -51,6 +51,9 @@ class Worklog
         return $this->issueKey;
     }
 
+    /**
+     * @return \Technodelight\Jira\Domain\Issue
+     */
     public function issue()
     {
         return $this->issue;

@@ -2,15 +2,13 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Hoa\Console\Readline\Autocompleter\Word;
-use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Helper\AutocompleteHelper;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
+use Technodelight\Jira\Console\Argument\AutocompletedInput;
 
 class CommentCommand extends AbstractCommand
 {
@@ -56,13 +54,11 @@ class CommentCommand extends AbstractCommand
         if (!$input->getArgument('comment')) {
             $issue = $this->jiraApi()->retrieveIssue($issueKey);
             $renderer = $this->issueRenderer();
-            $renderer->setOutput($output);
-            $renderer->render($issue);
+            $renderer->render($output, $issue, true);
             $output->write('<info>Comment: </>');
 
-            $readline = new Readline;
-            $readline->setAutocompleter(new Word($this->getAutocompleteWords($issue)));
-            $comment = $readline->readLine();
+            $autocomplete = new AutocompletedInput($issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
+            $comment = $autocomplete->getValue();
             $output->write('</>');
             $input->setArgument('comment', $comment);
         }
@@ -75,30 +71,29 @@ class CommentCommand extends AbstractCommand
         $delete = $input->getOption('delete');
         $update = $input->getOption('update');
         $render = $this->commentRenderer();
-        $render->setOutput($output);
 
         if ($update) {
             $comment = $this->jiraApi()->updateComment($issueKey, $update, $comment);
-            $output->writeln(sprintf('Comment added successfully with ID <info>%s</>', $comment->id()));
-            $render->renderComments([$comment]);
+            $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
+            $render->renderComment($output, $comment);
         } elseif ($delete) {
             $this->jiraApi()->deleteComment($issueKey, $delete);
             $output->writeln('<info>Comment has been deleted</>');
         } else {
             $comment = $this->jiraApi()->addComment($issueKey, $comment);
-            $output->writeln(sprintf('Comment updated successfully with ID <info>%s</>', $comment->id()));
-            $render->renderComments([$comment]);
+            $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
+            $render->renderComment($output, $comment);
         }
     }
 
-    /**
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @return array
-     */
-    private function getAutocompleteWords(Issue $issue)
+    private function getPossibleIssues()
     {
-        $helper = new AutocompleteHelper;
-        return $helper->getWords([$issue->description(), $issue->summary()]);
+        return $this->jiraApi()->search(
+            Builder::factory()
+                ->assigneeWas($this->jiraApi()->user()->key())
+                ->updated(date('Y-m-d', strtotime('-1 week')), date('Y-m-d'))
+                ->assemble()
+        );
     }
 
     /**
@@ -118,10 +113,10 @@ class CommentCommand extends AbstractCommand
     }
 
     /**
-     * @return \Technodelight\Jira\Template\CommentRenderer
+     * @return \Technodelight\Jira\Renderer\Issue\Comment
      */
     private function commentRenderer()
     {
-        return $this->getService('technodelight.jira.comment_renderer');
+        return $this->getService('technodelight.jira.renderer.issue.comment');
     }
 }

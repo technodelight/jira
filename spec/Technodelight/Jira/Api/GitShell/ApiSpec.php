@@ -68,9 +68,27 @@ class ApiSpec extends ObjectBehavior
 
     function it_lists_branches(Shell $shell)
     {
-        $command = Command::create()->withArgument('remote');
-        $shell->exec($command)->shouldBeCalled()->willReturn(['origin']);
-        $this->remotes()->shouldReturn(['origin']);
+        $command = Command::create()->withArgument('remote')->withOption('v');
+        $shell->exec($command)->shouldBeCalled()->willReturn([
+            'origin  git@github.com:technodelight/jira.git (fetch)',
+            'origin  git@github.com:technodelight/jira.git (push)'
+        ]);
+        $this->remotes(true)->shouldReturn([
+            'origin' => [
+                'fetch' => [
+                    'owner' => 'technodelight',
+                    'repo' => 'jira',
+                    'userHost' => 'git@github.com',
+                    'url' => 'git@github.com:technodelight/jira.git'
+                ],
+                'push' => [
+                    'owner' => 'technodelight',
+                    'repo' => 'jira',
+                    'userHost' => 'git@github.com',
+                    'url' => 'git@github.com:technodelight/jira.git'
+                ]
+            ]
+        ]);
 
         $command = Command::create()->withArgument('branch')->withOption('a');
         $shell->exec($command)->shouldBeCalled()->willReturn(['remotes/origin/feature/something', 'feature/something', '* current']);
@@ -79,15 +97,32 @@ class ApiSpec extends ObjectBehavior
         $branchLocal = Branch::fromArray(['name'=>'feature/something', 'remote' => '', 'current' => false]);
         $branchCurrent = Branch::fromArray(['name'=>'current', 'remote' => '', 'current' => true]);
 
-        $res = $this->branches();
         $this->branches()->shouldBeLike([$branchRemote, $branchLocal, $branchCurrent]);
     }
 
     function it_finds_branches_by_pattern(Shell $shell)
     {
-        $command = Command::create()->withArgument('remote');
-        $shell->exec($command)->shouldBeCalled()->willReturn(['origin']);
-        $this->remotes()->shouldReturn(['origin']);
+        $command = Command::create()->withArgument('remote')->withOption('v');
+        $shell->exec($command)->shouldBeCalled()->willReturn([
+            'origin  git@github.com:technodelight/jira.git (fetch)',
+            'origin  git@github.com:technodelight/jira.git (push)'
+        ]);
+        $this->remotes(true)->shouldReturn([
+            'origin' => [
+                'fetch' => [
+                    'owner' => 'technodelight',
+                    'repo' => 'jira',
+                    'userHost' => 'git@github.com',
+                    'url' => 'git@github.com:technodelight/jira.git'
+                ],
+                'push' => [
+                    'owner' => 'technodelight',
+                    'repo' => 'jira',
+                    'userHost' => 'git@github.com',
+                    'url' => 'git@github.com:technodelight/jira.git'
+                ]
+            ]
+        ]);
 
         $command = Command::create()->withArgument('branch')->withOption('a')->pipe(Command::create('grep')->withArgument('\'something\''));
         $shell->exec($command)->shouldBeCalled()->willReturn(['remotes/origin/feature/something', 'feature/something']);

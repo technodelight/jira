@@ -62,7 +62,6 @@ class DashboardCommand extends AbstractCommand
             $output->writeln("You don't have any issues at the moment, which has worklog in range");
             return;
         }
-//        $issues = $jira->findUserIssuesWithWorklogs($from, $to, $user->name());
         $issues = $jira->retrieveIssues($issueKeys);
         foreach ($logs as $log) {
             if ($issue = $issues->find($log->issueKey())) {

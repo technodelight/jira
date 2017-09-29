@@ -3,339 +3,57 @@
 namespace Technodelight\Jira\Template;
 
 use Symfony\Component\Console\Helper\FormatterHelper;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
-use Technodelight\Jira\Console\Application;
-use Technodelight\Jira\Helper\ColorExtractor;
-use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Jira\Helper\GitBranchnameGenerator;
-use Technodelight\Jira\Helper\GitHelper;
-use Technodelight\Jira\Helper\HubHelper;
-use Technodelight\Jira\Helper\JiraTagConverter;
-use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Simplate;
+use Technodelight\Jira\Renderer\Renderer;
 
 class IssueRenderer
 {
-    const PROGRESS_FORMAT_IN_PROGRESS = '        <info>%message%</> %bar% %percent%%';
-    const PROGRESS_FORMAT_DEFAULT = '        <info>%message%</>';
-
     /**
-     * @var GitHelper
+     * @var \Technodelight\Jira\Renderer\Renderer
      */
-    private $git;
-
+    private $fullRenderer;
     /**
-     * @var GitBranchnameGenerator
+     * @var \Technodelight\Jira\Renderer\Renderer
      */
-    private $gitBranchnameGenerator;
-
+    private $shortRenderer;
     /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-
-    /**
-     * @var DateHelper
-     */
-    private $dateHelper;
-
-    /**
-     * @var OutputInterface
-     */
-    private $output;
-
-    /**
-     * @var FormatterHelper
+     * @var \Symfony\Component\Console\Helper\FormatterHelper
      */
     private $formatterHelper;
 
-    /**
-     * @var WorklogRenderer
-     */
-    private $worklogRenderer;
-
-    /**
-     * @var CommentRenderer
-     */
-    private $commentRenderer;
-
-    /**
-     * @var HubHelper
-     */
-    private $hub;
-
-    /**
-     * @var string
-     */
-    private $viewsDir;
-
-    /**
-     * Templates per issue type
-     *
-     * @var array
-     */
-    private $templates = [
-        'Default' => 'Issues/default.template',
-    ];
-
-    /**
-     * Formats for various issue types
-     *
-     * @var array
-     */
-    private $issueTypeFormats = [
-        'Default' => '<fg=black;bg=blue> %s </>',
-        'Defect' => '<error> %s </error>',
-        'Bug' => '<error> %s </error>',
-    ];
-
-    /**
-     * @var array
-     */
-    private $worklogs = [];
-    /**
-     * @var \Technodelight\Jira\Helper\ColorExtractor
-     */
-    private $colorExtractor;
-    /**
-     * @var \Technodelight\Jira\Template\AttachmentRenderer
-     */
-    private $attachmentRenderer;
-
-    public function __construct(
-        Application $app,
-        FormatterHelper $formatterHelper,
-        TemplateHelper $templateHelper,
-        DateHelper $dateHelper,
-        GitHelper $gitHelper,
-        HubHelper $hubHelper,
-        GitBranchnameGenerator $gitBranchnameGenerator,
-        WorklogRenderer $worklogRenderer,
-        CommentRenderer $commentRenderer,
-        AttachmentRenderer $attachmentRenderer,
-        ColorExtractor $colorExtractor
-    )
+    public function __construct(Renderer $fullRenderer, Renderer $shortRenderer, FormatterHelper $formatterHelper)
     {
-        $this->viewsDir = $app->directory('views');
+        $this->fullRenderer = $fullRenderer;
+        $this->shortRenderer = $shortRenderer;
         $this->formatterHelper = $formatterHelper;
-        $this->templateHelper = $templateHelper;
-        $this->dateHelper = $dateHelper;
-        $this->git = $gitHelper;
-        $this->hub = $hubHelper;
-        $this->gitBranchnameGenerator = $gitBranchnameGenerator;
-        $this->worklogRenderer = $worklogRenderer;
-        $this->commentRenderer = $commentRenderer;
-        $this->colorExtractor = $colorExtractor;
-        $this->output = new NullOutput;
-        $this->attachmentRenderer = $attachmentRenderer;
-    }
-
-    public function setOutput(OutputInterface $output)
-    {
-        $this->output = $output;
-        $this->commentRenderer->setOutput($output);
     }
 
     /**
-     * @param array $worklogs
-     *
-     * @return $this
-     */
-    public function addWorklogs(array $worklogs)
-    {
-        $this->worklogs = $worklogs;
-
-        return $this;
-    }
-
-    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @param  IssueCollection $issues
      */
-    public function renderIssues(IssueCollection $issues)
+    public function renderIssues(OutputInterface $output, IssueCollection $issues)
     {
         $groupedIssues = $this->groupByParent(iterator_to_array($issues));
         foreach ($groupedIssues as $issueGroup) {
-            $this->output->writeln(
+            $output->writeln(
                 $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
             );
             foreach ($issueGroup['issues'] as $issue) {
-                $this->render($issue);
+                $this->render($output, $issue);
             }
         }
     }
 
-    public function render(Issue $issue, $templateNameOverride = null)
+    public function render(OutputInterface $output, Issue $issue, $full = false)
     {
-        if (is_null($templateNameOverride)) {
-            $template = $this->getTemplateInstanceForIssue($issue);
+        if ($full) {
+            $this->fullRenderer->render($output, $issue);
         } else {
-            $template = $this->getTemplateInstance($templateNameOverride);
+            $this->shortRenderer->render($output, $issue);
         }
-
-        $content = $template->render(
-            [
-                'issueNumber' => $issue->ticketNumber(),
-                'issueType' => $this->formatIssueType($issue->issueType()),
-                'status' => $this->formatStatus($issue->status(), $issue->statusCategory()),
-                'url' => $issue->url(),
-                'summary' => $this->tabulate($this->renderSummary($issue), 8),
-                'progress' => $this->renderProgress($issue),
-
-                'description' => $this->tabulate($this->renderDescription($issue)),
-                'environment' => $issue->environment(),
-                'reporter' => $issue->reporter(),
-                'assignee' => $issue->assignee(),
-                'parent' => $this->tabulate($this->renderParentTask($issue), 8),
-                'subTasks' => $this->tabulate($this->renderSubTasks($issue), 8),
-                'attachments' => $this->tabulate($this->renderAttachments($issue), 8),
-
-                'branches' => $this->tabulate(implode(PHP_EOL, $this->retrieveGitBranches($issue)), 8),
-                'hubIssues' => $this->tabulate(implode(PHP_EOL, $this->retrieveHubIssues($issue)), 8),
-                'verbosity' => $this->output->getVerbosity(),
-                'worklogs' => $this->tabulate(
-                    $this->worklogRenderer->renderWorklogs($issue->worklogs())
-                ),
-                'comments' => $this->tabulate($this->renderComments($issue)),
-            ]
-        );
-
-        $output = implode(
-                PHP_EOL,
-                array_filter(
-                    array_map('rtrim', explode(PHP_EOL, $content))
-                )
-            ) . PHP_EOL;
-        $this->output->writeln($output);
-    }
-
-    private function formatIssueType($issueType)
-    {
-        $format = isset($this->issueTypeFormats[$issueType])
-            ? $issueType : 'Default';
-
-        return sprintf($this->issueTypeFormats[$format], $issueType);
-    }
-
-    /**
-     * @param Issue $issue
-     * @return string
-     */
-    private function renderSummary(Issue $issue)
-    {
-        $tagRenderer = new JiraTagConverter($this->output, $this->colorExtractor);
-
-        return wordwrap($tagRenderer->convert($issue->summary()));
-    }
-
-    /**
-     * @param Issue $issue
-     * @return string
-     */
-    private function renderDescription(Issue $issue)
-    {
-        $tagRenderer = new JiraTagConverter($this->output, $this->colorExtractor);
-
-        return $this->shorten(wordwrap($tagRenderer->convert($issue->description())));
-    }
-
-    private function renderComments(Issue $issue)
-    {
-        if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
-            return $this->commentRenderer->renderComments($issue->comments());
-        }
-
-        return '';
-    }
-
-    private function renderParentTask(Issue $issue)
-    {
-        if ($parent = $issue->parent()) {
-            return $this->renderRelatedTask($parent);
-        }
-
-        return '';
-    }
-
-    private function renderAttachments(Issue $issue)
-    {
-        return $this->attachmentRenderer->renderAttachment($issue->attachments());
-    }
-
-    private function renderSubTasks(Issue $issue)
-    {
-        if ($subtasks = $issue->subtasks()) {
-            $rendered = [];
-            foreach ($subtasks as $subtask) {
-                $rendered[] = $this->renderRelatedTask($subtask);
-            }
-
-            return join(PHP_EOL, $rendered);
-        }
-
-        return '';
-    }
-
-    private function renderRelatedTask(Issue $related)
-    {
-        return sprintf('<info>%s</> %s <fg=black>(%s)</>', $related->issueKey(), $related->summary(), $related->url());
-    }
-
-    private function renderProgress(Issue $issue)
-    {
-        if (strtolower($issue->status()) != 'in progress') {
-            $format = self::PROGRESS_FORMAT_DEFAULT;
-        } else {
-            $format = self::PROGRESS_FORMAT_IN_PROGRESS;
-        }
-
-        $out = new BufferedOutput($this->output->getVerbosity(), true, $this->output->getFormatter());
-        $issueProgress = $issue->progress();
-        $progress = new ProgressBar($out, $issueProgress['total']);
-        $progress->setFormat($format);
-        $progress->setBarCharacter('<bg=green> </>');
-        $progress->setEmptyBarCharacter('<bg=white> </>');
-        $progress->setProgressCharacter('<bg=green> </>');
-        $progress->setBarWidth(50);
-        $progress->setProgress($issueProgress['progress']);
-        $estimate = $this->secondsToHuman($issue->estimate());
-        $spent = $this->secondsToHuman($issue->timeSpent());
-        $remaining = $this->secondsToHuman($issue->remainingEstimate());
-        $progress->setMessage(
-            sprintf(
-                '%sspent: %s%s',
-                $estimate != 'none' ? 'estimate: ' . $estimate . ', ' : '',
-                $spent,
-                $remaining != 'none' && !empty($remaining) ? ', remaining: ' . $remaining : ''
-            )
-        );
-        $progress->display();
-
-        return $out->fetch();
-    }
-
-    private function getTemplateInstanceForIssue(Issue $issue)
-    {
-        if (isset($this->templates[$issue->issueType()])) {
-            return $this->getTemplateInstance($issue->issueType());
-        }
-
-        return $this->getTemplateInstance('Default');
-    }
-
-    private function getTemplateInstance($templateId)
-    {
-        if (!($this->templates[$templateId] instanceof Simplate)) {
-            $this->templates[$templateId] = Simplate::fromFile(
-                $this->viewsDir . DIRECTORY_SEPARATOR . $this->templates[$templateId]
-            );
-        }
-
-        return $this->templates[$templateId];
     }
 
     /**
@@ -372,128 +90,5 @@ class IssueRenderer
         });
 
         return $groupedIssues;
-    }
-
-    private function retrieveGitBranches(Issue $issue)
-    {
-        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
-            return [];
-        }
-
-        $branches = $this->git->branches($issue->ticketNumber());
-        if (empty($branches)) {
-            return [$this->gitBranchnameGenerator->fromIssue($issue) . ' (generated)'];
-        } else {
-            return array_unique(
-                array_map(
-                    function (array $branchData) {
-                        return sprintf('%s (%s)', $branchData['name'], $branchData['remote'] ? 'remote' : 'local');
-                    },
-                    $branches
-                )
-            );
-        }
-    }
-
-    private function retrieveHubIssues(Issue $issue)
-    {
-        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
-            return [];
-        }
-        $issues = $this->hub->issues();
-        $matchingIssues = array_filter($issues, function ($hubIssue) use ($issue) {
-            return strpos($hubIssue['title'], $issue->issueKey()) === 0;
-        });
-        $prIds = array_map(
-            function ($hubIssue) {
-                return $hubIssue['number'];
-            },
-            $matchingIssues
-        );
-        $statuses = [];
-        foreach ($prIds as $id) {
-            $commits = $this->hub->prCommits($id);
-            $last = end($commits);
-            $combined = $this->hub->statusCombined($last['sha']);
-            $statuses[$id] = [];
-            foreach ($combined['statuses'] as $status) {
-                switch ($status['state']) {
-                    case 'success':
-                        $mark = '✅';
-                        break;
-                    case 'pending':
-                        $mark = '⌛';
-                        break;
-                    case 'failure':
-                        $mark = '❌';
-                        break;
-                    default:
-                        $mark = '❔';
-                        break;
-                }
-                $statuses[$id][] = sprintf(
-                    '    %s  (%s) %s <fg=black>(%s)</>',
-                    $mark,
-                    $status['context'],
-                    $status['description'],
-                    $status['target_url']
-                );
-            }
-        }
-
-        return array_map(
-            function ($hubIssue) use ($statuses) {
-                return (join(PHP_EOL, array_filter([
-                    sprintf(
-                        '<fg=yellow>[ %s ]</> #%d %s <fg=green>(%s)</> <fg=black>(%s)</>',
-                        $hubIssue['state'] == 'open' ? ' open ' : 'closed',
-                        $hubIssue['number'],
-                        $hubIssue['title'],
-                        $hubIssue['user']['login'],
-                        $hubIssue['html_url']
-                    ),
-                    isset($statuses[$hubIssue['number']]) ? join(PHP_EOL, $statuses[$hubIssue['number']]) : ''
-                ])));
-            },
-            $matchingIssues
-        );
-    }
-
-    private function shorten($text, $maxLines = 2)
-    {
-        if ($this->output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
-            $lines = explode(PHP_EOL, $text);
-            $text = implode(
-                    PHP_EOL,
-                    array_filter(
-                        array_map('trim', array_slice($lines, 0, $maxLines))
-                    )
-                ) . (count($lines) > $maxLines ? '...' : '');
-        }
-
-        return $this->templateHelper->tabulate($text);
-    }
-
-    private function tabulate($text, $pad = 4)
-    {
-        return $this->templateHelper->tabulate($text, $pad);
-    }
-
-    private function secondsToHuman($seconds)
-    {
-        return $this->dateHelper->secondsToHuman($seconds);
-    }
-
-    private function formatStatus($status, $statusCategory)
-    {
-        $bgColor = $this->extractProperColor($statusCategory['colorName']);
-        $fgColor = 'black';
-
-        return sprintf('<fg=%s;bg=%s> %s </>', $fgColor, $bgColor, $status);
-    }
-
-    private function extractProperColor($colorName)
-    {
-        return $this->colorExtractor->extractColor($colorName);
     }
 }

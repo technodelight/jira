@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Renderer\Issue\Renderer;
 
 class ShowCommand extends AbstractCommand
 {
@@ -27,9 +28,8 @@ class ShowCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
 
-        $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
+        /** @var \Technodelight\Jira\Template\IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->setOutput($output);
-        $renderer->render($issue);
+        $renderer->render($output, $issue, true);
     }
 }

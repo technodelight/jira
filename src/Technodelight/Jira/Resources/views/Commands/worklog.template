@@ -1,3 +1,0 @@
-    <comment>{{ author }}</comment>: {{ timeSpent }} at {{ date }} ({{ worklogId }})
-    {{ depends !empty($comment) }}
-        {{ comment }}{{ end_depends }}

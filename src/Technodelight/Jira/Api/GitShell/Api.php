@@ -83,7 +83,7 @@ class Api
 
     public function branches($pattern = '')
     {
-        $remotes = $this->remotes();
+        $remotes = $this->remotes(true);
         $command = Command::create()->withArgument('branch')->withOption('a');
         if ($pattern) {
             $command->pipe(
@@ -104,7 +104,8 @@ class Api
             function($branchDef) use ($remotes) {
                 $current = false;
                 $remote = '';
-                if (preg_match('~(' . join('|', $remotes) . ')/([^/]+)/~', $branchDef, $matches)) {
+
+                if (preg_match('~(' . join('|', array_keys($remotes)) . ')/([^/]+)/~', $branchDef, $matches)) {
                     $remote = $matches[1];
                 }
                 if (strpos($branchDef, '* ') !== false) {
