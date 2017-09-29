@@ -6,7 +6,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration as BaseAppConf;
 
 class ApplicationConfiguration extends BaseAppConf
 {
-    private static $transitions = [];
+    public static $transitions = [];
 
     public static $useTempo = false;
 

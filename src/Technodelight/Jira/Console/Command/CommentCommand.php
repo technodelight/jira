@@ -71,19 +71,18 @@ class CommentCommand extends AbstractCommand
         $delete = $input->getOption('delete');
         $update = $input->getOption('update');
         $render = $this->commentRenderer();
-        $render->setOutput($output);
 
         if ($update) {
             $comment = $this->jiraApi()->updateComment($issueKey, $update, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
-            $render->renderComments([$comment]);
+            $render->renderComment($output, $comment);
         } elseif ($delete) {
             $this->jiraApi()->deleteComment($issueKey, $delete);
             $output->writeln('<info>Comment has been deleted</>');
         } else {
             $comment = $this->jiraApi()->addComment($issueKey, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
-            $render->renderComments([$comment]);
+            $render->renderComment($output, $comment);
         }
     }
 
@@ -114,10 +113,10 @@ class CommentCommand extends AbstractCommand
     }
 
     /**
-     * @return \Technodelight\Jira\Template\CommentRenderer
+     * @return \Technodelight\Jira\Renderer\Issue\Comment
      */
     private function commentRenderer()
     {
-        return $this->getService('technodelight.jira.comment_renderer');
+        return $this->getService('technodelight.jira.renderer.issue.comment');
     }
 }

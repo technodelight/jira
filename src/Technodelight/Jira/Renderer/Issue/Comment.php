@@ -40,7 +40,7 @@ class Comment implements Renderer
     /**
      * @param IssueComment[] $comments
      */
-    private function renderComments(OutputInterface $output, array $comments)
+    public function renderComments(OutputInterface $output, array $comments)
     {
         $self = $this;
         return array_map(
@@ -51,7 +51,7 @@ class Comment implements Renderer
         );
     }
 
-    private function renderComment(OutputInterface $output, IssueComment $comment)
+    public function renderComment(OutputInterface $output, IssueComment $comment)
     {
         return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()})</>" . PHP_EOL
             . $this->tab($this->tab(wordwrap($this->renderTags($output, trim($comment->body())))));

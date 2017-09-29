@@ -3,6 +3,7 @@
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Fixture\Application;
+use Fixture\ApplicationConfiguration;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -14,6 +15,14 @@ class ApplicationContext implements Context
      * @var string
      */
     private $output;
+
+    /**
+     * @Given the application configuration :property is configured with:
+     */
+    public function theApplicationIsConfiguredWith($property, $jsonString)
+    {
+        ApplicationConfiguration::$$property = json_decode($jsonString, true);
+    }
 
     /**
      * @When I run the application with the following input:
