@@ -126,14 +126,17 @@ class HttpClient implements Client
                     );
             }
         } catch (GuzzleClientException $e) {
-            $errorResponse = $this->decodeJsonResponse($e->getResponse());
-            throw new ClientException(
-                join(PHP_EOL, $errorResponse['errorMessages']) . PHP_EOL
-                . 'reasons: ' . PHP_EOL
-                . join(PHP_EOL, $errorResponse['reasons']),
-                0,
-                $e
-            );
+            if ($errorResponse = $this->decodeJsonResponse($e->getResponse())) {
+                throw new ClientException(
+                    join(PHP_EOL, $errorResponse['errors']) . PHP_EOL
+                    . 'reasons: ' . PHP_EOL
+                    . join(PHP_EOL, $errorResponse['reasons']),
+                    0,
+                    $e
+                );
+            } else {
+                throw new ClientException('Something went wrong', 0, $e);
+            }
         }
     }
 

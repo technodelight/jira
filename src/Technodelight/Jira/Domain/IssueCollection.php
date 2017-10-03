@@ -95,4 +95,13 @@ class IssueCollection implements Iterator, Countable
             }
         }
     }
+
+    public function findByIndex($index)
+    {
+        foreach ($this as $idx => $issue) {
+            if ($idx == $index) {
+                return $issue;
+            }
+        }
+    }
 }

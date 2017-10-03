@@ -38,7 +38,7 @@ class AutocompletedInput
         return $readline->readLine($prefix);
     }
 
-    private function getReadline(Issue $issue, IssueCollection $issues, array $words)
+    private function getReadline(Issue $issue, IssueCollection $issues = null, array $words = [])
     {
         $readline = new Readline;
         $readline->setAutocompleter(
@@ -64,16 +64,14 @@ class AutocompletedInput
      * @param array $words
      * @return \Hoa\Console\Readline\Autocompleter\Aggregate
      */
-    private function getAggregateAutocomplete(Issue $issue, IssueCollection $issues, array $words)
+    private function getAggregateAutocomplete(Issue $issue, IssueCollection $issues = null, array $words = [])
     {
         $autocompleters = [
-            new Word($words),
-            new UsernameAutocomplete($issue)
+            $words ? new Word(array_unique($words)) : null,
+            new UsernameAutocomplete($issue),
+            !is_null($issues) ? new IssueAutocomplete($issues) : null
         ];
-        if (!is_null($issues)) {
-            $autocompleters[] = new IssueAutocomplete($issues);
-        }
 
-        return new Aggregate($autocompleters);
+        return new Aggregate(array_filter($autocompleters));
     }
 }

@@ -2,20 +2,23 @@
 
 namespace Technodelight\Jira\Console\Command;
 
-use Hoa\Console\Readline\Autocompleter\Word;
-use Hoa\Console\Readline\Readline;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\GitShell\LogEntry;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Console\Argument\AutocompletedInput;
+use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
+use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
-use Technodelight\Jira\Helper\AutocompleteHelper;
 use Technodelight\Jira\Helper\DateHelper;
-use Technodelight\Simplate;
 
 class LogTimeCommand extends AbstractCommand
 {
@@ -25,9 +28,9 @@ class LogTimeCommand extends AbstractCommand
             ->setName('log')
             ->setDescription('Log work against issue')
             ->addArgument(
-                'issueKeyOrWorklogId',
+                IssueKeyOrWorklogIdResolver::NAME,
                 InputArgument::OPTIONAL,
-                'Issue key, like PROJ-123 OR worklog ID'
+                'Issue key, like PROJ-123 OR a specific worklog\'s ID'
             )
             ->addArgument(
                 'time',
@@ -56,64 +59,46 @@ class LogTimeCommand extends AbstractCommand
                 InputOption::VALUE_REQUIRED,
                 'Move worklog to another date'
             )
+            ->addOption(
+                'interactive',
+                'I',
+                InputOption::VALUE_NONE,
+                'Log time interactively'
+            )
         ;
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->dialogHelper();
+        if ($input->getOption('interactive')) {
+            return;
+        }
 
-        if (!$issueKeyOrWorklogId = $input->getArgument('issueKeyOrWorklogId')) {
-            $issues = $this->retrieveInProgressIssues();
-            $index = $dialog->select(
-                $output,
-                PHP_EOL . '<comment>Choose an issue to log time to:</>',
-                $issues,
-                0
-            );
-            $issueKey = $issues[$index];
-            $input->setArgument('issueKeyOrWorklogId', $issueKey);
+        /** @var \Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId $issueKeyOrWorklogId */
+        $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
+
+        if ($issueKeyOrWorklogId->isEmpty()) {
+            if ($issueKey = IssueKey::fromBranch($this->gitHelper()->currentBranch())) {
+                $input->setArgument('issueKeyOrWorklogId', (string) $issueKey);
+                $issueKeyOrWorklogId = IssueKeyOrWorklogId::fromString((string) $issueKey);
+            } else {
+                $issue = $this->askIssueToChooseFrom($input, $output);
+                $input->setArgument('issueKeyOrWorklogId', $issue->key());
+                $issueKeyOrWorklogId = IssueKeyOrWorklogId::fromString($issue->key());
+            }
         }
 
         if ($input->getOption('delete') || $input->getOption('move')) {
             return;
         }
 
-        if (intval($issueKeyOrWorklogId)) { // updating a worklog
-            /** @var Worklog $worklog */
-            $worklog = $this->worklogHandler()->retrieve($issueKeyOrWorklogId);
-            $issueKey = $worklog->issueKey();
-        } else { // creating a new worklog
-            $worklog = false;
-            $issueKey = $issueKeyOrWorklogId;
-        }
-
         if (!$input->getArgument('time')) {
-            /** @var DateHelper $dateHelper */
-            $dateHelper = $this->getService('technodelight.jira.date_helper');
-
-            $timeSpent = $dialog->askAndValidate(
-                $output,
-                $this->loggedTimeDialogText($worklog, $issueKey),
-                function ($answer) {
-                    if (!preg_match('~^[0-9hmd. ]+$~', $answer)) {
-                        throw new \RuntimeException(
-                            "It's not possible to log '$answer' as time, as it's not matching the allowed format (numbers, dot and h/m/d as hours/minutes/days)."
-                        );
-                    }
-
-                    return $answer;
-                },
-                false,
-                $worklog ? $dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d'
-            );
-
-            $input->setArgument('time', $timeSpent);
+            $input->setArgument('time', $this->askForTimeToLog($input, $output, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog()));
         }
 
         if (!$input->getArgument('comment')) {
-            $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId);
-            $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $worklog, $issueKeyOrWorklogId);
+            $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId->issueKey());
+            $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog());
 
             $input->setArgument('comment', $comment ?: $defaultMessage);
         }
@@ -121,41 +106,41 @@ class LogTimeCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKeyOrWorklogId = $input->getArgument('issueKeyOrWorklogId');
+        if ($input->getOption('interactive')) {
+            return $this->interactiveTimelog($input, $output);
+        }
+
+        return $this->doWorklog($input, $output);
+    }
+
+    private function doWorklog(InputInterface $input, OutputInterface $output)
+    {
+        $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
         $worklogDate = $input->getOption('move');
 
-        if (intval($issueKeyOrWorklogId)) { // updating a worklog
-            /** @var Worklog $worklog */
-            $worklog = $this->worklogHandler()->retrieve($issueKeyOrWorklogId);
-            $issueKey = $worklog->issueKey();
-        } else { // creating a new worklog
-            $worklog = false;
-            $issueKey = $issueKeyOrWorklogId;
-        }
-
-        if ($worklog) {
+        if ($issueKeyOrWorklogId->isWorklogId()) {
             try {
                 if ($input->getOption('delete')) {
-                    $this->deleteWorklog($worklog);
+                    $this->deleteWorklog($issueKeyOrWorklogId->worklog());
                     $output->writeln(
-                        sprintf('<comment>Worklog <info>%d</info> has been deleted successfully</comment>', $worklog->id())
+                        sprintf('<comment>Worklog <info>%d</info> has been deleted successfully</comment>', $issueKeyOrWorklogId->worklog()->id())
                     );
                 } else {
-                    $this->updateWorklog($worklog, $timeSpent, $comment, $worklogDate);
+                    $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
                     $output->writeln(
-                        sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $worklog->id())
+                        sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKeyOrWorklogId->worklog()->id())
                     );
                 }
-            } catch (\UnexpectedValueException $exc) {
-                $output->writeln($exc->getMessage());
+            } catch (\UnexpectedValueException $exception) {
+                $output->writeln($exception->getMessage());
                 return 1;
-            } catch (\Exception $exc) {
+            } catch (\Exception $exception) {
                 $output->writeln(
-                    sprintf('<error>Something bad happened while processing %s</error>', $issueKeyOrWorklogId)
+                    sprintf('<error>Something bad happened while processing %s</error>', $issueKeyOrWorklogId->worklogId())
                 );
-                $output->writeln(sprintf('<error>%s</error>', $exc->getMessage()));
+                $output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
                 return 1;
             }
         } else {
@@ -164,9 +149,41 @@ class LogTimeCommand extends AbstractCommand
                 return 1;
             }
 
-            $worklog = $this->logNewWork($issueKey, $timeSpent, $comment, $this->dateArgument($input));
+            $worklog = $this->logNewWork(
+                $issueKeyOrWorklogId->issueKey(),
+                $timeSpent,
+                $comment ?: 'Worked on issue ' . $issueKeyOrWorklogId->issueKey(),
+                $this->dateArgument($input)
+            );
             $this->showSuccessMessages($output, $worklog);
         }
+
+        return 0;
+    }
+
+    private function interactiveTimelog(InputInterface $input, OutputInterface $output)
+    {
+        $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime);
+        $timeLeft = $this->dateHelper()->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
+        if ($timeLeft <= 0) {
+            $output->writeln(sprintf('<info>You already filled in your timesheets for %s</info>', $this->dateArgument($input)));
+            return 1;
+        }
+
+        while ($timeLeft > 0) {
+            $output->writeln(sprintf('<comment>%s</comment> time left to log.', $this->dateHelper()->secondsToHuman($timeLeft)));
+            $issue = $this->askIssueToChooseFrom($input, $output);
+            $time = $this->askForTimeToLog($input, $output, $issue->key());
+            $defaultMessage = $this->worklogCommentFromGitCommits($issue->key());
+            $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $issue->key());
+            $worklog = $this->logNewWork($issue->key(), $time, $comment ?: 'Worked on issue ' . $issue->key(), $this->dateArgument($input));
+            $this->showSuccessMessages($output, $worklog);
+            $timeLeft = $timeLeft - $worklog->timeSpentSeconds();
+        }
+
+        $output->writeln('<info>You have filled in your timesheets completely</info>');
+
+        $this->renderDasboard($input, $output);
 
         return 0;
     }
@@ -193,7 +210,7 @@ class LogTimeCommand extends AbstractCommand
         }
 
         if (!$worklog->isSame($updatedWorklog)) {
-            $this->worklogHandler()->update($worklog);
+            $this->worklogHandler()->update($updatedWorklog);
             return true;
         }
 
@@ -219,14 +236,20 @@ class LogTimeCommand extends AbstractCommand
         return $worklog;
     }
 
-    private function retrieveInProgressIssues()
+    private function retrieveIssuesToChooseFrom(InputInterface $input)
     {
-        return array_map(
-            function (Issue $issue) {
-                return $issue->issueKey();
-            },
-            iterator_to_array($this->jiraApi()->inprogressIssues())
-        );
+        $refDate = $this->dateArgument($input);
+        $issues = $this->jiraApi()->inprogressIssues();
+        if ($issues->count() == 0) {
+            $issues = $this->jiraApi()->search(
+                Builder::factory()
+                    ->assigneeWas($this->jiraApi()->user()->key())
+                    ->updated(date('Y-m-d', strtotime($refDate . ' -2 week')), date('Y-m-d', strtotime($refDate)))
+                    ->orderAsc('updatedDate')
+                    ->assemble()
+            );
+        }
+        return $issues;
     }
 
     private function retrieveGitCommitMessages($issueKey)
@@ -256,11 +279,11 @@ class LogTimeCommand extends AbstractCommand
     }
 
     /**
-     * @param Worklog $worklog
      * @param string|int $issueKey
+     * @param Worklog $worklog
      * @return string
      */
-    protected function loggedTimeDialogText($worklog, $issueKey)
+    protected function loggedTimeDialogText($issueKey, $worklog = null)
     {
         if ($worklog) {
             $confirm = sprintf(
@@ -276,11 +299,11 @@ class LogTimeCommand extends AbstractCommand
     }
 
     /**
-     * @param Worklog $worklog
-     * @param string|null $defaultMessage
+     * @param string $defaultMessage
+     * @param Worklog|null $worklog
      * @return string
      */
-    private function worklogCommentDialogText($worklog, $defaultMessage)
+    private function worklogCommentDialogText($defaultMessage, $worklog = null)
     {
         $verb = $worklog ? 'left as' : 'set to';
         $comment = $worklog ? $worklog->comment() : $defaultMessage;
@@ -308,10 +331,10 @@ EOL;
         return $defaultMessage;
     }
 
-    private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $worklog, $issueKey)
+    private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $issueKey, $worklog = null)
     {
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
-        $output->writeln($this->worklogCommentDialogText($worklog, $defaultMessage));
+        $output->writeln($this->worklogCommentDialogText($defaultMessage, $worklog));
         $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()]);
         $comment = $input->getValue();
         $output->write('</>');
@@ -326,7 +349,8 @@ EOL;
         );
         $output->writeln('');
         $output->writeln(
-            "Time spent: <comment>{$worklog->issue()->timeSpent()}</comment>, Remaining estimate: <comment>{$worklog->issue()->remainingEstimate()}</comment>"
+            "Time spent: <comment>{$this->dateHelper()->secondsToHuman($worklog->issue()->timeSpent())}</comment>, "
+            . "Remaining estimate: <comment>{$worklog->issue()->remainingEstimate()}</comment>"
         );
         $output->writeln('');
         $output->writeln('Logged work so far:');
@@ -334,11 +358,85 @@ EOL;
     }
 
     /**
-     * @return \Symfony\Component\Console\Helper\DialogHelper
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return \Technodelight\Jira\Domain\Issue
      */
-    private function dialogHelper()
+    private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output)
     {
-        return $this->getService('console.dialog_helper');
+        $issues = $this->retrieveIssuesToChooseFrom($input);
+        if (!$issues->count()) {
+            throw new \UnexpectedValueException(
+                'Sorry, there seems to be no issues to choose from. Please log your time using `log <issueKey>`'
+            );
+        }
+        $issuesToChoose = array_map(
+            function (Issue $issue) {
+                return '<info>' . $issue->issueKey() . '</info> ' . $issue->summary();
+            },
+            iterator_to_array($issues)
+        );
+        $index = $this->questionHelper()->ask($input, $output, new ChoiceQuestion(
+            PHP_EOL . '<comment>Choose an issue to log time to:</>',
+            $issuesToChoose
+        ));
+        return $issues->findByIndex($index);
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param string $issueKey
+     * @param Worklog $worklog
+     * @return string
+     */
+    protected function askForTimeToLog(InputInterface $input, OutputInterface $output, $issueKey, Worklog $worklog = null)
+    {
+        $question = new Question(
+            $this->loggedTimeDialogText($issueKey, $worklog), $worklog ? $this->dateHelper()->secondsToHuman($worklog->timeSpentSeconds()) : '1d');
+        $question->setValidator(function ($answer) {
+            return preg_replace('~[^0-9hmds. ]+~', '', $answer);
+        });
+        return $this->questionHelper()->ask(
+            $input,
+            $output,
+            $question
+        );
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     */
+    private function renderDasboard(InputInterface $input, OutputInterface $output)
+    {
+        $command = new DashboardCommand($this->container);
+        $arrayInput = new ArrayInput([
+            'command' => 'dashboard',
+            'date' => date('Y-m-d', strtotime($this->dateArgument($input)))
+        ]);
+        $command->execute($arrayInput, $output);
+    }
+
+    private function resolveIssueKeyOrWorklogId(InputInterface $input)
+    {
+        return $this->issueKeyOrWorklogIdResolver()->argument($input);
+    }
+
+    /**
+     * @return IssueKeyOrWorklogIdResolver
+     */
+    private function issueKeyOrWorklogIdResolver()
+    {
+        return $this->getService('technodelight.jira.console.argument.issue_key_or_worklog_id_resolver');
+    }
+
+    /**
+     * @return \Symfony\Component\Console\Helper\QuestionHelper
+     */
+    private function questionHelper()
+    {
+        return $this->getHelper('question');
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Connector\Tempo;
 use DateTime;
 use Technodelight\Jira\Api\Tempo\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
+use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
@@ -38,6 +39,26 @@ class WorklogHandler implements WorklogHandlerInterface
             $collection->push(
                 $this->worklogFromTempoArray($worklog)
             );
+        }
+        return $collection;
+    }
+
+    /**
+     * @param Issue $issue
+     * @return WorklogCollection
+     */
+    public function findByIssue(Issue $issue)
+    {
+        $worklogs = array_filter(
+            $this->api->all(),
+            function (array $worklog) use ($issue) {
+                return $worklog['issue']['key'] == $issue->key();
+            }
+        );
+
+        $collection = WorklogCollection::createEmpty();
+        foreach ($worklogs as $worklog) {
+            $collection->push($this->worklogFromTempoArray($worklog));
         }
         return $collection;
     }
@@ -89,7 +110,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function delete(Worklog $worklog)
     {
-        return $this->api->delete($worklog->id());
+        return (bool) $this->api->delete($worklog->id());
     }
 
     /**

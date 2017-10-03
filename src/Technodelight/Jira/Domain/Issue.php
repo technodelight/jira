@@ -212,11 +212,7 @@ class Issue
 
     public function assignWorklogs(WorklogCollection $worklogs)
     {
-        if (!$this->worklogs) {
-            $this->worklogs = $worklogs;
-        } else {
-            throw new \RuntimeException('Issue contains worklogs already, re-assigning worklogs is forbidden');
-        }
+        $this->worklogs = $worklogs;
     }
 
     public function attachments()

@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Connector\Jira;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
+use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
@@ -34,6 +35,15 @@ class WorklogHandler implements WorklogHandlerInterface
             $worklogCollection->merge($issue->worklogs());
         }
         return $worklogCollection;
+    }
+
+    /**
+     * @param Issue $issue
+     * @return WorklogCollection
+     */
+    public function findByIssue(Issue $issue)
+    {
+        return $this->api->retrieveIssueWorklogs($issue->key());
     }
 
     /**
