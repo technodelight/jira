@@ -30,6 +30,9 @@
         <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
             <argument type="service" id="technodelight.jira.config" />
         </service>
+        <service id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver">
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+        </service>
         <!-- argument resolvers -->
     </services>
 

@@ -20,6 +20,11 @@ class Api
         return $this->client->get('/worklogs', ['dateFrom' => $dateFrom, 'dateTo' => $dateTo]);
     }
 
+    public function all()
+    {
+        return $this->client->get('/worklogs');
+    }
+
     public function retrieve($worklogId)
     {
         return $this->client->get('/worklogs/' . $worklogId);
@@ -38,11 +43,26 @@ class Api
 
     public function update($worklogId, $startedAt, $timeSpentSeconds, $comment)
     {
-        return $this->client->put('/worklogs/' . $worklogId, [
+        if (!$existingWorklog = $this->client->get('/worklogs/' . $worklogId)) {
+            throw new \UnexpectedValueException(sprintf('Worklog %d does not exists', $worklogId));
+        }
+
+        $remainingEstimateSeconds = $existingWorklog['issue']['remainingEstimateSeconds'];
+        if ($remainingEstimateSeconds > 0) {
+            $remainingEstimateSeconds-= $timeSpentSeconds;
+        } else {
+            $remainingEstimateSeconds = 0;
+        }
+
+        $putData = [
+            'author' => $existingWorklog['author'],
+            'issue' => ['remainingEstimateSeconds' => $remainingEstimateSeconds, 'key' => $existingWorklog['issue']['key']],
             'dateStarted' => $startedAt,
             'timeSpentSeconds' => $timeSpentSeconds,
             'comment' => $comment
-        ]);
+        ];
+
+        return $this->client->put('/worklogs/' . $worklogId, $putData);
     }
 
     public function delete($worklogId)

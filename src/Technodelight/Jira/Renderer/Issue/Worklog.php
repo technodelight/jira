@@ -51,6 +51,17 @@ class Worklog implements Renderer
         $output->writeln($this->tab($row));
     }
 
+    /**
+     * @param \Technodelight\Jira\Domain\Worklog $worklog
+     * @return string
+     */
+    private function worklogHeader(IssueWorklog $worklog)
+    {
+        return <<<EOF
+<comment>{$worklog->author()->displayName()}</comment>: {$this->human($worklog->timeSpentSeconds())} at {$worklog->date()->format('Y-m-d H:i:s')} <fg=black>({$worklog->id()})</>
+EOF;
+    }
+
     private function human($seconds)
     {
         return $this->secondsToNone->secondsToHuman($seconds);
@@ -59,16 +70,5 @@ class Worklog implements Renderer
     private function tab($string)
     {
         return $this->templateHelper->tabulate($string);
-    }
-
-    /**
-     * @param \Technodelight\Jira\Domain\Worklog $worklog
-     * @return string
-     */
-    private function worklogHeader(IssueWorklog $worklog)
-    {
-return <<<EOF
-<comment>{$worklog->author()->displayName()}</comment>: {$this->human($worklog->timeSpentSeconds())} at {$worklog->date()->format('Y-m-d H:i:s')} <fg=black>({$worklog->id()})</>
-EOF;
     }
 }
