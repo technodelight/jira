@@ -64,7 +64,6 @@ class UsernameAutocomplete implements Autocompleter
 
     private function getMatchesForPrefix(Issue $issue, $prefix)
     {
-        var_dump($prefix);
         return array_filter(
             $this->getUsersFromIssue($issue),
             function($username) use ($prefix) {
