@@ -29,37 +29,18 @@ class SearchCommand extends AbstractCommand
             ->addOption(
                 'dump-config',
                 'd',
-                InputOption::VALUE_OPTIONAL,
-                'Save the query to the project jira.yml file so it could be used as a command'
+                InputOption::VALUE_NONE,
+                'Dump the query as yaml configuration for quicker config updates'
             )
         ;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        $filterName = $input->getOption('dump-config') ?: false;
-
-        if (!$filterName) {
-            /** @var QuestionHelper $helper */
-            $helper = $this->getHelper('question');
-            $question = new Question('<info>Please specify a command name for this search</info> ');
-            $filterName = $helper->ask($input, $output, $question);
-            if (!$filterName) {
-                throw new \InvalidArgumentException("Filter name must not be empty!");
-            }
-            $input->setOption('dump-config', (new NameNormalizer($filterName))->normalize());
-        }
-        if (!is_null($filterName)) {
-            $input->setOption('dump-config', (new NameNormalizer($filterName))->normalize());
-        }
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $command = new IssueFilterCommand($this->container, 'run', $input->getArgument('jql') ?: null);
+        $command = new IssueFilterCommand($this->container, 'run_' . md5(microtime(true)), $input->getArgument('jql') ?: null);
         $command->execute($input, $output);
-        if ($filterName = $input->getOption('dump-config')) {
-            $this->dumpFilterConfiguration($output, $filterName, $input->getArgument('jql'));
+        if ($input->getOption('dump-config')) {
+            $this->dumpFilterConfiguration($output, '<insert your preferred filter command here>', $input->getArgument('jql'));
         }
     }
 
