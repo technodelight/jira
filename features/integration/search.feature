@@ -16,7 +16,7 @@ Feature: I can search using JQL
 
   Scenario: I can save a search
     When I run the application with the following input:
-      | command | search                                                                                 |
-      | jql     | worklogDate >= "2017-02-23" AND worklogDate <= "2017-02-23" AND worklogAuthor = "zgal" |
-      | --save  | test-filter AFdsaDsdfsd                                                                |
+      | command       | search                                                                                 |
+      | jql           | worklogDate >= "2017-02-23" AND worklogDate <= "2017-02-23" AND worklogAuthor = "zgal" |
+      | --dump-config | test-filter AFdsaDsdfsd                                                                |
     Then the exit code should be "0"

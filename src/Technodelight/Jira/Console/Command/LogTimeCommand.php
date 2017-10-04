@@ -206,7 +206,7 @@ class LogTimeCommand extends AbstractCommand
             $updatedWorklog->comment($comment);
         }
         if ($startDay) {
-            $updatedWorklog->date($startDay);
+            $updatedWorklog->date(date('Y-m-d H:i:s', strtotime($startDay)));
         }
 
         if (!$worklog->isSame($updatedWorklog)) {

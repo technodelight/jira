@@ -30,14 +30,14 @@ class CommentCommand extends AbstractCommand
             ->addOption(
                 'delete',
                 'd',
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 'Delete given comment by ID',
                 false
             )
             ->addOption(
                 'update',
                 'u',
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 'Update comment by ID',
                 false
             )
