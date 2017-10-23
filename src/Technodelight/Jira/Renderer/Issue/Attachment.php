@@ -6,9 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Attachment as IssueAttachment;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Attachment implements Renderer
+class Attachment implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper
