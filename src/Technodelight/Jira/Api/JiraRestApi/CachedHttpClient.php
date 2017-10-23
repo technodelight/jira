@@ -98,7 +98,6 @@ class CachedHttpClient implements Client
 
     private function keyify()
     {
-        return implode('', func_get_args());
-        // return md5(implode('', func_get_args()));
+         return md5(implode('', func_get_args()));
     }
 }

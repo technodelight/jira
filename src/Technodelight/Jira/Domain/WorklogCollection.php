@@ -98,6 +98,16 @@ class WorklogCollection implements Iterator, Countable
         return $summary;
     }
 
+    public function issueKeys()
+    {
+        return array_unique(array_map(
+            function(Worklog $worklog) {
+                return $worklog->issueKey();
+            },
+            $this->worklogs
+        ));
+    }
+
     public function filterByLimit($limit)
     {
         $count = 0;

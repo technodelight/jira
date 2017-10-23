@@ -7,11 +7,10 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\GitShell\LogEntry;
+use Technodelight\Jira\Api\GitShell\LogMessage;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Console\Argument\AutocompletedInput;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
@@ -45,7 +44,7 @@ class LogTimeCommand extends AbstractCommand
             ->addArgument(
                 'date',
                 InputArgument::OPTIONAL,
-                'Date to put your log to, like \'yesterday 12:00\' or \'' . date('Y-m-d') . '\''
+                'Date to put your log to, like \'yesterday 12:00\' or \'' . date('Y-m-d') . '\', anything http://php.net/strtotime can parse'
             )
             ->addOption(
                 'delete',
@@ -118,7 +117,7 @@ class LogTimeCommand extends AbstractCommand
         $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $worklogDate = $input->getOption('move');
+        $worklogDate = $this->dateOption($input, 'move');
 
         if ($issueKeyOrWorklogId->isWorklogId()) {
             try {
@@ -230,40 +229,35 @@ class LogTimeCommand extends AbstractCommand
                 'timeSpentSeconds' => $this->dateHelper()->humanToSeconds($timeSpent)
             ], $issueKey)
         );
+        // load issue
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
         $worklog->assignIssue($issue);
-
+        $worklogs = $this->worklogHandler()->findByIssue($issue);
+        $issue->assignWorklogs($worklogs);
         return $worklog;
     }
 
-    private function retrieveIssuesToChooseFrom(InputInterface $input)
-    {
-        $refDate = $this->dateArgument($input);
-        $issues = $this->jiraApi()->inprogressIssues();
-        if ($issues->count() == 0) {
-            $issues = $this->jiraApi()->search(
-                Builder::factory()
-                    ->assigneeWas($this->jiraApi()->user()->key())
-                    ->updated(date('Y-m-d', strtotime($refDate . ' -2 week')), date('Y-m-d', strtotime($refDate)))
-                    ->orderAsc('updatedDate')
-                    ->assemble()
-            );
-        }
-        return $issues;
-    }
-
+    /**
+     * @param string $issueKey
+     * @return LogMessage[]
+     */
     private function retrieveGitCommitMessages($issueKey)
     {
         $messages = array_filter(
             iterator_to_array($this->gitLog()),
             function (LogEntry $entry) use ($issueKey) {
-                return strpos($entry->message(), $issueKey) !== false;
+                return strpos((string) $entry->message(), $issueKey) !== false;
             }
         );
 
         return array_map(
             function (LogEntry $entry) use ($issueKey) {
-                return ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', ', ', $entry->message()));
+                $message = $entry->message();
+                return LogMessage::fromString(
+                    ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', '', $message->getHeader())) . PHP_EOL
+                    . PHP_EOL
+                    . $message->getBody()
+                );
             },
             $messages
         );
@@ -320,15 +314,44 @@ EOL;
 
     private function worklogCommentFromGitCommits($issueKey)
     {
-        $defaultMessage = null;
         if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
-            $messages = [];
-            foreach ($commitMessages as $message) {
-                $messages[] = trim($message, '- ,');
-            }
-            $defaultMessage = join(', ', $messages);
+            return count($commitMessages) == 1
+                ? $this->prepareWorklogCommentFromOneCommitMessage($commitMessages)
+                : $this->prepareWorklogCommentFromMultipleCommitMessages($commitMessages);
         }
-        return $defaultMessage;
+        return "Worked on $issueKey";
+    }
+
+    /**
+     * @param array $commitMessages
+     * @return string
+     */
+    private function prepareWorklogCommentFromOneCommitMessage(array $commitMessages)
+    {
+        $commitMessage = end($commitMessages);
+        $comments = array_map(function ($line) {
+            return trim($line, '- ,' . PHP_EOL);
+        }, explode(PHP_EOL, $commitMessage->getBody() ?: $commitMessage->getHeader()));
+
+        return join(', ', array_filter($comments));
+    }
+
+    /**
+     * @param array $commitMessages
+     * @return string
+     */
+    private function prepareWorklogCommentFromMultipleCommitMessages(array $commitMessages)
+    {
+        $messages = [];
+        foreach ($commitMessages as $message) {
+            // format the message a bit
+            $comments = array_map(function ($line) {
+                return trim($line, '- ,' . PHP_EOL);
+            }, explode(PHP_EOL, $message->getHeader()));
+            $messages[] = join(', ', array_filter($comments));
+        }
+
+        return join(', ', array_filter($messages));
     }
 
     private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $issueKey, $worklog = null)
@@ -350,7 +373,7 @@ EOL;
         $output->writeln('');
         $output->writeln(
             "Time spent: <comment>{$this->dateHelper()->secondsToHuman($worklog->issue()->timeSpent())}</comment>, "
-            . "Remaining estimate: <comment>{$worklog->issue()->remainingEstimate()}</comment>"
+            . "Remaining estimate: <comment>{$this->dateHelper()->secondsToHuman($worklog->issue()->remainingEstimate())}</comment>"
         );
         $output->writeln('');
         $output->writeln('Logged work so far:');
@@ -364,23 +387,7 @@ EOL;
      */
     private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output)
     {
-        $issues = $this->retrieveIssuesToChooseFrom($input);
-        if (!$issues->count()) {
-            throw new \UnexpectedValueException(
-                'Sorry, there seems to be no issues to choose from. Please log your time using `log <issueKey>`'
-            );
-        }
-        $issuesToChoose = array_map(
-            function (Issue $issue) {
-                return '<info>' . $issue->issueKey() . '</info> ' . $issue->summary();
-            },
-            iterator_to_array($issues)
-        );
-        $index = $this->questionHelper()->ask($input, $output, new ChoiceQuestion(
-            PHP_EOL . '<comment>Choose an issue to log time to:</>',
-            $issuesToChoose
-        ));
-        return $issues->findByIndex($index);
+        return $this->issueSelector()->chooseIssue($input, $output);
     }
 
     /**
@@ -429,6 +436,14 @@ EOL;
     private function issueKeyOrWorklogIdResolver()
     {
         return $this->getService('technodelight.jira.console.argument.issue_key_or_worklog_id_resolver');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Argument\InteractiveIssueSelector
+     */
+    private function issueSelector()
+    {
+        return $this->getService('technodelight.jira.console.interactive_issue_selector');
     }
 
     /**

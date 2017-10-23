@@ -8,9 +8,9 @@ use Technodelight\Jira\Api\GitShell\Branch as GitBranch;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Branch implements Renderer
+class Branch implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper

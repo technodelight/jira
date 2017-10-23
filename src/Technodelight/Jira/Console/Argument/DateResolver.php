@@ -20,20 +20,20 @@ class DateResolver implements Resolver
         $this->referenceDate = $referenceDate ?: new DateTime;
     }
 
-    public function argument(InputInterface $input)
+    public function argument(InputInterface $input, $argumentName = self::NAME)
     {
-        if (!$input->hasArgument(self::NAME)) {
+        if (!$input->hasArgument($argumentName)) {
             return null;
         }
-        return $this->resolve($input->getArgument(self::NAME));
+        return $this->resolve($input->getArgument($argumentName));
     }
 
-    public function option(InputInterface $input)
+    public function option(InputInterface $input, $optionName = self::NAME)
     {
-        if (!$input->hasOption(self::NAME)) {
+        if (!$input->hasOption($optionName)) {
             return null;
         }
-        return $this->resolve($input->getOption(self::NAME));
+        return $this->resolve($input->getOption($optionName));
     }
 
     private function resolve($inputValue)

@@ -3,16 +3,15 @@
 
 namespace Technodelight\Jira\Renderer\Issue;
 
-use Hoa\Stream\IStream\Out;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Comment implements Renderer
+class Comment implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper
@@ -54,7 +53,7 @@ class Comment implements Renderer
     public function renderComment(OutputInterface $output, IssueComment $comment)
     {
         return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()})</>" . PHP_EOL
-            . $this->tab($this->tab(wordwrap($this->renderTags($output, trim($comment->body())))));
+            . $this->tab(wordwrap($this->renderTags($output, trim($comment->body()))));
     }
 
     private function renderTags($output, $body)

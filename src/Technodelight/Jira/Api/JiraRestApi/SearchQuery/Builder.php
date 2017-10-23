@@ -13,6 +13,7 @@ class Builder
         'project' => [Condition::OPERATOR_AND, 'project = :project'],
         'status' => [Condition::OPERATOR_AND, 'status = :status'],
         'issueKey' => [Condition::OPERATOR_AND, 'issueKey in (:issueKeys)'],
+        'issueKeyInHistory' => [Condition::OPERATOR_AND, 'issueKey in issueHistory()'],
         'issueType' => [Condition::OPERATOR_AND, 'issueType in (:issueTypes)'],
         'worklogDate' => [Condition::OPERATOR_AND, 'worklogDate >= :from AND worklogDate <= :to'],
         'worklogAuthor' => [Condition::OPERATOR_AND, 'worklogAuthor = :worklogAuthor'],
@@ -68,6 +69,12 @@ class Builder
             throw new \InvalidArgumentException('issueKey cannot be empty!');
         }
         $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join('","', $issueKey)]);
+        return $this;
+    }
+
+    public function issueKeyInHistory()
+    {
+        $this->baseQuery->activateCondition('issueKeyInHistory');
         return $this;
     }
 
@@ -178,6 +185,6 @@ class Builder
         if (preg_match_all('~\s*:([A-Za-z]+)\s*~', $clause, $matches)) {
             return $matches[1];
         }
-        return '';
+        return [];
     }
 }

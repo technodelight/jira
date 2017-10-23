@@ -6,9 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class GitHub implements Renderer
+class GitHub implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper
@@ -94,13 +94,13 @@ class GitHub implements Renderer
 
     private function formatCIStatus(array $status)
     {
-        return sprintf(
-            '    %s  (%s) %s <fg=black>(%s)</>',
+        return $this->tab(sprintf(
+            '%s  (%s) %s <fg=black>(%s)</>',
             $this->getCIStatusMark($status),
             $status['context'],
             $status['description'],
             $status['target_url']
-        );
+        ));
     }
 
     /**

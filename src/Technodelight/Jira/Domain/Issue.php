@@ -261,6 +261,17 @@ class Issue
         return $this->subtasks ?: [];
     }
 
+    /**
+     * Find a custom issue field by it's name
+     *
+     * @param string $fieldName
+     * @return array|false
+     */
+    public function findField($fieldName)
+    {
+        return isset($this->fields[$fieldName]) ? $this->fields[$fieldName] : false;
+    }
+
     public static function fromArray($resultArray)
     {
         $issue = new self;
@@ -270,11 +281,6 @@ class Issue
         $issue->fields = isset($resultArray['fields']) ? $resultArray['fields'] : [];
 
         return $issue;
-    }
-
-    private function findField($name)
-    {
-        return isset($this->fields[$name]) ? $this->fields[$name] : false;
     }
 
     private function __construct()

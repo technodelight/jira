@@ -5,9 +5,9 @@ namespace Technodelight\Jira\Renderer\Issue;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\ColorExtractor;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Header implements Renderer
+class Header implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\ColorExtractor

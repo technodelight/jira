@@ -5,9 +5,9 @@ namespace Technodelight\Jira\Renderer\Issue;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class UserDetails implements Renderer
+class UserDetails implements IssueRenderer
 {
     const UNASSIGNED = 'Unassigned';
     /**
@@ -35,6 +35,7 @@ class UserDetails implements Renderer
         if ($issue->assignee() != self::UNASSIGNED && !empty($issue->assignee())) {
             return sprintf('<comment>assignee:</comment> %s', $issue->assignee());
         }
+        return '';
     }
 
     private function reporter(Issue $issue)
@@ -42,5 +43,7 @@ class UserDetails implements Renderer
         if ($issue->reporter() != self::UNASSIGNED && !empty($issue->reporter())) {
             return sprintf('<comment>reporter:</comment> %s', $issue->reporter());
         }
+
+        return '';
     }
 }

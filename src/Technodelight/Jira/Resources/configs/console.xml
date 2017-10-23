@@ -22,16 +22,29 @@
         </service>
         <!-- config -->
 
+        <!-- magic stuff -->
+        <service id="technodelight.jira.console.interactive_issue_selector" class="Technodelight\Jira\Console\Argument\InteractiveIssueSelector">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="console.question_helper" />
+        </service>
+        <!-- magic stuff -->
+
         <!-- argument resolvers -->
         <service id="technodelight.jira.console.argument.issue_key_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
         </service>
         <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <service id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver">
+            <argument type="service" id="technodelight.jira.config" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
+        </service>
+        <service id="technodelight.jira.console.argument.project_key_resolver" class="Technodelight\Jira\Console\Argument\ProjectKeyResolver">
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.config" />
         </service>
         <!-- argument resolvers -->
     </services>

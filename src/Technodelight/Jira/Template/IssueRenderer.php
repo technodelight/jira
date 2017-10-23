@@ -6,27 +6,31 @@ use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
-use Technodelight\Jira\Renderer\Renderer;
 
 class IssueRenderer
 {
     /**
-     * @var \Technodelight\Jira\Renderer\Renderer
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
      */
     private $fullRenderer;
     /**
-     * @var \Technodelight\Jira\Renderer\Renderer
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
      */
     private $shortRenderer;
     /**
      * @var \Symfony\Component\Console\Helper\FormatterHelper
      */
     private $formatterHelper;
+    /**
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
+     */
+    private $minimalRenderer;
 
-    public function __construct(Renderer $fullRenderer, Renderer $shortRenderer, FormatterHelper $formatterHelper)
+    public function __construct($fullRenderer, $shortRenderer, $minimalRenderer, FormatterHelper $formatterHelper)
     {
         $this->fullRenderer = $fullRenderer;
         $this->shortRenderer = $shortRenderer;
+        $this->minimalRenderer = $minimalRenderer;
         $this->formatterHelper = $formatterHelper;
     }
 
@@ -45,15 +49,32 @@ class IssueRenderer
                 $this->render($output, $issue);
             }
         }
+        $this->renderStats($output, $issues);
     }
 
     public function render(OutputInterface $output, Issue $issue, $full = false)
     {
+        if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
+            $this->minimalRenderer->render($output, $issue);
+            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+        } else
         if ($full) {
             $this->fullRenderer->render($output, $issue);
         } else {
             $this->shortRenderer->render($output, $issue);
         }
+    }
+
+    private function renderStats(OutputInterface $output, IssueCollection $issues)
+    {
+        $output->writeln('');
+        $output->writeln(
+            sprintf(
+                '<info>%d issues found</info>',
+                $issues->count()
+            )
+        );
     }
 
     /**

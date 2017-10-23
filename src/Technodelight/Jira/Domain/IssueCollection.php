@@ -78,6 +78,25 @@ class IssueCollection implements Iterator, Countable
         return $keys;
     }
 
+    public function merge(IssueCollection $collection)
+    {
+        foreach ($collection as $issue) {
+            $this->add($issue);
+        }
+    }
+
+    public function add(Issue $issue)
+    {
+        if (!$this->findById($issue->id())) {
+            $this->issues[] = $issue;
+        }
+    }
+
+    public function sort(callable $callable)
+    {
+        uasort($this->issues, $callable);
+    }
+
     public function find($issueKey)
     {
         foreach ($this as $issue) {

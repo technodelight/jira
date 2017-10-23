@@ -46,6 +46,12 @@ class IssueFilterCommand extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
+        $issues = $jira->search($this->jql, Api::FIELDS_ALL);
+        if (!$issues->count()) {
+            $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
+            $output->writeln(sprintf('<fg=black>%s</fg>', $this->jql));
+            return 0;
+        }
         $renderer->renderIssues($output, $jira->search($this->jql, Api::FIELDS_ALL));
     }
 

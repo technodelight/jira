@@ -23,10 +23,9 @@ class BrowseIssueCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $jira = $this->getService('technodelight.jira.api');
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         try {
-            $issue = $jira->retrieveIssue($issueKey);
+            $issue = $this->jiraApi()->retrieveIssue($issueKey);
             $output->writeln(
                 sprintf('Opening <info>%s</info> in default browser...', $issueKey)
             );
@@ -40,5 +39,13 @@ class BrowseIssueCommand extends AbstractCommand
                 )
             );
         }
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private function jiraApi()
+    {
+        return $this->getService('technodelight.jira.api');
     }
 }

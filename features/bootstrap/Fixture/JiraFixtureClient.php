@@ -70,7 +70,7 @@ class JiraFixtureClient implements Client
         if (!is_readable($filename)) {
             throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url));
         }
-        $data = unserialize(file_get_contents($filename));
+        $data = json_decode(file_get_contents($filename), true);
         if (false === $data) {
             throw new \InvalidArgumentException(sprintf(self::ERROR_CANNOT_UNSERIALIZE_FIXTURE, $url));
         }
@@ -84,6 +84,6 @@ class JiraFixtureClient implements Client
 
     private function keyify($key)
     {
-        return strtr($key, ['/' => '--']);
+        return md5($key);
     }
 }

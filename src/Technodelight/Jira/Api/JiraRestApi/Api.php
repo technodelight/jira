@@ -5,7 +5,10 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
+use Technodelight\Jira\Domain\Project;
+use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\Transition;
+use Technodelight\Jira\Domain\UserPickerResult;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Issue;
@@ -38,13 +41,55 @@ class Api
     }
 
     /**
-     * @param string $projectCode
+     * Returns matching users for a query string in the format of
      *
-     * @return array
+     * ```
+     * {
+     * "users": [
+     *      {
+     *          "name": "fred",
+     *          "key": "fred",
+     *          "html": "fred@example.com",
+     *          "displayName": "Fred Grumble",
+     *          "avatarUrl": "http://www.example.com/jira/secure/useravatar?size=small&ownerId=fred"
+     *      }
+     * ],
+     * "total": 25,
+     * "header": "Showing 20 of 25 matching groups"
+     * }
+     * ```
+     *
+     * @param string $query	string A string used to search username, Name or e-mail address
+     * @param int|null $maxResults the maximum number of users to return (defaults to 50). The maximum allowed value is 1000. If you specify a value that is higher than this number, your search results will be truncated.
+     * @param bool|null $showAvatar boolean
+     * @param string|null $exclude string
+     * @return UserPickerResult[]
      */
-    public function project($projectCode)
+    public function userPicker($query, $maxResults = null, $showAvatar = null, $exclude = null)
     {
-        return $this->client->get('project/' . $projectCode);
+        $params = array_filter([
+            'query' => $query,
+            'maxResults' => $maxResults,
+            'showAvatar' => $showAvatar,
+            'excude' => $exclude,
+        ], function($value) { return !is_null($value); });
+        $response = $this->client->get('user/picker?' . http_build_query($params));
+        return array_map(
+            function (array $user) {
+                return UserPickerResult::fromArray($user);
+            },
+            $response['users']
+        );
+    }
+
+    /**
+     * @param string $projectKey
+     *
+     * @return Project
+     */
+    public function project($projectKey)
+    {
+        return Project::fromArray($this->client->get('project/' . $projectKey));
     }
 
     /**
@@ -53,11 +98,51 @@ class Api
      *
      * @param  int|null $recent
      *
-     * @return array
+     * @return Project[]
      */
     public function projects($numberOfRecent = null)
     {
-        return $this->client->get('project' . ($numberOfRecent ? '?recent=' . (int) $numberOfRecent : ''));
+        return array_map(
+            function(array $project) {
+                return Project::fromArray($project);
+            },
+            $this->client->get('project' . ($numberOfRecent ? '?recent=' . (int) $numberOfRecent : ''))
+        );
+    }
+
+    /**
+     * Return available statuses for a project per issue type
+     *
+     * @param string $projectKey
+     * @return array
+     */
+    public function projectStatuses($projectKey)
+    {
+        $response = $this->client->get(sprintf('project/%s/statuses', $projectKey));
+        foreach (array_keys($response) as $k) {
+            $response[$k]['statuses'] = array_map(
+                function (array $status) {
+                    return Status::fromArray($status);
+                },
+                $response[$k]['statuses']
+            );
+        }
+        return $response;
+    }
+
+    /**
+     * Return all available statuses across the current instance
+     *
+     * @return Status[]
+     */
+    public function status()
+    {
+        return array_map(
+            function (array $status) {
+                return Status::fromArray($status);
+            },
+            $this->client->get('status')
+        );
     }
 
     /**
@@ -260,6 +345,18 @@ class Api
     }
 
     /**
+     * Update issue assignee
+     *
+     * @param string $issueKey
+     * @param string $usernameKey
+     * @return mixed
+     */
+    public function assignIssue($issueKey, $usernameKey)
+    {
+        return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['name' => $usernameKey]);
+    }
+
+    /**
      * @param string $issueKey
      *
      * @return Transition[]
@@ -380,6 +477,49 @@ class Api
     {
         $this->client->delete(sprintf('issue/%s/comment/%s', $issueKey, $commentId));
         return true;
+    }
+
+    /**
+     * @param string $query	Query used to filter issue search results.
+     * @param string $currentJql JQL defining search context. Only issues matching this JQL query are included in the results.
+     * @param string $currentIssueKey Key of the issue defining search context. The issue defining a context is excluded from the search results.
+     * @param string $currentProjectId ID of a project defining search context. Only issues belonging to a given project are suggested.
+     * @param bool $showSubTasks Set to false to exclude subtasks from the suggestions list.
+     * @param bool $showSubTaskParent Set to false to exclude parent issue from the suggestions list if search is performed in the context of a sub-task.
+     * @return IssueCollection
+     * @throws \ErrorException if sections is missing from picker response
+     */
+    public function issuePicker(
+        $query = null,
+        $currentJql = null,
+        $currentIssueKey = null,
+        $currentProjectId = null,
+        $showSubTasks = null,
+        $showSubTaskParent = null
+    )
+    {
+        $params = http_build_query(array_filter([
+            'query' => $query,
+            'currentJQL' => $currentJql,
+            'currentIssueKey' => $currentIssueKey,
+            'currentProjectId' => $currentProjectId,
+            'showSubTasks' => $showSubTasks,
+            'showSubTaskParent' => $showSubTaskParent
+        ], function($value) { return !is_null($value); }));
+        $response = $this->client->get('issue/picker' . ($params ? '?' . $params : ''));
+        if (empty($response['sections'])) {
+            throw new \ErrorException(
+                '"sections" is missing from response'
+            );
+        }
+        $issueKeys = [];
+        foreach ($response['sections'] as $section) {
+            foreach($section['issues'] as $pickedIssue) {
+                $issueKeys[] = $pickedIssue['key'];
+            }
+        }
+
+        return $this->retrieveIssues($issueKeys);
     }
 
     /**

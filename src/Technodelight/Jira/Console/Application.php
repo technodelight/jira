@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Console\Command\AssignCommand;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\CommentCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
@@ -20,10 +21,12 @@ use Technodelight\Jira\Console\Command\IssueTransitionCommand;
 use Technodelight\Jira\Console\Command\ListInstancesCommand;
 use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
 use Technodelight\Jira\Console\Command\LogTimeCommand;
+use Technodelight\Jira\Console\Command\ProjectCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
 use Technodelight\Jira\Console\Command\SelfUpdateCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
+use Technodelight\Jira\Console\Command\StatusesCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -121,9 +124,12 @@ class Application extends BaseApp
         $commands[] = new BrowseIssueCommand($this->container());
         $commands[] = new DownloadAttachmentCommand($this->container());
         $commands[] = new CommentCommand($this->container());
+        $commands[] = new ProjectCommand($this->container());
+        $commands[] = new StatusesCommand($this->container());
+        $commands[] = new AssignCommand($this->container());
 
-        foreach ($this->config()->transitions() as $alias => $transitionName) {
-            $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitionName);
+        foreach ($this->config()->transitions() as $alias => $transitions) {
+            $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitions);
         }
         $filters = $this->config()->filters();
         foreach ($filters as $alias => $jql) {
@@ -147,6 +153,12 @@ class Application extends BaseApp
     {
         $this->container->setParameter('app.jira.debug', $input->getParameterOption(['--debug', '-d']));
         $this->container->setParameter('app.jira.instance', $input->getParameterOption(['--instance', '-i']));
+
+        if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
+            /** @var \ICanBoogie\Storage\Storage $cache */
+            $cache = $this->container()->get('technodelight.jira.api_cache_storage');
+            $cache->clear();
+        }
 
         if (true === $input->hasParameterOption(array('--debug', '-d'))) {
 
@@ -286,6 +298,7 @@ class Application extends BaseApp
         $input = parent::getDefaultInputDefinition();
         $input->addOption(new InputOption('--debug', '-D', InputOption::VALUE_NONE, 'Enable debug mode'));
         $input->addOption(new InputOption('--instance', '-i', InputOption::VALUE_REQUIRED, 'Use an instance from config temporarily'));
+        $input->addOption(new InputOption('--no-cache', '-N', InputOption::VALUE_NONE, 'Cleare app cache before running command'));
         return $input;
     }
 
@@ -301,6 +314,7 @@ class Application extends BaseApp
             'app.container' => $this->container,
             'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
             'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
+            'console.question_helper' => $this->getDefaultHelperSet()->get('question'),
         ];
     }
 

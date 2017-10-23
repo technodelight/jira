@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Connector\Tempo;
 
 use DateTime;
+use ICanBoogie\Storage\Storage;
 use Technodelight\Jira\Api\Tempo\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
 use Technodelight\Jira\Domain\Issue;
@@ -16,10 +17,15 @@ class WorklogHandler implements WorklogHandlerInterface
      * @var Api
      */
     private $api;
+    /**
+     * @var \ICanBoogie\Storage\Storage
+     */
+    private $storage;
 
-    public function __construct(Api $api)
+    public function __construct(Api $api, Storage $storage)
     {
         $this->api = $api;
+        $this->storage = $storage;
     }
 
     /**
@@ -86,6 +92,7 @@ class WorklogHandler implements WorklogHandlerInterface
             $worklog->timeSpentSeconds(),
             $worklog->comment()
         );
+        $this->storage->clear();
         return $this->worklogFromTempoArray($response);
     }
 
@@ -101,6 +108,7 @@ class WorklogHandler implements WorklogHandlerInterface
             $worklog->timeSpentSeconds(),
             $worklog->comment()
         );
+        $this->storage->clear();
         return $this->worklogFromTempoArray($response);
     }
 
@@ -110,6 +118,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function delete(Worklog $worklog)
     {
+        $this->storage->clear();
         return (bool) $this->api->delete($worklog->id());
     }
 

@@ -4,12 +4,12 @@ namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Renderer\Renderer as RendererInterface;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Renderer implements RendererInterface
+class Renderer implements IssueRenderer
 {
     /**
-     * @var RendererInterface[]
+     * @var IssueRenderer[]
      */
     private $renderers;
 

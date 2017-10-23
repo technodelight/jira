@@ -42,7 +42,7 @@ class DownloadAttachmentCommand extends AbstractCommand
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         if (!$input->getArgument('filename')) {
-            $issueKey = $this->issueKeyArgument($input);
+            $issueKey = $this->issueKeyArgument($input, $output);
             $jira = $this->getService('technodelight.jira.api');
             /** @var \Technodelight\Jira\Api\Issue $issue */
             $issue = $jira->retrieveIssue($issueKey);
@@ -73,7 +73,7 @@ class DownloadAttachmentCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         /** @var \Technodelight\Jira\Api\Issue $issue */

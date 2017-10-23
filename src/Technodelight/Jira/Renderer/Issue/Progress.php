@@ -6,10 +6,10 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 use Technodelight\SecondsToNone;
 
-class Progress implements Renderer
+class Progress implements IssueRenderer
 {
     const PROGRESS_FORMAT_IN_PROGRESS = '<info>%message%</> %bar% %percent%%';
     const PROGRESS_FORMAT_DEFAULT = '<info>%message%</>';
@@ -33,7 +33,6 @@ class Progress implements Renderer
 
     public function render(OutputInterface $output, Issue $issue)
     {
-//        $output->write($this->templateHelper->tabulate(''));
         $this->getProgressBar($output, $issue)->display();
         $output->writeln('');
     }

@@ -3,7 +3,7 @@ Feature: Perform issue transitions
   Scenario: An issue transition could not be performed
     Given the application configuration "transitions" is configured with:
     """
-    {"pick":"Picked up by Dev"}
+    {"pick":["Picked up by Dev"]}
     """
     When I run the application with the following input:
       | command  | pick    |
@@ -13,7 +13,7 @@ Feature: Perform issue transitions
   Scenario: An issue transition could be performed
     Given the application configuration "transitions" is configured with:
     """
-    {"resolve":"Resolve Issue"}
+    {"resolve":["Resolve Issue"]}
     """
     And Git command "diff --name-status" returns:
     """

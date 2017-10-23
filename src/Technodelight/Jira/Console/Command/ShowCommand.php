@@ -24,7 +24,7 @@ class ShowCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);

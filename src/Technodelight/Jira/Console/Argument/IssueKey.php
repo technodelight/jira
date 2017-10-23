@@ -13,6 +13,8 @@ class IssueKey
     const GIT_PATTERN = '~^feature/([A-Z]+-[0-9]+)-(.*)~';
 
     private $issueKey;
+    private $issueId;
+    private $projectKey;
 
     private function __construct($issueKey)
     {
@@ -21,6 +23,9 @@ class IssueKey
             throw new MissingIssueKeyException;
         }
         $this->issueKey = $issueKey;
+        list ($projectKey, $issueId) = explode('-', $issueKey, 2);
+        $this->projectKey = $projectKey;
+        $this->issueId = $issueId;
     }
 
     public static function fromString($issueKey)
@@ -35,6 +40,16 @@ class IssueKey
             $issueKey = $matches[1];
         }
         return new IssueKey($issueKey);
+    }
+
+    public function projectKey()
+    {
+        return $this->projectKey;
+    }
+
+    public function issueId()
+    {
+        return $this->issueId;
     }
 
     public function __toString()

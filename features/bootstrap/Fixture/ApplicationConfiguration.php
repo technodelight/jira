@@ -3,6 +3,7 @@
 namespace Fixture;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration as BaseAppConf;
+use Technodelight\Jira\Configuration\TransitionResolver;
 
 class ApplicationConfiguration extends BaseAppConf
 {
@@ -59,7 +60,7 @@ class ApplicationConfiguration extends BaseAppConf
 
     public function transitions()
     {
-        return self::$transitions;
+        return new TransitionResolver(self::$transitions);
     }
 
     public function aliases()

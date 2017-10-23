@@ -19,6 +19,7 @@
         <service id="technodelight.jira.issue_renderer" class="Technodelight\Jira\Template\IssueRenderer">
             <argument type="service" id="technodelight.jira.renderer.issue.full" />
             <argument type="service" id="technodelight.jira.renderer.issue.short" />
+            <argument type="service" id="technodelight.jira.renderer.issue.minimal" />
             <argument type="service" id="console.formatter_helper" />
         </service>
 
@@ -28,6 +29,7 @@
         <service id="technodelight.jira.renderer.issue.header" class="Technodelight\Jira\Renderer\Issue\Header">
             <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
+        <service id="technodelight.jira.renderer.issue.minimal_header" class="Technodelight\Jira\Renderer\Issue\MinimalHeader"/>
         <service id="technodelight.jira.renderer.issue.user_details" class="Technodelight\Jira\Renderer\Issue\UserDetails">
             <argument type="service" id="technodelight.jira.template_helper" />
         </service>
@@ -48,6 +50,10 @@
         <service id="technodelight.jira.renderer.issue.description" alias="technodelight.jira.renderer.issue.description.short" />
         <service id="technodelight.jira.renderer.issue.issue_relations" class="Technodelight\Jira\Renderer\Issue\IssueRelations">
             <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.issue.versions" class="Technodelight\Jira\Renderer\Issue\Versions">
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.gitshell.api"/>
         </service>
         <service id="technodelight.jira.renderer.issue.attachment" class="Technodelight\Jira\Renderer\Issue\Attachment">
             <argument type="service" id="technodelight.jira.template_helper"/>
@@ -70,12 +76,18 @@
             <argument type="service" id="technodelight.jira.color_extractor" />
         </service>
 
+        <service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.issue.minimal_header"/>
+            </argument>
+        </service>
         <service id="technodelight.jira.renderer.issue.short" class="Technodelight\Jira\Renderer\Issue\Renderer">
             <argument type="collection">
                 <argument type="service" id="technodelight.jira.renderer.issue.header" />
                 <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
                 <argument type="service" id="technodelight.jira.renderer.issue.progress" />
                 <argument type="service" id="technodelight.jira.renderer.issue.description" />
+                <argument type="service" id="technodelight.jira.renderer.issue.versions" />
             </argument>
         </service>
         <service id="technodelight.jira.renderer.issue.full" class="Technodelight\Jira\Renderer\Issue\Renderer">
@@ -85,6 +97,7 @@
                 <argument type="service" id="technodelight.jira.renderer.issue.progress" />
                 <argument type="service" id="technodelight.jira.renderer.issue.description.full" />
                 <argument type="service" id="technodelight.jira.renderer.issue.issue_relations" />
+                <argument type="service" id="technodelight.jira.renderer.issue.versions" />
                 <argument type="service" id="technodelight.jira.renderer.issue.attachment" />
                 <argument type="service" id="technodelight.jira.renderer.issue.branch" />
                 <argument type="service" id="technodelight.jira.renderer.issue.git_hub" />
@@ -94,6 +107,30 @@
         </service>
         <service id="technodelight.jira.renderer.issue" alias="technodelight.jira.renderer.issue.short"/>
         <!-- new issue renderer -->
+        <!-- project renderer -->
+        <service id="technodelight.jira.renderer.project.header" class="Technodelight\Jira\Renderer\Project\Header" />
+        <service id="technodelight.jira.renderer.project.description" class="Technodelight\Jira\Renderer\Project\Description">
+            <argument type="service" id="technodelight.jira.template_helper"/>
+        </service>
+        <service id="technodelight.jira.renderer.project.versions" class="Technodelight\Jira\Renderer\Project\Versions">
+            <argument type="service" id="technodelight.jira.template_helper"/>
+        </service>
+
+        <service id="technodelight.jira.renderer.project.short" class="Technodelight\Jira\Renderer\Project\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.project.header" />
+                <argument type="service" id="technodelight.jira.renderer.project.description" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.project.full" class="Technodelight\Jira\Renderer\Project\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.project.header" />
+                <argument type="service" id="technodelight.jira.renderer.project.description" />
+                <argument type="service" id="technodelight.jira.renderer.project.versions" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.project" alias="technodelight.jira.renderer.project.short"/>
+        <!-- project renderer -->
     </services>
 
 </container>
