@@ -7,9 +7,9 @@ use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Description implements Renderer
+class Description implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper
@@ -46,6 +46,8 @@ class Description implements Renderer
             return '<comment>description:</comment>' . PHP_EOL
                 . $this->templateHelper->tabulate(wordwrap($tagConverter->convert($description)));
         }
+
+        return '';
     }
 
     private function shortenIfNotFullRendering($text, $maxLines = 2)

@@ -6,16 +6,15 @@ use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
-use Technodelight\Jira\Renderer\Renderer;
 
 class IssueRenderer
 {
     /**
-     * @var \Technodelight\Jira\Renderer\Renderer
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
      */
     private $fullRenderer;
     /**
-     * @var \Technodelight\Jira\Renderer\Renderer
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
      */
     private $shortRenderer;
     /**
@@ -23,11 +22,11 @@ class IssueRenderer
      */
     private $formatterHelper;
     /**
-     * @var \Technodelight\Jira\Renderer\Renderer
+     * @var \Technodelight\Jira\Renderer\IssueRenderer
      */
     private $minimalRenderer;
 
-    public function __construct(Renderer $fullRenderer, Renderer $shortRenderer, Renderer $minimalRenderer, FormatterHelper $formatterHelper)
+    public function __construct($fullRenderer, $shortRenderer, $minimalRenderer, FormatterHelper $formatterHelper)
     {
         $this->fullRenderer = $fullRenderer;
         $this->shortRenderer = $shortRenderer;

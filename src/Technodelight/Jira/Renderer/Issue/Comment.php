@@ -3,16 +3,15 @@
 
 namespace Technodelight\Jira\Renderer\Issue;
 
-use Hoa\Stream\IStream\Out;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Comment implements Renderer
+class Comment implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper

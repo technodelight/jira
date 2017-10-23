@@ -6,9 +6,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\GitShell\Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
-class Versions implements Renderer
+class Versions implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper

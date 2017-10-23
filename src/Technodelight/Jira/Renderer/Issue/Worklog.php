@@ -7,10 +7,10 @@ use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog as IssueWorklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Renderer\Renderer;
+use Technodelight\Jira\Renderer\IssueRenderer;
 use Technodelight\SecondsToNone;
 
-class Worklog implements Renderer
+class Worklog implements IssueRenderer
 {
     /**
      * @var \Technodelight\Jira\Helper\TemplateHelper
