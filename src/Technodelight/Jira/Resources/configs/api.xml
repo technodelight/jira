@@ -40,6 +40,7 @@
         </service>
         <service id="technodelight.jira.connector.tempo_worklog_handler" class="Technodelight\Jira\Connector\Tempo\WorklogHandler">
             <argument type="service" id="technodelight.jira.api.tempo.api" />
+            <argument type="service" id="technodelight.jira.api_cache_storage" />
         </service>
         <!-- tempo -->
         <!-- git -->

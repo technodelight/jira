@@ -54,7 +54,7 @@ class Comment implements Renderer
     public function renderComment(OutputInterface $output, IssueComment $comment)
     {
         return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()})</>" . PHP_EOL
-            . $this->tab($this->tab(wordwrap($this->renderTags($output, trim($comment->body())))));
+            . $this->tab(wordwrap($this->renderTags($output, trim($comment->body()))));
     }
 
     private function renderTags($output, $body)

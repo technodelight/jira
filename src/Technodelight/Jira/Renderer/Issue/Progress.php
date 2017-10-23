@@ -33,7 +33,6 @@ class Progress implements Renderer
 
     public function render(OutputInterface $output, Issue $issue)
     {
-//        $output->write($this->templateHelper->tabulate(''));
         $this->getProgressBar($output, $issue)->display();
         $output->writeln('');
     }

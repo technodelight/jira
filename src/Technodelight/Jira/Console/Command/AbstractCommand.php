@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -30,18 +31,29 @@ class AbstractCommand extends Command
         parent::__construct($name);
     }
 
-    public function issueKeyOption(InputInterface $input)
+    public function issueKeyOption(InputInterface $input, OutputInterface $output)
     {
-        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->option($input);
+        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->option($input, $output);
     }
 
-    public function issueKeyArgument(InputInterface $input)
+    public function issueKeyArgument(InputInterface $input, OutputInterface $output)
     {
-        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->argument($input);
+        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->argument($input, $output);
     }
 
-    public function dateArgument(InputInterface $input)
+    public function dateOption(InputInterface $input, $argumentName = null)
     {
+        if ($argumentName) {
+            return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->option($input, $argumentName);
+        }
+        return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->option($input);
+    }
+
+    public function dateArgument(InputInterface $input, $argumentName = null)
+    {
+        if ($argumentName) {
+            return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->argument($input, $argumentName);
+        }
         return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->argument($input);
     }
 

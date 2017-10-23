@@ -213,12 +213,12 @@ class DashboardCommand extends AbstractCommand
             // logs
             foreach ($records as $record) {
                 $output->writeln(
-                    sprintf(
-                        '    <comment>%s</comment>: %s <fg=black>(%d)</>',
+                    $this->tab(sprintf(
+                        '<comment>%s</comment>: %s <fg=black>(%d)</>',
                         $record['timeSpent'],
-                        $record['comment'],
+                        trim($record['comment']),
                         $record['worklogId']
-                    )
+                    ))
                 );
             }
         }
@@ -279,5 +279,18 @@ class DashboardCommand extends AbstractCommand
             '<bg=red>%s overtime</>',
             $dateHelper->secondsToHuman(abs($missingTime))
         );
+    }
+
+    private function tab($string)
+    {
+        return $this->templateHelper()->tabulate($string);
+    }
+
+    /**
+     * @return \Technodelight\Jira\Helper\TemplateHelper
+     */
+    private function templateHelper()
+    {
+        return $this->getService('technodelight.jira.template_helper');
     }
 }

@@ -46,7 +46,7 @@ class CommentCommand extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         if ($input->getOption('delete')) {
             return;
         }
@@ -66,7 +66,7 @@ class CommentCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         $comment = $input->getArgument('comment');
         $delete = $input->getOption('delete');
         $update = $input->getOption('update');
@@ -90,8 +90,7 @@ class CommentCommand extends AbstractCommand
     {
         return $this->jiraApi()->search(
             Builder::factory()
-                ->assigneeWas($this->jiraApi()->user()->key())
-                ->updated(date('Y-m-d', strtotime('-1 week')), date('Y-m-d'))
+                ->issueKeyInHistory()
                 ->assemble()
         );
     }

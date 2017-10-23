@@ -10,6 +10,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Domain\Transition;
@@ -19,32 +20,33 @@ use \UnexpectedValueException;
 
 class IssueTransitionCommand extends AbstractCommand
 {
-    const TRANSITION_DESCRIPTION = 'Move issue to %s';
+    const TRANSITION_DESCRIPTION_SINGLE = 'Moves issue to %s';
+    const TRANSITION_DESCRIPTION_MULTIPLE = 'Moves issue to one of: %s (whichever applies first)';
 
-    private $transitionName;
+    private $transitions;
 
     /**
      * Constructor.
      *
      * @throws \UnexpectedValueException When the command name is empty
      */
-    public function __construct(ContainerBuilder $container, $name, $transitionName)
+    public function __construct(ContainerBuilder $container, $name, $transitions)
     {
-        if (empty($transitionName)) {
+        if (empty($transitions)) {
             throw new UnexpectedValueException(
-                sprintf('Undefined transition: "%s"', $name)
+                sprintf('No transitions were defined for command: "%s"', $name)
             );
         }
-        $this->transitionName = $transitionName;
+        $this->transitions = $transitions;
         parent::__construct($container, $name);
     }
 
     protected function configure()
     {
         $this
-            ->setDescription(sprintf(self::TRANSITION_DESCRIPTION, $this->transitionName))
+            ->setDescription($this->getCommandDescription())
             ->addArgument(
-                'issueKey',
+                IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,
                 'Issue key (ie. PROJ-123)'
             )
@@ -71,14 +73,14 @@ class IssueTransitionCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input);
+        $issueKey = $this->issueKeyArgument($input, $output);
         /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
         $jira = $this->getService('technodelight.jira.api');
         $issue = $jira->retrieveIssue($issueKey);
         $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
 
         try {
-            $transition = $this->findTransitionByName($transitions, $this->transitionName);
+            $transition = $this->findTransitionByName($transitions, $this->transitions);
             $this->checkGitChanges($input, $output, $transition);
             $jira->performIssueTransition($issueKey, $transition->id());
             $actionString = '';
@@ -97,7 +99,7 @@ class IssueTransitionCommand extends AbstractCommand
                 sprintf(
                     'Task <info>%s</info> has been successfully moved to <comment>%s</comment>%s',
                     $issueKey,
-                    $this->transitionName,
+                    $transition->name(),
                     $actionString
                 )
             );
@@ -159,20 +161,22 @@ class IssueTransitionCommand extends AbstractCommand
 
     /**
      * @param Transition[] $transitions
-     * @param string $name
+     * @param array $transitionsToSearchFor
      * @return Transition
      * @throws \UnexpectedValueException
      */
-    private function findTransitionByName(array $transitions, $name)
+    private function findTransitionByName(array $transitions, $transitionsToSearchFor)
     {
-        foreach ($transitions as $transition) {
-            if ($transition->name() == $name) {
-                return $transition;
+        foreach ($transitionsToSearchFor as $name) {
+            foreach ($transitions as $transition) {
+                if ($transition->name() == $name) {
+                    return $transition;
+                }
             }
         }
 
         throw new UnexpectedValueException(
-            sprintf('No "%s" transition available for this issue', $name)
+            sprintf('Cannot apply any transition from %s for this issue', join(', ', $transitionsToSearchFor))
         );
     }
 
@@ -265,12 +269,11 @@ class IssueTransitionCommand extends AbstractCommand
      */
     private function listTransitions(Issue $issue, array $transitions)
     {
-        $transitionMap = $this->config()->transitions();
         $list = [];
         foreach ($transitions as $transition) {
             $commandString = '';
-            if ($command = array_search($transition->name(), $transitionMap)) {
-                $commandString = "(jira $command {$issue->key()}";
+            if ($command = $this->config()->transitions()->commandForTransition($transition->name())) {
+                $commandString = "(jira $command {$issue->key()})";
             }
             $list[] = sprintf(
                 '- <info>%s</info> %s' . PHP_EOL . '%s',
@@ -355,6 +358,17 @@ class IssueTransitionCommand extends AbstractCommand
         }
 
         return $selectedBranch;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getCommandDescription()
+    {
+        if (count($this->transitions) == 1) {
+            return sprintf(self::TRANSITION_DESCRIPTION_SINGLE, current($this->transitions));
+        }
+        return sprintf(self::TRANSITION_DESCRIPTION_MULTIPLE, join(', ', $this->transitions));
     }
 
     private function tab($string)

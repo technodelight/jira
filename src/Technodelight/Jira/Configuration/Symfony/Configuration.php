@@ -171,7 +171,9 @@ class Configuration implements ConfigurationInterface
             ->prototype('array')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
-                    ->scalarNode('transition')->cannotBeEmpty()->isRequired()->end()
+                    ->variableNode('transition')->beforeNormalization()->ifString()->then(function ($value) {
+                        return [$value];
+                    })
                 ->end()
             ->end();
 

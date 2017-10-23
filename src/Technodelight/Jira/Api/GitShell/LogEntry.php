@@ -28,7 +28,7 @@ class LogEntry
 
     public function message()
     {
-        return $this->message;
+        return LogMessage::fromString($this->message);
     }
 
     public function authorName()

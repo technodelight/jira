@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Helper;
 
 class ColorExtractor
 {
-    private $colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+    private $colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'grey'];
 
     public function extractColor($colorName)
     {

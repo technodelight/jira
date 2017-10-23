@@ -29,7 +29,8 @@ class Worklog implements Renderer
 
     public function render(OutputInterface $output, Issue $issue)
     {
-        if ($worklogs = $issue->worklogs()) {
+        $worklogs = $issue->worklogs();
+        if ($worklogs->count()) {
             $output->writeln($this->tab('<comment>worklogs:</comment>'));
             $this->renderWorklogs($output, $worklogs);
         }
@@ -44,11 +45,11 @@ class Worklog implements Renderer
 
     public function renderWorklog(OutputInterface $output, IssueWorklog $worklog)
     {
-        $row = [$this->tab($this->worklogHeader($worklog))];
+        $row = [$this->worklogHeader($worklog)];
         if ($comment = $worklog->comment()) {
-            $row[] = $this->tab($this->tab($comment));
+            $row[] = $this->tab(trim($comment));
         }
-        $output->writeln($this->tab($row));
+        $output->writeln($this->tab($this->tab($row)));
     }
 
     /**

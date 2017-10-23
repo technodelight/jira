@@ -112,7 +112,7 @@ class ApplicationConfiguration
 
     public function transitions()
     {
-        return $this->transitions;
+        return new TransitionResolver($this->transitions);
     }
 
     public function aliases()

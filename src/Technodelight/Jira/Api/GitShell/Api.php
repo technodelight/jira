@@ -81,6 +81,10 @@ class Api
         return $this->remotes;
     }
 
+    /**
+     * @param string $pattern optional
+     * @return Branch[]
+     */
     public function branches($pattern = '')
     {
         $remotes = $this->remotes(true);

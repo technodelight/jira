@@ -5,6 +5,7 @@ namespace spec\Technodelight\Jira\Console\Argument;
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\Jira\Connector\WorklogHandler;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Domain\Worklog;
@@ -22,9 +23,9 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
         'timeSpentSeconds' => 12345,
     ];
 
-    function let(WorklogHandler $worklogHandler)
+    function let(ApplicationConfiguration $config, WorklogHandler $worklogHandler)
     {
-        $this->beConstructedWith($worklogHandler);
+        $this->beConstructedWith($config, $worklogHandler);
     }
 
     function it_resolves_an_input_argument(InputInterface $input)
@@ -37,8 +38,6 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
 
     function it_resolves_a_worklog_id_and_retrieves_issue_key(WorklogHandler $worklogHandler, InputInterface $input)
     {
-        $this->beConstructedWith($worklogHandler);
-
         $input->hasArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(true);
         $input->getArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(self::WORKLOG_ID);
 

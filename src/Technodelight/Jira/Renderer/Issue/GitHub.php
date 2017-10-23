@@ -94,13 +94,13 @@ class GitHub implements Renderer
 
     private function formatCIStatus(array $status)
     {
-        return sprintf(
-            '    %s  (%s) %s <fg=black>(%s)</>',
+        return $this->tab(sprintf(
+            '%s  (%s) %s <fg=black>(%s)</>',
             $this->getCIStatusMark($status),
             $status['context'],
             $status['description'],
             $status['target_url']
-        );
+        ));
     }
 
     /**
