@@ -74,11 +74,10 @@ class DownloadAttachmentCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input, $output);
-        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
-        $jira = $this->getService('technodelight.jira.api');
-        /** @var \Technodelight\Jira\Api\Issue $issue */
-        $issue = $jira->retrieveIssue($issueKey);
         $filename = $input->getArgument('filename');
+
+        /** @var \Technodelight\Jira\Domain\Issue $issue */
+        $issue = $this->jiraApi()->retrieveIssue($issueKey);
         /** @var \Symfony\Component\Console\Helper\FormatterHelper $formatter */
         $formatter = $this->getHelper('formatter');
 
@@ -87,7 +86,7 @@ class DownloadAttachmentCommand extends AbstractCommand
             $attachmentUrl = $this->findAttachment($issue, $filename);
             $targetFilePath = $input->getArgument('targetPath') . DIRECTORY_SEPARATOR . $filename;
             if ($this->confirmDownload($input, $output, $targetFilePath)) {
-                $jira->download($attachmentUrl, $targetFilePath);
+                $this->jiraApi()->download($attachmentUrl, $targetFilePath);
                 $output->writeln(
                     $formatter->formatBlock(
                         sprintf(self::SUCCESS_MESSAGE, $filename, $targetFilePath),
@@ -143,5 +142,13 @@ class DownloadAttachmentCommand extends AbstractCommand
         }
 
         return true;
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private function jiraApi()
+    {
+        return $this->getService('technodelight.jira.api');
     }
 }

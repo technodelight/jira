@@ -25,9 +25,32 @@
         <!-- magic stuff -->
         <service id="technodelight.jira.console.interactive_issue_selector" class="Technodelight\Jira\Console\Argument\InteractiveIssueSelector">
             <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <argument type="service" id="console.question_helper" />
         </service>
         <!-- magic stuff -->
+
+        <!-- stats collector -->
+        <service public="false" id="technodelight.jira.console.issue_stats.storage" class="ICanBoogie\Storage\Storage">
+            <factory class="Technodelight\Jira\Console\IssueStats\StorageBuilder" method="build" />
+        </service>
+        <service public="false" id="technodelight.jira.console.issue_stats.serializer" class="Technodelight\Jira\Console\IssueStats\Serializer" />
+        <service public="false"
+                 id="technodelight.jira.console.issue_stats.stat_collector_api_client"
+                 class="Technodelight\Jira\Console\IssueStats\StatCollectorApiClient">
+            <argument type="service" id="technodelight.jira.cached_api_client" />
+            <argument type="service" id="technodelight.jira.console.issue_stats" />
+        </service>
+        <service id="technodelight.jira.console.issue_stats.stat_collector" class="Technodelight\Jira\Console\IssueStats\StatCollector">
+            <argument type="service" id="technodelight.jira.console.issue_stats.storage" />
+            <argument type="service" id="technodelight.jira.console.issue_stats.serializer" />
+        </service>
+        <service id="technodelight.jira.console.issue_stats" class="Technodelight\Jira\Console\IssueStats\IssueStats">
+            <argument type="service" id="technodelight.jira.console.issue_stats.storage" />
+            <argument type="service" id="technodelight.jira.console.issue_stats.serializer" />
+        </service>
+        <!-- stats collector -->
 
         <!-- argument resolvers -->
         <service id="technodelight.jira.console.argument.issue_key_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyResolver">

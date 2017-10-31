@@ -11,6 +11,10 @@ class NativeShell implements Shell
         $this->executable = $executable;
     }
 
+    /**
+     * @param \Technodelight\Jira\Api\Shell\Command $command
+     * @return array
+     */
     public function exec(Command $command)
     {
         if ($this->executable) {

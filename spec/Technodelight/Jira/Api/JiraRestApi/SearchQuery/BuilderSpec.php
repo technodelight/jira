@@ -52,7 +52,7 @@ class BuilderSpec extends ObjectBehavior
         );
         $baseQuery->activateCondition('project', ['project' => 'test'])->shouldBeCalled();
         $this->project('test');
-        $baseQuery->activateCondition('status', ['status' => 'Open'])->shouldBeCalled();
+        $baseQuery->activateCondition('status', ['status' => '"Open"'])->shouldBeCalled();
         $this->status('Open');
 
         $this->assemble()->shouldReturn('project = "test" AND status = "Open"');

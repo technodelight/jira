@@ -11,7 +11,7 @@ class Builder
 
     private $defaultConditions = [
         'project' => [Condition::OPERATOR_AND, 'project = :project'],
-        'status' => [Condition::OPERATOR_AND, 'status = :status'],
+        'status' => [Condition::OPERATOR_AND, 'status in (:status)'],
         'issueKey' => [Condition::OPERATOR_AND, 'issueKey in (:issueKeys)'],
         'issueKeyInHistory' => [Condition::OPERATOR_AND, 'issueKey in issueHistory()'],
         'issueType' => [Condition::OPERATOR_AND, 'issueType in (:issueTypes)'],
@@ -89,7 +89,10 @@ class Builder
 
     public function status($status)
     {
-        $this->baseQuery->activateCondition('status', ['status' => $status]);
+        if (!is_array($status)) {
+            $status = [$status];
+        }
+        $this->baseQuery->activateCondition('status', ['status' => '"'.join('","', $status).'"']);
         return $this;
     }
 

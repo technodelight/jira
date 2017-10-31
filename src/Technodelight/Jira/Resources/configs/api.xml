@@ -17,13 +17,15 @@
         <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\JiraRestApi\HttpClient">
             <argument type="service" id="technodelight.jira.api_client.config_provider" />
         </service>
-        <service public="false" id="technodelight.jira.cached_api_client" class="Technodelight\Jira\Api\JiraRestApi\CachedHttpClient">
+        <service public="false"
+                 id="technodelight.jira.cached_api_client"
+                 class="Technodelight\Jira\Api\JiraRestApi\CachedHttpClient">
             <argument type="service" id="technodelight.jira.api_client" />
             <argument type="service" id="technodelight.jira.api_cache_storage" />
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
-            <argument type="service" id="technodelight.jira.cached_api_client" />
+            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector_api_client" />
         </service>
         <service id="technodelight.jira.connector.jira_worklog_handler" class="Technodelight\Jira\Connector\Jira\WorklogHandler">
             <argument type="service" id="technodelight.jira.api" />

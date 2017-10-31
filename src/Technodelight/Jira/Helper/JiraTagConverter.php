@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Helper\JiraTagConverter\TableParser;
 
 class JiraTagConverter
 {
@@ -29,6 +30,7 @@ class JiraTagConverter
             $this->convertBoldUnderscore($body);
             $this->convertMentions($body);
             $this->convertPanel($body);
+            $this->convertTables($body);
             $formattedBody = $this->mergeDefinitions($body);
             $this->tryFormatter($formattedBody);
             return $formattedBody;
@@ -86,7 +88,7 @@ class JiraTagConverter
     }
 
     /**
-     * @param $body
+     * @param string $body
      * @param string $replaceChar
      * @param string $wrapper
      * @return string
@@ -138,6 +140,19 @@ class JiraTagConverter
     {
         // remove panels
         $body = str_replace('{panel}', '', $body);
+    }
+
+    private function convertTables(&$body)
+    {
+        $parser = new TableParser($body);
+        $tables = $parser->parse();
+        foreach ($tables as $table) {
+            $originalTable = $table->source();
+            $startPos = strpos($body, $originalTable);
+            $body = substr($body, 0, $startPos)
+                . (string) $table
+                . substr($body, $startPos + strlen($originalTable));
+        }
     }
 
     /**

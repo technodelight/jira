@@ -48,4 +48,8 @@ class Status
     {
         return $this->statusCategoryColor;
     }
+    public function __toString()
+    {
+        return $this->name();
+    }
 }

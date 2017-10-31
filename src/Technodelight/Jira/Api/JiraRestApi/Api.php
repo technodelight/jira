@@ -291,25 +291,6 @@ class Api
     }
 
     /**
-     * @param string $projectCode
-     * @param bool $all shows other's progress
-     *
-     * @return IssueCollection
-     */
-    public function inprogressIssues($projectCode = null, $all = false)
-    {
-        $query = SearchQueryBuilder::factory()
-            ->status('In Progress');
-        if (!$all) {
-            $query->assignee(self::CURRENT_USER);
-        } else {
-            $query->project($projectCode);
-        }
-
-        return $this->search($query->assemble(), self::FIELDS_ALL);
-    }
-
-    /**
      * @param string $issueKey
      *
      * @return Issue

@@ -126,6 +126,15 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('instances')->defaultNull()->example('secondary')->end()
                     ->end()
                 ->end()
+                ->arrayNode('iterm')
+                    ->info('iTerm2 integration (OS X Only)')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('renderImages')->defaultTrue()->treatNullLike(true)->end()
+                        ->scalarNode('thumbnailWidth')->defaultValue(300)->treatNullLike(300)->end()
+                        ->scalarNode('imageCacheTtl')->defaultValue(5)->treatNullLike(5)->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $rootNode;

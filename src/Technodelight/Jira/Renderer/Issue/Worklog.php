@@ -38,8 +38,18 @@ class Worklog implements IssueRenderer
 
     public function renderWorklogs(OutputInterface $output, WorklogCollection $worklogs)
     {
+        if ($output->getVerbosity() > OutputInterface::VERBOSITY_NORMAL) {
+            $count = $worklogs->count();
+        } else {
+            $count = 20;
+            $worklogs->orderByCreatedDateDesc();
+        }
+        $displayed = 0;
         foreach ($worklogs as $worklog) {
-            $this->renderWorklog($output, $worklog);
+            if ($displayed < $count) {
+                $this->renderWorklog($output, $worklog);
+                $displayed++;
+            }
         }
     }
 
