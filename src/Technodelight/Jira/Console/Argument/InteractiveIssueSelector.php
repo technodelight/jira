@@ -7,8 +7,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
+use Technodelight\Jira\Api\GitShell\Api as Git;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Console\IssueStats\StatCollector;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Project;
@@ -20,13 +22,23 @@ class InteractiveIssueSelector
      */
     private $jira;
     /**
+     * @var \Technodelight\Jira\Api\GitShell\Api
+     */
+    private $git;
+    /**
+     * @var \Technodelight\Jira\Console\IssueStats\StatCollector
+     */
+    private $statCollector;
+    /**
      * @var \Symfony\Component\Console\Helper\QuestionHelper
      */
     private $questionHelper;
 
-    public function __construct(Api $jira, QuestionHelper $questionHelper)
+    public function __construct(Api $jira, Git $git, StatCollector $statCollector, QuestionHelper $questionHelper)
     {
         $this->jira = $jira;
+        $this->git = $git;
+        $this->statCollector = $statCollector;
         $this->questionHelper = $questionHelper;
     }
 
@@ -55,7 +67,7 @@ class InteractiveIssueSelector
     private function ask(InputInterface $input, OutputInterface $output, array $options)
     {
         $answer = $this->questionHelper->ask($input, $output, new ChoiceQuestion(
-            PHP_EOL . '<comment>Choose an issue to log time to (or press Ctrl+C to quit):</>',
+            PHP_EOL . '<comment>Choose an issue (or press Ctrl+C to quit):</>',
             $options
         ));
         return array_search($answer, $options);
@@ -95,11 +107,12 @@ class InteractiveIssueSelector
      */
     private function retrieveIssuesToChooseFrom()
     {
-        return $this->jira->search(
-            SearchQueryBuilder::factory()
-                ->issueKeyInHistory()
-                ->assemble()
-        );
+        $issuesToChooseFrom = IssueCollection::createEmpty();
+        $this->collectIssuesFromHistory($issuesToChooseFrom);
+        $this->collectIssuesFromStat($issuesToChooseFrom);
+        $this->collectIssuesFromLocalBranches($issuesToChooseFrom);
+
+        return $issuesToChooseFrom;
     }
 
     /**
@@ -127,6 +140,80 @@ class InteractiveIssueSelector
     private function shouldEnterManually(array $options, $index)
     {
         return $index == count($options) - 1;
+    }
+
+    /**
+     * @param IssueCollection $issuesToChooseFrom
+     */
+    private function collectIssuesFromHistory(IssueCollection $issuesToChooseFrom)
+    {
+        $issueHistory = $this->jira->search(
+            SearchQueryBuilder::factory()
+                              ->issueKeyInHistory()
+                              ->orderDesc('created')
+                              ->assemble()
+        );
+        $issueHistory->limit(10);
+        $issuesToChooseFrom->merge($issueHistory);
+    }
+
+    /**
+     * @param $issuesToChooseFrom
+     * @return array
+     */
+    private function collectIssuesFromStat(IssueCollection $issuesToChooseFrom)
+    {
+        if ($usedIssues = $this->statCollector->all()) {
+            $usedIssues->orderByMostRecent();
+            $usedIssues->orderByTotal();
+            $issueKeys = [];
+            foreach ($usedIssues->issueKeys(10) as $issueKey) {
+                if (!$issuesToChooseFrom->has($issueKey)) {
+                    $issueKeys[] = $issueKey;
+                }
+            }
+
+            if (!empty($issueKeys)) {
+                $issueStats = $this->jira->search(
+                    SearchQueryBuilder::factory()
+                                      ->issueKey($usedIssues->issueKeys(10))
+                                      ->assemble()
+                );
+                $issuesToChooseFrom->merge($issueStats);
+            }
+        }
+    }
+
+    /**
+     * @param IssueCollection $issuesToChooseFrom
+     */
+    private function collectIssuesFromLocalBranches(IssueCollection $issuesToChooseFrom)
+    {
+        if ($localBranches = $this->git->branches('feature/', false)) {
+            $issueKeys = [];
+            foreach ($localBranches as $branch) {
+                if ($branch->isRemote()) {
+                    continue;
+                }
+
+                try {
+                    $issueKey = (string) IssueKey::fromBranch($branch);
+                    if (!$issuesToChooseFrom->has($issueKey)) {
+                        $issueKeys[] = $issueKey;
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+            if (!empty($issueKeys)) {
+                $issuesFromBranch = $this->jira->search(
+                    SearchQueryBuilder::factory()
+                                      ->issueKey($issueKeys)
+                                      ->assemble()
+                );
+                $issuesToChooseFrom->merge($issuesFromBranch);
+            }
+        }
     }
 
 }

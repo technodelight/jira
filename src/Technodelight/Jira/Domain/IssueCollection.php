@@ -19,6 +19,11 @@ class IssueCollection implements Iterator, Countable
         }
     }
 
+    public static function createEmpty()
+    {
+        return new self(0, 0, 0, []);
+    }
+
     public static function fromSearchArray(array $resultArray)
     {
         return new self(
@@ -85,11 +90,22 @@ class IssueCollection implements Iterator, Countable
         }
     }
 
+    public function limit($limit)
+    {
+        $this->issues = array_splice($this->issues, 0, $limit);
+    }
+
     public function add(Issue $issue)
     {
         if (!$this->findById($issue->id())) {
             $this->issues[] = $issue;
+            $this->total+= 1;
         }
+    }
+
+    public function has($issueKey)
+    {
+        return $this->find($issueKey) instanceof Issue;
     }
 
     public function sort(callable $callable)

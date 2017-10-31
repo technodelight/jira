@@ -25,6 +25,14 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.github.api" />
         </service>
+
+        <service id="technodelight.jira.checkout_branch" class="Technodelight\Jira\Helper\CheckoutBranch">
+            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator" />
+            <argument type="service" id="console.question_helper" />
+        </service>
+
         <service id="technodelight.jira.pluralize_helper" class="Technodelight\Jira\Helper\PluralizeHelper" />
 
         <service id="technodelight.jira.shell_command_helper" class="Technodelight\Jira\Helper\ShellCommandHelper" />
@@ -34,6 +42,19 @@
         <service id="technodelight.jira.git_branchname_generator" class="Technodelight\Jira\Helper\GitBranchnameGenerator" />
 
         <service id="technodelight.jira.color_extractor" class="Technodelight\Jira\Helper\ColorExtractor" />
+
+        <service id="technodelight.jira.word_wrap" class="Technodelight\Jira\Helper\Wordwrap">
+            <argument type="service" id="technodelight.jira.app"/>
+        </service>
+
+        <service id="technodelight.jira.image_provider" class="Technodelight\Jira\Helper\ImageProvider">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
+        <service id="technodelight.jira.image_renderer" class="Technodelight\Jira\Helper\Image">
+            <argument type="service" id="technodelight.jira.image_provider" />
+            <argument type="service" id="technodelight.jira.config" />
+        </service>
 
     </services>
 

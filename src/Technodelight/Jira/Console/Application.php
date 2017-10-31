@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\AssignCommand;
+use Technodelight\Jira\Console\Command\BranchCommand;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\CommentCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
@@ -24,8 +25,10 @@ use Technodelight\Jira\Console\Command\LogTimeCommand;
 use Technodelight\Jira\Console\Command\ProjectCommand;
 use Technodelight\Jira\Console\Command\SearchCommand;
 use Technodelight\Jira\Console\Command\SelfUpdateCommand;
+use Technodelight\Jira\Console\Command\ShellCommand;
 use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
+use Technodelight\Jira\Console\Command\StatsCommand;
 use Technodelight\Jira\Console\Command\StatusesCommand;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
@@ -127,6 +130,9 @@ class Application extends BaseApp
         $commands[] = new ProjectCommand($this->container());
         $commands[] = new StatusesCommand($this->container());
         $commands[] = new AssignCommand($this->container());
+        $commands[] = new ShellCommand($this->container());
+        $commands[] = new BranchCommand($this->container());
+        $commands[] = new StatsCommand($this->container());
 
         foreach ($this->config()->transitions() as $alias => $transitions) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitions);

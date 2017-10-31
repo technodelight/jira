@@ -3,6 +3,9 @@
 namespace spec\Technodelight\Jira\Helper;
 
 use PhpSpec\ObjectBehavior;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\NullOutput;
 use Technodelight\Jira\Helper\ColorExtractor;
 
@@ -43,6 +46,35 @@ class JiraTagConverterSpec extends ObjectBehavior
     function it_strips_panels()
     {
         $this->convert('{panel}something{panel}')->shouldReturn('something');
+    }
+
+    function it_converts_tables()
+    {
+        $table = <<<EOF
+||Attribute Name ||Attribute PIM ID||New values||Values to be removed||
+|Chemistry required|724|Processless| |
+|Test|234| | |
+
+test
+||Attribute Name ||Attribute PIM ID||New values||Values to be removed||
+|Chemistry required|724|Processless| |
+|Test|234| | |
+EOF;
+
+        $bufferedOutput = new BufferedOutput();
+        $tableRenderer = new Table($bufferedOutput);
+        $tableRenderer
+            ->setRows([
+                ['Attribute Name', 'Attribute PIM ID', 'New values', 'Values to be removed'],
+                new TableSeparator(),
+                ['Chemistry required', '724', 'Processless', ' '],
+                new TableSeparator(),
+                ['Test', '234', ' ', ' ']
+            ]);
+        $tableRenderer->render();
+        $renderedTable = $bufferedOutput->fetch();
+
+        $this->convert($table)->shouldReturn($renderedTable.PHP_EOL.'test'.PHP_EOL.trim($renderedTable));
     }
 
     function it_merges_definitions()

@@ -108,6 +108,18 @@ class WorklogCollection implements Iterator, Countable
         ));
     }
 
+    public function orderByCreatedDateDesc()
+    {
+        uasort($this->worklogs, function (Worklog $a, Worklog $b) {
+            if ($a->date() == $b->date()) {
+                return 0;
+            }
+            return $a->date() > $b->date() ? -1 : 1;
+        });
+
+        return $this;
+    }
+
     public function filterByLimit($limit)
     {
         $count = 0;

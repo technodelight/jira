@@ -182,7 +182,7 @@ class LogTimeCommand extends AbstractCommand
 
         $output->writeln('<info>You have filled in your timesheets completely</info>');
 
-        $this->renderDasboard($input, $output);
+        $this->renderDashboard($input, $output);
 
         return 0;
     }
@@ -415,14 +415,13 @@ EOL;
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      */
-    private function renderDasboard(InputInterface $input, OutputInterface $output)
+    private function renderDashboard(InputInterface $input, OutputInterface $output)
     {
-        $command = new DashboardCommand($this->container);
         $arrayInput = new ArrayInput([
-            'command' => 'dashboard',
-            'date' => date('Y-m-d', strtotime($this->dateArgument($input)))
+            'date' => date('Y-m-d', strtotime($this->dateArgument($input))),
         ]);
-        $command->execute($arrayInput, $output);
+        $dashboard = $this->getApplication()->get('dashboard');
+        $dashboard->execute($arrayInput, $output);
     }
 
     private function resolveIssueKeyOrWorklogId(InputInterface $input)

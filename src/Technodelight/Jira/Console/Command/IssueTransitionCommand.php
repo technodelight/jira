@@ -6,7 +6,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\GitShell\Branch;
@@ -15,7 +14,6 @@ use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Domain\Transition;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Simplate;
 use \UnexpectedValueException;
 
 class IssueTransitionCommand extends AbstractCommand
@@ -74,24 +72,22 @@ class IssueTransitionCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input, $output);
-        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
-        $jira = $this->getService('technodelight.jira.api');
-        $issue = $jira->retrieveIssue($issueKey);
-        $transitions = $jira->retrievePossibleTransitionsForIssue($issueKey);
+        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        $transitions = $this->jiraApi()->retrievePossibleTransitionsForIssue($issueKey);
 
         try {
             $transition = $this->findTransitionByName($transitions, $this->transitions);
             $this->checkGitChanges($input, $output, $transition);
-            $jira->performIssueTransition($issueKey, $transition->id());
+            $this->jiraApi()->performIssueTransition($issueKey, $transition->id());
             $actionString = '';
             if ($input->getOption('assign')) {
-                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $jira->user()->name()]]]);
-                $issue = $jira->retrieveIssue($issueKey);
+                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $this->jiraApi()->user()->name()]]]);
+                $issue = $this->jiraApi()->retrieveIssue($issueKey);
                 $actionString = ' and has been assigned to you';
             } else
             if ($input->getOption('unassign')) {
-                $jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
-                $issue = $jira->retrieveIssue($issueKey);
+                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
+                $issue = $this->jiraApi()->retrieveIssue($issueKey);
                 $actionString = ' and has been unassigned';
             }
 
@@ -147,15 +143,8 @@ class IssueTransitionCommand extends AbstractCommand
      */
     private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
     {
-        $git = $this->gitShell();
         if ($input->getOption('branch')) {
-            if (!$this->gitBranchesForIssue($issue)) {
-                $branchName = $this->getProperBranchName($input, $output, $issue);
-                $output->writeln('Checking out to new branch: ' . $branchName);
-                $git->createBranch($branchName);
-            } else {
-                $this->chooseBranch($input, $output, $issue);
-            }
+            $this->checkoutBranch()->checkoutToBranch($input, $output, $issue);
         }
     }
 
@@ -195,11 +184,6 @@ class IssueTransitionCommand extends AbstractCommand
         return $this->branchnameGenerator()->fromIssue($issue);
     }
 
-    private function generateBranchNameWithAutocomplete(Issue $issue)
-    {
-        return $this->branchnameGenerator()->fromIssueWithAutocomplete($issue);
-    }
-
     private function retrieveGitBranches(Issue $issue)
     {
         $branches = $this->gitBranchesForIssue($issue);
@@ -210,56 +194,6 @@ class IssueTransitionCommand extends AbstractCommand
         }
 
         return implode(PHP_EOL, $branches);
-    }
-
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     * @return void
-     * @throws \LogicException if can't select branch
-     */
-    private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
-    {
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-        $helper = $this->questionHelper();
-        $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
-        $question = new ChoiceQuestion(
-            'Select branch to checkout to',
-            array_merge($this->gitBranchesForIssue($issue), [$this->generateBranchName($issue) . ' (generated)']),
-            0
-        );
-        $question->setErrorMessage('Branch %s is invalid.');
-
-        $branchName = $helper->ask($input, $output, $question);
-
-        $selectedBranch = '';
-        /** @var GitShell $git */
-        $git = $this->gitShell();
-        $branches = $git->branches($issue->issueKey());
-        $new = false;
-        foreach ($branches as $branch) {
-            /** @var Branch $branch */
-            if ($branchName == (string) $branch) {
-                $selectedBranch = $branch->name();
-                break;
-            }
-        }
-        if (!$selectedBranch && ($branchName == $generatedBranchOption)) {
-            $selectedBranch = $this->getProperBranchName($input, $output, $issue);
-            $new = true;
-        }
-        if (!$selectedBranch) {
-            throw new \LogicException(sprintf('Cannot select branch %s', $branchName));
-        }
-
-        if ($new) {
-            $output->writeln('Checking out to new branch: ' . $selectedBranch);
-            $git->createBranch($selectedBranch);
-        } else {
-            $output->writeln('Checking out to: ' . $selectedBranch);
-            $git->switchBranch($selectedBranch);
-        }
     }
 
     /**
@@ -324,43 +258,6 @@ class IssueTransitionCommand extends AbstractCommand
     }
 
     /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param string $branchName
-     * return bool
-     */
-    protected function isShorteningBranchNameConfirmed(InputInterface $input, OutputInterface $output, $branchName)
-    {
-        return $this->questionHelper()->ask(
-            $input,
-            $output,
-            new ConfirmationQuestion(
-                'The generated branch name seems to be too long. Do you want to shorten it?' . PHP_EOL
-                . '(' . $branchName . ')' . PHP_EOL
-                . '[Y/n] ? ',
-                true
-            )
-        );
-    }
-
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     * @return string
-     */
-    private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue)
-    {
-        $selectedBranch = $this->generateBranchName($issue);
-        if ((strlen($selectedBranch) > $this->config()->maxBranchNameLength())
-            && $this->isShorteningBranchNameConfirmed($input, $output, $selectedBranch)) {
-            $selectedBranch = $this->generateBranchNameWithAutocomplete($issue);
-        }
-
-        return $selectedBranch;
-    }
-
-    /**
      * @return string
      */
     protected function getCommandDescription()
@@ -374,6 +271,22 @@ class IssueTransitionCommand extends AbstractCommand
     private function tab($string)
     {
         return $this->templateHelper()->tabulate($string);
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private function jiraApi()
+    {
+        return $this->getService('technodelight.jira.api');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Helper\CheckoutBranch
+     */
+    private function checkoutBranch()
+    {
+        return $this->getService('technodelight.jira.checkout_branch');
     }
 
     /**

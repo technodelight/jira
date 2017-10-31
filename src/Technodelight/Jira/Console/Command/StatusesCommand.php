@@ -24,8 +24,7 @@ class StatusesCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $projectKey = $this->projectKeyResolver()->argument($input);
-        if ($projectKey) {
+        if ($projectKey = $this->projectKeyResolver()->argument($input)) {
             $this->projectStatuses($output, $projectKey);
         } else {
             $this->genericStatuses($output);

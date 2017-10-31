@@ -7,6 +7,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
+use Technodelight\Jira\Domain\Project;
+use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Template\IssueRenderer;
 
 class ListWorkInProgressCommand extends AbstractCommand
@@ -17,7 +20,7 @@ class ListWorkInProgressCommand extends AbstractCommand
             ->setName('in-progress')
             ->setDescription('List tickets picked up by you')
             ->addArgument(
-                'project',
+                'projectKey',
                 InputArgument::OPTIONAL,
                 'Project name if differing from repo configuration'
             )
@@ -32,38 +35,62 @@ class ListWorkInProgressCommand extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        /** @var DialogHelper $dialog */
-        $dialog = $this->getService('console.dialog_helper');
-
-        // ensure we display every information for in progress issues
-        if ($output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE && !$input->getOption('all')) {
-            $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
-        }
-
-        if ($input->getOption('all') && !$input->getArgument('project')) {
-            $projects = $this->getService('technodelight.jira.api')->projects(10);
-            $index = $dialog->select(
+        if ($input->getOption('all')) {
+            $projects = $this->jiraApi()->projects(10);
+            $index = $this->dialogHelper()->select(
                 $output,
                 PHP_EOL . '<comment>Choose a project to list members process:</>',
                 array_map(
-                    function(array $project) {
-                        return sprintf('<info>%s</info> %s', $project['key'], $project['name']);
+                    function(Project $project) {
+                        return sprintf('<info>%s</info> %s', $project->key(), $project->name());
                     },
                     $projects
                 ),
                 0
             );
-            $project = $projects[$index]['key'];
-            $input->setArgument('project', $project);
+            $projectKey = $projects[$index]->key();
+            $input->setArgument('projectKey', $projectKey);
         }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issues = $this->getService('technodelight.jira.api')->inprogressIssues(
-            $input->getArgument('project'),
-            $input->getOption('all')
-        );
+        $projectKey = $this->projectKeyResolver()->argument($input);
+        $query = Builder::factory();
+        $statuses = [];
+
+        if (!empty($projectKey)) {
+            $statusesPerIssue = $this->jiraApi()->projectStatuses($projectKey);
+            foreach ($statusesPerIssue as $byIssue) {
+                foreach ($byIssue['statuses'] as $status) {
+                    /** @var Status $status */
+                    if ($status->statusCategory() == 'In Progress') {
+                        $statuses[] = $status;
+                    }
+                }
+            }
+            $statuses = array_unique($statuses);
+            $query->project($projectKey);
+        } else {
+            $allStatuses = $this->jiraApi()->status();
+            foreach ($allStatuses as $status) {
+                if ($status->statusCategory() == 'In Progress') {
+                    $statuses[] = $status;
+                }
+            }
+        }
+
+        if (empty($statuses)) {
+            $output->writeln(sprintf('There seems to be some issue with the statuses for project <info>%s</>', $projectKey));
+            $output->writeln(sprintf('Please check statuses with <info>jira statuses %s</>', $projectKey));
+            return 1;
+        }
+
+        $query->status($statuses);
+        if (!$input->getOption('all')) {
+            $query->assignee($this->jiraApi()->user()->key());
+        }
+        $issues = $this->jiraApi()->search($query->assemble());
 
         if (count($issues) == 0) {
             $output->writeln('You don\'t have any in-progress issues currently.');
@@ -84,5 +111,29 @@ class ListWorkInProgressCommand extends AbstractCommand
         $renderer->renderIssues($output, $issues);
 
         return 0;
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private function jiraApi()
+    {
+        return $this->getService('technodelight.jira.api');
+    }
+
+    /**
+     * @return DialogHelper
+     */
+    private function dialogHelper()
+    {
+        return $this->getService('console.dialog_helper');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Argument\ProjectKeyResolver
+     */
+    private function projectKeyResolver()
+    {
+        return $this->getService('technodelight.jira.console.argument.project_key_resolver');
     }
 }

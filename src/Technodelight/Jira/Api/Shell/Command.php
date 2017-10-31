@@ -44,6 +44,17 @@ class Command
         return $this;
     }
 
+    public function withShortOption($option, $value = null)
+    {
+        $this->arg(
+            self::TYPE_OPT,
+            $option,
+            $value
+        );
+
+        return $this;
+    }
+
     public function pipe(Command $command)
     {
         $this->arg(self::TYPE_STANDALONE, '| ' . $command);

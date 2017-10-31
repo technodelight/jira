@@ -70,7 +70,6 @@ class Api
                 }
                 if (!$this->verboseRemotes) {
                     throw new \RuntimeException('No git remote found!');
-                    //TODO: turn off github integration this case!
                 }
             }
             return $this->verboseRemotes;
@@ -83,12 +82,17 @@ class Api
 
     /**
      * @param string $pattern optional
+     * @param bool $withRemotes include remotes or not
      * @return Branch[]
      */
-    public function branches($pattern = '')
+    public function branches($pattern = '', $withRemotes = true)
     {
         $remotes = $this->remotes(true);
-        $command = Command::create()->withArgument('branch')->withOption('a');
+        $command = Command::create()->withArgument('branch');
+        if ($withRemotes) {
+            $command->withOption('a');
+        }
+
         if ($pattern) {
             $command->pipe(
                 Command::create('grep')->withArgument(escapeshellarg($pattern))

@@ -18,6 +18,7 @@ class ApplicationConfiguration
     private $cacheTtl;
     private $oneDay;
     private $tempo;
+    private $iterm;
 
     public function domain()
     {
@@ -69,6 +70,17 @@ class ApplicationConfiguration
         return $this->tempo;
     }
 
+    /**
+     * @return array
+     */
+    public function iterm()
+    {
+        return $this->iterm;
+    }
+
+    /**
+     * @return array
+     */
     public function instances()
     {
         return $this->instances;
@@ -125,6 +137,32 @@ class ApplicationConfiguration
         return $this->filters;
     }
 
+    public function asArray()
+    {
+        return [
+            'instances' => $this->instances,
+            'integrations' => [
+                'github' => [
+                    'apiToken' => $this->githubToken(),
+                ],
+                'git' => [
+                    'maxBranchNameLength' => $this->maxBranchNameLength(),
+                ],
+                'tempo' => $this->tempo,
+                'iterm' => $this->iterm,
+            ],
+            'project' => [
+                'yesterdayAsWeekday' => $this->yesterdayAsWeekday(),
+                'defaultWorklogTimestamp' => $this->defaultWorklogTimestamp(),
+                'oneDay' => $this->oneDayAmount(),
+                'cacheTtl' => $this->cacheTtl(),
+            ],
+            'transitions' => iterator_to_array($this->transitions),
+            'aliases' => $this->aliases,
+            'filters' => $this->filters,
+        ];
+    }
+
     public static function fromSymfonyConfigArray(array $config)
     {
         $configuration = new self;
@@ -135,6 +173,7 @@ class ApplicationConfiguration
         $configuration->githubToken = $config['integrations']['github']['apiToken'];
         $configuration->maxBranchNameLength = $config['integrations']['git']['maxBranchNameLength'];
         $configuration->tempo = $config['integrations']['tempo'];
+        $configuration->iterm = $config['integrations']['iterm'];
         $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
         $configuration->oneDay = $config['project']['oneDay'];
         $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];

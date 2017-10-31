@@ -37,14 +37,21 @@
             <argument type="service" id="seconds_to_none" />
             <argument type="service" id="technodelight.jira.template_helper" />
         </service>
+        <service id="technodelight.jira.renderer.issue.priority" class="Technodelight\Jira\Renderer\Issue\Priority">
+            <argument type="service" id="technodelight.jira.template_helper" />
+        </service>
         <service id="technodelight.jira.renderer.issue.description.full" class="Technodelight\Jira\Renderer\Issue\Description">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="service" id="technodelight.jira.image_renderer" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="string">1</argument>
         </service>
         <service id="technodelight.jira.renderer.issue.description.short" class="Technodelight\Jira\Renderer\Issue\Description">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="service" id="technodelight.jira.image_renderer" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="string">0</argument>
         </service>
         <service id="technodelight.jira.renderer.issue.description" alias="technodelight.jira.renderer.issue.description.short" />
@@ -74,6 +81,7 @@
         <service id="technodelight.jira.renderer.issue.comment" class="Technodelight\Jira\Renderer\Issue\Comment">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="service" id="technodelight.jira.image_renderer" />
         </service>
 
         <service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">
@@ -86,6 +94,7 @@
                 <argument type="service" id="technodelight.jira.renderer.issue.header" />
                 <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
                 <argument type="service" id="technodelight.jira.renderer.issue.progress" />
+                <argument type="service" id="technodelight.jira.renderer.issue.priority" />
                 <argument type="service" id="technodelight.jira.renderer.issue.description" />
                 <argument type="service" id="technodelight.jira.renderer.issue.versions" />
             </argument>
@@ -95,6 +104,7 @@
                 <argument type="service" id="technodelight.jira.renderer.issue.header" />
                 <argument type="service" id="technodelight.jira.renderer.issue.user_details" />
                 <argument type="service" id="technodelight.jira.renderer.issue.progress" />
+                <argument type="service" id="technodelight.jira.renderer.issue.priority" />
                 <argument type="service" id="technodelight.jira.renderer.issue.description.full" />
                 <argument type="service" id="technodelight.jira.renderer.issue.issue_relations" />
                 <argument type="service" id="technodelight.jira.renderer.issue.versions" />

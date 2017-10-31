@@ -31,11 +31,29 @@ class ProjectKeyResolver
             return null;
         }
 
-        try {
-            $projectKey = ProjectKey::fromString($input->getArgument(self::ARGUMENT));
-        } catch (MissingProjectKeyException $e) {
-            $projectKey = ProjectKey::fromBranch($this->git->currentBranch());
+        if ($projectKey = $this->fromString($input->getArgument(self::ARGUMENT))) {
+            return $projectKey;
         }
-        return $projectKey;
+        if ($projectKey = $this->fromBranch($this->git->currentBranch())) {
+            return $projectKey;
+        }
+    }
+
+    private function fromString($string)
+    {
+        try {
+            return ProjectKey::fromString($string);
+        } catch (MissingProjectKeyException $e) {
+            return false;
+        }
+    }
+
+    private function fromBranch($branch)
+    {
+        try {
+            return ProjectKey::fromBranch($branch);
+        } catch (MissingProjectKeyException $e) {
+            return false;
+        }
     }
 }

@@ -163,6 +163,7 @@ class Issue
                 ? $field['remainingEstimateSeconds']
                 : null;
         }
+        return null;
     }
 
     public function issueType()
@@ -170,6 +171,15 @@ class Issue
         if ($field = $this->findField('issuetype')) {
             return $field['name'];
         }
+        return '';
+    }
+
+    public function priority()
+    {
+        if ($field = $this->findField('priority')) {
+            return $field['name'];
+        }
+        return '';
     }
 
     public function url()
