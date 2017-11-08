@@ -13,6 +13,7 @@ class ShellCommand extends AbstractCommand
         $this
             ->setName('shell')
             ->setDescription('Shell-related features')
+            ->setHelp('To use autocompletion in fish, add `complete -x -c jira -a \'(jira shell --auto)\'` to your rc file.`')
             ->addOption(
                 'auto',
                 'a',

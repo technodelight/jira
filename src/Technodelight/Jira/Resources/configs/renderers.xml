@@ -82,6 +82,7 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.color_extractor" />
             <argument type="service" id="technodelight.jira.image_renderer" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
         </service>
 
         <service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">

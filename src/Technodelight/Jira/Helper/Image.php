@@ -47,7 +47,11 @@ class Image
                 if (!$this->isIterm() || !$this->displayImages) {
                     $image = '<comment>jira download ' . $embeddedImage . '</>';
                 } else {
-                    $image = $this->renderThumbnail($issue, $embeddedImage);
+                    try {
+                        $image = $this->renderThumbnail($issue, $embeddedImage);
+                    } catch (\Exception $e) {
+                        $image = $embeddedImage;
+                    }
                 }
                 $replacePairs[$matches[0][$k]] = $image;
             }

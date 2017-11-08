@@ -56,7 +56,8 @@ class LogTimeCommand extends AbstractCommand
                 'move',
                 'm',
                 InputOption::VALUE_REQUIRED,
-                'Move worklog to another date'
+                'Move worklog to another date',
+                false
             )
             ->addOption(
                 'interactive',
@@ -96,7 +97,11 @@ class LogTimeCommand extends AbstractCommand
         }
 
         if (!$input->getArgument('comment')) {
-            $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId->issueKey());
+            if ($issueKeyOrWorklogId->isWorklogId()) {
+                $defaultMessage = null;
+            } else {
+                $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId->issueKey());
+            }
             $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog());
 
             $input->setArgument('comment', $comment ?: $defaultMessage);
@@ -117,7 +122,7 @@ class LogTimeCommand extends AbstractCommand
         $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $worklogDate = $this->dateOption($input, 'move');
+        $worklogDate = $input->getOption('move') ? $this->dateOption($input, 'move') : null;
 
         if ($issueKeyOrWorklogId->isWorklogId()) {
             try {
@@ -196,10 +201,10 @@ class LogTimeCommand extends AbstractCommand
     private function updateWorklog(Worklog $worklog, $timeSpent, $comment, $startDay)
     {
         $dateHelper = $this->dateHelper();
-
         $updatedWorklog = clone $worklog;
+
         if ($timeSpent) {
-            $updatedWorklog->timeSpentSeconds($dateHelper->humanToSeconds($timeSpent));
+            $updatedWorklog->timeSpentSeconds($this->dateHelper()->humanToSeconds($timeSpent));
         }
         if ($comment) {
             $updatedWorklog->comment($comment);

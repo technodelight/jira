@@ -3,6 +3,8 @@
 namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Helper\JiraTagConverter\Panel;
+use Technodelight\Jira\Helper\JiraTagConverter\Table;
 use Technodelight\Jira\Helper\JiraTagConverter\TableParser;
 
 class JiraTagConverter
@@ -29,8 +31,8 @@ class JiraTagConverter
             $this->convertColor($body);
             $this->convertBoldUnderscore($body);
             $this->convertMentions($body);
-            $this->convertPanel($body);
             $this->convertTables($body);
+            $this->convertPanel($body);
             $formattedBody = $this->mergeDefinitions($body);
             $this->tryFormatter($formattedBody);
             return $formattedBody;
@@ -47,6 +49,15 @@ class JiraTagConverter
                 $body = str_replace(
                     $matches[1][$i].$matches[2][$i].$matches[3][$i],
                     '<fg=yellow>'.$matches[2][$i].'</>',
+                    $body
+                );
+            }
+        }
+        if ($numOfMatches = preg_match_all('~({{[^}]+}})~', $body, $matches)) {
+            for ($i = 0; $i < $numOfMatches; $i++) {
+                $body = str_replace(
+                    $matches[1][$i],
+                    '<comment>' . trim($matches[1][$i], '{}') . '</>',
                     $body
                 );
             }
@@ -138,8 +149,34 @@ class JiraTagConverter
 
     private function convertPanel(&$body)
     {
-        // remove panels
-        $body = str_replace('{panel}', '', $body);
+        $lines = explode(PHP_EOL, $body);
+        $isPanelStarted = false;
+        $panel = new Panel;
+        $panels = [];
+        foreach ($lines as $line) {
+            if (strpos($line, '{panel}') !== false && !$isPanelStarted) {
+                $isPanelStarted = true;
+                $startPos = strpos($line, '{panel}');
+                $panel->appendSource(substr($line, $startPos) . PHP_EOL);
+            } else if ($isPanelStarted && strpos($line, '{panel}') !== false) {
+                $panel->appendSource(substr($line, 0, strpos($line, '{panel}') + 7) . PHP_EOL);
+                $panels[] = $panel;
+                $panel = new Panel;
+                $isPanelStarted = false;
+            } else if ($isPanelStarted) {
+                $panel->appendSource($line . PHP_EOL);
+            }
+        }
+
+        foreach ($panels as $panel) {
+            /** @var Table $panel */
+            $originalPanel = $panel->source();
+
+            $startPos = strpos($body, $originalPanel);
+            $body = substr($body, 0, $startPos)
+                . (string) $panel
+                . substr($body, $startPos + strlen($originalPanel));
+        }
     }
 
     private function convertTables(&$body)

@@ -9,37 +9,23 @@ use Symfony\Component\Console\Helper\Table as TableRenderer;
 
 class Table
 {
-//    private $startPos;
-//    private $endPos;
     private $header;
     private $rows = [];
     private $source = '';
 
-    public function __construct()
-    {
-//        $this->setStartPos($startPos);
-    }
-
-//    public function setStartPos($pos) {
-//        $this->startPos = $pos;
-//    }
-//    public function setEndPos($pos) {
-//        $this->endPos = $pos;
-//    }
-//    public function parseSourceFromBody($body)
-//    {
-//        return substr($body, $this->startPos, $this->endPos - $this->startPos);
-//    }
     public function addHeader($header)
     {
         $this->header = $header;
     }
 
-    public function addRow($row)
+    public function addRow($row, $withWrap = true)
     {
         $this->rows[] = array_map(
-            function($field) {
-                return wordwrap(trim($field), 25);
+            function($field) use ($withWrap) {
+                if ($withWrap) {
+                    return wordwrap(trim($field), 25);
+                }
+                return trim($field);
             },
             $row
         );

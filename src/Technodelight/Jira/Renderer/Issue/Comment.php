@@ -10,6 +10,7 @@ use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Helper\Wordwrap;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Comment implements IssueRenderer
@@ -26,12 +27,17 @@ class Comment implements IssueRenderer
      * @var \Technodelight\Jira\Helper\Image
      */
     private $imageRenderer;
+    /**
+     * @var \Technodelight\Jira\Helper\Wordwrap
+     */
+    private $wordwrap;
 
-    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer)
+    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer, Wordwrap $wordwrap)
     {
         $this->templateHelper = $templateHelper;
         $this->colorExtractor = $colorExtractor;
         $this->imageRenderer = $imageRenderer;
+        $this->wordwrap = $wordwrap;
     }
 
     public function render(OutputInterface $output, Issue $issue)
@@ -63,7 +69,7 @@ class Comment implements IssueRenderer
             $content = $this->imageRenderer->render($content, $issue);
         }
         return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()})</>" . PHP_EOL
-            . $this->tab(wordwrap($content));
+            . $this->tab($this->wordwrap->wrap($content));
     }
 
     private function renderTags($output, $body)
