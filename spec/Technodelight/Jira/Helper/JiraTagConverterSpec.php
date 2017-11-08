@@ -43,9 +43,23 @@ class JiraTagConverterSpec extends ObjectBehavior
         $this->convert('[~technodelight]')->shouldReturn('<fg=cyan>technodelight</>');
     }
 
-    function it_strips_panels()
+    function it_converts_panels()
     {
-        $this->convert('{panel}something{panel}')->shouldReturn('something');
+        $panelSource = <<<EOL
+{panel}
+something{panel}
+EOL;
+        $panelParsed = <<<EOL
+
++-----------+
+|           |
+| something |
+|           |
++-----------+
+
+EOL;
+
+        $this->convert($panelSource)->shouldReturn($panelParsed);
     }
 
     function it_converts_tables()
