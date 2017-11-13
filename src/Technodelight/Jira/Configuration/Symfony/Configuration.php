@@ -21,6 +21,7 @@ class Configuration implements ConfigurationInterface
                 ->append($this->transitionsSection())
                 ->append($this->aliasesSection())
                 ->append($this->filtersSection())
+                ->append($this->rendererSection())
             ->end()
         ->end();
 
@@ -217,6 +218,65 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
                     ->scalarNode('jql')->cannotBeEmpty()->isRequired()->end()
+                ->end()
+            ->end();
+
+        return $rootNode;
+    }
+
+    private function rendererSection()
+    {
+        $treeBuilder = new TreeBuilder;
+        $rootNode = $treeBuilder->root('renderers');
+
+        $rootNode
+            ->info('Custom rendering setup')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('short')
+                    ->info('Fields to render in "short" mode (summary), used in list-type commands')
+                    ->children()
+                        ->booleanNode('inherit')->defaultTrue()->end()
+                        ->arrayNode('fields')
+                            ->prototype('array')
+                                ->children()
+                                    ->scalarNode('name')->cannotBeEmpty()->isRequired()->end()
+                                    ->scalarNode('formatter')->defaultValue('default')->treatNullLike('default')->end()
+                                    ->booleanNode('inline')->defaultFalse()->treatNullLike(false)->end()
+                                    ->scalarNode('after')->defaultValue(null)->end()
+                                    ->scalarNode('before')->defaultValue(null)->end()
+                                    ->booleanNode('remove')->defaultNull()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('full')
+                    ->info('Fields to render in "full" mode (in-depth), just as in show command')
+                    ->children()
+                        ->booleanNode('inherit')->defaultTrue()->end()
+                        ->arrayNode('fields')
+                            ->prototype('array')
+                                ->children()
+                                    ->scalarNode('name')->cannotBeEmpty()->isRequired()->end()
+                                    ->scalarNode('formatter')->defaultValue('default')->treatNullLike('default')->end()
+                                    ->booleanNode('inline')->defaultFalse()->treatNullLike(false)->end()
+                                    ->scalarNode('after')->defaultValue(null)->end()
+                                    ->scalarNode('before')->defaultValue(null)->end()
+                                    ->booleanNode('remove')->defaultNull()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('formatters')
+                    ->info('Custom formatters')
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('name')->info('Alias, as it will be used in renderer configs')->cannotBeEmpty()->isRequired()->end()
+                            ->scalarNode('class')->info('Full class path with namespace')->cannotBeEmpty()->isRequired()->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
 

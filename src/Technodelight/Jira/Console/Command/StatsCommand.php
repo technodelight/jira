@@ -49,17 +49,23 @@ class StatsCommand extends AbstractCommand
         $stats->orderByMostRecent();
         $output->writeln(sprintf('You interacted with <info>%d</info> issues', count($stats)));
         foreach ($stats as $issueKey => $stat) {
-            $output->writeln(sprintf('<info>%s</info>', $issueKey));
-            $output->writeln(
-                $this->tab(
-                    sprintf(
-                        '<comment>total:</> %d <comment>view:</> %d <comment>update:</> %d',
-                        $stat['total'],
-                        $stat['view'],
-                        $stat['update']
+            if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
+                $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
+                $output->writeln($issueKey);
+                $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+            } else {
+                $output->writeln(sprintf('<info>%s</info>', $issueKey));
+                $output->writeln(
+                    $this->tab(
+                        sprintf(
+                            '<comment>total:</> %d <comment>view:</> %d <comment>update:</> %d',
+                            $stat['total'],
+                            $stat['view'],
+                            $stat['update']
+                        )
                     )
-                )
-            );
+                );
+            }
         }
     }
 

@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Configuration;
 
+use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
+
 class ApplicationConfiguration
 {
     private $domain;
@@ -19,6 +21,10 @@ class ApplicationConfiguration
     private $oneDay;
     private $tempo;
     private $iterm;
+    /**
+     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration
+     */
+    private $renderers;
 
     public function domain()
     {
@@ -137,6 +143,14 @@ class ApplicationConfiguration
         return $this->filters;
     }
 
+    /**
+     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration
+     */
+    public function renderers()
+    {
+        return $this->renderers;
+    }
+
     public function asArray()
     {
         return [
@@ -181,6 +195,7 @@ class ApplicationConfiguration
         $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');
         $configuration->aliases = self::flattenArray($config['aliases'], 'alias','issueKey');
         $configuration->filters = self::flattenArray($config['filters'], 'command', 'jql');
+        $configuration->renderers = RenderersConfiguration::fromArray(isset($config['renderers']) ? $config['renderers'] : []);
 
         return $configuration;
     }

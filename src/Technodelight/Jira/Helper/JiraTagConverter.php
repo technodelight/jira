@@ -44,15 +44,31 @@ class JiraTagConverter
     private function convertCode(&$body)
     {
         // code block
-        if ($numOfMatches = preg_match_all('~({code})(.*)({code})~smu', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '<fg=yellow>'.$matches[2][$i].'</>',
-                    $body
-                );
+        $startCode = false;
+        $buffer = '';
+        $collected = [];
+        for ($i = 0; $i < strlen($body); $i++) {
+            $char = substr($body, $i, 1);
+            $peek = substr($body, $i, 5);
+            if ($peek == '{code' && !$startCode) {
+                $startCode = true;
+                $buffer = $peek;
+                $i+= 4;
+            } else if ($startCode && $peek == 'code}') {
+                $startCode = false;
+                $buffer.= $peek;
+                $collected[] = $buffer;
+                $i+= 4;
+            } else if ($startCode) {
+                $buffer.= $char;
             }
         }
+        foreach ($collected as $replace) {
+            $body = substr($body, 0, strpos($body, $replace))
+                . '<comment>' . preg_replace('~{code(:[^}]+)?}~', '', $replace) . '</>'
+                . substr($body, strpos($body, $replace) + strlen($replace));
+        }
+
         if ($numOfMatches = preg_match_all('~({{[^}]+}})~', $body, $matches)) {
             for ($i = 0; $i < $numOfMatches; $i++) {
                 $body = str_replace(
@@ -106,13 +122,15 @@ class JiraTagConverter
      */
     private function parseAndReplaceWith(&$body, $replaceChar, $wrapper)
     {
+        $isTerminatingChar = function($char) {
+            return preg_match('~[>}\s]~', $char) || empty($char);
+        };
         $replacePairs = [];
         $startedAt = false;
         for ($pos = 0; $pos < strlen($body); $pos++) {
             $char = substr($body, $pos, 1);
             $prevChar = $pos > 0 ? substr($body, $pos - 1, 1) : '';
-            $hasTerminateBefore = preg_match('~[^a-z0-9]{1}~', $prevChar) || empty($prevChar);
-            if (($char == $replaceChar) && ($startedAt === false) && $hasTerminateBefore == true) {
+            if (($char == $replaceChar) && ($startedAt === false) && $isTerminatingChar($prevChar)) {
                 // tag started
                 $startedAt = $pos;
             } else if (($startedAt !== false) && ($char == "\n" || $char == "\r")) {
@@ -280,7 +298,7 @@ class JiraTagConverter
 
     private function extractProperColor($colorDef)
     {
-        list(, $colorName) = explode(':', trim($colorDef, '{}'), 2) + ['', 'default'];
+        list(, $colorName) = explode(':', trim($colorDef, '{}'), 2) + ['', 'white'];
         return $this->colorExtractor->extractColor($colorName);
     }
 

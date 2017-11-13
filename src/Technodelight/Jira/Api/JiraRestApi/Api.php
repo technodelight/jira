@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
+use Technodelight\Jira\Domain\Field;
 use Technodelight\Jira\Domain\Project;
 use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\Transition;
@@ -501,6 +502,21 @@ class Api
         }
 
         return $this->retrieveIssues($issueKeys);
+    }
+
+    /**
+     * Return all available issue fields
+     *
+     * @return Field[]
+     */
+    public function fields()
+    {
+        return array_map(
+            function (array $field) {
+                return Field::fromArray($field);
+            },
+            $this->client->get('field')
+        );
     }
 
     /**

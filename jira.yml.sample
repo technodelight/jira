@@ -1,0 +1,122 @@
+
+# JIRA connection credentials
+credentials:
+
+    # JIRA's domain without protocol, like something.atlassian.net
+    domain:               ~ # Required, Example: something.atlassian.net
+
+    # Your JIRA username
+    username:             ~ # Required
+
+    # Your JIRA password
+    password:             ~ # Required
+
+# Different JIRA instances to use
+instances:
+
+    # Prototype
+    -
+
+        # Unique internal ID to use in command line arguments as reference (ie. --instance secondary)
+        name:                 ~ # Example: secondary
+
+        # JIRA's domain without protocol, like something.atlassian.net
+        domain:               ~ # Required, Example: something.atlassian.net
+
+        # Instance JIRA username
+        username:             ~ # Required
+
+        # Instance JIRA password
+        password:             ~ # Required
+
+# Third party integration configs
+integrations:
+
+    # GitHub credentials - used to retrieve pull request data, including webhook statuses. Visit this page to generate a token: https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool
+    github:
+        apiToken:             ~ # Required
+
+    # GIT related configurations
+    git:
+
+        # Maximum branch name length where the tool starts complaining during automatic branch name generation (-b option for issue transition type commands). Defaults to 30
+        maxBranchNameLength:  30
+
+    # Tempo timesheets (https://tempo.io/doc/timesheets/api/rest/latest)
+    tempo:
+        enabled:              false
+        instances:            null # Example: secondary
+
+    # iTerm2 integration (OS X Only)
+    iterm:
+        renderImages:         true
+        thumbnailWidth:       300
+        imageCacheTtl:        5
+
+# Project specific settings
+project:
+
+    # Using 'yesterday' means last workday on monday
+    yesterdayAsWeekday:   true
+
+    # Default worklog timestamp to use if date is omitted
+    defaultWorklogTimestamp: now
+
+    # Your work hours for a single day (valid values ie. "7 hours 30 minutes", 7.5 (treated as hours), 27000 (in seconds)
+    oneDay:               !!float 27000
+
+    # keep API data in caches
+    cacheTtl:             900
+
+# Issue transitions registered as commands
+transitions:
+
+    # Prototype
+    -
+        command:              ~ # Required
+        transition:           ~
+
+# Use named issues instead of numbers. Can be used anywhere where issueKey is a command's input
+aliases:
+
+    # Prototype
+    -
+        alias:                ~ # Required
+        issueKey:             ~ # Required
+
+# Custom quick filters registered as commands. See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html
+filters:
+
+    # Prototype
+    -
+        command:              ~ # Required
+        jql:                  ~ # Required
+
+# Custom rendering setup
+renderers:
+
+    # Fields to render in "short" mode (summary), used in list-type commands
+    short:
+        inherit:              true
+        fields:
+
+            # Prototype
+            -
+                name:                 ~ # Required
+                renderer:             default # Required
+                after:                null
+                before:               null
+                remove:               null
+
+    # Fields to render in "full" mode (in-depth), just as in show command
+    full:
+        inherit:              true
+        fields:
+
+            # Prototype
+            -
+                name:                 ~ # Required
+                renderer:             default # Required
+                after:                null
+                before:               null
+                remove:               null

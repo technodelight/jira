@@ -16,6 +16,7 @@ use Technodelight\Jira\Console\Command\BranchCommand;
 use Technodelight\Jira\Console\Command\BrowseIssueCommand;
 use Technodelight\Jira\Console\Command\CommentCommand;
 use Technodelight\Jira\Console\Command\DashboardCommand;
+use Technodelight\Jira\Console\Command\FieldsCommand;
 use Technodelight\Jira\Console\Command\InitCommand;
 use Technodelight\Jira\Console\Command\IssueFilterCommand;
 use Technodelight\Jira\Console\Command\IssueTransitionCommand;
@@ -118,25 +119,30 @@ class Application extends BaseApp
     public function addDomainCommands()
     {
         $commands = [];
+        // app specific commands
+        $commands[] = new ShellCommand($this->container());
+        $commands[] = new StatsCommand($this->container());
         $commands[] = new ListInstancesCommand($this->container());
         $commands[] = new ListAliasesCommand($this->container());
-        $commands[] = new ListWorkInProgressCommand($this->container());
-        $commands[] = new LogTimeCommand($this->container());
-        $commands[] = new DashboardCommand($this->container());
+        // instance related commands
+        $commands[] = new FieldsCommand($this->container());
+        $commands[] = new StatusesCommand($this->container());
+        $commands[] = new ProjectCommand($this->container());
+        // issue related commands
         $commands[] = new ShowCommand($this->container());
         $commands[] = new BrowseIssueCommand($this->container());
-        $commands[] = new DownloadAttachmentCommand($this->container());
+        $commands[] = new LogTimeCommand($this->container());
         $commands[] = new CommentCommand($this->container());
-        $commands[] = new ProjectCommand($this->container());
-        $commands[] = new StatusesCommand($this->container());
         $commands[] = new AssignCommand($this->container());
-        $commands[] = new ShellCommand($this->container());
+        $commands[] = new DownloadAttachmentCommand($this->container());
         $commands[] = new BranchCommand($this->container());
-        $commands[] = new StatsCommand($this->container());
-
         foreach ($this->config()->transitions() as $alias => $transitions) {
             $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitions);
         }
+
+        // issue listing commands
+        $commands[] = new ListWorkInProgressCommand($this->container());
+        $commands[] = new DashboardCommand($this->container());
         $filters = $this->config()->filters();
         foreach ($filters as $alias => $jql) {
             $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
