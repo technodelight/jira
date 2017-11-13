@@ -5,16 +5,16 @@ namespace Technodelight\Jira\Console\IssueStats;
 class Serializer
 {
     /**
-     * @param array $events
+     * @param array|null $events
      * @return Event[]
      */
-    public function unserialize(array $events)
+    public function unserialize($events)
     {
         return array_map(
             function(array $event) {
                 return Event::fromArray($event);
             },
-            $events
+            $events ?: []
         );
     }
 

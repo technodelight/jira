@@ -49,13 +49,12 @@ class AutocompletedInput
 
     private function parseWords(array $texts)
     {
-        $words = array_map(
-            function($string) {
-                return trim(trim($string, '-,'.PHP_EOL));
-            },
-            explode(' ', join(' ', $texts))
-        );
-        return array_unique(array_filter($words));
+        $words = [];
+        foreach ($texts as $text) {
+            $text = preg_replace('~[^a-zA-Z0-9\s\']+~', '', $text);
+            $words = array_merge($words, array_map('strtolower', preg_split('~\s~', $text)));
+        }
+        return array_filter(array_map('trim', array_unique($words)));
     }
 
     /**

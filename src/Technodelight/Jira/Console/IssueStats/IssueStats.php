@@ -60,6 +60,7 @@ class IssueStats
         } else {
             $data = [];
         }
+
         return $this->serializer->unserialize($data);
     }
 

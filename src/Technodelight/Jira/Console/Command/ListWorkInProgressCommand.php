@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Domain\Project;
 use Technodelight\Jira\Domain\Status;
@@ -37,18 +38,27 @@ class ListWorkInProgressCommand extends AbstractCommand
     {
         if ($input->getOption('all')) {
             $projects = $this->jiraApi()->projects(10);
-            $index = $this->dialogHelper()->select(
-                $output,
-                PHP_EOL . '<comment>Choose a project to list members process:</>',
-                array_map(
-                    function(Project $project) {
-                        return sprintf('<info>%s</info> %s', $project->key(), $project->name());
-                    },
-                    $projects
-                ),
-                0
+            $choices = array_map(
+                function(Project $project) {
+                    return sprintf('<info>%s</info> %s', $project->key(), $project->name());
+                },
+                $projects
             );
-            $projectKey = $projects[$index]->key();
+            $choice = $this->questionHelper()->ask(
+                $input,
+                $output,
+                new ChoiceQuestion(
+                    '<comment>Choose a project to list members process:</>',
+                    array_map(
+                        function(Project $project) {
+                            return sprintf('<info>%s</info> %s', $project->key(), $project->name());
+                        },
+                        $projects
+                    ),
+                    0
+                )
+            );
+            $projectKey = $projects[array_search($choice, $choices)]->key();
             $input->setArgument('projectKey', $projectKey);
         }
     }
@@ -56,37 +66,13 @@ class ListWorkInProgressCommand extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $projectKey = $this->projectKeyResolver()->argument($input);
-        $query = Builder::factory();
-        $statuses = [];
+        $query = Builder::factory()
+            ->statusCategory('In Progress');
 
         if (!empty($projectKey)) {
-            $statusesPerIssue = $this->jiraApi()->projectStatuses($projectKey);
-            foreach ($statusesPerIssue as $byIssue) {
-                foreach ($byIssue['statuses'] as $status) {
-                    /** @var Status $status */
-                    if ($status->statusCategory() == 'In Progress') {
-                        $statuses[] = $status;
-                    }
-                }
-            }
-            $statuses = array_unique($statuses);
             $query->project($projectKey);
-        } else {
-            $allStatuses = $this->jiraApi()->status();
-            foreach ($allStatuses as $status) {
-                if ($status->statusCategory() == 'In Progress') {
-                    $statuses[] = $status;
-                }
-            }
         }
 
-        if (empty($statuses)) {
-            $output->writeln(sprintf('There seems to be some issue with the statuses for project <info>%s</>', $projectKey));
-            $output->writeln(sprintf('Please check statuses with <info>jira statuses %s</>', $projectKey));
-            return 1;
-        }
-
-        $query->status($statuses);
         if (!$input->getOption('all')) {
             $query->assignee($this->jiraApi()->user()->key());
         }
@@ -102,7 +88,7 @@ class ListWorkInProgressCommand extends AbstractCommand
                 'You have %d in progress %s%s' . PHP_EOL,
                 count($issues),
                 $this->getService('technodelight.jira.pluralize_helper')->pluralize('issue', count($issues)),
-                $input->getOption('all') ? (sprintf(' on project <info>%s</info>', $input->getArgument('project'))) : ''
+                $input->getOption('all') ? (sprintf(' on project <info>%s</info>', $input->getArgument('projectKey'))) : ''
             )
         );
 
@@ -122,11 +108,11 @@ class ListWorkInProgressCommand extends AbstractCommand
     }
 
     /**
-     * @return DialogHelper
+     * @return \Symfony\Component\Console\Helper\QuestionHelper
      */
-    private function dialogHelper()
+    private function questionHelper()
     {
-        return $this->getService('console.dialog_helper');
+        return $this->getService('console.question_helper');
     }
 
     /**

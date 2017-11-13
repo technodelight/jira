@@ -24,7 +24,7 @@ class JiraTagConverterSpec extends ObjectBehavior
 
     function it_converts_code_block()
     {
-        $this->convert('{code}something{code}')->shouldReturn('<fg=yellow>something</>');
+        $this->convert('{code}something{code}')->shouldReturn('<comment>something</>');
     }
 
     function it_converts_colors()

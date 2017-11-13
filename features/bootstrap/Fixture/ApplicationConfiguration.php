@@ -3,6 +3,7 @@
 namespace Fixture;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration as BaseAppConf;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
 use Technodelight\Jira\Configuration\TransitionResolver;
 
 class ApplicationConfiguration extends BaseAppConf
@@ -71,5 +72,10 @@ class ApplicationConfiguration extends BaseAppConf
     public function filters()
     {
         return [];
+    }
+
+    public function renderers()
+    {
+        return RenderersConfiguration::fromArray([]);
     }
 }
