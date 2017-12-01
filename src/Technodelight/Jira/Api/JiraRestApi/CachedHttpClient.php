@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use ICanBoogie\Storage\Storage;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 
 class CachedHttpClient implements Client
 {
@@ -14,7 +14,7 @@ class CachedHttpClient implements Client
     public function __construct(
         HttpClient $httpClient,
         Storage $storage,
-        ApplicationConfiguration $configuration
+        ProjectConfiguration $configuration
     )
     {
         $this->httpClient = $httpClient;

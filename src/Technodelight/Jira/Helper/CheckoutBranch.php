@@ -9,7 +9,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Api\GitShell\Branch;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 use Technodelight\Jira\Domain\Issue;
 
 class CheckoutBranch
@@ -32,7 +32,7 @@ class CheckoutBranch
     private $questionHelper;
 
     public function __construct(
-        ApplicationConfiguration $config,
+        GitConfiguration $config,
         GitShell $git,
         GitBranchnameGenerator $branchnameGenerator,
         QuestionHelper $questionHelper

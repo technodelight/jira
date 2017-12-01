@@ -1,9 +1,10 @@
 <?php
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\DefaultFormatter;
 
-class RenderersConfiguration
+class RenderersConfiguration implements RegistrableConfiguration
 {
     /**
      * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration
@@ -50,6 +51,11 @@ class RenderersConfiguration
     public function formatters()
     {
         return $this->formatters;
+    }
+
+    public function servicePrefix()
+    {
+        return 'renderers';
     }
 
     private function __construct()

@@ -18,7 +18,7 @@
         <!-- hub -->
         <service id="fixture.github.test_http_client" class="Fixture\GitHub\TestHttpClient" />
         <service id="fixture.github_client_builder" class="Fixture\GithubClientBuilder">
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.integrations.github" />
             <argument type="service" id="fixture.github.test_http_client" />
         </service>
         <service id="technodelight.github.api" class="GitHub\Client">

@@ -136,8 +136,12 @@ class Application extends BaseApp
         $commands[] = new AssignCommand($this->container());
         $commands[] = new DownloadAttachmentCommand($this->container());
         $commands[] = new BranchCommand($this->container());
-        foreach ($this->config()->transitions() as $alias => $transitions) {
-            $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitions);
+        foreach ($this->config()->transitions()->items() as $transition) {
+            $commands[] = new IssueTransitionCommand(
+                $this->container(),
+                $transition->command(),
+                $transition->transitions()
+            );
         }
 
         // issue listing commands
@@ -163,8 +167,14 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->container->setParameter('app.jira.debug', $input->getParameterOption(['--debug', '-d']));
-        $this->container->setParameter('app.jira.instance', $input->getParameterOption(['--instance', '-i']));
+        $this->container->setParameter(
+            'app.jira.debug',
+            $input->getParameterOption(['--debug', '-d'])
+        );
+        $this->container->setParameter(
+            'app.jira.instance',
+            $input->getParameterOption(['--instance', '-i']) ?: 'default'
+        );
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             /** @var \ICanBoogie\Storage\Storage $cache */
@@ -217,6 +227,11 @@ class Application extends BaseApp
                     }
                 }
             }
+
+            // trigger config init for synthetic services
+            $config = $this->container->get('technodelight.jira.config');
+            $registrator = new ApplicationConfiguration\Service\Registrator($this->container);
+            $registrator->register($config, $config->servicePrefix());
         }
 
         return $this->container;

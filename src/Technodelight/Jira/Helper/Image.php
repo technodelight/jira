@@ -6,6 +6,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\Shell\NativeShell;
 use Technodelight\Jira\Api\Shell\Shell;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
 
 class Image
@@ -27,12 +28,12 @@ class Image
      */
     private $displayImages;
 
-    public function __construct(ImageProvider $imageProvider, ApplicationConfiguration $config)
+    public function __construct(ImageProvider $imageProvider, ITermConfiguration $config)
     {
         $this->imageProvider = $imageProvider;
         $this->itermVersion = (string) new ITermVersion();
-        $this->displayImages = $config->iterm()['renderImages'];
-        $this->thumbnailWidth = $config->iterm()['thumbnailWidth'];
+        $this->displayImages = $config->renderImages();
+        $this->thumbnailWidth = $config->thumbnailWidth();
     }
 
     public function render($body, Issue $issue)

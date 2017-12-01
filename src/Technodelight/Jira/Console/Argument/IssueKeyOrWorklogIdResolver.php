@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Connector\WorklogHandler;
 
 class IssueKeyOrWorklogIdResolver
@@ -19,7 +19,7 @@ class IssueKeyOrWorklogIdResolver
      */
     private $worklogHandler;
 
-    public function __construct(ApplicationConfiguration $config, WorklogHandler $worklogHandler)
+    public function __construct(AliasesConfiguration $config, WorklogHandler $worklogHandler)
     {
         $this->config = $config;
         $this->worklogHandler = $worklogHandler;
@@ -34,16 +34,11 @@ class IssueKeyOrWorklogIdResolver
 
     private function resolve($value)
     {
-        $argument = IssueKeyOrWorklogId::fromString($this->replaceAliasIfAvailable($value));
+        $argument = IssueKeyOrWorklogId::fromString($this->config->aliasToIssueKey($value));
         if ($argument->isWorklogId()) {
             return IssueKeyOrWorklogId::fromWorklog($this->worklogHandler->retrieve($argument->worklogId()));
         }
-        return $argument;
-    }
 
-    private function replaceAliasIfAvailable($string)
-    {
-        $aliases = $this->config->aliases();
-        return isset($aliases[$string]) ? $aliases[$string] : $string;
+        return $argument;
     }
 }

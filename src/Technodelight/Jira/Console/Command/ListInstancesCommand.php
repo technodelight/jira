@@ -7,6 +7,7 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
 
 class ListInstancesCommand extends AbstractCommand
 {
@@ -19,16 +20,16 @@ class ListInstancesCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var ApplicationConfiguration $config */
-        $config = $this->container->get('technodelight.jira.config');
-        if (empty($config->instances())) {
+        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration $config */
+        $config = $this->container->get('technodelight.jira.config.instances');
+        if (empty($config->items())) {
             $this->renderTable($output, $this->addGlobalInstanceRow($config, [], false));
             $output->writeln('No extra instances configured.');
             return;
         }
 
         $rows = $this->addInstanceRows($config, []);
-        $rows = $this->addGlobalInstanceRow($config, $rows, true);
+
         $this->renderTable($output, $rows);
     }
 
@@ -37,27 +38,11 @@ class ListInstancesCommand extends AbstractCommand
      * @param array $rows
      * @return array
      */
-    protected function addInstanceRows(ApplicationConfiguration $config, array $rows)
+    protected function addInstanceRows(InstancesConfiguration $config, array $rows)
     {
-        foreach ($config->instances() as $instance) {
-            $rows[] = [$instance['name'], $instance['domain'], $instance['username']];
+        foreach ($config->items() as $instance) {
+            $rows[] = [$instance->name(), $instance->domain(), $instance->password()];
         }
-
-        return $rows;
-    }
-
-    /**
-     * @param ApplicationConfiguration $config
-     * @param array $rows
-     * @param bool $withSeparator
-     * @return array
-     */
-    protected function addGlobalInstanceRow(ApplicationConfiguration $config, array $rows, $withSeparator)
-    {
-        if ($withSeparator) {
-            $rows[] = new TableSeparator;
-        }
-        $rows[] = ['global', $config->domain(), $config->username()];
 
         return $rows;
     }

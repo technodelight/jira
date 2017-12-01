@@ -2,34 +2,25 @@
 
 namespace Technodelight\Jira\Connector;
 
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
 use Technodelight\Jira\Api\Tempo\HttpClient;
 
 class TempoApiFactory
 {
-    public static function build(ApplicationConfiguration $config, $instanceName = null)
+    public static function build(InstancesConfiguration $instances, $instanceName = null)
     {
-        $apiConfig = self::getApiConfiguration($config, $instanceName);
+        $apiConfig = self::getApiConfiguration($instances, $instanceName);
         return new HttpClient($apiConfig['url'], $apiConfig['user'], $apiConfig['pass']);
     }
 
-    private static function getApiConfiguration(ApplicationConfiguration $config, $instanceName = null)
+    private static function getApiConfiguration(InstancesConfiguration $instances, $instanceName = null)
     {
-        $tempo = $config->tempo();
-        $tempoInstances = (array) $tempo['instances'];
-        if (self::shouldUseInstanceConfig($instanceName, $tempoInstances)) {
-            $instance = $config->instance($instanceName);
-            return [
-                'url' => self::apiUrl($instance['domain']),
-                'user' => $instance['username'],
-                'pass' => $instance['password'],
-            ];
-        }
-
+        $instance = $instances->findByName($instanceName);
         return [
-            'url' => self::apiUrl($config->domain()),
-            'user' => $config->username(),
-            'pass' => $config->password()
+            'url' => self::apiUrl($instance->domain()),
+            'user' => $instance->username(),
+            'pass' => $instance->password(),
         ];
     }
 

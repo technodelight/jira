@@ -7,7 +7,7 @@
 
         <service id="seconds_to_none.configuration" class="Technodelight\SecondsToNone\Config">
             <factory class="Technodelight\Jira\Connector\SecondsToNoneConfigProvider" method="build"/>
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.project" />
         </service>
 
         <service id="seconds_to_none" class="Technodelight\SecondsToNone">
@@ -27,7 +27,7 @@
         </service>
 
         <service id="technodelight.jira.checkout_branch" class="Technodelight\Jira\Helper\CheckoutBranch">
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.integrations.git" />
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.git_branchname_generator" />
             <argument type="service" id="console.question_helper" />
@@ -49,11 +49,11 @@
 
         <service id="technodelight.jira.image_provider" class="Technodelight\Jira\Helper\ImageProvider">
             <argument type="service" id="technodelight.jira.api" />
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.integrations.iterm" />
         </service>
         <service id="technodelight.jira.image_renderer" class="Technodelight\Jira\Helper\Image">
             <argument type="service" id="technodelight.jira.image_provider" />
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.integrations.iterm" />
         </service>
 
     </services>

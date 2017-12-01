@@ -24,33 +24,23 @@ class ConfigProvider
 
     public function username()
     {
-        if ($instance = $this->instance()) {
-            return $this->config->instance($instance)['username'];
-        }
-        return $this->config->username();
+        return $this->instance()->username();
     }
 
     public function password()
     {
-        if ($instance = $this->instance()) {
-            return $this->config->instance($instance)['password'];
-        }
-        return $this->config->password();
+        return $this->instance()->password();
     }
 
     public function domain()
     {
-        if ($instance = $this->instance()) {
-            return $this->config->instance($instance)['domain'];
-        }
-        return $this->config->domain();
+        return $this->instance()->domain();
     }
 
-    /**
-     * @return string|null
-     */
     private function instance()
     {
-        return $this->container->getParameter('app.jira.instance');
+        return $this->config->instances()->findByName(
+            $this->container->getParameter('app.jira.instance')
+        );
     }
 }
