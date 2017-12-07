@@ -31,6 +31,7 @@ use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
 use Technodelight\Jira\Console\Command\StatsCommand;
 use Technodelight\Jira\Console\Command\StatusesCommand;
+use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;

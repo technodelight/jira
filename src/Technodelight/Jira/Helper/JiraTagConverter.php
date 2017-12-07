@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Helper\JiraTagConverter\Panel;
 use Technodelight\Jira\Helper\JiraTagConverter\Table;
 use Technodelight\Jira\Helper\JiraTagConverter\TableParser;
@@ -28,8 +29,8 @@ class JiraTagConverter
     {
         try {
             $this->convertCode($body);
-            $this->convertColor($body);
             $this->convertBoldUnderscore($body);
+            $this->convertColor($body);
             $this->convertMentions($body);
             $this->convertTables($body);
             $this->convertPanel($body);
@@ -293,13 +294,16 @@ class JiraTagConverter
 
     private function formatColor($string, $colorDef)
     {
-        return sprintf('<fg=%s>%s</>', $this->extractProperColor($colorDef), $string);
+        $color = $this->extractColorFromDefinition($colorDef);
+        $style = new PaletteOutputFormatterStyle;
+        $style->setForeground($color);
+        return $style->apply($string);
     }
 
-    private function extractProperColor($colorDef)
+    private function extractColorFromDefinition($colorDef)
     {
-        list(, $colorName) = explode(':', trim($colorDef, '{}'), 2) + ['', 'white'];
-        return $this->colorExtractor->extractColor($colorName);
+        list(, $color) = explode(':', trim($colorDef, '{}'), 2) + ['', 'white'];
+        return $color;
     }
 
     private function prepareDef($def)
