@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Issue\IssueType;
+
 class Issue
 {
     private $id, $link, $key, $fields;
@@ -82,8 +84,10 @@ class Issue
     public function status()
     {
         if ($field = $this->findField('status')) {
-            return $field['name'];
+            return Status::fromArray($field);
         }
+
+        return Status::createEmpty();
     }
 
     public function statusCategory()
@@ -166,12 +170,16 @@ class Issue
         return null;
     }
 
+    /**
+     * @return IssueType
+     */
     public function issueType()
     {
         if ($field = $this->findField('issuetype')) {
-            return $field['name'];
+            return IssueType::fromArray($field);
         }
-        return '';
+
+        return IssueType::createEmpty();
     }
 
     public function priority()

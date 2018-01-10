@@ -36,6 +36,12 @@ class DashboardCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Display worklog for the week defined by date argument'
             )
+            ->addOption(
+                'month',
+                'm',
+                InputOption::VALUE_NONE,
+                'Display your monthly worklog'
+            )
         ;
     }
 
@@ -59,7 +65,12 @@ class DashboardCommand extends AbstractCommand
             $issueKeys[] = $worklog->issueKey();
         }
         if (count($issueKeys) == 0) {
-            $output->writeln("You don't have any issues at the moment, which has worklog in range");
+            $output->writeln(
+                sprintf(
+                    "You don't have any issues at the moment, which has worklog %s",
+                    $from == $to ? sprintf('on <info>%s</info>', $from->format('Y-m-d l')) : sprintf('from <info>%s</info> to <info>%s</info>', $from->format('Y-m-d l'), $to->format('Y-m-d l'))
+                )
+            );
             return;
         }
         $issues = $jira->retrieveIssues($issueKeys);
@@ -78,7 +89,7 @@ class DashboardCommand extends AbstractCommand
                 'You have been working on %d %s %s' . PHP_EOL,
                 count($issues),
                 $pluralizeHelper->pluralize('issue', count($issues)),
-                $from == $to ? sprintf('on %s', $from->format('Y-m-d')) : sprintf('from %s to %s', $from->format('Y-m-d'), $to->format('Y-m-d'))
+                $from == $to ? sprintf('on %s', $from->format('Y-m-d l')) : sprintf('from %s to %s', $from->format('Y-m-d l'), $to->format('Y-m-d l'))
             )
         );
         $progress = $this->createProgressbar($output, $totalTimeInRange);

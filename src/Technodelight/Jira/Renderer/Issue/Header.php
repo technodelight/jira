@@ -3,7 +3,10 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Issue\IssueType;
+use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
@@ -36,7 +39,7 @@ class Header implements IssueRenderer
             sprintf(
                 '<info>%s</info> %s %s %s <fg=black>(%s)</>',
                 $issue->key(),
-                $this->formatStatus($issue->status(), $issue->statusCategory()),
+                $this->formatStatus($issue->status()),
                 $this->formatIssueType($issue->issueType()),
                 $issue->summary(),
                 $issue->url()
@@ -44,19 +47,19 @@ class Header implements IssueRenderer
         );
     }
 
-    private function formatIssueType($issueType)
+    private function formatIssueType(IssueType $issueType)
     {
-        $format = isset($this->issueTypeFormats[$issueType])
-            ? $issueType : 'Default';
+        $format = isset($this->issueTypeFormats[(string) $issueType])
+            ? (string) $issueType : 'Default';
 
         return sprintf($this->issueTypeFormats[$format], $issueType);
     }
 
-    private function formatStatus($status, $statusCategory)
+    private function formatStatus(Status $status)
     {
-        $bgColor = $this->colorExtractor->extractColor($statusCategory['colorName']);
-        $fgColor = 'black';
-
-        return sprintf('<fg=%s;bg=%s> %s </>', $fgColor, $bgColor, $status);
+        $style = new PaletteOutputFormatterStyle;
+        $style->setForeground('black');
+        $style->setBackground($status->statusCategoryColor());
+        return $style->apply(sprintf(' %s ', $status));
     }
 }

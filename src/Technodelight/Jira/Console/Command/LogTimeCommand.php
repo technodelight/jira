@@ -65,6 +65,8 @@ class LogTimeCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Log time interactively'
             )
+            //TODO: restrict worklog history to 2 weeks
+            //TODO: add option to enable displaying all previous worklogs (barely required to display more than a few items)
         ;
     }
 
@@ -200,7 +202,6 @@ class LogTimeCommand extends AbstractCommand
 
     private function updateWorklog(Worklog $worklog, $timeSpent, $comment, $startDay)
     {
-        $dateHelper = $this->dateHelper();
         $updatedWorklog = clone $worklog;
 
         if ($timeSpent) {
@@ -210,7 +211,7 @@ class LogTimeCommand extends AbstractCommand
             $updatedWorklog->comment($comment);
         }
         if ($startDay) {
-            $updatedWorklog->date(date('Y-m-d H:i:s', strtotime($startDay)));
+            $updatedWorklog->date($this->dateHelper()->stringToFormattedDate($startDay, 'Y-m-d H:i:s'));
         }
 
         if (!$worklog->isSame($updatedWorklog)) {

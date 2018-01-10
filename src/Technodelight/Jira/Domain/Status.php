@@ -12,10 +12,6 @@ class Status
     private $name;
     private $description;
 
-    private function __construct()
-    {
-    }
-
     public static function fromArray(array $status)
     {
         $instance = new self;
@@ -28,10 +24,23 @@ class Status
         return $instance;
     }
 
+    public static function createEmpty()
+    {
+        $instance = new self;
+        $instance->description = '';
+        $instance->name = '';
+        $instance->id = '';
+        $instance->statusCategory = '';
+        $instance->statusCategoryColor = '';
+
+        return $instance;
+    }
+
     public function description()
     {
         return $this->description;
     }
+
     public function name()
     {
         return $this->name;
@@ -51,5 +60,8 @@ class Status
     public function __toString()
     {
         return $this->name();
+    }
+    private function __construct()
+    {
     }
 }

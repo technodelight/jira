@@ -5,9 +5,9 @@ namespace Technodelight\Jira\Api\Shell;
 interface Shell
 {
     /**
-     * @param \Technodelight\Jira\Api\Shell\Command $command
+     * @param Command $command
+     * @throws ShellCommandException
      * @return array
-     * @throws \RuntimeException
      */
     public function exec(Command $command);
 }

@@ -6,6 +6,7 @@ namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
@@ -22,6 +23,12 @@ class BranchCommand extends AbstractCommand
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,
                 'IssueKey to use for branch name generation'
+            )
+            ->addOption(
+                'local',
+                'l',
+                InputOption::VALUE_NONE,
+                'Choose an existing branch automagically'
             )
         ;
     }

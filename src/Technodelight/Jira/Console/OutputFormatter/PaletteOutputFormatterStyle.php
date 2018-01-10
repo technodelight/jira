@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\OutputFormatter;
 use InvalidArgumentException;
 use function SSNepenthe\ColorUtils\color;
 use SSNepenthe\ColorUtils\Colors\Rgb;
+use SSNepenthe\ColorUtils\Exceptions\InvalidArgumentException as InvalidColorException;
 use Symfony\Component\Console\Formatter\OutputFormatterStyleInterface;
 
 class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
@@ -25,6 +26,9 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
      * @var Rgb
      */
     private $foreground;
+    /**
+     * @var Rgb
+     */
     private $background;
     private $options = [];
 
@@ -40,7 +44,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             return;
         }
 
-        $this->foreground = color($color)->getRgb();
+        $this->foreground = $this->colorToRgb($color);
     }
 
     /**
@@ -55,7 +59,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             return;
         }
 
-        $this->background = color($color)->getRgb();
+        $this->background = $this->colorToRgb($color);
     }
 
     /**
@@ -138,9 +142,9 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         if (null !== $this->background) {
             $setCodes[] = 48;
             $setCodes[] = 2;
-            $setCodes[] = $this->foreground->getRed();
-            $setCodes[] = $this->foreground->getGreen();
-            $setCodes[] = $this->foreground->getBlue();
+            $setCodes[] = $this->background->getRed();
+            $setCodes[] = $this->background->getGreen();
+            $setCodes[] = $this->background->getBlue();
             $unsetCodes[] = self::UNSET_CODE;
         }
 
@@ -156,6 +160,21 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         }
 
         return sprintf("\033[%sm%s\033[%sm", implode(';', $setCodes), $text, implode(';', $unsetCodes));
+    }
 
+    /**
+     * @param string $colorDef
+     * @return Rgb
+     */
+    private function colorToRgb($colorDef)
+    {
+        try {
+            if (strpos($colorDef, '-')) {
+                $colorDef = substr($colorDef, 0, strpos($colorDef, '-'));
+            }
+            return color($colorDef)->getRgb();
+        } catch (InvalidColorException $e) {
+            return color('default')->getRgb();
+        }
     }
 }

@@ -105,7 +105,7 @@ class ApplicationConfiguration implements RegistrableConfiguration
         if (isset($config['credentials'])) {
             print 'Using "credentials" node in configuration is deprecated. Please use a "default" instance instead.' . PHP_EOL . PHP_EOL;
             $config['instances'] = isset($config['instances']) ? $config['instances'] : [];
-            $config['instances'][] = [
+            $config['instances']['default'] = [
                 'name' => 'default',
                 'domain' => $config['credentials']['domain'],
                 'username' => $config['credentials']['username'],
@@ -114,11 +114,11 @@ class ApplicationConfiguration implements RegistrableConfiguration
         }
 
         $configuration->instances = InstancesConfiguration::fromArray($config['instances']);
-        $configuration->integrations = IntegrationsConfiguration::fromArray($config['integrations']);
-        $configuration->project = ProjectConfiguration::fromArray($config['project']);
-        $configuration->transitions = TransitionsConfiguration::fromArray($config['transitions']);
-        $configuration->aliases = AliasesConfiguration::fromArray($config['aliases']);
-        $configuration->filters = FiltersConfiguration::fromArray($config['filters']);
+        $configuration->integrations = IntegrationsConfiguration::fromArray(isset($config['integrations']) ? $config['integrations'] : []);
+        $configuration->project = ProjectConfiguration::fromArray(isset($config['project']) ? $config['project'] : []);
+        $configuration->transitions = TransitionsConfiguration::fromArray(isset($config['transitions']) ? $config['transitions'] : []);
+        $configuration->aliases = AliasesConfiguration::fromArray(isset($config['aliases']) ? $config['aliases'] : []);
+        $configuration->filters = FiltersConfiguration::fromArray(isset($config['filters']) ? $config['filters'] : []);
         $configuration->renderers = RenderersConfiguration::fromArray(isset($config['renderers']) ? $config['renderers'] : []);
 
         return $configuration;

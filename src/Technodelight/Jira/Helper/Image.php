@@ -2,10 +2,6 @@
 
 namespace Technodelight\Jira\Helper;
 
-use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\Shell\NativeShell;
-use Technodelight\Jira\Api\Shell\Shell;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
 

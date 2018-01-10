@@ -24,10 +24,10 @@ class HubHelper
         return 'hub';
     }
 
-    public function issues()
+    public function issues($state = 'all')
     {
         if (!isset($this->issuesCache)) {
-            $result = $this->hub->api('issue')->all($this->owner, $this->repo, array('state' => 'all'));
+            $result = $this->hub->issue()->all($this->owner, $this->repo, array('state' => $state));
             $this->issuesCache = $result;
         }
 

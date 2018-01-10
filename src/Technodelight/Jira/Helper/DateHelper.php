@@ -44,6 +44,11 @@ class DateHelper
         return $this->getSTN()->humanToSeconds($def);
     }
 
+    public function stringToFormattedDate($dateString, $format)
+    {
+        return date($format, strtotime($dateString));
+    }
+
     private function getSTN()
     {
         return new SecondsToNone($this->config);

@@ -4,7 +4,12 @@ namespace Technodelight\Jira\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\OpenApp\Driver\Generic;
+use Technodelight\Jira\Api\OpenApp\OpenApp;
+use Technodelight\Jira\Api\Shell\Passthru;
+use Technodelight\Jira\Domain\Issue;
 
 class BrowseIssueCommand extends AbstractCommand
 {
@@ -18,6 +23,18 @@ class BrowseIssueCommand extends AbstractCommand
                 InputArgument::OPTIONAL,
                 'Issue key (ie. PROJ-123)'
             )
+            ->addOption(
+                'pr',
+                'r',
+                InputOption::VALUE_NONE,
+                'Open GitHub PR link instead of JIRA'
+            )
+            ->addOption(
+                'ci',
+                'c',
+                InputOption::VALUE_NONE,
+                'Open CI link (from GitHub PR data) instead of JIRA'
+            )
         ;
     }
 
@@ -26,14 +43,17 @@ class BrowseIssueCommand extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input, $output);
         try {
             $issue = $this->jiraApi()->retrieveIssue($issueKey);
-            $output->writeln(
-                sprintf('Opening <info>%s</info> in default browser...', $issueKey)
-            );
-            passthru(sprintf('open "%s"', $issue->url()));
+            if ($input->getOption('pr')) {
+                $this->openPr($output, $issue);
+            } elseif ($input->getOption('ci')) {
+                $this->openCi($output, $issue);
+            } else {
+                $this->openIssueLink($output, $issue);
+            }
         } catch (\Exception $exception) {
             $output->writeln(
                 sprintf(
-                    'Cannot open <info>%s</info> the browser, reason: %s',
+                    'Cannot open <info>%s</info> in browser, reason: %s',
                     $issueKey,
                     sprintf("(%s) %s", get_class($exception), $exception->getMessage())
                 )
@@ -42,10 +62,93 @@ class BrowseIssueCommand extends AbstractCommand
     }
 
     /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     */
+    private function openIssueLink(OutputInterface $output, Issue $issue)
+    {
+        $output->writeln(
+            sprintf('Opening <info>%s</info> in browser...', $issue->issueKey())
+        );
+        $this->openApp()->open($issue->url());
+    }
+
+    private function openPr(OutputInterface $output, Issue $issue)
+    {
+        $issues = $this->listOpenGitHubIssues($issue);
+        $hubIssue = array_shift($issues);
+        if ($hubIssue && empty($issues)) {
+            $output->writeln(
+                sprintf(
+                    'Opening first open pull request <comment>#%d</comment> for issue <comment>%s</comment>...',
+                    $hubIssue['number'],
+                    $issue->ticketNumber()
+                )
+            );
+            $this->openApp()->open($hubIssue['html_url']);
+        } else {
+            $output->writeln(
+                sprintf('<error>Cannot find any open PR for issue %s</error>', $issue->ticketNumber())
+            );
+        }
+    }
+
+    private function openCi(OutputInterface $output, Issue $issue)
+    {
+        $issues = $this->listOpenGitHubIssues($issue);
+        $hubIssue = array_shift($issues);
+        if ($hubIssue && empty($issues)) {
+            $commits = $this->gitHub()->prCommits($hubIssue['number']);
+            $last = end($commits);
+            $combined = $this->gitHub()->statusCombined($last['sha']);
+            $status = array_shift($combined['statuses']);
+
+            $output->writeln(
+                sprintf(
+                    'Opening %s link for first open pull request <comment>#%d</comment>...',
+                    $status['context'],
+                    $hubIssue['number']
+                )
+            );
+            $this->openApp()->open($status['target_url']);
+        }
+    }
+
+    /**
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @return array
+     */
+    private function listOpenGitHubIssues(Issue $issue)
+    {
+        return array_filter(
+            $this->gitHub()->issues('open'),
+            function ($hubIssue) use ($issue) {
+                return strpos($hubIssue['title'], $issue->issueKey()) === 0;
+            }
+        );
+    }
+
+
+    private function openApp()
+    {
+        return new OpenApp(
+            new Generic(new Passthru())
+        );
+    }
+
+    /**
      * @return \Technodelight\Jira\Api\JiraRestApi\Api
      */
     private function jiraApi()
     {
         return $this->getService('technodelight.jira.api');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Helper\HubHelper
+     */
+    private function gitHub()
+    {
+        return $this->getService('technodelight.jira.hub_helper');
     }
 }

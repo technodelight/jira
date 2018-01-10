@@ -55,8 +55,10 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function findByIssue(Issue $issue)
     {
+        $from = $issue->created()->format(self::DATETIME_FORMAT);
+        $to = date(self::DATETIME_FORMAT);
         $worklogs = array_filter(
-            $this->api->all(),
+            $this->api->find($from, $to),
             function (array $worklog) use ($issue) {
                 return $worklog['issue']['key'] == $issue->key();
             }
