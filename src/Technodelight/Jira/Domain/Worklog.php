@@ -67,6 +67,7 @@ class Worklog
             );
         }
         $this->issue = $issue;
+        $issue->worklogs()->push($this);
     }
 
     public function id()

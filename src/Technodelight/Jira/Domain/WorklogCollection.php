@@ -77,9 +77,11 @@ class WorklogCollection implements Iterator, Countable
 
     public function push(Worklog $worklog)
     {
-        $this->worklogs[] = $worklog;
-        $this->maxResults+= 1;
-        $this->total+= 1;
+        if (!in_array($worklog, $this->worklogs)) {
+            $this->worklogs[] = $worklog;
+            $this->maxResults+= 1;
+            $this->total+= 1;
+        }
     }
 
     public function merge(WorklogCollection $collection)
@@ -106,6 +108,15 @@ class WorklogCollection implements Iterator, Countable
             },
             $this->worklogs
         ));
+    }
+
+    public function issues()
+    {
+        $issues = IssueCollection::createEmpty();
+        foreach ($this->worklogs as $worklog) {
+            $issues->add($worklog->issue());
+        }
+        return $issues;
     }
 
     public function orderByCreatedDateDesc()

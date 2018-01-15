@@ -148,6 +148,54 @@
         </service>
         <service id="technodelight.jira.renderer.project" alias="technodelight.jira.renderer.project.short"/>
         <!-- project renderer -->
+
+        <!-- dashboard renderer -->
+        <service id="technodelight.jira.renderer.dashboard.header" class="Technodelight\Jira\Renderer\Dashboard\Header" />
+        <service id="technodelight.jira.renderer.dashboard.progress" class="Technodelight\Jira\Renderer\Dashboard\Progress">
+            <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.pluralize_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.dashboard.stats" class="Technodelight\Jira\Renderer\Dashboard\Stats">
+            <argument type="service" id="technodelight.jira.date_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.dashboard.project_stats" class="Technodelight\Jira\Renderer\Dashboard\ProjectStats">
+            <argument type="service" id="technodelight.jira.date_helper" />
+        </service>
+        <service id="technodelight.jira.renderer.dashboard.logs_list" class="Technodelight\Jira\Renderer\Dashboard\LogsList">
+            <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.template_helper"/>
+        </service>
+        <service id="technodelight.jira.renderer.dashboard.logs_table" class="Technodelight\Jira\Renderer\Dashboard\LogsTable">
+            <argument type="service" id="technodelight.jira.date_helper" />
+        </service>
+
+        <service id="technodelight.jira.renderer.dashboard.list" class="Technodelight\Jira\Renderer\Dashboard\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.dashboard.header" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.progress" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.stats" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.logs_list" />
+            </argument>
+        </service>
+
+        <service id="technodelight.jira.renderer.dashboard.table" class="Technodelight\Jira\Renderer\Dashboard\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.dashboard.header" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.progress" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.stats" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.logs_table" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.dashboard.summary" class="Technodelight\Jira\Renderer\Dashboard\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.dashboard.header" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.progress" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.stats" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.project_stats" />
+            </argument>
+        </service>
+        <service id="technodelight.jira.renderer.dashboard" alias="technodelight.jira.renderer.dashboard.list"/>
+
     </services>
 
 </container>

@@ -7,9 +7,9 @@ use Technodelight\Jira\Api\JiraRestApi\Client;
 class JiraFixtureClient implements Client
 {
     const FIXTURE_PATH = '../fixtures/jira/';
-    const ERROR_NO_SUCH_FIXTURE = 'No such fixture: "%s"';
+    const ERROR_NO_SUCH_FIXTURE = 'No such fixture: "%s" (%s)';
     const ERROR_CANNOT_WRITE_FIXTURE = 'Fixture assertion failed: "%s"';
-    const ERROR_CANNOT_UNSERIALIZE_FIXTURE = 'Fixture unserialization failure: "%s"';
+    const ERROR_CANNOT_UNSERIALIZE_FIXTURE = 'Fixture unserialization failure: "%s" (%s)';
 
     private $posts = [];
     private static $setups = ['get' => [], 'post' => [], 'put' => [], 'delete' => [], 'search' => []];
@@ -68,11 +68,11 @@ class JiraFixtureClient implements Client
 
         $filename = __DIR__ . '/' . self::FIXTURE_PATH . $this->keyify($url);
         if (!is_readable($filename)) {
-            throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url));
+            throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url, $this->keyify($url)));
         }
         $data = json_decode(file_get_contents($filename), true);
         if (false === $data) {
-            throw new \InvalidArgumentException(sprintf(self::ERROR_CANNOT_UNSERIALIZE_FIXTURE, $url));
+            throw new \InvalidArgumentException(sprintf(self::ERROR_CANNOT_UNSERIALIZE_FIXTURE, $url, $this->keyify($url)));
         }
         return $data;
     }

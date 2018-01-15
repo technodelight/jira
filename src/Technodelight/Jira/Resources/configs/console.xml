@@ -64,6 +64,9 @@
             <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <argument type="service" id="console.question_helper" />
         </service>
+        <service id="technodelight.jira.console.open" class="Technodelight\Jira\Api\OpenApp\OpenApp">
+            <factory class="Technodelight\Jira\Api\OpenApp\OsAdaptingFactory" method="create" />
+        </service>
         <!-- magic stuff -->
 
         <!-- stats collector -->
@@ -105,6 +108,12 @@
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <!-- argument resolvers -->
+
+        <!-- console output handlers -->
+        <service id="technodelight.jira.console.dashboard.dashboard" class="Technodelight\Jira\Console\Dashboard\Dashboard" >
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+        </service>
     </services>
 
 </container>

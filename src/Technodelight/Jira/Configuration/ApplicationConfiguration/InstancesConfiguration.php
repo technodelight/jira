@@ -40,6 +40,12 @@ class InstancesConfiguration implements RegistrableConfiguration
      */
     public function findByName($name)
     {
+        if (count($this->items()) == 1 && $name == 'default') {
+            foreach ($this->items() as $instanceConfiguration) {
+                return $instanceConfiguration;
+            }
+        }
+
         foreach ($this->items() as $instance) {
             if ($instance->name() == $name) {
                 return $instance;

@@ -7,7 +7,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\Registrabl
 class FiltersConfiguration implements RegistrableConfiguration
 {
     /**
-     * @var FilterConfiguration
+     * @var FilterConfiguration[]
      */
     private $filters;
 
@@ -25,6 +25,9 @@ class FiltersConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
+    /**
+     * @return FilterConfiguration[]
+     */
     public function items()
     {
         return $this->filters;

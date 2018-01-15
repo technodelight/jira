@@ -128,12 +128,12 @@ class BrowseIssueCommand extends AbstractCommand
         );
     }
 
-
+    /**
+     * @return OpenApp
+     */
     private function openApp()
     {
-        return new OpenApp(
-            new Generic(new Passthru())
-        );
+        return $this->getService('technodelight.jira.console.open');
     }
 
     /**

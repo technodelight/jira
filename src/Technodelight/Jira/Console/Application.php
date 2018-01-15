@@ -149,8 +149,12 @@ class Application extends BaseApp
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
         $filters = $this->config()->filters();
-        foreach ($filters as $alias => $jql) {
-            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
+        foreach ($filters->items() as $filter) {
+            $commands[] = new IssueFilterCommand(
+                $this->container(),
+                $filter->command(),
+                $filter->jql()
+            );
         }
         $commands[] = new SearchCommand($this->container());
 
@@ -262,47 +266,9 @@ class Application extends BaseApp
         return $this->gitBranchnameGenerator;
     }
 
-    /**
-     * @return TemplateHelper
-     */
-    public function templateHelper()
-    {
-        if (!isset($this->templateHelper)) {
-            $this->templateHelper = new TemplateHelper;
-        }
-
-        return $this->templateHelper;
-    }
-
-    /**
-     * @return DateHelper
-     */
-    public function dateHelper()
-    {
-        if (!isset($this->dateHelper)) {
-            $this->dateHelper = new DateHelper;
-        }
-
-        return $this->dateHelper;
-    }
-
-    /**
-     * @return JiraApi
-     */
-    public function jira()
-    {
-        if (!isset($this->jira)) {
-            /** @var \Technodelight\Jira\Api\JiraRestApi\Api jira */
-            $this->jira = $this->get('technodelight.jira.api');
-        }
-
-        return $this->jira;
-    }
-
     public function getDefaultHelperSet()
     {
         $helperSet = parent::getDefaultHelperSet();
-        $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;
     }

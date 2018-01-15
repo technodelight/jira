@@ -63,7 +63,7 @@ class Issue
 
     public function project()
     {
-        return (object) ($this->findField('project') ?: []);
+        return Project::fromArray($this->findField('project') ?: []);
     }
 
     public function summary()
