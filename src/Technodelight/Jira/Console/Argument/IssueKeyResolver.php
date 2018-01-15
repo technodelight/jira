@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Console\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
 class IssueKeyResolver
@@ -20,7 +20,7 @@ class IssueKeyResolver
      */
     private $issueSelector;
 
-    public function __construct(Git $git, ApplicationConfiguration $configuration, InteractiveIssueSelector $issueSelector)
+    public function __construct(Git $git, AliasesConfiguration $configuration, InteractiveIssueSelector $issueSelector)
     {
         $this->git = $git;
         $this->configuration = $configuration;
@@ -59,16 +59,10 @@ class IssueKeyResolver
         return $this->fromString($this->issueSelector->chooseIssue($input, $output)->key());
     }
 
-    private function alias($argumentOrOption)
-    {
-        $aliases = $this->configuration->aliases();
-        return isset($aliases[$argumentOrOption]) ? $aliases[$argumentOrOption] : $argumentOrOption;
-    }
-
     private function fromString($string)
     {
         try {
-            return IssueKey::fromString($this->alias($string));
+            return IssueKey::fromString($this->configuration->aliasToIssueKey($string));
         } catch (MissingIssueKeyException $exception) {
             return false;
         }

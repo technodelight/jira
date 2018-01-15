@@ -2,8 +2,6 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\Jira\Api\GitShell\Api as Git;
 use Technodelight\Jira\Api\GitShell\Branch;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
@@ -18,8 +16,7 @@ class IssueKey
 
     private function __construct($issueKey)
     {
-        // if (!preg_match(self::ISSUE_PATTERN, $issueKey)) {
-        if (empty($issueKey)) {
+         if (!preg_match(self::ISSUE_PATTERN, $issueKey)) {
             throw new MissingIssueKeyException;
         }
         $this->issueKey = $issueKey;

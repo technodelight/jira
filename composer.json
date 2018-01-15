@@ -3,7 +3,7 @@
     "description": "JIRA PHP console application for day-to-day development",
     "license": "MIT",
     "require": {
-        "php": ">= 5.6",
+        "php": ">= 7.0",
         "symfony/console": "^2.7",
         "stecman/symfony-console-completion": "^0.5.1",
         "guzzlehttp/guzzle": "^6.2",
@@ -14,7 +14,8 @@
         "symfony/yaml": "^3.2",
         "icanboogie/storage": "^2.1",
         "technodelight/seconds-to-none": "^0.2.0",
-        "hoa/console": "^3.17"
+        "hoa/console": "^3.17",
+        "ssnepenthe/color-utils": "^0.4.2"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

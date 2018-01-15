@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Helper;
 
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 
 class ImageProvider
 {
@@ -21,10 +22,10 @@ class ImageProvider
      */
     private $ttl;
 
-    public function __construct(Api $api, ApplicationConfiguration $config)
+    public function __construct(Api $api, ITermConfiguration $config)
     {
         $this->api = $api;
-        $this->ttl = $config->iterm()['imageCacheTtl'];
+        $this->ttl = $config->imageCacheTtl();
         $this->cacheDir = getenv('HOME') . DIRECTORY_SEPARATOR . '.jira.api_cache';
         $this->cleanup();
     }

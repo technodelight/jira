@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Connector;
 
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 use Technodelight\SecondsToNone;
 use Technodelight\SecondsToNone\Config;
 
@@ -12,12 +12,12 @@ class SecondsToNoneConfigProvider
 
     private $oneDayAmount;
 
-    private function __construct(ApplicationConfiguration $config)
+    private function __construct(ProjectConfiguration $config)
     {
         $this->oneDayAmount = $config->oneDayAmount();
     }
 
-    public static function build(ApplicationConfiguration $config)
+    public static function build(ProjectConfiguration $config)
     {
         $instance = new self($config);
         return $instance->buildConfig();

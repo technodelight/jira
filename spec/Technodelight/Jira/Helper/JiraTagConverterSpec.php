@@ -27,11 +27,6 @@ class JiraTagConverterSpec extends ObjectBehavior
         $this->convert('{code}something{code}')->shouldReturn('<comment>something</>');
     }
 
-    function it_converts_colors()
-    {
-        $this->convert('{color:green}something{color}')->shouldReturn('<fg=green>something</>');
-    }
-
     function it_converts_bold_and_underscore()
     {
         $this->convert('*bold*')->shouldReturn('<options=bold>bold</>');
@@ -93,14 +88,10 @@ EOF;
 
     function it_merges_definitions()
     {
-        $this->convert('{color:green}*GREEN BOLD*{color}')
-             ->shouldReturn('<fg=green;options=bold>GREEN BOLD</>');
-        $this->convert('{color:green}*_GREEN BOLD UNDERSCORED_*{color} {color:green}*_GREEN BOLD UNDERSCORED_*{color}')
-             ->shouldReturn('<fg=green;options=bold,underscore>GREEN BOLD UNDERSCORED</> <fg=green;options=bold,underscore>GREEN BOLD UNDERSCORED</>');
-        $this->convert('*_BOLDUNDERSCORE_* {color:green}_GREENUNDERSCORE_{color}')
-             ->shouldReturn('<options=bold,underscore>BOLDUNDERSCORE</> <fg=green;options=underscore>GREENUNDERSCORE</>');
-        $this->convert('_{color:green}GREENUNDERSCORE{color}_')
-             ->shouldReturn('<fg=green;options=underscore>GREENUNDERSCORE</>');
+        $this->convert('*_BOLD UNDERSCORED_* *_BOLD UNDERSCORED_*')
+             ->shouldReturn('<options=bold,underscore>BOLD UNDERSCORED</> <options=bold,underscore>BOLD UNDERSCORED</>');
+        $this->convert('*_BOLDUNDERSCORE_* _UNDERSCORE_')
+             ->shouldReturn('<options=bold,underscore>BOLDUNDERSCORE</> <options=underscore>UNDERSCORE</>');
         $this->convert('*_B_*' . PHP_EOL . '*_B_*')
             ->shouldReturn('<options=bold,underscore>B</>'.PHP_EOL.'<options=bold,underscore>B</>');
     }

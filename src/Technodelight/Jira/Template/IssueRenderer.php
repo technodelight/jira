@@ -58,8 +58,7 @@ class IssueRenderer
             $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
             $this->minimalRenderer->render($output, $issue);
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
-        } else
-        if ($full) {
+        } else if ($full) {
             $this->fullRenderer->render($output, $issue);
         } else {
             $this->shortRenderer->render($output, $issue);

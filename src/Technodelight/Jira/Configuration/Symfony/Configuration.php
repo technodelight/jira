@@ -162,7 +162,7 @@ class Configuration implements ConfigurationInterface
                     ->info('Your work hours for a single day (valid values ie. "7 hours 30 minutes", 7.5 (treated as hours), 27000 (in seconds)')
                     ->defaultValue(7.5 * 3600)
                 ->end()
-                ->scalarNode('cacheTtl')
+                ->integerNode('cacheTtl')
                     ->info('keep API data in caches')
                     ->defaultValue(15 * 60)
                 ->end()

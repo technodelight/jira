@@ -31,6 +31,7 @@ use Technodelight\Jira\Console\Command\ShowCommand;
 use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
 use Technodelight\Jira\Console\Command\StatsCommand;
 use Technodelight\Jira\Console\Command\StatusesCommand;
+use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\GitHelper;
@@ -136,16 +137,24 @@ class Application extends BaseApp
         $commands[] = new AssignCommand($this->container());
         $commands[] = new DownloadAttachmentCommand($this->container());
         $commands[] = new BranchCommand($this->container());
-        foreach ($this->config()->transitions() as $alias => $transitions) {
-            $commands[] = new IssueTransitionCommand($this->container(), $alias, $transitions);
+        foreach ($this->config()->transitions()->items() as $transition) {
+            $commands[] = new IssueTransitionCommand(
+                $this->container(),
+                $transition->command(),
+                $transition->transitions()
+            );
         }
 
         // issue listing commands
         $commands[] = new ListWorkInProgressCommand($this->container());
         $commands[] = new DashboardCommand($this->container());
         $filters = $this->config()->filters();
-        foreach ($filters as $alias => $jql) {
-            $commands[] = new IssueFilterCommand($this->container(), $alias, $jql);
+        foreach ($filters->items() as $filter) {
+            $commands[] = new IssueFilterCommand(
+                $this->container(),
+                $filter->command(),
+                $filter->jql()
+            );
         }
         $commands[] = new SearchCommand($this->container());
 
@@ -163,8 +172,14 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->container->setParameter('app.jira.debug', $input->getParameterOption(['--debug', '-d']));
-        $this->container->setParameter('app.jira.instance', $input->getParameterOption(['--instance', '-i']));
+        $this->container->setParameter(
+            'app.jira.debug',
+            $input->getParameterOption(['--debug', '-d'])
+        );
+        $this->container->setParameter(
+            'app.jira.instance',
+            $input->getParameterOption(['--instance', '-i']) ?: 'default'
+        );
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             /** @var \ICanBoogie\Storage\Storage $cache */
@@ -217,6 +232,11 @@ class Application extends BaseApp
                     }
                 }
             }
+
+            // trigger config init for synthetic services
+            $config = $this->container->get('technodelight.jira.config');
+            $registrator = new ApplicationConfiguration\Service\Registrator($this->container);
+            $registrator->register($config, $config->servicePrefix());
         }
 
         return $this->container;
@@ -246,47 +266,9 @@ class Application extends BaseApp
         return $this->gitBranchnameGenerator;
     }
 
-    /**
-     * @return TemplateHelper
-     */
-    public function templateHelper()
-    {
-        if (!isset($this->templateHelper)) {
-            $this->templateHelper = new TemplateHelper;
-        }
-
-        return $this->templateHelper;
-    }
-
-    /**
-     * @return DateHelper
-     */
-    public function dateHelper()
-    {
-        if (!isset($this->dateHelper)) {
-            $this->dateHelper = new DateHelper;
-        }
-
-        return $this->dateHelper;
-    }
-
-    /**
-     * @return JiraApi
-     */
-    public function jira()
-    {
-        if (!isset($this->jira)) {
-            /** @var \Technodelight\Jira\Api\JiraRestApi\Api jira */
-            $this->jira = $this->get('technodelight.jira.api');
-        }
-
-        return $this->jira;
-    }
-
     public function getDefaultHelperSet()
     {
         $helperSet = parent::getDefaultHelperSet();
-        $helperSet->set(new GitHelper);
         $helperSet->set(new PluralizeHelper);
         return $helperSet;
     }

@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Connector;
 
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
 use Technodelight\Jira\Connector\Tempo\WorklogHandler as TempoHandler;
 use Technodelight\Jira\Connector\Jira\WorklogHandler as JiraHandler;
 
@@ -21,7 +21,7 @@ class WorklogHandlerFactory
      */
     private $jiraHandler;
 
-    public function __construct(ApplicationConfiguration $configuration, TempoHandler $tempoHandler, JiraHandler $jiraHandler)
+    public function __construct(TempoConfiguration $configuration, TempoHandler $tempoHandler, JiraHandler $jiraHandler)
     {
         $this->configuration = $configuration;
         $this->tempoHandler = $tempoHandler;
@@ -33,7 +33,7 @@ class WorklogHandlerFactory
      */
     public function build()
     {
-        if ($this->configuration->tempo()['enabled']) {
+        if ($this->configuration->isEnabled()) {
             return $this->tempoHandler;
         }
 

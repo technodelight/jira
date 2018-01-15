@@ -2,90 +2,48 @@
 
 namespace Technodelight\Jira\Configuration;
 
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\FiltersConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 
-class ApplicationConfiguration
+class ApplicationConfiguration implements RegistrableConfiguration
 {
-    private $domain;
-    private $username;
-    private $password;
-    private $instances;
-    private $githubToken;
-    private $maxBranchNameLength;
-    private $aliases;
-    private $transitions;
-    private $filters;
-    private $yesterdayAsWeekday;
-    private $defaultWorklogTimestamp;
-    private $cacheTtl;
-    private $oneDay;
-    private $tempo;
-    private $iterm;
     /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration
+     * @var InstancesConfiguration
+     */
+    private $instances;
+    /**
+     * @var IntegrationsConfiguration
+     */
+    private $integrations;
+    /**
+     * @var ProjectConfiguration
+     */
+    private $project;
+    /**
+     * @var TransitionsConfiguration
+     */
+    private $transitions;
+    /**
+     * @var AliasesConfiguration
+     */
+    private $aliases;
+    /**
+     * @var FiltersConfiguration
+     */
+    private $filters;
+    /**
+     * @var RenderersConfiguration
      */
     private $renderers;
 
-    public function domain()
-    {
-        try {
-            return $this->instance('default')['domain'];
-        } catch (\UnexpectedValueException $e) {
-            return $this->domain;
-        }
-    }
-
-    public function username()
-    {
-        try {
-            return $this->instance('default')['username'];
-        } catch (\UnexpectedValueException $e) {
-            return $this->username;
-        }
-    }
-
-    public function password()
-    {
-        try {
-            return $this->instance('default')['password'];
-        } catch (\UnexpectedValueException $e) {
-            return $this->password;
-        }
-    }
-
-    public function githubToken()
-    {
-        return $this->githubToken;
-    }
-
     /**
-     * @return int
-     */
-    public function maxBranchNameLength()
-    {
-        return $this->maxBranchNameLength;
-    }
-
-    /**
-     * Tempo integration configs
-     *
-     * @return array
-     */
-    public function tempo()
-    {
-        return $this->tempo;
-    }
-
-    /**
-     * @return array
-     */
-    public function iterm()
-    {
-        return $this->iterm;
-    }
-
-    /**
-     * @return array
+     * @return InstancesConfiguration
      */
     public function instances()
     {
@@ -93,128 +51,81 @@ class ApplicationConfiguration
     }
 
     /**
-     * @param string $instance
-     * @return array
-     * @throws \UnexpectedValueException
+     * @return IntegrationsConfiguration
      */
-    public function instance($instance)
+    public function integrations()
     {
-        if (!isset($this->instances[$instance])) {
-            throw new \UnexpectedValueException(
-                sprintf('No instance with name "%s" configured', $instance)
-            );
-        }
-
-        return $this->instances[$instance];
+        return $this->integrations;
     }
 
-    public function yesterdayAsWeekday()
+    /**
+     * @return ProjectConfiguration
+     */
+    public function project()
     {
-        return $this->yesterdayAsWeekday;
+        return $this->project;
     }
 
-    public function defaultWorklogTimestamp()
-    {
-        return $this->defaultWorklogTimestamp;
-    }
-
-    public function oneDayAmount()
-    {
-        return $this->oneDay;
-    }
-
-    public function cacheTtl()
-    {
-        return $this->cacheTtl;
-    }
-
+    /**
+     * @return TransitionsConfiguration
+     */
     public function transitions()
     {
-        return new TransitionResolver($this->transitions);
+        return $this->transitions;
     }
 
+    /**
+     * @return AliasesConfiguration
+     */
     public function aliases()
     {
         return $this->aliases;
     }
 
+    /**
+     * @return FiltersConfiguration
+     */
     public function filters()
     {
         return $this->filters;
     }
 
     /**
-     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration
+     * @return RenderersConfiguration
      */
     public function renderers()
     {
         return $this->renderers;
     }
 
-    public function asArray()
-    {
-        return [
-            'instances' => $this->instances,
-            'integrations' => [
-                'github' => [
-                    'apiToken' => $this->githubToken(),
-                ],
-                'git' => [
-                    'maxBranchNameLength' => $this->maxBranchNameLength(),
-                ],
-                'tempo' => $this->tempo,
-                'iterm' => $this->iterm,
-            ],
-            'project' => [
-                'yesterdayAsWeekday' => $this->yesterdayAsWeekday(),
-                'defaultWorklogTimestamp' => $this->defaultWorklogTimestamp(),
-                'oneDay' => $this->oneDayAmount(),
-                'cacheTtl' => $this->cacheTtl(),
-            ],
-            'transitions' => iterator_to_array($this->transitions),
-            'aliases' => $this->aliases,
-            'filters' => $this->filters,
-        ];
-    }
-
     public static function fromSymfonyConfigArray(array $config)
     {
         $configuration = new self;
-        $configuration->username = $config['credentials']['username'];
-        $configuration->password = $config['credentials']['password'];
-        $configuration->domain = $config['credentials']['domain'];
-        $configuration->instances = self::useAttributeAsKey($config['instances'], 'name');
-        $configuration->githubToken = $config['integrations']['github']['apiToken'];
-        $configuration->maxBranchNameLength = $config['integrations']['git']['maxBranchNameLength'];
-        $configuration->tempo = $config['integrations']['tempo'];
-        $configuration->iterm = $config['integrations']['iterm'];
-        $configuration->yesterdayAsWeekday = $config['project']['yesterdayAsWeekday'];
-        $configuration->oneDay = $config['project']['oneDay'];
-        $configuration->defaultWorklogTimestamp = $config['project']['defaultWorklogTimestamp'];
-        $configuration->cacheTtl = $config['project']['cacheTtl'];
-        $configuration->transitions = self::flattenArray($config['transitions'], 'command', 'transition');
-        $configuration->aliases = self::flattenArray($config['aliases'], 'alias','issueKey');
-        $configuration->filters = self::flattenArray($config['filters'], 'command', 'jql');
+
+        if (isset($config['credentials'])) {
+            print 'Using "credentials" node in configuration is deprecated. Please use a "default" instance instead.' . PHP_EOL . PHP_EOL;
+            $config['instances'] = isset($config['instances']) ? $config['instances'] : [];
+            $config['instances']['default'] = [
+                'name' => 'default',
+                'domain' => $config['credentials']['domain'],
+                'username' => $config['credentials']['username'],
+                'password' => $config['credentials']['password'],
+            ];
+        }
+
+        $configuration->instances = InstancesConfiguration::fromArray($config['instances']);
+        $configuration->integrations = IntegrationsConfiguration::fromArray(isset($config['integrations']) ? $config['integrations'] : []);
+        $configuration->project = ProjectConfiguration::fromArray(isset($config['project']) ? $config['project'] : []);
+        $configuration->transitions = TransitionsConfiguration::fromArray(isset($config['transitions']) ? $config['transitions'] : []);
+        $configuration->aliases = AliasesConfiguration::fromArray(isset($config['aliases']) ? $config['aliases'] : []);
+        $configuration->filters = FiltersConfiguration::fromArray(isset($config['filters']) ? $config['filters'] : []);
         $configuration->renderers = RenderersConfiguration::fromArray(isset($config['renderers']) ? $config['renderers'] : []);
 
         return $configuration;
     }
 
-    private static function flattenArray(array $array, $key, $valueKey)
+    public function servicePrefix()
     {
-        $result = [];
-        foreach ($array as $arr) {
-            $result[$arr[$key]] = $arr[$valueKey];
-        }
-        return $result;
-    }
-
-    private static function useAttributeAsKey(array $array, $key)
-    {
-        $result = [];
-        foreach ($array as $arr) {
-            $result[$arr[$key]] = $arr;
-        }
-        return $result;
+        return 'technodelight.jira.config';
     }
 }

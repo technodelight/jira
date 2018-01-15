@@ -3,7 +3,12 @@
 namespace Fixture;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration as BaseAppConf;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\FiltersConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 use Technodelight\Jira\Configuration\TransitionResolver;
 
 class ApplicationConfiguration extends BaseAppConf
@@ -12,66 +17,55 @@ class ApplicationConfiguration extends BaseAppConf
 
     public static $useTempo = false;
 
-    public function tempo()
+    public function integrations()
     {
-        return [
-            'enabled' => self::$useTempo
-        ];
+        return IntegrationsConfiguration::fromArray([
+            'github' => [
+                'apiToken' => 'githu670k3n',
+            ],
+            'git' => [
+                'maxBranchNameLength' => 30
+            ],
+            'iterm' => [
+                'renderImages' => false,
+                'thumbnailWidth' => 300,
+                'imageCacheTtl' => 0
+            ],
+            'tempo' => [
+                'enabled' => self::$useTempo,
+                'instances' => []
+            ]
+        ]);
     }
 
-    public function username()
+    public function project()
     {
-        return 'zgal';
+        return ProjectConfiguration::fromArray([
+            'yesterdayAsWeekday' => true,
+            'defaultWorklogTimestamp' => 'now',
+            'oneDay' => 27000,
+            'cacheTtl' => 0,
+        ]);
     }
 
-    public function password()
-    {
-        return 'YouDontNeedPasswordsInFixtures';
-    }
-
-    public function githubToken()
-    {
-        return 'githu670k3n';
-    }
-
-    public function domain()
-    {
-        return 'fixture.jira.phar';
-    }
-
-    public function yesterdayAsWeekday()
-    {
-        return true;
-    }
-
-    public function defaultWorklogTimestamp()
-    {
-        return 'now';
-    }
-
-    public function cacheTtl()
-    {
-        return 0;
-    }
-
-    public function oneDayAmount()
-    {
-        return 27000;
-    }
 
     public function transitions()
     {
-        return new TransitionResolver(self::$transitions);
+        $transitions = [];
+        foreach (self::$transitions as $command => $transition) {
+            $transitions[] = ['command' => $command, 'transition' => (array) $transition];
+        }
+        return TransitionsConfiguration::fromArray($transitions);
     }
 
     public function aliases()
     {
-        return [];
+        return AliasesConfiguration::fromArray([]);
     }
 
     public function filters()
     {
-        return [];
+        return FiltersConfiguration::fromArray([]);
     }
 
     public function renderers()

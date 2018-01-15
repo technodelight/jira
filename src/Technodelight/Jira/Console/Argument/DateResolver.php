@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Console\Argument;
 
 use \DateTime;
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 
 class DateResolver implements Resolver
 {
@@ -14,7 +14,7 @@ class DateResolver implements Resolver
     private $configuration;
     private $referenceDate;
 
-    public function __construct(ApplicationConfiguration $configuration, DateTime $referenceDate = null)
+    public function __construct(ProjectConfiguration $configuration, DateTime $referenceDate = null)
     {
         $this->configuration = $configuration;
         $this->referenceDate = $referenceDate ?: new DateTime;

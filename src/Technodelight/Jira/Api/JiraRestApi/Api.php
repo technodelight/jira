@@ -548,6 +548,7 @@ class Api
             }
         }
         $jiraIssue['fields']['worklog'] = $worklog;
+        $jiraIssue['fields'] = $this->normaliseDateFields($jiraIssue['fields']);
 
         return $jiraIssue;
     }

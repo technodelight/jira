@@ -20,6 +20,41 @@
         <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration">
             <factory service="technodelight.jira.configuration.symfony.application_configuration_builder" method="build" />
         </service>
+
+        <service id="technodelight.jira.config.instances" class="Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations.github" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations.git" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations.tempo" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations.iterm" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.project" class="Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.transitions" class="Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.aliases" class="Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.filters" class="Technodelight\Jira\Configuration\ApplicationConfiguration\FiltersConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.renderers" class="Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+
         <!-- config -->
 
         <!-- magic stuff -->
@@ -28,6 +63,9 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <argument type="service" id="console.question_helper" />
+        </service>
+        <service id="technodelight.jira.console.open" class="Technodelight\Jira\Api\OpenApp\OpenApp">
+            <factory class="Technodelight\Jira\Api\OpenApp\OsAdaptingFactory" method="create" />
         </service>
         <!-- magic stuff -->
 
@@ -55,14 +93,14 @@
         <!-- argument resolvers -->
         <service id="technodelight.jira.console.argument.issue_key_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.aliases" />
             <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
         </service>
         <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.project" />
         </service>
         <service id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver">
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.aliases" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
         </service>
         <service id="technodelight.jira.console.argument.project_key_resolver" class="Technodelight\Jira\Console\Argument\ProjectKeyResolver">
@@ -70,6 +108,12 @@
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <!-- argument resolvers -->
+
+        <!-- console output handlers -->
+        <service id="technodelight.jira.console.dashboard.dashboard" class="Technodelight\Jira\Console\Dashboard\Dashboard" >
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+        </service>
     </services>
 
 </container>

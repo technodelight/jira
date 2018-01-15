@@ -4,8 +4,8 @@ namespace spec\Technodelight\Jira\Console\Argument;
 
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Input\InputInterface;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Connector\WorklogHandler;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Domain\Worklog;
@@ -23,21 +23,24 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
         'timeSpentSeconds' => 12345,
     ];
 
-    function let(ApplicationConfiguration $config, WorklogHandler $worklogHandler)
+    function let(AliasesConfiguration $config, WorklogHandler $worklogHandler)
     {
         $this->beConstructedWith($config, $worklogHandler);
     }
 
-    function it_resolves_an_input_argument(InputInterface $input)
+    function it_resolves_an_input_argument(AliasesConfiguration $config, InputInterface $input)
     {
+        $config->aliasToIssueKey(self::ISSUE_KEY)->willReturn(self::ISSUE_KEY);
         $input->hasArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(true);
         $input->getArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(self::ISSUE_KEY);
 
         $this->argument($input)->shouldBeLike(IssueKeyOrWorklogId::fromString(self::ISSUE_KEY));
     }
 
-    function it_resolves_a_worklog_id_and_retrieves_issue_key(WorklogHandler $worklogHandler, InputInterface $input)
+    function it_resolves_a_worklog_id_and_retrieves_issue_key(AliasesConfiguration $config, WorklogHandler $worklogHandler, InputInterface $input)
     {
+        $config->aliasToIssueKey(self::WORKLOG_ID)->willReturn(self::WORKLOG_ID);
+
         $input->hasArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(true);
         $input->getArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(self::WORKLOG_ID);
 

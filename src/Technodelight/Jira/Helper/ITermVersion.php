@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Helper;
 
 use Technodelight\Jira\Api\Shell\Command;
-use Technodelight\Jira\Api\Shell\NativeShell;
+use Technodelight\Jira\Api\Shell\Exec;
 
 class ITermVersion
 {
@@ -32,7 +32,7 @@ class ITermVersion
                        ->withArgument('CFBundleVersion')
                        ->withShortOption('A1')
                 );
-            $shell = new NativeShell();
+            $shell = new Exec();
             $out = $shell->exec($cmd);
             $xml = simplexml_load_string('<root>' . join('', $out) . '</root>');
             return $this->version = (string) $xml->string;

@@ -49,7 +49,7 @@ class IssueFilterCommand extends AbstractCommand
         $issues = $jira->search($this->jql, Api::FIELDS_ALL);
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
-            $output->writeln(sprintf('<fg=black>%s</fg>', $this->jql));
+            $output->writeln(sprintf('<fg=black>%s</>', $this->jql));
             return 0;
         }
         $renderer->renderIssues($output, $jira->search($this->jql, Api::FIELDS_ALL));
