@@ -33,11 +33,11 @@ class ListAliasesCommand extends AbstractCommand
      */
     protected function getAliasesTableRows()
     {
-        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $config */
-        $config = $this->getService('technodelight.jira.config');
+        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration $config */
+        $config = $this->getService('technodelight.jira.config.aliases');
         $rows = [];
-        foreach ($config->aliases() as $alias => $issueKey) {
-            $rows[] = [$alias, $issueKey];
+        foreach ($config->items() as $aliasConfiguration) {
+            $rows[] = [$aliasConfiguration->alias(), $aliasConfiguration->issueKey()];
         }
 
         return $rows;

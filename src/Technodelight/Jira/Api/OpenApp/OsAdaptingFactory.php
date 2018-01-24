@@ -9,14 +9,12 @@ use Technodelight\Jira\Api\Shell\Passthru;
 
 class OsAdaptingFactory
 {
-    public function create()
+    public static function create()
     {
-        return new OpenApp(
-            $this->driver()
-        );
+        return new OpenApp(self::driver());
     }
 
-    private function driver()
+    private static function driver()
     {
         switch(php_uname('s')) {
             case 'Darwin': return new Generic(new Passthru());

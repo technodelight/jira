@@ -18,9 +18,10 @@ interface WorklogHandler
 
     /**
      * @param Issue $issue
+     * @param int|null $limit
      * @return WorklogCollection
      */
-    public function findByIssue(Issue $issue);
+    public function findByIssue(Issue $issue, $limit = null);
 
     /**
      * @param Worklog $worklog

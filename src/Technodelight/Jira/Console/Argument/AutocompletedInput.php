@@ -24,23 +24,42 @@ class AutocompletedInput
      * @var \Technodelight\Jira\Domain\IssueCollection
      */
     private $issues;
+    /**
+     * @var string|array|null
+     */
+    private $history;
 
-    public function __construct(Issue $issue, IssueCollection $issues = null, array $texts = [])
+    public function __construct(Issue $issue, IssueCollection $issues = null, array $texts = [], $history = null)
     {
         $this->issue = $issue;
         $this->issues = $issues;
         $this->words = $this->parseWords($texts);
+        $this->history = $history;
     }
 
     public function getValue($prefix = null)
     {
-        $readline = $this->getReadline($this->issue, $this->issues, $this->words);
-        return $readline->readLine($prefix);
+        $readline = $this->getReadline($this->issue, $this->issues, $this->words, $this->history);
+        return preg_replace('~^<new>~', '', $readline->readLine($prefix));
     }
 
-    private function getReadline(Issue $issue, IssueCollection $issues = null, array $words = [])
+    public function helpText()
+    {
+        return '(Ctrl-A: beginning of the line, Ctrl-E: end of the line, Ctrl-B: backward one word, Ctrl-F: forward one word, Ctrl-W: delete first backward word)';
+    }
+
+    private function getReadline(Issue $issue, IssueCollection $issues = null, array $words = [], $history = null)
     {
         $readline = new Readline;
+        if (!is_array($history)) {
+            $history = [$history];
+        }
+        if (is_array($history)) {
+            foreach ($history as $historyItem) {
+                $readline->addHistory($historyItem);
+            }
+        }
+        $readline->addHistory('<new>');
         $readline->setAutocompleter(
             $this->getAggregateAutocomplete($issue, $issues, $words)
         );

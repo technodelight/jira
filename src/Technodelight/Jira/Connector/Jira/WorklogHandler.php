@@ -39,11 +39,12 @@ class WorklogHandler implements WorklogHandlerInterface
 
     /**
      * @param Issue $issue
+     * @param null $limit
      * @return WorklogCollection
      */
-    public function findByIssue(Issue $issue)
+    public function findByIssue(Issue $issue, $limit = null)
     {
-        return $this->api->retrieveIssueWorklogs($issue->key());
+        return $this->api->retrieveIssueWorklogs($issue->key(), $limit);
     }
 
     /**

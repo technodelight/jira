@@ -51,11 +51,16 @@ class WorklogHandler implements WorklogHandlerInterface
 
     /**
      * @param Issue $issue
+     * @param null $limit
      * @return WorklogCollection
      */
-    public function findByIssue(Issue $issue)
+    public function findByIssue(Issue $issue, $limit = null)
     {
-        $from = $issue->created()->format(self::DATETIME_FORMAT);
+        if ($limit) {
+            $from = date(self::DATETIME_FORMAT, strtotime(sprintf('-%d days', $limit)));
+        } else {
+            $from = $issue->created()->format(self::DATETIME_FORMAT);
+        }
         $to = date(self::DATETIME_FORMAT);
         $worklogs = array_filter(
             $this->api->find($from, $to),
