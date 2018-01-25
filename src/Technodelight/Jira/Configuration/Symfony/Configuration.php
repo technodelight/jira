@@ -10,7 +10,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('jira');
+        $rootNode = $treeBuilder->root('');
 
         $rootNode
             ->children()
@@ -35,6 +35,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->info('JIRA connection credentials')
+            ->attribute('deprecated', true)
             ->children()
                 ->scalarNode('domain')
                     ->info('JIRA\'s domain without protocol, like something.atlassian.net')
@@ -150,7 +151,7 @@ class Configuration implements ConfigurationInterface
             ->info('Project specific settings')
             ->addDefaultsIfNotSet()
             ->children()
-                ->scalarNode('yesterdayAsWeekday')
+                ->booleanNode('yesterdayAsWeekday')
                     ->info('Using \'yesterday\' means last workday on monday')
                     ->defaultTrue()
                 ->end()

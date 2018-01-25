@@ -4,7 +4,6 @@ namespace Technodelight\Jira\Configuration\Symfony;
 
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
 
 class ConfigurationLoader
 {
@@ -35,23 +34,29 @@ class ConfigurationLoader
             $yamls[]= $this->loadConfigurationYaml($path, $isRequired);
         }
 
-        return array_filter($yamls);
+        $configs = array_filter($yamls);
+        if (!$configs) {
+            throw MissingConfigurationException::noConfigsFound();
+        }
+        return $configs;
     }
 
+    /**
+     * @param string $path
+     * @param bool $isRequired
+     * @return mixed|null
+     */
     private function loadConfigurationYaml($path, $isRequired = false)
     {
         if (!is_file($path)) {
             if ($isRequired) {
                 throw MissingConfigurationException::fromPath($path);
             }
-            return;
+            return null;
         }
 
         if (!is_readable($path)) {
-            if ($isRequired) {
-                throw FilePriviledgeErrorException::fromUnreadablePath($path);
-            }
-            return;
+            throw FilePriviledgeErrorException::fromUnreadablePath($path);
         }
 
         $perms = substr(sprintf('%o', fileperms($path)), -4);

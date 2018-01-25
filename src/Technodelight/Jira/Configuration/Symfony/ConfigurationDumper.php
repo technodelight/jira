@@ -6,25 +6,15 @@ use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
 
 class ConfigurationDumper
 {
-    private $filenameProvider;
     private $globalProps = ['credentials', 'integrations'];
 
-    public function __construct(FilenameProvider $filenameProvider)
-    {
-        $this->filenameProvider = $filenameProvider;
-    }
-
-    public function dumpLocal()
-    {
-        return $this->dump($this->filenameProvider->localFile(), false);
-    }
-
-    public function dumpGlobal()
-    {
-        return $this->dump($this->filenameProvider->globalFile(), true);
-    }
-
-    private function dump($path, $isGlobal)
+    /**
+     * @param string $path
+     * @param bool $isGlobal
+     * @return string
+     * @throws \ErrorException
+     */
+    public function dump($path, $isGlobal)
     {
         if (is_file($path)) {
             throw new \ErrorException('File already exists: ' . $path);

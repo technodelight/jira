@@ -15,7 +15,6 @@ use Technodelight\Jira\Console\Argument\AutocompletedInput;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
-use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
 
@@ -65,8 +64,6 @@ class LogTimeCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Log time interactively'
             )
-            //TODO: restrict worklog history to 2 weeks
-            //TODO: add option to enable displaying all previous worklogs (barely required to display more than a few items)
         ;
     }
 
@@ -92,6 +89,14 @@ class LogTimeCommand extends AbstractCommand
 
         if ($input->getOption('delete') || $input->getOption('move')) {
             return;
+        }
+
+        // show issue header
+        if ($issueKeyOrWorklogId->isIssueKey()) {
+            $this->issueHeaderRenderer()->render(
+                $output,
+                $this->jiraApi()->retrieveIssue($issueKeyOrWorklogId->issueKey())
+            );
         }
 
         if (!$input->getArgument('time')) {
@@ -238,7 +243,7 @@ class LogTimeCommand extends AbstractCommand
         // load issue
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
         $worklog->assignIssue($issue);
-        $worklogs = $this->worklogHandler()->findByIssue($issue);
+        $worklogs = $this->worklogHandler()->findByIssue($issue, 20);
         $issue->assignWorklogs($worklogs);
         return $worklog;
     }
@@ -360,11 +365,14 @@ EOL;
         return join(', ', array_filter($messages));
     }
 
-    private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $issueKey, $worklog = null)
+    private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $issueKey, Worklog $worklog = null)
     {
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
-        $output->writeln($this->worklogCommentDialogText($defaultMessage, $worklog));
-        $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()]);
+        $history = array_map(function(Worklog $log) { return $log->comment(); }, iterator_to_array($this->worklogHandler()->findByIssue($issue)));
+//        $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $worklog ? $worklog->comment() : null);
+        $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $history);
+        $output->write($this->worklogCommentDialogText($defaultMessage, $worklog));
+        $output->writeln($input->helpText());
         $comment = $input->getValue();
         $output->write('</>');
         return $comment;
@@ -497,5 +505,13 @@ EOL;
     private function worklogRenderer()
     {
         return $this->getService('technodelight.jira.renderer.issue.worklog');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Renderer\Issue\Header
+     */
+    private function issueHeaderRenderer()
+    {
+        return $this->getService('technodelight.jira.renderer.issue.header');
     }
 }

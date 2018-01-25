@@ -80,11 +80,11 @@ class CheckoutBranch
                 $branchName = '';
             }
         } else {
-            $branches = $this->gitBranchesForIssue($issue);
             $generatedBranchOption = $this->generateBranchName($issue) . ' (generated)';
+            $branches = $this->gitBranchesForIssue($issue);
 
             $choiceOptions = $this->branchesAsTextArray($branches);
-            $choiceOptions[] = [$generatedBranchOption];
+            $choiceOptions[] = $generatedBranchOption;
             $question = new ChoiceQuestion(
                 'Select branch to checkout to',
                 $choiceOptions,

@@ -68,7 +68,8 @@ class Comment implements IssueRenderer
         if ($issue) {
             $content = $this->imageRenderer->render($content, $issue);
         }
-        return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()})</>" . PHP_EOL
+
+        return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()}) {$this->commentUrl($comment, $issue)}</>" . PHP_EOL
             . $this->tab($this->wordwrap->wrap($content));
     }
 
@@ -81,5 +82,18 @@ class Comment implements IssueRenderer
     private function tab($string)
     {
         return $this->templateHelper->tabulate($string);
+    }
+
+    /**
+     * @param \Technodelight\Jira\Domain\Comment $comment
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @return string
+     */
+    protected function commentUrl(IssueComment $comment, Issue $issue)
+    {
+        if ($issue) {
+            return $issue->url() . '#comment-' . $comment->id();
+        }
+        return '';
     }
 }
