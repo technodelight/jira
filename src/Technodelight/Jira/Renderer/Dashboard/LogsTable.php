@@ -32,6 +32,7 @@ class LogsTable implements DashboardRenderer
 
     private function renderWeek(OutputInterface $output, Collection $collection)
     {
+        //@TODO: fix when collection spans through more than a week...
         $rows = [];
         $headers = $this->tableHeaders($collection);
 

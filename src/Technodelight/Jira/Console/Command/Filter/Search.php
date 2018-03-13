@@ -1,20 +1,18 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Filter;
 
 use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
-use Symfony\Component\DependencyInjection\Dumper\YamlDumper;
 use Symfony\Component\Yaml\Yaml;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
-use Technodelight\Jira\Console\Argument\NameNormalizer;
 
-class SearchCommand extends AbstractCommand
+use Technodelight\Jira\Configuration\Symfony\Configuration;
+use Technodelight\Jira\Console\Command\AbstractCommand;
+
+class Search extends AbstractCommand
 {
     protected function configure()
     {
@@ -32,12 +30,31 @@ class SearchCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Dump the query as yaml configuration for quicker config updates'
             )
+            ->addOption(
+                'open',
+                'o',
+                InputOption::VALUE_NONE,
+                'Open search in browser instead'
+            )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $command = new IssueFilterCommand($this->container, 'run_' . md5(microtime(true)), $input->getArgument('jql') ?: null);
+        // open in browser instead
+        if ($input->getOption('open')) {
+            $this->openApp()->open(
+                sprintf(
+                    'https://%s/issues/?jql=%s',
+                    $this->config()->instances()->findByName('default')->domain(),
+                    urlencode($input->getArgument('jql'))
+                )
+            );
+            return;
+        }
+
+        // render query results in console
+        $command = new IssueFilter($this->container, 'run_' . md5(microtime(true)), $input->getArgument('jql') ?: null);
         $command->execute($input, $output);
         if ($input->getOption('dump-config')) {
             $this->dumpFilterConfiguration($output, '<insert your preferred filter command here>', $input->getArgument('jql'));
@@ -57,7 +74,6 @@ class SearchCommand extends AbstractCommand
         $configuration = new Configuration;
         /** @var \Symfony\Component\Config\Definition\ArrayNode $config */
         $config = $configuration->getConfigTreeBuilder()->buildTree();
-        $referenceDumper = new YamlReferenceDumper;
 
         foreach ($config->getChildren() as $child) {
             /** @var $child \Symfony\Component\Config\Definition\NodeInterface */
@@ -77,5 +93,21 @@ class SearchCommand extends AbstractCommand
     private function templateHelper()
     {
         return $this->getService('technodelight.jira.template_helper');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\OpenApp\OpenApp
+     */
+    private function openApp()
+    {
+        return $this->getService('technodelight.jira.console.open');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration
+     */
+    private function config()
+    {
+        return $this->getService('technodelight.jira.config');
     }
 }

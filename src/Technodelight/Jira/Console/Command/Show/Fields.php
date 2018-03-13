@@ -1,17 +1,18 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class FieldsCommand extends AbstractCommand
+class Fields extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('fields')
+            ->setName('show:fields')
             ->setDescription('List all available issue fields')
         ;
     }

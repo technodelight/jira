@@ -39,7 +39,8 @@ class Stats implements DashboardRenderer
         if ($collection->days() > 1) {
             $output->writeln(
                 sprintf(
-                    '%0.2f per day, average time spent %s',
+                    '%0.2f issues per day, %0.2f worklogs per day, average time spent %s',
+                    $collection->issuesCount() / $collection->days(),
                     $collection->count() / $collection->days(),
                     $this->dateHelper->secondsToHuman(ceil($collection->totalTimeSpentSeconds() / $collection->count()))
                 )

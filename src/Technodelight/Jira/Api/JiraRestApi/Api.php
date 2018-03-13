@@ -520,6 +520,17 @@ class Api
     }
 
     /**
+     * @TODO: Add implementation here!!! ~/mysites/jira/bin/jira show HDMAM-1587
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param \Technodelight\Jira\Domain\Issue $linkedIssue
+     * @param $linkType
+     */
+    public function linkIssue(Issue $issue, Issue $linkedIssue, $linkType)
+    {
+
+    }
+
+    /**
      * @param array $jiraIssue
      * @return array
      */

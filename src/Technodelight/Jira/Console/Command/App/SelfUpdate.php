@@ -1,20 +1,22 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\App;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class SelfUpdateCommand extends AbstractCommand
+class SelfUpdate extends AbstractCommand
 {
     const DEFAULT_LOCAL_BIN_JIRA = '/usr/local/bin/jira';
 
     protected function configure()
     {
         $this
-            ->setName('selfupdate')
+            ->setName('app:selfupdate')
             ->setDescription('Check latest releases and update')
+            ->setAliases(['selfupdate', 'self-update'])
         ;
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -10,15 +10,17 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
 
-class BranchCommand extends AbstractCommand
+class Branch extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('branch')
+            ->setName('issue:branch')
             ->setDescription('Generate branch name using issue data')
+            ->setAliases(['branch'])
             ->addArgument(
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,

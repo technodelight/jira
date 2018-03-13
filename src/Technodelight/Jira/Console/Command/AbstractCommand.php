@@ -31,30 +31,66 @@ class AbstractCommand extends Command
         parent::__construct($name);
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return \Technodelight\Jira\Console\Argument\IssueKey|string
+     */
     public function issueKeyOption(InputInterface $input, OutputInterface $output)
     {
-        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->option($input, $output);
+        return $this->issueKeyResolver()->option($input, $output);
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return \Technodelight\Jira\Console\Argument\IssueKey|string
+     */
     public function issueKeyArgument(InputInterface $input, OutputInterface $output)
     {
-        return (string) $this->getService('technodelight.jira.console.argument.issue_key_resolver')->argument($input, $output);
+        return $this->issueKeyResolver()->argument($input, $output);
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param null $argumentName
+     * @return \Technodelight\Jira\Console\Argument\Date|string
+     */
     public function dateOption(InputInterface $input, $argumentName = null)
     {
         if ($argumentName) {
-            return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->option($input, $argumentName);
+            return $this->dateArgumentResolver()->option($input, $argumentName);
         }
-        return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->option($input);
+        return $this->dateArgumentResolver()->option($input);
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param null $argumentName
+     * @return \Technodelight\Jira\Console\Argument\Date|string
+     */
     public function dateArgument(InputInterface $input, $argumentName = null)
     {
         if ($argumentName) {
-            return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->argument($input, $argumentName);
+            return $this->dateArgumentResolver()->argument($input, $argumentName);
         }
-        return (string) $this->getService('technodelight.jira.console.argument.date_resolver')->argument($input);
+        return $this->dateArgumentResolver()->argument($input);
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Argument\DateResolver
+     */
+    private function dateArgumentResolver()
+    {
+        return $this->getService('technodelight.jira.console.argument.date_resolver');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Argument\IssueKeyResolver
+     */
+    private function issueKeyResolver()
+    {
+        return $this->getService('technodelight.jira.console.argument.issue_key_resolver');
     }
 
     protected function getService($id)

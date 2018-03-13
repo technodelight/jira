@@ -1,20 +1,22 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Dashboard\Dashboard as ConsoleDashboard;
 
-class DashboardCommand extends AbstractCommand
+class Dashboard extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('dashboard')
+            ->setName('show:dashboard')
             ->setDescription('Show your daily/weekly dashboard')
+            ->setAliases(['dashboard'])
             ->addArgument(
                 'date',
                 InputArgument::OPTIONAL,
@@ -65,11 +67,11 @@ class DashboardCommand extends AbstractCommand
     private function mode(InputInterface $input)
     {
         if ($input->getOption('week')) {
-            return Dashboard::MODE_WEEKLY;
+            return ConsoleDashboard::MODE_WEEKLY;
         } elseif ($input->getOption('month')) {
-            return Dashboard::MODE_MONTHLY;
+            return ConsoleDashboard::MODE_MONTHLY;
         }
-        return Dashboard::MODE_DAILY;
+        return ConsoleDashboard::MODE_DAILY;
     }
 
     /**
@@ -95,10 +97,10 @@ class DashboardCommand extends AbstractCommand
             return $this->getService('technodelight.jira.renderer.dashboard.table');
         }
 
-        if ($mode == Dashboard::MODE_MONTHLY) {
+        if ($mode == ConsoleDashboard::MODE_MONTHLY) {
             return $this->getService('technodelight.jira.renderer.dashboard.summary');
         }
-        if ($mode == Dashboard::MODE_WEEKLY) {
+        if ($mode == ConsoleDashboard::MODE_WEEKLY) {
             return $this->getService('technodelight.jira.renderer.dashboard.table');
         }
         return $this->getService('technodelight.jira.renderer.dashboard.list');

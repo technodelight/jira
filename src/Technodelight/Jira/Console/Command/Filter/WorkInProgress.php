@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Filter;
 
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,17 +9,19 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Project;
 use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class ListWorkInProgressCommand extends AbstractCommand
+class WorkInProgress extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('in-progress')
+            ->setName('search:in-progress')
             ->setDescription('List tickets picked up by you')
+            ->setAliases(['in-progress'])
             ->addArgument(
                 'projectKey',
                 InputArgument::OPTIONAL,

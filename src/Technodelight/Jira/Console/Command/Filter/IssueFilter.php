@@ -1,18 +1,17 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Filter;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class IssueFilterCommand extends AbstractCommand
+class IssueFilter extends AbstractCommand
 {
-    /**
-     * @var string
-     */
+    private $name;
     private $jql;
 
     /**
@@ -28,15 +27,22 @@ class IssueFilterCommand extends AbstractCommand
         if (empty($jql)) {
             throw new \InvalidArgumentException('JQL is empty');
         }
+        $this->name = $name;
         $this->jql = $jql;
 
-        parent::__construct($container, $name);
+        parent::__construct($container, $this->prepareCommandName($name));
+    }
+
+    private function prepareCommandName($name)
+    {
+        return sprintf('search:%s', $name);
     }
 
     protected function configure()
     {
         $this
             ->setDescription($this->descriptionFromJql())
+            ->setAliases([$this->name])
         ;
     }
 

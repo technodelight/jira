@@ -15,7 +15,8 @@
         "icanboogie/storage": "^2.1",
         "technodelight/seconds-to-none": "^0.2.0",
         "hoa/console": "^3.17",
-        "ssnepenthe/color-utils": "^0.4.2"
+        "ssnepenthe/color-utils": "^0.4.2",
+        "technodelight/php-time-ago": "^1.1"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

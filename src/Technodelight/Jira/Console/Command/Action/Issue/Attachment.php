@@ -1,16 +1,17 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Technodelight\Jira\Domain\Attachment;
+use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Domain\Attachment as IssueAttachment;
 use Technodelight\Jira\Domain\Issue;
 
-class DownloadAttachmentCommand extends AbstractCommand
+class Attachment extends AbstractCommand
 {
     const SUCCESS_MESSAGE = 'File "%s" has been successfully downloaded to "%s" .';
     const CANCEL_MESSAGE = 'Skipped downloading file "%s"';
@@ -19,8 +20,9 @@ class DownloadAttachmentCommand extends AbstractCommand
     protected function configure()
     {
         $this
-            ->setName('download')
+            ->setName('issue:attachment')
             ->setDescription('Download attachment from a ticket')
+            ->setAliases(['download'])
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,
@@ -52,7 +54,7 @@ class DownloadAttachmentCommand extends AbstractCommand
 
             $question = new ChoiceQuestion(
                 'Select file to download',
-                array_map(function (Attachment $attachment) {
+                array_map(function (IssueAttachment $attachment) {
                     return $attachment->filename();
                 }, $issue->attachments()),
                 0
