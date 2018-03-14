@@ -1,17 +1,18 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class ProjectCommand extends AbstractCommand
+class Project extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('project')
+            ->setName('show:project')
             ->setDescription('Show project details by project key')
             ->addArgument(
                 'projectKey',

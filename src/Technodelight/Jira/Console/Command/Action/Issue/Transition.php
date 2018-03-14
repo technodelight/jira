@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,16 +10,19 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\GitShell\Branch;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Api\GitShell\Api as GitShell;
-use Technodelight\Jira\Domain\Transition;
+use Technodelight\Jira\Domain\Transition as IssueTransition;
 use Technodelight\Jira\Helper\TemplateHelper;
 use \UnexpectedValueException;
 
-class IssueTransitionCommand extends AbstractCommand
+class Transition extends AbstractCommand
 {
     const TRANSITION_DESCRIPTION_SINGLE = 'Moves issue to %s';
     const TRANSITION_DESCRIPTION_MULTIPLE = 'Moves issue to one of: %s (whichever applies first)';
+
+    private $name;
 
     private $transitions;
 
@@ -35,14 +38,21 @@ class IssueTransitionCommand extends AbstractCommand
                 sprintf('No transitions were defined for command: "%s"', $name)
             );
         }
+        $this->name = $name;
         $this->transitions = $transitions;
-        parent::__construct($container, $name);
+        parent::__construct($container, $this->prepareIssueTransitionCommandName($name));
+    }
+
+    private function prepareIssueTransitionCommandName($name)
+    {
+        return sprintf('workflow:%s', $name);
     }
 
     protected function configure()
     {
         $this
             ->setDescription($this->getCommandDescription())
+            ->setAliases([$this->name])
             ->addArgument(
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,
@@ -122,7 +132,7 @@ class IssueTransitionCommand extends AbstractCommand
 
     /**
      * @param Issue $issue
-     * @param Transition[] $transitions
+     * @param IssueTransition[] $transitions
      * @return array
      */
     private function renderUnsuccesfulMessage(Issue $issue, array $transitions)
@@ -149,9 +159,9 @@ class IssueTransitionCommand extends AbstractCommand
     }
 
     /**
-     * @param Transition[] $transitions
+     * @param IssueTransition[] $transitions
      * @param array $transitionsToSearchFor
-     * @return Transition
+     * @return IssueTransition
      * @throws \UnexpectedValueException
      */
     private function findTransitionByName(array $transitions, $transitionsToSearchFor)
@@ -198,7 +208,7 @@ class IssueTransitionCommand extends AbstractCommand
 
     /**
      * @param Issue $issue
-     * @param Transition[] $transitions
+     * @param IssueTransition[] $transitions
      * @return array
      */
     private function listTransitions(Issue $issue, array $transitions)
@@ -222,13 +232,7 @@ class IssueTransitionCommand extends AbstractCommand
         return $list;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param Transition $transition
-     * @throws \RuntimeException
-     */
-    private function checkGitChanges(InputInterface $input, OutputInterface $output, Transition $transition)
+    private function checkGitChanges(InputInterface $input, OutputInterface $output, IssueTransition $transition)
     {
         $git = $this->gitShell();
         $helper = $this->questionHelper();
@@ -257,10 +261,7 @@ class IssueTransitionCommand extends AbstractCommand
         }
     }
 
-    /**
-     * @return string
-     */
-    protected function getCommandDescription()
+    private function getCommandDescription()
     {
         if (count($this->transitions) == 1) {
             return sprintf(self::TRANSITION_DESCRIPTION_SINGLE, current($this->transitions));

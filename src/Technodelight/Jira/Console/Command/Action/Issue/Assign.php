@@ -1,21 +1,23 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Console\HoaConsole\UserPickerAutocomplete;
 
-class AssignCommand extends AbstractCommand
+class Assign extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('assign')
+            ->setName('issue:assign')
             ->setDescription('Change issue assignee')
+            ->setAliases(['assign'])
             ->addArgument(
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,

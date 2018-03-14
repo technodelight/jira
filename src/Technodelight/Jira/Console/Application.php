@@ -11,33 +11,31 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
-use Technodelight\Jira\Console\Command\AssignCommand;
-use Technodelight\Jira\Console\Command\BranchCommand;
-use Technodelight\Jira\Console\Command\BrowseIssueCommand;
-use Technodelight\Jira\Console\Command\CommentCommand;
-use Technodelight\Jira\Console\Command\DashboardCommand;
-use Technodelight\Jira\Console\Command\FieldsCommand;
-use Technodelight\Jira\Console\Command\InitCommand;
-use Technodelight\Jira\Console\Command\IssueFilterCommand;
-use Technodelight\Jira\Console\Command\IssueTransitionCommand;
-use Technodelight\Jira\Console\Command\ListInstancesCommand;
-use Technodelight\Jira\Console\Command\ListWorkInProgressCommand;
-use Technodelight\Jira\Console\Command\LogTimeCommand;
-use Technodelight\Jira\Console\Command\ProjectCommand;
-use Technodelight\Jira\Console\Command\SearchCommand;
-use Technodelight\Jira\Console\Command\SelfUpdateCommand;
-use Technodelight\Jira\Console\Command\ShellCommand;
-use Technodelight\Jira\Console\Command\ShowCommand;
-use Technodelight\Jira\Console\Command\DownloadAttachmentCommand;
-use Technodelight\Jira\Console\Command\StatsCommand;
-use Technodelight\Jira\Console\Command\StatusesCommand;
-use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
+use Technodelight\Jira\Console\Command\Action\Issue\Assign;
+use Technodelight\Jira\Console\Command\Action\Issue\Attachment;
+use Technodelight\Jira\Console\Command\Action\Issue\Branch;
+use Technodelight\Jira\Console\Command\Action\Issue\Comment;
+use Technodelight\Jira\Console\Command\Action\Issue\LogTime;
+use Technodelight\Jira\Console\Command\Action\Issue\Transition;
+use Technodelight\Jira\Console\Command\App\Init;
+use Technodelight\Jira\Console\Command\App\SelfUpdate;
+use Technodelight\Jira\Console\Command\Filter\IssueFilter;
+use Technodelight\Jira\Console\Command\Filter\Search;
+use Technodelight\Jira\Console\Command\Filter\WorkInProgress;
+use Technodelight\Jira\Console\Command\Internal\ShellFeatures;
+use Technodelight\Jira\Console\Command\Internal\UsageStats;
+use Technodelight\Jira\Console\Command\Show\Aliases;
+use Technodelight\Jira\Console\Command\Show\Browse;
+use Technodelight\Jira\Console\Command\Show\Dashboard;
+use Technodelight\Jira\Console\Command\Show\Fields;
+use Technodelight\Jira\Console\Command\Show\Instances;
+use Technodelight\Jira\Console\Command\Show\Issue;
+use Technodelight\Jira\Console\Command\Show\Project;
+use Technodelight\Jira\Console\Command\Show\Statuses;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
-use Technodelight\Jira\Helper\GitHelper;
 use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Console\Command\ListAliasesCommand;
 
 class Application extends BaseApp
 {
@@ -72,11 +70,6 @@ class Application extends BaseApp
      * @var ApplicationConfiguration
      */
     protected $config;
-
-    /**
-     * @var GitHelper
-     */
-    protected $gitHelper;
 
     /**
      * @var DateHelper
@@ -121,24 +114,24 @@ class Application extends BaseApp
     {
         $commands = [];
         // app specific commands
-        $commands[] = new ShellCommand($this->container());
-        $commands[] = new StatsCommand($this->container());
-        $commands[] = new ListInstancesCommand($this->container());
-        $commands[] = new ListAliasesCommand($this->container());
+        $commands[] = new ShellFeatures($this->container());
+        $commands[] = new UsageStats($this->container());
+        $commands[] = new Instances($this->container());
+        $commands[] = new Aliases($this->container());
         // instance related commands
-        $commands[] = new FieldsCommand($this->container());
-        $commands[] = new StatusesCommand($this->container());
-        $commands[] = new ProjectCommand($this->container());
+        $commands[] = new Fields($this->container());
+        $commands[] = new Statuses($this->container());
+        $commands[] = new Project($this->container());
         // issue related commands
-        $commands[] = new ShowCommand($this->container());
-        $commands[] = new BrowseIssueCommand($this->container());
-        $commands[] = new LogTimeCommand($this->container());
-        $commands[] = new CommentCommand($this->container());
-        $commands[] = new AssignCommand($this->container());
-        $commands[] = new DownloadAttachmentCommand($this->container());
-        $commands[] = new BranchCommand($this->container());
+        $commands[] = new Issue($this->container());
+        $commands[] = new Browse($this->container());
+        $commands[] = new LogTime($this->container());
+        $commands[] = new Comment($this->container());
+        $commands[] = new Assign($this->container());
+        $commands[] = new Attachment($this->container());
+        $commands[] = new Branch($this->container());
         foreach ($this->config()->transitions()->items() as $transition) {
-            $commands[] = new IssueTransitionCommand(
+            $commands[] = new Transition(
                 $this->container(),
                 $transition->command(),
                 $transition->transitions()
@@ -146,17 +139,17 @@ class Application extends BaseApp
         }
 
         // issue listing commands
-        $commands[] = new ListWorkInProgressCommand($this->container());
-        $commands[] = new DashboardCommand($this->container());
+        $commands[] = new WorkInProgress($this->container());
+        $commands[] = new Dashboard($this->container());
         $filters = $this->config()->filters();
         foreach ($filters->items() as $filter) {
-            $commands[] = new IssueFilterCommand(
+            $commands[] = new IssueFilter(
                 $this->container(),
                 $filter->command(),
                 $filter->jql()
             );
         }
-        $commands[] = new SearchCommand($this->container());
+        $commands[] = new Search($this->container());
 
         $this->addCommands($commands);
     }
@@ -164,8 +157,8 @@ class Application extends BaseApp
     protected function getDefaultCommands()
     {
         $commands = parent::getDefaultCommands();
-        $commands[] = new InitCommand($this->container());
-        $commands[] = new SelfUpdateCommand($this->container());
+        $commands[] = new Init($this->container());
+        $commands[] = new SelfUpdate($this->container());
 
         return $commands;
     }
@@ -240,18 +233,6 @@ class Application extends BaseApp
         }
 
         return $this->container;
-    }
-
-    /**
-     * @return GitHelper
-     */
-    public function git()
-    {
-        if (!isset($this->gitHelper)) {
-            $this->gitHelper = new GitHelper;
-        }
-
-        return $this->gitHelper;
     }
 
     /**

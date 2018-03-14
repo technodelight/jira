@@ -110,6 +110,11 @@ class WorklogCollection implements Iterator, Countable
         ));
     }
 
+    public function issueCount()
+    {
+        return count($this->issueKeys());
+    }
+
     public function issues()
     {
         $issues = IssueCollection::createEmpty();

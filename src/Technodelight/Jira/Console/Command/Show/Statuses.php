@@ -1,18 +1,19 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Status;
 
-class StatusesCommand extends AbstractCommand
+class Statuses extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('statuses')
+            ->setName('show:statuses')
             ->setDescription('Show available issue statuses')
             ->addArgument(
                 'projectKey',

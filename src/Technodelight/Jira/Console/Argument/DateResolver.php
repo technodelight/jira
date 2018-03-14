@@ -20,6 +20,11 @@ class DateResolver implements Resolver
         $this->referenceDate = $referenceDate ?: new DateTime;
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param string $argumentName
+     * @return null|\Technodelight\Jira\Console\Argument\Date
+     */
     public function argument(InputInterface $input, $argumentName = self::NAME)
     {
         if (!$input->hasArgument($argumentName)) {
@@ -28,6 +33,11 @@ class DateResolver implements Resolver
         return $this->resolve($input->getArgument($argumentName));
     }
 
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param string $optionName
+     * @return null|\Technodelight\Jira\Console\Argument\Date
+     */
     public function option(InputInterface $input, $optionName = self::NAME)
     {
         if (!$input->hasOption($optionName)) {

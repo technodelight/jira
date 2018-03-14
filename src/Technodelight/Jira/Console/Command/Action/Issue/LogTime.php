@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,16 +15,18 @@ use Technodelight\Jira\Console\Argument\AutocompletedInput;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
 
-class LogTimeCommand extends AbstractCommand
+class LogTime extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('log')
+            ->setName('issue:log')
             ->setDescription('Log work against issue')
+            ->setAliases(['log', 'worklog'])
             ->addArgument(
                 IssueKeyOrWorklogIdResolver::NAME,
                 InputArgument::OPTIONAL,
@@ -64,6 +66,12 @@ class LogTimeCommand extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Log time interactively'
             )
+            ->addOption(
+                'keep-default-comment',
+                'k',
+                InputOption::VALUE_NONE,
+                'Keep default comment (Worked on ISSUE-123 or the previous comment when updating existing worklog'
+            )
         ;
     }
 
@@ -72,6 +80,8 @@ class LogTimeCommand extends AbstractCommand
         if ($input->getOption('interactive')) {
             return;
         }
+        // @TODO: check both comment and date arguments to see if comment is missing
+        // @TODO: if one argument is missing then comment could be a date
 
         /** @var \Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId $issueKeyOrWorklogId */
         $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
@@ -109,7 +119,11 @@ class LogTimeCommand extends AbstractCommand
             } else {
                 $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId->issueKey());
             }
-            $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog());
+            if ($input->getOption('keep-default-comment')) {
+                $comment = $defaultMessage;
+            } else {
+                $comment = $this->getWorklogCommentWithAutocomplete($output, $defaultMessage, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog());
+            }
 
             $input->setArgument('comment', $comment ?: $defaultMessage);
         }
@@ -177,7 +191,12 @@ class LogTimeCommand extends AbstractCommand
         $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime);
         $timeLeft = $this->dateHelper()->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
         if ($timeLeft <= 0) {
-            $output->writeln(sprintf('<info>You already filled in your timesheets for %s</info>', $this->dateArgument($input)));
+            $output->writeln(
+                sprintf(
+                    '<info>You already filled in your timesheets for %s</info>',
+                    (string) $this->dateArgument($input) == 'now' ? 'today' : $this->dateArgument($input)
+                )
+            );
             return 1;
         }
 
@@ -369,7 +388,6 @@ EOL;
     {
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
         $history = array_map(function(Worklog $log) { return $log->comment(); }, iterator_to_array($this->worklogHandler()->findByIssue($issue)));
-//        $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $worklog ? $worklog->comment() : null);
         $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $history);
         $output->write($this->worklogCommentDialogText($defaultMessage, $worklog));
         $output->writeln($input->helpText());
@@ -431,11 +449,12 @@ EOL;
      */
     private function renderDashboard(InputInterface $input, OutputInterface $output)
     {
-        $arrayInput = new ArrayInput([
-            'date' => date('Y-m-d', strtotime($this->dateArgument($input))),
-        ]);
-        $dashboard = $this->getApplication()->get('dashboard');
-        $dashboard->execute($arrayInput, $output);
+        $this->dashboardRenderer()->render(
+            $output,
+            $this->dashboardDataProvider()->fetch(
+                date('Y-m-d', strtotime($this->dateArgument($input)))
+            )
+        );
     }
 
     private function resolveIssueKeyOrWorklogId(InputInterface $input)
@@ -513,5 +532,21 @@ EOL;
     private function issueHeaderRenderer()
     {
         return $this->getService('technodelight.jira.renderer.issue.header');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Renderer\DashboardRenderer
+     */
+    private function dashboardRenderer()
+    {
+        return $this->getService('technodelight.jira.renderer.dashboard');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Dashboard\Dashboard
+     */
+    private function dashboardDataProvider()
+    {
+        return $this->getService('technodelight.jira.console.dashboard.dashboard');
     }
 }

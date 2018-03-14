@@ -3,10 +3,12 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\BytesInHuman\BytesInHuman;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Attachment as IssueAttachment;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\IssueRenderer;
+use Technodelight\TimeAgo;
 
 class Attachment implements IssueRenderer
 {
@@ -41,10 +43,15 @@ class Attachment implements IssueRenderer
 
     private function renderAttachment(IssueAttachment $attachment)
     {
+        //@TODO: throws No such language: en (jira show HDMAM-1519 -vvv throws)
+        $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en'); //@TODO: update timeago to have another static constructor + __toString
+
         return sprintf(
-            '<info>%s</info> (<fg=cyan>%s</>) <fg=black>jira download %s %s</>',
+            '<info>%s</info> %s (by <fg=cyan>%s</> %s) <fg=black>jira download %s %s</>',
             $attachment->filename(),
+            BytesInHuman::fromBytes($attachment->size()),
             $attachment->author(),
+            $timeAgo->inWords(),
             $attachment->issue()->issueKey(),
             $attachment->filename()
         );

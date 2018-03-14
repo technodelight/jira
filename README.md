@@ -79,7 +79,7 @@ The `transitions` and `filters` would appear as new commands, while the issue al
 # License
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Zsolt Gál
+Copyright (c) 2015-2018 Zsolt Gál
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,14 +9,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Console\Argument\AutocompletedInput;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class CommentCommand extends AbstractCommand
+class Comment extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('comment')
+            ->setName('issue:comment')
             ->setDescription('Add/remove/update/delete comments on issues')
+            ->setAliases(['comment'])
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,

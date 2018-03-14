@@ -1,20 +1,20 @@
 <?php
 
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Internal;
 
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class StatsCommand extends AbstractCommand
+class UsageStats extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('_stats')
+            ->setName('internal:stats')
             ->setDescription('Show statistics about your issue usage')
             ->addOption(
                 'clear',

@@ -20,6 +20,11 @@ class Date
         return $date;
     }
 
+    public function toDateTime()
+    {
+        return new \DateTime($this->date);
+    }
+
     public function __toString()
     {
         return $this->date;
