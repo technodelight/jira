@@ -1,23 +1,23 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\OpenApp\Driver\Generic;
 use Technodelight\Jira\Api\OpenApp\OpenApp;
-use Technodelight\Jira\Api\Shell\Passthru;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
 
-class BrowseIssueCommand extends AbstractCommand
+class Browse extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('browse')
+            ->setName('show:browse')
             ->setDescription('Open issue in browser')
+            ->setAliases(['browse'])
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,

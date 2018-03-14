@@ -41,6 +41,11 @@ class Issue
      */
     private $attachments = [];
 
+    /**
+     * @var IssueLink[]
+     */
+    private $links = [];
+
     public function id()
     {
         return $this->id;
@@ -253,6 +258,17 @@ class Issue
         }
 
         return $this->comments;
+    }
+
+    public function links()
+    {
+        if (($links = $this->findField('issuelinks')) && empty($this->links)) {
+            $this->links = array_map(function($link) {
+                return IssueLink::fromArray($link);
+            }, $links);
+        }
+
+        return $this->links;
     }
 
     /**

@@ -32,7 +32,7 @@ class UserPickerAutocomplete implements Autocompleter
                 function(UserPickerResult $user) {
                     return $user->key();
                 },
-                $this->jira->userPicker($prefix)
+                $this->jira->userPicker($prefix) //@TODO: query appropriate instance here!!!
             );
             return count($results) > 1 ? $results : current($results);
         }

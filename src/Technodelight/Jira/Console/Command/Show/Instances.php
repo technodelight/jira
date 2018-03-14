@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -8,13 +8,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class ListInstancesCommand extends AbstractCommand
+class Instances extends AbstractCommand
 {
     protected function configure()
     {
         $this
-            ->setName('instances')
+            ->setName('show:instances')
             ->setDescription('List configured instances');
     }
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command;
+namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Renderer\Issue\Renderer;
+use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class ShowCommand extends AbstractCommand
+class Issue extends AbstractCommand
 {
     protected function configure()
     {

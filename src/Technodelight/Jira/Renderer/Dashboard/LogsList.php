@@ -58,11 +58,12 @@ class LogsList implements DashboardRenderer
                 $output->writeln([
                     '',
                     sprintf(
-                        '<comment>%s</> <fg=white;options=bold>%s</> (%d %s)',
+                        '<comment>%s</> <fg=white;options=bold>%s</> (%d %s%s)',
                         $day->format('Y-m-d'),
                         $day->format('l'),
-                        $worklogs->count(),
-                        $worklogs->count() == 1 ? 'issue' : 'issues'
+                        $worklogs->issueCount(),
+                        $worklogs->issueCount() == 1 ? 'issue' : 'issues',
+                        $worklogs->issueCount() != $worklogs->count() ? sprintf(', %d worklogs', $worklogs->count()) : ''
                     ),
                     ''
                 ]);

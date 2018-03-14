@@ -9,6 +9,8 @@ require __DIR__ . '/../vendor/autoload.php';
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Console\Application;
 
+// @TODO: create App bootstrap class and use that here instead
+// @TODO: inject container into application instead of allowing the application to create the container itself?
 try {
     $app = new Application('JIRA CLI', trim(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version')));
     $app->addDomainCommands();
