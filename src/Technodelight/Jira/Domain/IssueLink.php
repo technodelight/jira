@@ -33,6 +33,9 @@ class IssueLink
 
     public function type()
     {
+        if ($this->type instanceof Type) {
+            return $this->type;
+        }
         return Type::fromArray($this->type);
     }
 

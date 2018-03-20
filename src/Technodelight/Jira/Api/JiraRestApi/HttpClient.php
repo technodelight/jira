@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Promise;
-use Technodelight\Jira\Api\JiraRestApi\ClientException;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider;
 
 class HttpClient implements Client
@@ -142,7 +141,8 @@ class HttpClient implements Client
             $this->httpClient = new GuzzleClient(
                 [
                     'base_uri' => $this->apiUrl($this->configProvider->domain()),
-                    'auth' => [$this->configProvider->username(), $this->configProvider->password()]
+                    'auth' => [$this->configProvider->username(), $this->configProvider->password()],
+                    'allow_redirects' => true,
                 ]
             );
         }

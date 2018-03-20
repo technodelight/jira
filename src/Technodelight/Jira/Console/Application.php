@@ -8,31 +8,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
-use Technodelight\Jira\Console\Command\Action\Issue\Assign;
-use Technodelight\Jira\Console\Command\Action\Issue\Attachment;
-use Technodelight\Jira\Console\Command\Action\Issue\Branch;
-use Technodelight\Jira\Console\Command\Action\Issue\Comment;
-use Technodelight\Jira\Console\Command\Action\Issue\Link;
-use Technodelight\Jira\Console\Command\Action\Issue\LogTime;
-use Technodelight\Jira\Console\Command\Action\Issue\Transition;
-use Technodelight\Jira\Console\Command\Action\Issue\Unlink;
-use Technodelight\Jira\Console\Command\App\Init;
-use Technodelight\Jira\Console\Command\App\SelfUpdate;
-use Technodelight\Jira\Console\Command\Filter\IssueFilter;
-use Technodelight\Jira\Console\Command\Filter\Search;
-use Technodelight\Jira\Console\Command\Filter\WorkInProgress;
-use Technodelight\Jira\Console\Command\Internal\ShellFeatures;
-use Technodelight\Jira\Console\Command\Internal\UsageStats;
-use Technodelight\Jira\Console\Command\Show\Aliases;
-use Technodelight\Jira\Console\Command\Show\Browse;
-use Technodelight\Jira\Console\Command\Show\Dashboard;
-use Technodelight\Jira\Console\Command\Show\Fields;
-use Technodelight\Jira\Console\Command\Show\Instances;
-use Technodelight\Jira\Console\Command\Show\Issue;
-use Technodelight\Jira\Console\Command\Show\Project;
-use Technodelight\Jira\Console\Command\Show\Statuses;
-use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\PluralizeHelper;
 
 class Application extends BaseApp
@@ -42,66 +17,24 @@ class Application extends BaseApp
      */
     private $container;
 
+    /**
+     * Returns base directory
+     * (four levels up relative to this class)
+     *
+     * @return string
+     */
+    public function baseDir()
+    {
+        $parts = explode(DIRECTORY_SEPARATOR, __DIR__);
+        $levels = count(explode('\\', get_class($this)));
+        return join(DIRECTORY_SEPARATOR, array_slice($parts, 0, $levels * -1));
+    }
+
     public function setContainer(ContainerInterface $container)
     {
         if (!isset($this->container)) {
             $this->container = $container;
         }
-    }
-
-    public function addDomainCommands()
-    {
-        $commands = [];
-        // app specific commands
-        $commands[] = new ShellFeatures($this->container());
-        $commands[] = new UsageStats($this->container());
-        $commands[] = new Instances($this->container());
-        $commands[] = new Aliases($this->container());
-        // instance related commands
-        $commands[] = new Fields($this->container());
-        $commands[] = new Statuses($this->container());
-        $commands[] = new Project($this->container());
-        // issue related commands
-        $commands[] = new Issue($this->container());
-        $commands[] = new Browse($this->container());
-        $commands[] = new LogTime($this->container());
-        $commands[] = new Comment($this->container());
-        $commands[] = new Assign($this->container());
-        $commands[] = new Link($this->container());
-        $commands[] = new Unlink($this->container());
-        $commands[] = new Attachment($this->container());
-        $commands[] = new Branch($this->container());
-        foreach ($this->config()->transitions()->items() as $transition) {
-            $commands[] = new Transition(
-                $this->container(),
-                $transition->command(),
-                $transition->transitions()
-            );
-        }
-
-        // issue listing commands
-        $commands[] = new WorkInProgress($this->container());
-        $commands[] = new Dashboard($this->container());
-        $filters = $this->config()->filters();
-        foreach ($filters->items() as $filter) {
-            $commands[] = new IssueFilter(
-                $this->container(),
-                $filter->command(),
-                $filter->jql()
-            );
-        }
-        $commands[] = new Search($this->container());
-
-        $this->addCommands($commands);
-    }
-
-    protected function getDefaultCommands()
-    {
-        $commands = parent::getDefaultCommands();
-        $commands[] = new Init($this->container());
-        $commands[] = new SelfUpdate($this->container());
-
-        return $commands;
     }
 
     public function doRun(InputInterface $input, OutputInterface $output)
@@ -118,7 +51,7 @@ class Application extends BaseApp
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             /** @var \ICanBoogie\Storage\Storage $cache */
-            $cache = $this->container()->get('technodelight.jira.api_cache_storage');
+            $cache = $this->container->get('technodelight.jira.api_cache_storage');
             $cache->clear();
         }
 
@@ -134,34 +67,6 @@ class Application extends BaseApp
         } else {
             return parent::doRun($input, $output);
         }
-    }
-
-    /**
-     * @return ApplicationConfiguration
-     */
-    public function config()
-    {
-        return $this->container()->get('technodelight.jira.config');
-    }
-
-    /**
-     * @return ContainerBuilder
-     */
-    public function container()
-    {
-        return $this->container;
-    }
-
-    /**
-     * @return GitBranchnameGenerator
-     */
-    public function gitBranchnameGenerator()
-    {
-        if (!isset($this->gitBranchnameGenerator)) {
-            $this->gitBranchnameGenerator = new GitBranchnameGenerator;
-        }
-
-        return $this->gitBranchnameGenerator;
     }
 
     public function getDefaultHelperSet()

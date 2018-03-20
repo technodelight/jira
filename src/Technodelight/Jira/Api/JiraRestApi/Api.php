@@ -546,7 +546,7 @@ class Api
             'outwardIssue' => ['key' => (string) $outwardIssueKey],
             'comment' => !empty($comment) ? ['body' => (string) $comment] : false,
         ]));
-        var_dump($result);
+
         return IssueLink::fromArray($result);
     }
 

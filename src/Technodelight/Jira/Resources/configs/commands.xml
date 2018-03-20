@@ -4,22 +4,98 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <!--
-    <parameters>
-        <parameter key="acme.demo.example.class">Acme\DemoBundle\Example</parameter>
-    </parameters>
-
     <services>
-        <service id="acme.demo.example" class="%acme.demo.example.class%">
-            <argument type="service" id="service_id" />
-            <argument>plain_value</argument>
-            <argument>%parameter_name%</argument>
-            <call method="setService">
-                <argument type="service" id="service_id" />
-            </call>
-            <tag name="twig.extension" />
-            <tag name="kernel.event_listener" event="kernel.exception" method="onKernelException" />
+
+        <service id="technodelight.jira.app.command.init" class="Technodelight\Jira\Console\Command\App\Init">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
         </service>
+        <service id="technodelight.jira.app.command.selfupdate" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.shellfeatures" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.usagestats" class="Technodelight\Jira\Console\Command\Internal\UsageStats">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.instances" class="Technodelight\Jira\Console\Command\Show\Instances">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.aliases" class="Technodelight\Jira\Console\Command\Show\Aliases">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.fields" class="Technodelight\Jira\Console\Command\Show\Fields">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.statuses" class="Technodelight\Jira\Console\Command\Show\Statuses">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.project" class="Technodelight\Jira\Console\Command\Show\Project">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.issue" class="Technodelight\Jira\Console\Command\Show\Issue">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.browse" class="Technodelight\Jira\Console\Command\Show\Browse">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.logtime" class="Technodelight\Jira\Console\Command\Action\Issue\LogTime">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.comment" class="Technodelight\Jira\Console\Command\Action\Issue\Comment">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.assign" class="Technodelight\Jira\Console\Command\Action\Issue\Assign">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.link" class="Technodelight\Jira\Console\Command\Action\Issue\Link">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.unlink" class="Technodelight\Jira\Console\Command\Action\Issue\Unlink">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.attachment" class="Technodelight\Jira\Console\Command\Action\Issue\Attachment">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.branch" class="Technodelight\Jira\Console\Command\Action\Issue\Branch">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.=" class="Technodelight\Jira\Console\Command\Filter\WorkInProgress">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.workinprogress" class="Technodelight\Jira\Console\Command\Show\Dashboard">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.dashboard" class="Technodelight\Jira\Console\Command\Filter\Search">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.version" class="Technodelight\Jira\Console\Command\Action\Issue\Version">
+            <call method="setJiraApi">
+                <argument type="service" id="technodelight.jira.api" />
+            </call>
+            <tag name="command" />
+        </service>
+
     </services>
-    -->
 </container>
