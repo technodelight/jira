@@ -6,6 +6,8 @@ use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Field;
+use Technodelight\Jira\Domain\IssueLink;
+use Technodelight\Jira\Domain\IssueLink\Type;
 use Technodelight\Jira\Domain\Project;
 use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\Transition;
@@ -520,14 +522,75 @@ class Api
     }
 
     /**
-     * @TODO: Add implementation here!!! ~/mysites/jira/bin/jira show HDMAM-1587
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @param \Technodelight\Jira\Domain\Issue $linkedIssue
-     * @param $linkType
+     * Creates an issue link between two issues. The user requires the link issue permission for the issue which will
+     * be linked to another issue. The specified link type in the request is used to create the link and will create
+     * a link from the first issue to the second issue using the outward description. It also create a link from the
+     * second issue to the first issue using the inward description of the issue link type. It will add the supplied
+     * comment to the first issue. The comment can have a restriction who can view it. If group is specified, only
+     * users of this group can view this comment, if roleLevel is specified only users who have the specified role
+     * can view this comment. The user who creates the issue link needs to belong to the specified group or have the
+     * specified role.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-post
+     * @param string $inwardIssueKey
+     * @param string $outwardIssueKey
+     * @param string $linkName
+     * @param string $comment
+     * @return IssueLink
      */
-    public function linkIssue(Issue $issue, Issue $linkedIssue, $linkType)
+    public function linkIssue($inwardIssueKey, $outwardIssueKey, $linkName, $comment = '')
     {
+        $result = $this->client->post('issueLink', array_filter([
+            'type' => ['name' => (string) $linkName],
+            'inwardIssue' => ['key' => (string) $inwardIssueKey],
+            'outwardIssue' => ['key' => (string) $outwardIssueKey],
+            'comment' => !empty($comment) ? ['body' => (string) $comment] : false,
+        ]));
+        var_dump($result);
+        return IssueLink::fromArray($result);
+    }
 
+    /**
+     * Returns an issue link with the specified id.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-linkId-get
+     * @param string $linkId
+     * @return \Technodelight\Jira\Domain\IssueLink
+     */
+    public function retrieveIssueLink($linkId)
+    {
+        return IssueLink::fromArray($this->client->get(sprintf('issueLink/%s', $linkId)));
+    }
+
+    /**
+     * Deletes an issue link with the specified id. To be able to delete an issue link
+     * you must be able to view both issues and must have the link issue permission for
+     * at least one of the issues.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-linkId-delete
+     *
+     * @param string $linkId
+     * @return bool
+     */
+    public function removeIssueLink($linkId)
+    {
+        $this->client->delete(sprintf('issueLink/%s', $linkId));
+        return true;
+    }
+
+    /**
+     * Returns a list of available issue link types, if issue linking is enabled.
+     * Each issue link type has an id, a name and a label for the outward and inward link relationship.
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLinkType-get
+     * @return Type[]
+     */
+    public function linkTypes()
+    {
+        return array_map(
+            function(array $linkType) { return Type::fromArray($linkType); },
+            $this->client->get('issueLinkType')['issueLinkTypes']
+        );
     }
 
     /**

@@ -17,17 +17,23 @@
         <!-- new issue field renderers -->
         <service id="technodelight.jira.renderer.issue.header" class="Technodelight\Jira\Renderer\Issue\Header">
             <argument type="service" id="technodelight.jira.color_extractor" />
+            <tag name="issue_renderer" type="header" />
         </service>
-        <service id="technodelight.jira.renderer.issue.minimal_header" class="Technodelight\Jira\Renderer\Issue\MinimalHeader"/>
+        <service id="technodelight.jira.renderer.issue.minimal_header" class="Technodelight\Jira\Renderer\Issue\MinimalHeader">
+            <tag name="issue_renderer" type="minimal_header" />
+        </service>
         <service id="technodelight.jira.renderer.issue.user_details" class="Technodelight\Jira\Renderer\Issue\UserDetails">
             <argument type="service" id="technodelight.jira.template_helper" />
+            <tag name="issue_renderer" type="user_details" />
         </service>
         <service id="technodelight.jira.renderer.issue.progress" class="Technodelight\Jira\Renderer\Issue\Progress">
             <argument type="service" id="seconds_to_none" />
             <argument type="service" id="technodelight.jira.template_helper" />
+            <tag name="issue_renderer" type="progress" />
         </service>
         <service id="technodelight.jira.renderer.issue.priority" class="Technodelight\Jira\Renderer\Issue\Priority">
             <argument type="service" id="technodelight.jira.template_helper" />
+            <tag name="issue_renderer" type="priority" />
         </service>
         <service id="technodelight.jira.renderer.issue.description.full" class="Technodelight\Jira\Renderer\Issue\Description">
             <argument type="service" id="technodelight.jira.template_helper" />
@@ -35,6 +41,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="string">1</argument>
+            <tag name="issue_renderer" type="full_description" />
         </service>
         <service id="technodelight.jira.renderer.issue.description.short" class="Technodelight\Jira\Renderer\Issue\Description">
             <argument type="service" id="technodelight.jira.template_helper" />
@@ -42,48 +49,62 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="string">0</argument>
+            <tag name="issue_renderer" type="short_description" />
         </service>
         <service id="technodelight.jira.renderer.issue.description" alias="technodelight.jira.renderer.issue.description.short" />
         <service id="technodelight.jira.renderer.issue.issue_relations" class="Technodelight\Jira\Renderer\Issue\IssueRelations">
             <argument type="service" id="technodelight.jira.template_helper" />
+            <tag name="issue_renderer" type="issue_relations" />
         </service>
         <service id="technodelight.jira.renderer.issue.versions" class="Technodelight\Jira\Renderer\Issue\Versions">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.gitshell.api"/>
+            <tag name="issue_renderer" type="versions" />
         </service>
         <service id="technodelight.jira.renderer.issue.attachment" class="Technodelight\Jira\Renderer\Issue\Attachment">
             <argument type="service" id="technodelight.jira.template_helper"/>
+            <tag name="issue_renderer" type="attachments" />
         </service>
         <service id="technodelight.jira.renderer.issue.branch" class="Technodelight\Jira\Renderer\Issue\Branch">
             <argument type="service" id="technodelight.jira.template_helper"/>
             <argument type="service" id="technodelight.gitshell.api"/>
             <argument type="service" id="technodelight.jira.git_branchname_generator"/>
+            <tag name="issue_renderer" type="branches" />
         </service>
         <service id="technodelight.jira.renderer.issue.github" class="Technodelight\Jira\Renderer\Issue\GitHub">
             <argument type="service" id="technodelight.jira.template_helper"/>
             <argument type="service" id="technodelight.jira.hub_helper"/>
+            <tag name="issue_renderer" type="github" />
         </service>
         <service id="technodelight.jira.renderer.issue.worklog" class="Technodelight\Jira\Renderer\Issue\Worklog">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="seconds_to_none" />
+            <tag name="issue_renderer" type="worklogs" />
         </service>
         <service id="technodelight.jira.renderer.issue.comment" class="Technodelight\Jira\Renderer\Issue\Comment">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.color_extractor" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
+            <tag name="issue_renderer" type="comments" />
         </service>
+        <!-- new issue field renderers -->
 
+        <!-- custom fields renderer (can be added by configuration) -->
         <service id="technodelight.jira.renderer.issue.custom_field.factory" class="Technodelight\Jira\Renderer\Issue\CustomField\Factory">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.api" />
         </service>
-        <!-- new issue field renderers -->
 
         <!-- issue renderers -->
         <service id="technodelight.jira.renderer.issue.factory" class="Technodelight\Jira\Renderer\IssueRendererFactory">
             <argument type="service" id="technodelight.jira.config" />
             <argument type="service" id="technodelight.jira.renderer.issue.custom_field.factory" />
+            <argument type="service" id="technodelight.jira.renderer.issue.renderer_provider" />
+        </service>
+
+        <service id="technodelight.jira.renderer.issue.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererProvider">
+            <argument type="collection"/>
         </service>
 
         <service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">
@@ -94,32 +115,10 @@
         <service id="technodelight.jira.renderer.issue.short" class="Technodelight\Jira\Renderer\Issue\Renderer">
             <factory service="technodelight.jira.renderer.issue.factory" method="build" />
             <argument>short</argument>
-            <argument type="collection">
-                <argument key="header" type="service" id="technodelight.jira.renderer.issue.header" />
-                <argument key="user_details" type="service" id="technodelight.jira.renderer.issue.user_details" />
-                <argument key="progress" type="service" id="technodelight.jira.renderer.issue.progress" />
-                <argument key="priority" type="service" id="technodelight.jira.renderer.issue.priority" />
-                <argument key="description" type="service" id="technodelight.jira.renderer.issue.description" />
-                <argument key="versions" type="service" id="technodelight.jira.renderer.issue.versions" />
-            </argument>
         </service>
         <service id="technodelight.jira.renderer.issue.full" class="Technodelight\Jira\Renderer\Issue\Renderer">
             <factory service="technodelight.jira.renderer.issue.factory" method="build" />
             <argument>full</argument>
-            <argument type="collection">
-                <argument key="header" type="service" id="technodelight.jira.renderer.issue.header" />
-                <argument key="user_details" type="service" id="technodelight.jira.renderer.issue.user_details" />
-                <argument key="progress" type="service" id="technodelight.jira.renderer.issue.progress" />
-                <argument key="priority" type="service" id="technodelight.jira.renderer.issue.priority" />
-                <argument key="full_description" type="service" id="technodelight.jira.renderer.issue.description.full" />
-                <argument key="issue_relations" type="service" id="technodelight.jira.renderer.issue.issue_relations" />
-                <argument key="versions" type="service" id="technodelight.jira.renderer.issue.versions" />
-                <argument key="attachment" type="service" id="technodelight.jira.renderer.issue.attachment" />
-                <argument key="branch" type="service" id="technodelight.jira.renderer.issue.branch" />
-                <argument key="github" type="service" id="technodelight.jira.renderer.issue.github" />
-                <argument key="worklog" type="service" id="technodelight.jira.renderer.issue.worklog" />
-                <argument key="comment" type="service" id="technodelight.jira.renderer.issue.comment" />
-            </argument>
         </service>
         <service id="technodelight.jira.renderer.issue" alias="technodelight.jira.renderer.issue.short"/>
         <!-- issue renderers -->

@@ -43,8 +43,7 @@ class Attachment implements IssueRenderer
 
     private function renderAttachment(IssueAttachment $attachment)
     {
-        //@TODO: throws No such language: en (jira show HDMAM-1519 -vvv throws)
-        $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en'); //@TODO: update timeago to have another static constructor + __toString
+        $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en');
 
         return sprintf(
             '<info>%s</info> %s (by <fg=cyan>%s</> %s) <fg=black>jira download %s %s</>',

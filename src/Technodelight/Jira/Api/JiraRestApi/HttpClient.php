@@ -3,8 +3,9 @@
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Promise;
+use Technodelight\Jira\Api\JiraRestApi\ClientException;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider;
 
 class HttpClient implements Client
@@ -31,26 +32,42 @@ class HttpClient implements Client
 
     public function post($url, $data = [])
     {
-        $result = $this->httpClient()->post($url, ['json' => $data]);
-        return json_decode($result->getBody(), true);
+        try {
+            $result = $this->httpClient()->post($url, ['json' => $data]);
+            return json_decode($result->getBody(), true);
+        } catch (GuzzleClientException $e) {
+            throw ClientException::fromException($e);
+        }
     }
 
     public function put($url, $data = [])
     {
-        $result = $this->httpClient()->put($url, ['json' => $data]);
-        return json_decode($result->getBody(), true);
+        try {
+            $result = $this->httpClient()->put($url, ['json' => $data]);
+            return json_decode($result->getBody(), true);
+        } catch (GuzzleClientException $e) {
+            throw ClientException::fromException($e);
+        }
     }
 
     public function get($url)
     {
-        $result = $this->httpClient()->get($url);
-        return json_decode($result->getBody(), true);
+        try {
+            $result = $this->httpClient()->get($url);
+            return json_decode($result->getBody(), true);
+        } catch (GuzzleClientException $e) {
+            throw ClientException::fromException($e);
+        }
     }
 
     public function delete($url)
     {
-        $result = $this->httpClient()->delete($url);
-        return json_decode($result->getBody(), true);
+        try {
+            $result = $this->httpClient()->delete($url);
+            return json_decode($result->getBody(), true);
+        } catch (GuzzleClientException $e) {
+            throw ClientException::fromException($e);
+        }
     }
 
     public function multiGet(array $urls)
@@ -97,13 +114,8 @@ class HttpClient implements Client
                 ['json' => ['jql' => $jql]]
             );
             return json_decode($result->getBody(), true);
-        } catch (ClientException $exception) {
-            // extract JQL error message
-            $message = $exception->getMessage();
-            if ($arrayResponse = json_decode($exception->getResponse()->getBody(), true)) {
-                $message = isset($arrayResponse['errorMessages']) ? join(',', $arrayResponse['errorMessages']) : $message;
-            }
-            throw new \BadMethodCallException($message);
+        } catch (GuzzleClientException $exception) {
+            throw ClientException::fromException($exception);
         }
     }
 

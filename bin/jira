@@ -7,13 +7,17 @@ ini_set('display_errors', 1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Technodelight\Jira\Console\Application;
+use Technodelight\Jira\Console\Application\Bootstrap;
 
-// @TODO: create App bootstrap class and use that here instead
-// @TODO: inject container into application instead of allowing the application to create the container itself?
-try {
-    $app = new Application('JIRA CLI', trim(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version')));
-    $app->addDomainCommands();
+try {;
+    $version = trim(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version'));
+    $boot = new Bootstrap();
+    $app = $boot->boot(
+        $version,
+        [
+            join(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'Technodelight', 'Jira', 'Resources', 'configs'])
+        ]
+    );
     $app->run();
 } catch (Technodelight\Jira\Configuration\Symfony\MissingConfigurationException $exc) {
     if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'init') {
