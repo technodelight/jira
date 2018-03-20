@@ -7,6 +7,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Field;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Renderer\Issue\CustomField\Exception;
 use Technodelight\Jira\Renderer\Issue\CustomField\Formatter;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
@@ -80,19 +81,12 @@ class CustomField implements IssueRenderer
             }
         );
         if (empty($fields)) {
-            throw new \InvalidArgumentException(
-                sprintf('Cannot find the requested field "%s" by name', $fieldName)
-            );
+            throw Exception::fromMissingField($fieldName);
         }
         if (count($fields) > 1) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'Finding field "%s" by name seems to match on multiple JIRA fields: %s',
-                    $fieldName,
-                    join(', ', $fields)
-                )
-            );
+            throw Exception::fromMultipleMatchingFields($fieldName, $fields);
         }
+
         return reset($fields);
     }
 

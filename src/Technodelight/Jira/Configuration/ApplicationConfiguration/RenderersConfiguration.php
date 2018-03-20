@@ -23,11 +23,42 @@ class RenderersConfiguration implements RegistrableConfiguration
         ['name' => 'default', 'class' => DefaultFormatter::class],
     ];
 
+    private $defaults = [
+        'short' => [
+            'inherit' => true,
+            'fields' => [
+                ['name' => 'header'],
+                ['name' => 'user_details'],
+                ['name' => 'progress'],
+                ['name' => 'priority'],
+                ['name' => 'short_description'],
+                ['name' => 'versions'],
+            ],
+        ],
+        'full' => [
+            'inherit' => true,
+            'fields' => [
+                ['name' => 'header'],
+                ['name' => 'user_details'],
+                ['name' => 'progress'],
+                ['name' => 'priority'],
+                ['name' => 'full_description'],
+                ['name' => 'issue_relations'],
+                ['name' => 'versions'],
+                ['name' => 'attachments'],
+                ['name' => 'branches'],
+                ['name' => 'github'],
+                ['name' => 'worklogs'],
+                ['name' => 'comments'],
+            ],
+        ],
+    ];
+
     public static function fromArray(array $config)
     {
         $instance = new self;
-        $instance->short = RendererConfiguration::fromArray(isset($config['short']) ? $config['short'] : []);
-        $instance->full = RendererConfiguration::fromArray(isset($config['full']) ? $config['full'] : []);
+        $instance->short = RendererConfiguration::fromArray($instance->configMerged($config, 'short'));
+        $instance->full = RendererConfiguration::fromArray($instance->configMerged($config, 'full'));
         $instance->formatters = array_map(
             function (array $formatter)  {
                 return FormatterConfiguration::fromArray($formatter);
@@ -60,5 +91,10 @@ class RenderersConfiguration implements RegistrableConfiguration
 
     private function __construct()
     {
+    }
+
+    private function configMerged(array $config, $key)
+    {
+        return array_merge_recursive($this->defaults[$key], isset($config[$key]) ? $config[$key] : []);
     }
 }

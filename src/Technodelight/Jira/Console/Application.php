@@ -2,21 +2,21 @@
 
 namespace Technodelight\Jira\Console;
 
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Technodelight\Jira\Api\JiraRestApi\Api as JiraApi;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Command\Action\Issue\Assign;
 use Technodelight\Jira\Console\Command\Action\Issue\Attachment;
 use Technodelight\Jira\Console\Command\Action\Issue\Branch;
 use Technodelight\Jira\Console\Command\Action\Issue\Comment;
+use Technodelight\Jira\Console\Command\Action\Issue\Link;
 use Technodelight\Jira\Console\Command\Action\Issue\LogTime;
 use Technodelight\Jira\Console\Command\Action\Issue\Transition;
+use Technodelight\Jira\Console\Command\Action\Issue\Unlink;
 use Technodelight\Jira\Console\Command\App\Init;
 use Technodelight\Jira\Console\Command\App\SelfUpdate;
 use Technodelight\Jira\Console\Command\Filter\IssueFilter;
@@ -32,82 +32,21 @@ use Technodelight\Jira\Console\Command\Show\Instances;
 use Technodelight\Jira\Console\Command\Show\Issue;
 use Technodelight\Jira\Console\Command\Show\Project;
 use Technodelight\Jira\Console\Command\Show\Statuses;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
 use Technodelight\Jira\Helper\PluralizeHelper;
-use Technodelight\Jira\Helper\TemplateHelper;
 
 class Application extends BaseApp
 {
-    /**
-     * Relative path to base source directory
-     * @var string
-     */
-    private $baseDir;
-
-    private $directories = [
-        'views' => ['Resources', 'views'],
-        'configs' => ['Resources', 'configs']
-    ];
-
-    /**
-     * DI files to load
-     * @var array
-     */
-    private $diFiles = [
-        'helpers.xml',
-        'renderers.xml',
-        'api.xml',
-        'console.xml',
-    ];
-
     /**
      * @var ContainerBuilder
      */
     private $container;
 
-    /**
-     * @var ApplicationConfiguration
-     */
-    protected $config;
-
-    /**
-     * @var DateHelper
-     */
-    protected $dateHelper;
-
-    /**
-     * @var GitBranchnameGenerator
-     */
-    protected $gitBranchnameGenerator;
-
-    /**
-     * @var TemplateHelper
-     */
-    protected $templateHelper;
-
-    /**
-     * @var JiraApi
-     */
-    protected $jira;
-
-    /**
-     * @var bool
-     */
-    protected $isTesting = false;
-
-    /**
-     * Constructor.
-     *
-     * @param string $name    The name of the application
-     * @param string $version The version of the application
-     */
-    public function __construct($name = 'UNKNOWN', $version = 'UNKNOWN', $isTesting = false)
+    public function setContainer(ContainerInterface $container)
     {
-        $this->baseDir = $this->path([__DIR__, '..']);
-        $this->isTesting = $isTesting;
-
-        parent::__construct($name, $version);
+        if (!isset($this->container)) {
+            $this->container = $container;
+        }
     }
 
     public function addDomainCommands()
@@ -128,6 +67,8 @@ class Application extends BaseApp
         $commands[] = new LogTime($this->container());
         $commands[] = new Comment($this->container());
         $commands[] = new Assign($this->container());
+        $commands[] = new Link($this->container());
+        $commands[] = new Unlink($this->container());
         $commands[] = new Attachment($this->container());
         $commands[] = new Branch($this->container());
         foreach ($this->config()->transitions()->items() as $transition) {
@@ -173,6 +114,7 @@ class Application extends BaseApp
             'app.jira.instance',
             $input->getParameterOption(['--instance', '-i']) ?: 'default'
         );
+        $this->container->compile();
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             /** @var \ICanBoogie\Storage\Storage $cache */
@@ -207,31 +149,6 @@ class Application extends BaseApp
      */
     public function container()
     {
-        if (!isset($this->container)) {
-            $this->container = new ContainerBuilder();
-            foreach ($this->syntheticContainerServices() as $serviceId => $object) {
-                $this->container->set($serviceId, $object);
-            }
-
-            $loader = new XmlFileLoader($this->container, new FileLocator($this->directory('configs')));
-            foreach ($this->diFiles as $fileName) {
-                $loader->load($fileName);
-            }
-            if ($this->isTesting) {
-                $testingLoader = new XmlFileLoader($this->container, new FileLocator([$this->baseDir . '/../../../features/bootstrap/configs']));
-                foreach ($this->diFiles as $fileName) {
-                    if (is_file($this->baseDir . '/../../../features/bootstrap/configs/' . $fileName)) {
-                        $testingLoader->load($fileName);
-                    }
-                }
-            }
-
-            // trigger config init for synthetic services
-            $config = $this->container->get('technodelight.jira.config');
-            $registrator = new ApplicationConfiguration\Service\Registrator($this->container);
-            $registrator->register($config, $config->servicePrefix());
-        }
-
         return $this->container;
     }
 
@@ -254,20 +171,6 @@ class Application extends BaseApp
         return $helperSet;
     }
 
-    /**
-     * @param  string $alias
-     *
-     * @return string relative path
-     */
-    public function directory($alias)
-    {
-        if (!isset($this->directories[$alias])) {
-            throw new \UnexpectedValueException(sprintf('No directory %s configured', $alias));
-        }
-
-        return $this->baseDir . DIRECTORY_SEPARATOR . $this->path($this->directories[$alias]);
-    }
-
     protected function getDefaultInputDefinition()
     {
         $input = parent::getDefaultInputDefinition();
@@ -275,22 +178,6 @@ class Application extends BaseApp
         $input->addOption(new InputOption('--instance', '-i', InputOption::VALUE_REQUIRED, 'Use an instance from config temporarily'));
         $input->addOption(new InputOption('--no-cache', '-N', InputOption::VALUE_NONE, 'Cleare app cache before running command'));
         return $input;
-    }
-
-    private function path(array $parts)
-    {
-        return implode(DIRECTORY_SEPARATOR, $parts);
-    }
-
-    private function syntheticContainerServices()
-    {
-        return [
-            'technodelight.jira.app' => $this,
-            'app.container' => $this->container,
-            'console.formatter_helper' => $this->getDefaultHelperSet()->get('formatter'),
-            'console.dialog_helper' => $this->getDefaultHelperSet()->get('dialog'),
-            'console.question_helper' => $this->getDefaultHelperSet()->get('question'),
-        ];
     }
 
     private function formatBytes($size, $precision = 4)

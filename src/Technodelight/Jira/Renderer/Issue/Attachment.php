@@ -43,7 +43,7 @@ class Attachment implements IssueRenderer
 
     private function renderAttachment(IssueAttachment $attachment)
     {
-        $timeAgo = new TimeAgo($attachment->created()); //@TODO: update timeago to have a static constructor + __toString
+        $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en');
 
         return sprintf(
             '<info>%s</info> %s (by <fg=cyan>%s</> %s) <fg=black>jira download %s %s</>',

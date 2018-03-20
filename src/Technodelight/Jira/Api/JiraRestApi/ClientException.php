@@ -1,20 +1,19 @@
 <?php
 
-namespace Technodelight\Jira\Api\Tempo;
+namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 
 class ClientException extends \RuntimeException
 {
     const UNKNOWN_ERROR = 'Unknown error happened';
-    const NOT_FOUND = 'Not found';
 
     public static function fromException(GuzzleClientException $exception)
     {
         if ($errorResponse = self::decodeResponse($exception)) {
             return self::fromErrorResponse($errorResponse, $exception);
         } else {
-            return new self($exception->getCode() == 404 ? self::NOT_FOUND : self::UNKNOWN_ERROR, $exception->getCode(), $exception);
+            return new self(self::UNKNOWN_ERROR, $exception->getCode(), $exception);
         }
     }
 
@@ -32,9 +31,7 @@ class ClientException extends \RuntimeException
     private static function fromStandardError(array $errorResponse, GuzzleClientException $previousException = null)
     {
         return new self(
-            join(PHP_EOL, array_merge($errorResponse['errors'], $errorResponse['errorMessages'])) . PHP_EOL
-            . 'reasons: ' . PHP_EOL
-            . join(PHP_EOL, $errorResponse['reasons']),
+            join(PHP_EOL, array_merge($errorResponse['errors'], $errorResponse['errorMessages'])),
             $previousException ? $previousException->getCode() : null,
             $previousException
         );

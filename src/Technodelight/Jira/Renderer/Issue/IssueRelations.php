@@ -61,10 +61,11 @@ class IssueRelations implements IssueRenderer
     private function renderLink(IssueLink $link)
     {
         return sprintf(
-            '<comment>%s</> <info>%s</> %s <fg=black>(%s)</>',
+            '<comment>%s</> <info>%s</> %s <fg=black>%s</> <fg=black>(%s)</>',
             $link->isInward() ? $link->type()->inward() : $link->type()->outward(),
             $link->isInward() ? $link->inwardIssue()->key() : $link->outwardIssue()->key(),
             $link->isInward() ? $link->inwardIssue()->summary() : $link->outwardIssue()->summary(),
+            $link->id(),
             $link->isInward() ? $link->inwardIssue()->url() : $link->outwardIssue()->url()
         );
     }

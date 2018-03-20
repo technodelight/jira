@@ -2,10 +2,12 @@
 
 namespace Technodelight\Jira\Renderer;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\Factory;
 use Technodelight\Jira\Renderer\Issue\Renderer;
+use Technodelight\Jira\Renderer\Issue\RendererProvider;
 
 class IssueRendererFactory
 {
@@ -17,28 +19,37 @@ class IssueRendererFactory
      * @var \Technodelight\Jira\Renderer\Issue\CustomField\Factory
      */
     private $factory;
+    /**
+     * @var \Technodelight\Jira\Renderer\Issue\RendererProvider
+     */
+    private $rendererProvider;
 
-    public function __construct(ApplicationConfiguration $config, Factory $factory)
+    public function __construct(ApplicationConfiguration $config, Factory $factory, RendererProvider $rendererProvider)
     {
         $this->config = $config;
         $this->factory = $factory;
+        $this->rendererProvider = $rendererProvider;
     }
 
     /**
      * @param string $mode
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
      * @return Renderer
      */
-    public function build($mode, $renderers = [])
+    public function build($mode)
     {
         $rendererConfig = $this->config($mode);
 
-        if (!$rendererConfig->inherit()) {
-            $renderers = ['header' => array_shift($renderers)];
-        }
+        $renderers = [];
+//        if (!$rendererConfig->inherit()) {
+//            $renderers = ['header' => array_shift($renderers)];
+//        }
 
         foreach ($rendererConfig->fields() as $fieldConfiguration) {
-            $this->processConfiguration($fieldConfiguration, $renderers);
+//            $this->processConfiguration($fieldConfiguration, $renderers);
+            $this->createField($fieldConfiguration, $renderers);
+        }
+        foreach ($rendererConfig->fields() as $fieldConfiguration) {
+            $this->changeField($fieldConfiguration, $renderers);
         }
 
         return new Renderer($renderers);
@@ -60,19 +71,6 @@ class IssueRendererFactory
      * @param FieldConfiguration $fieldConfiguration
      * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
      */
-    private function processConfiguration(FieldConfiguration $fieldConfiguration, array &$renderers)
-    {
-        if (isset($renderers[$fieldConfiguration->name()])) {
-            $this->changeField($fieldConfiguration, $renderers);
-        } else {
-            $this->createField($fieldConfiguration, $renderers);
-        }
-    }
-
-    /**
-     * @param FieldConfiguration $fieldConfiguration
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
-     */
     private function changeField(FieldConfiguration $fieldConfiguration, array &$renderers)
     {
         if ($fieldConfiguration->remove()) {
@@ -88,10 +86,7 @@ class IssueRendererFactory
      */
     private function createField(FieldConfiguration $fieldConfiguration, array &$renderers)
     {
-        $renderers[$fieldConfiguration->name()] = $this->createCustomFieldRenderer($fieldConfiguration);
-        if ($fieldConfiguration->shouldBeMoved()) {
-            $this->moveField($fieldConfiguration, $renderers);
-        }
+        $renderers[$fieldConfiguration->name()] = $this->createFieldRenderer($fieldConfiguration);
     }
 
     /**
@@ -132,6 +127,19 @@ class IssueRendererFactory
 
     /**
      * @param \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration $fieldConfiguration
+     * @return \Technodelight\Jira\Renderer\IssueRenderer
+     */
+    private function createFieldRenderer(FieldConfiguration $fieldConfiguration)
+    {
+        if ($this->isCustomField($fieldConfiguration)) {
+            return $this->createCustomFieldRenderer($fieldConfiguration);
+        }
+
+        return $this->createBuiltInFieldRenderer($fieldConfiguration);
+    }
+
+    /**
+     * @param \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration $fieldConfiguration
      * @return \Technodelight\Jira\Renderer\Issue\CustomField
      */
     private function createCustomFieldRenderer(FieldConfiguration $fieldConfiguration)
@@ -143,5 +151,15 @@ class IssueRendererFactory
             $fieldConfiguration->inline(),
             $formatter ? $formatter->createInstance() : null
         );
+    }
+
+    private function isCustomField(FieldConfiguration $fieldConfiguration)
+    {
+        return !$this->rendererProvider->has($fieldConfiguration->name());
+    }
+
+    private function createBuiltInFieldRenderer(FieldConfiguration $fieldConfiguration)
+    {
+        return $this->rendererProvider->get($fieldConfiguration->name());
     }
 }

@@ -14,12 +14,12 @@ class FieldConfiguration
     public static function fromArray(array $config)
     {
         $instance = new self;
-        $instance->name = $config['name'];
-        $instance->formatter = $config['formatter'];
-        $instance->inline = $config['inline'];
-        $instance->before = $config['before'];
-        $instance->after = $config['after'];
-        $instance->remove = $config['remove'];
+        $instance->name = $instance->withDefaults($config, 'name');
+        $instance->formatter = $instance->withDefaults($config, 'formatter');
+        $instance->inline = $instance->withDefaults($config, 'inline');
+        $instance->before = $instance->withDefaults($config, 'before');
+        $instance->after = $instance->withDefaults($config, 'after');
+        $instance->remove = $instance->withDefaults($config, 'remove');
 
         return $instance;
     }
@@ -82,5 +82,10 @@ class FieldConfiguration
 
     private function __construct()
     {
+    }
+
+    private function withDefaults(array $config, $key, $default = '')
+    {
+        return isset($config[$key]) ? $config[$key] : $default;
     }
 }
