@@ -61,8 +61,8 @@ class ApplicationContext implements Context
         if (!isset($this->app)) {
             $boot = new Bootstrap();
             $this->app = $boot->boot('behat', [
-                 join(DIRECTORY_SEPARATOR, [__DIR__, '..', '..', 'src', 'Technodelight', 'Jira', 'Resources', 'configs']),
-                 join(DIRECTORY_SEPARATOR, [__DIR__, 'configs']),
+                 join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs']),
+                 join(DIRECTORY_SEPARATOR, ['features', 'bootstrap', 'configs']),
             ]);
             $this->app->setAutoExit(false);
         }

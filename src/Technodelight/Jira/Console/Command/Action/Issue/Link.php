@@ -11,6 +11,7 @@ use Technodelight\Jira\Console\Argument\IssueLinkArgument;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueLink;
+use Technodelight\Jira\Domain\IssueLink\Type;
 
 class Link extends AbstractCommand
 {
@@ -38,8 +39,7 @@ class Link extends AbstractCommand
                 'issueKey',
                 InputArgument::OPTIONAL,
                 'IssueKey (eg. PROJ-1)'
-            )
-        ;
+            );
         foreach ($this->relations as $relation) {
             $this->addOption(
                 strtr($relation, [' ' => '-']),
@@ -85,15 +85,18 @@ class Link extends AbstractCommand
      */
     private function link(IssueKey $issueKey, IssueLinkArgument $link, array $linkTypes)
     {
+        $existingLinks = $this->existingLinks($issueKey);
+        $linkedLinks = $this->existingLinks($link->issueKey());
+
         foreach ($linkTypes as $linkType) {
-            if ($linkType->inward() == $link->relation()) {
+            if ($this->canInwardLink($link, $linkType, $existingLinks)) {
                 return $this->jiraApi()->linkIssue(
                     $link->issueKey(),
                     $issueKey,
                     $linkType->name()
                 );
             }
-            if ($linkType->outward() == $link->relation()) {
+            if ($this->canOutwardLink($link, $issueKey, $linkType, $linkedLinks)) {
                 return $this->jiraApi()->linkIssue(
                     $issueKey,
                     $link->issueKey(),
@@ -107,11 +110,58 @@ class Link extends AbstractCommand
         );
     }
 
+    private function existingLinks(IssueKey $issueKey)
+    {
+        $links = [];
+        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        foreach ($issue->links() as $link) {
+            $links[] = sprintf(
+                '%s %s',
+                $link->isInward() ? $link->type()->inward() : $link->type()->outward(),
+                $link->isInward() ? $link->inwardIssue()->key() : $link->outwardIssue()->key()
+            );
+        }
+        return $links;
+    }
+
     /**
      * @return \Technodelight\Jira\Api\JiraRestApi\Api
      */
     private function jiraApi()
     {
         return $this->getService('technodelight.jira.api');
+    }
+
+    /**
+     * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
+     * @param \Technodelight\Jira\Domain\IssueLink\Type $linkType
+     * @param IssueLink[] $existing
+     * @return bool
+     */
+    private function canInwardLink(IssueLinkArgument $link, Type $linkType, array $existing = [])
+    {
+        if ($linkType->inward() == $link->relation()) {
+            $key = $linkType->inward() . ' ' . $link->issueKey();
+            return !in_array($key, $existing);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
+     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
+     * @param \Technodelight\Jira\Domain\IssueLink\Type $linkType
+     * @param IssueLink[] $existing
+     * @return bool
+     */
+    private function canOutwardLink(IssueLinkArgument $link, IssueKey $issueKey, Type $linkType, array $existing = [])
+    {
+        if ($linkType->outward() == $link->relation()) {
+            $key = $linkType->outward() . ' ' . $issueKey;
+            return !in_array($key, $existing);
+        }
+
+        return false;
     }
 }

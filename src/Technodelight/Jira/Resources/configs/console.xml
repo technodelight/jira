@@ -4,6 +4,12 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <!-- synthetic services added by synthetic services compiler pass -->
+        <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" synthetic="true"/>
+        <service id="console.formatter_helper" class="Symfony\Component\Console\Helper\FormatterHelper" synthetic="true"/>
+        <service id="console.dialog_helper" class="Symfony\Component\Console\Helper\DialogHelper" synthetic="true"/>
+        <service id="console.question_helper" class="Symfony\Component\Console\Helper\QuestionHelper" synthetic="true"/>
+
         <!-- config -->
         <service id="technodelight.jira.configuration.symfony.filename_provider" class="Technodelight\Jira\Configuration\Symfony\FilenameProvider">
             <argument type="service" id="technodelight.gitshell.api" />

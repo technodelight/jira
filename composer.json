@@ -28,12 +28,6 @@
             "email": "technodelight@gmail.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/technodelight/simplate"
-        }
-    ],
     "autoload": {"psr-0": {"Technodelight\\": "src"}},
     "config": {
       "bin-dir": "bin"

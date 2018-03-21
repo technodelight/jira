@@ -15,7 +15,7 @@ try {;
     $app = $boot->boot(
         $version,
         [
-            join(DIRECTORY_SEPARATOR, [__DIR__, '..', 'src', 'Technodelight', 'Jira', 'Resources', 'configs'])
+            join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs'])
         ]
     );
     $app->run();
@@ -29,5 +29,6 @@ try {;
 } catch (Exception $exc) {
     $output = new ConsoleOutput;
     $output->setVerbosity(ConsoleOutput::VERBOSITY_VERBOSE);
-    $app->renderException($exc, $output);
+    $errorApp = isset($app) ? $app : new \Symfony\Component\Console\Application;
+    $errorApp->renderException($exc, $output);
 }
