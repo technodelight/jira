@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\SecondsToNone;
 
 class Worklog
@@ -107,7 +108,7 @@ class Worklog
             return $this;
         }
 
-        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->date);
+        return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->date);
     }
 
     /**

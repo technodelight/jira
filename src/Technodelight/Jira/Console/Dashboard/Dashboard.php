@@ -28,11 +28,11 @@ class Dashboard
         $this->worklogHandler = $worklogHandler;
     }
 
-    public function fetch($dateString, $mode = self::MODE_DAILY)
+    public function fetch($dateString, $user = null, $mode = self::MODE_DAILY)
     {
         $from = $this->defineDate($dateString, $mode, true);
         $to = $this->defineDate($dateString, $mode, false);
-        $logs = $this->worklogHandler->find($from, $to);
+        $logs = $this->worklogHandler->find($from, $to)->filterByUser($user ? $user : $this->jira->user()->key());
 
         $issueKeys = $logs->issueKeys();
         if ($issueKeys) {

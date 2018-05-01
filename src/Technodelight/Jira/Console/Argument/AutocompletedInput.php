@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Argument;
 use Hoa\Console\Readline\Autocompleter\Aggregate;
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\HoaConsole\IssueAutocomplete;
 use Technodelight\Jira\Console\HoaConsole\UsernameAutocomplete;
 use Technodelight\Jira\Domain\Issue;
@@ -12,6 +13,10 @@ use Technodelight\Jira\Domain\IssueCollection;
 
 class AutocompletedInput
 {
+    /**
+     * @var \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private $api;
     /**
      * @var \Technodelight\Jira\Domain\Issue
      */
@@ -29,8 +34,9 @@ class AutocompletedInput
      */
     private $history;
 
-    public function __construct(Issue $issue, IssueCollection $issues = null, array $texts = [], $history = null)
+    public function __construct(Api $api, Issue $issue, IssueCollection $issues = null, array $texts = [], $history = null)
     {
+        $this->api = $api;
         $this->issue = $issue;
         $this->issues = $issues;
         $this->words = $this->parseWords($texts);
@@ -86,7 +92,7 @@ class AutocompletedInput
     {
         $autocompleters = [
             $words ? new Word(array_unique($words)) : null,
-            new UsernameAutocomplete($issue),
+            new UsernameAutocomplete($issue, $this->api),
             !is_null($issues) ? new IssueAutocomplete($issues) : null
         ];
 

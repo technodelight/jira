@@ -15,6 +15,9 @@ class GitBranchnameGenerator
 
     public function fromIssue(Issue $issue)
     {
+        if (preg_match('~^Release ([.\d]+)~', $issue->summary(), $matches)) {
+            return sprintf('release/%s', $matches[1]);
+        }
         return $this->cleanup(
             sprintf(
                 $this->jiraPattern,

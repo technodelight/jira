@@ -30,9 +30,9 @@ class UserPickerAutocomplete implements Autocompleter
         if (!empty($prefix)) {
             $results = array_map(
                 function(UserPickerResult $user) {
-                    return $user->key();
+                    return $user->name();
                 },
-                $this->jira->userPicker($prefix) //@TODO: query appropriate instance here!!!
+                $this->jira->userPicker($prefix)
             );
             return count($results) > 1 ? $results : current($results);
         }

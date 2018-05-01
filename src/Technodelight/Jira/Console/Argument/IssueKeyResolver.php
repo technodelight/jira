@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\GitShell\Api as Git;
+use Technodelight\Jira\Api\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
@@ -68,9 +69,13 @@ class IssueKeyResolver
         }
     }
 
-    private function fromBranch($branch)
+    private function fromBranch(Branch $branch)
     {
         try {
+            $issueKey = $this->configuration->aliasToIssueKey($branch->name());
+            if ($issueKey != $branch->name()) { // has an alias for branch
+                return IssueKey::fromString($issueKey);
+            }
             return IssueKey::fromBranch($branch);
         } catch (MissingIssueKeyException $exception) {
             return false;

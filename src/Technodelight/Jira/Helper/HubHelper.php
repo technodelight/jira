@@ -26,6 +26,9 @@ class HubHelper
 
     public function issues($state = 'all')
     {
+        if (!$this->owner || !$this->repo) {
+            return [];
+        }
         if (!isset($this->issuesCache)) {
             $result = $this->hub->issue()->all($this->owner, $this->repo, array('state' => $state));
             $this->issuesCache = $result;
@@ -36,7 +39,10 @@ class HubHelper
 
     public function prCommits($number)
     {
-        return $this->hub->api('pr')->commits($this->owner, $this->repo, $number);
+        if ($this->owner && $this->repo) {
+            return $this->hub->api('pr')->commits($this->owner, $this->repo, $number);
+        }
+        return [];
     }
 
     public function statusCombined($ref)
@@ -46,12 +52,16 @@ class HubHelper
 
     private function setupOwnerAndRepo()
     {
-        foreach ($this->git->remotes(true) as $remote => $types) {
-            if (isset($types['push'])) {
-                $this->owner = $types['push']['owner'];
-                $this->repo = $types['push']['repo'];
-                break;
+        try {
+            foreach ($this->git->remotes(true) as $remote => $types) {
+                if (isset($types['push'])) {
+                    $this->owner = $types['push']['owner'];
+                    $this->repo = $types['push']['repo'];
+                    break;
+                }
             }
+        } catch (\Exception $e) {
+
         }
     }
 }

@@ -7,11 +7,11 @@ use Technodelight\Jira\Renderer\Issue\CustomField\DefaultFormatter;
 class RenderersConfiguration implements RegistrableConfiguration
 {
     /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration
+     * @var RendererConfiguration
      */
     private $short;
     /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration
+     * @var RendererConfiguration
      */
     private $full;
     /**
@@ -19,12 +19,17 @@ class RenderersConfiguration implements RegistrableConfiguration
      */
     private $formatters;
 
+    /**
+     * @var RendererConfiguration[]
+     */
+    private $modes = [];
+
     private $defaultFormatters = [
         ['name' => 'default', 'class' => DefaultFormatter::class],
     ];
 
     private $defaults = [
-        'short' => [
+        'short' => [ //@FIXME: remove in 0.9.10
             'inherit' => true,
             'fields' => [
                 ['name' => 'header'],
@@ -35,7 +40,7 @@ class RenderersConfiguration implements RegistrableConfiguration
                 ['name' => 'versions'],
             ],
         ],
-        'full' => [
+        'full' => [ //@FIXME: remove in 0.9.10
             'inherit' => true,
             'fields' => [
                 ['name' => 'header'],
@@ -52,13 +57,71 @@ class RenderersConfiguration implements RegistrableConfiguration
                 ['name' => 'comments'],
             ],
         ],
+        'modes' => [
+            'minimal' => [
+                'name' => 'minimal',
+                'inherit' => true,
+                'fields' => [
+                    ['name' => 'minimal_header']
+                ]
+            ],
+            'short' => [
+                'name' => 'short',
+                'inherit' => true,
+                'fields' => [
+                    ['name' => 'header'],
+                    ['name' => 'user_details'],
+                    ['name' => 'progress'],
+                    ['name' => 'priority'],
+                    ['name' => 'short_description'],
+                    ['name' => 'versions'],
+                ],
+            ],
+            'full' => [
+                'name' => 'full',
+                'inherit' => true,
+                'fields' => [
+                    ['name' => 'header'],
+                    ['name' => 'user_details'],
+                    ['name' => 'progress'],
+                    ['name' => 'priority'],
+                    ['name' => 'full_description'],
+                    ['name' => 'issue_relations'],
+                    ['name' => 'versions'],
+                    ['name' => 'attachments'],
+                    ['name' => 'branches'],
+                    ['name' => 'github'],
+                    ['name' => 'worklogs'],
+                    ['name' => 'comments'],
+                ],
+            ],
+        ]
     ];
 
     public static function fromArray(array $config)
     {
         $instance = new self;
-        $instance->short = RendererConfiguration::fromArray($instance->configMerged($config, 'short'));
-        $instance->full = RendererConfiguration::fromArray($instance->configMerged($config, 'full'));
+        /** @var RendererConfiguration[] $modes */
+        $modesConfigMerged = $instance->configMerged($config, 'modes');
+        foreach ($modesConfigMerged as $name => $config) {
+            if (is_array($config['name'])) {
+                $modesConfigMerged[$name]['name'] = $config['name'][1];
+            }
+            if (is_array($config['inherit'])) {
+                $modesConfigMerged[$name]['inherit'] = $config['inherit'][1];
+            }
+        }
+        $modes = array_map(
+            function (array $mode) {
+                return RendererConfiguration::fromArray($mode);
+            },
+            $modesConfigMerged
+        );
+        foreach ($modes as $mode) {
+            $instance->modes[$mode->name()] = $mode;
+        }
+        self::addModesByDeprecatedNodes($config, 'short', $instance);
+        self::addModesByDeprecatedNodes($config, 'full', $instance);
         $instance->formatters = array_map(
             function (array $formatter)  {
                 return FormatterConfiguration::fromArray($formatter);
@@ -69,11 +132,72 @@ class RenderersConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
-    public function short()
+    /**
+     * @param array $config
+     * @param self $instance
+     * @return void
+     */
+    private static function addModesByDeprecatedNodes(array $config, $mode, self $instance)
     {
-        return $this->short;
+        if (isset($config[$mode])) {
+            $convertedConfig = $instance->configMerged($config, $mode);
+            $convertedConfig['name'] = $mode;
+            $instance->modes[$mode] = RendererConfiguration::fromArray($convertedConfig);
+        }
     }
 
+    /**
+     * Key is the renderer name
+     *
+     * @return RendererConfiguration[]
+     */
+    public function modes()
+    {
+        return $this->modes;
+    }
+
+    /**
+     * @param string $mode
+     * @return RendererConfiguration
+     */
+    public function mode($mode)
+    {
+        if (isset($this->modes[$mode])) {
+            return $this->modes[$mode];
+        }
+
+        throw new \InvalidArgumentException('No such mode: ' . $mode);
+    }
+
+    /**
+     * @param string $mode
+     * @return bool
+     */
+    public function hasMode($mode)
+    {
+        try {
+            $this->mode($mode);
+            return true;
+        } catch (\InvalidArgumentException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * @FIXME: remove in 0.9.10
+     * @deprecated
+     * @return RendererConfiguration
+     */
+    public function short()
+    {
+        return $this->mode('short');
+    }
+
+    /**
+     * @FIXME: remove in 0.9.10
+     * @deprecated
+     * @return RendererConfiguration
+     */
     public function full()
     {
         return $this->full;

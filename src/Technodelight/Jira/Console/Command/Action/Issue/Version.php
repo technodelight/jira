@@ -56,6 +56,6 @@ class Version extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //@TODO
+        //@TODO implementation missing
     }
 }

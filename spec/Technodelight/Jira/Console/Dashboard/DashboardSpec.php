@@ -20,7 +20,8 @@ class DashboardSpec extends ObjectBehavior
     private $logRecord = [
         'id' => 123321,
         'author' => [
-            'key' => 321312,
+            'id' => 321321,
+            'key' => 'zenc',
             'name' => 'zenc',
             'displayName' => 'Zenc'
         ],
@@ -40,17 +41,18 @@ class DashboardSpec extends ObjectBehavior
         $worklogCollection = WorklogCollection::createEmpty();
         $worklogCollection->push($log);
         $ref = new \DateTime(self::DATE);
+
         $worklogHandler->find($ref, $ref)->willReturn($worklogCollection);
+        $issue->issueKey()->willReturn(self::ISSUEKEY);
+        $issue->worklogs()->willReturn($worklogCollection);
 
         $jira->retrieveIssues([self::ISSUEKEY])->shouldBeCalled()->willReturn($issueCollection);
         $issueCollection->current()->willReturn($issue);
         $issueCollection->find(self::ISSUEKEY)->willReturn($issue);
-        $issue->issueKey()->willReturn(self::ISSUEKEY);
-        $issue->worklogs()->willReturn($worklogCollection);
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $ref, $ref);
 
-        $this->fetch(self::DATE, Dashboard::MODE_DAILY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, 'zenc', Dashboard::MODE_DAILY)->shouldBeLike($dashboardCollection);
     }
 
     function it_loads_and_groups_worklogs_per_week(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
@@ -69,7 +71,7 @@ class DashboardSpec extends ObjectBehavior
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);
 
-        $this->fetch(self::DATE, Dashboard::MODE_WEEKLY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, 'zenc', Dashboard::MODE_WEEKLY)->shouldBeLike($dashboardCollection);
     }
 
     function it_loads_and_groups_worklogs_per_month(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
@@ -88,6 +90,6 @@ class DashboardSpec extends ObjectBehavior
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);
 
-        $this->fetch(self::DATE, Dashboard::MODE_MONTHLY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, 'zenc', Dashboard::MODE_MONTHLY)->shouldBeLike($dashboardCollection);
     }
 }

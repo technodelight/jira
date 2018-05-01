@@ -27,14 +27,16 @@ class LogsTable implements DashboardRenderer
             return;
         }
 
-        $this->renderWeek($output, $collection);
+        $weeklyCollections = $collection->splitToWeeks();
+        foreach ($weeklyCollections as $weeklyCollection) {
+            $this->renderWeek($output, $weeklyCollection, count($weeklyCollections));
+        }
     }
 
-    private function renderWeek(OutputInterface $output, Collection $collection)
+    private function renderWeek(OutputInterface $output, Collection $collection, $weekCount)
     {
-        //@TODO: fix when collection spans through more than a week...
-        $rows = [];
         $headers = $this->tableHeaders($collection);
+        $dailySum = array_fill_keys($this->createDaysArray($collection), 0);
 
         foreach ($collection as $date => $logs) {
             $dayNo = $date->format('N');
@@ -54,54 +56,62 @@ class LogsTable implements DashboardRenderer
                     $this->shortenWorklogComment($log->comment())
                 );
                 $rows[$log->issueKey()][$dayNo] = trim($rows[$log->issueKey()][$dayNo]);
-                if (!isset($rows['Sum'][$dayNo])) {
-                    $rows['Sum'][$dayNo] = 0;
-                }
-                $rows['Sum'][$dayNo]+= $log->timeSpentSeconds();
-            }
-
-        }
-
-        // sum logged / max seconds
-        $sum = $rows['Sum'];
-        unset($rows['Sum']);
-        ksort($rows);
-
-        $aDay = $this->dateHelper->humanToSeconds('1d');
-        foreach ($sum as $date => $timeSpentSeconds) {
-            if ($aDay == $timeSpentSeconds) {
-                $sum[$date] = '1d';
-            } else {
-                $sum[$date] = $this->dateHelper->secondsToHuman($timeSpentSeconds);
+                $dailySum[$dayNo]+= $log->timeSpentSeconds();
             }
         }
-        ksort($sum);
-        array_unshift($sum, 'Total');
-        $rows[] = new TableSeparator();
-        $rows['Sum'] = $sum;
+
+        $this->tableFooter($rows, $dailySum);
 
         // use the style for this table
         $table = new Table($output);
         $table
             ->setHeaders(array_values($headers))
             ->setRows(array_values($rows));
+        if ($weekCount > 1) {
+            $output->writeln($this->tableDateSpanHeader($collection));
+        }
         $table->render();
     }
 
     private function tableHeaders(Collection $collection)
     {
         $headers = ['Issue'];
-        foreach ($collection as $date => $logs) {
+        foreach ($collection->fromToDateRange(true) as $date) {
             $headers[$date->format('N')] = $date->format('l');
         }
-        ksort($headers);
 
         return $headers;
     }
 
-    private function shortenWorklogComment($text, $length = 15)
+    private function tableFooter(array &$rows, $dailySum)
+    {
+        $rows[] = new TableSeparator();
+        $summary = ['Total'];
+        foreach ($dailySum as $day => $logSeconds) {
+            $summary[] = $this->dateHelper->secondsToHuman($logSeconds);
+        }
+        $rows[] = $summary;
+    }
+
+    private function shortenWorklogComment($text, $length = 20)
     {
         $wrapped = explode(PHP_EOL, wordwrap($text, $length));
         return array_shift($wrapped) . (count($wrapped) >= 1 ? '..' : '');
+    }
+
+    private function tableDateSpanHeader(Collection $collection)
+    {
+        return sprintf(
+            'From %s to %s:',
+            $collection->from()->format('Y-m-d l'),
+            $collection->to()->format('Y-m-d l')
+        );
+    }
+
+    private function createDaysArray(Collection $collection)
+    {
+        return array_map(function(\DateTime $date) {
+            return $date->format('N');
+        }, $collection->fromToDateRange(true));
     }
 }

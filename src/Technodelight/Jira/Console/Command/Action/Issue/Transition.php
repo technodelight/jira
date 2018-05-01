@@ -181,11 +181,16 @@ class Transition extends AbstractCommand
 
     private function gitBranchesForIssue(Issue $issue)
     {
+        // @TODO: refactor this. The very same branch retrieval logic is present in Branch issue renderer
+        $generatedName = $this->generateBranchName($issue);
         return array_map(
             function(Branch $branch) {
                 return sprintf('%s (%s)', $branch->name(), $branch->isRemote() ? 'remote' : 'local');
             },
-            $this->gitShell()->branches($issue->ticketNumber())
+            array_merge(
+                $this->gitShell()->branches($issue->ticketNumber()),
+                $this->gitShell()->branches($generatedName)
+            )
         );
     }
 

@@ -18,7 +18,7 @@ class IssueLink
     public static function fromArray(array $array)
     {
         $issueLink = new IssueLink();
-        $issueLink->id = $array['id'];
+        $issueLink->id = isset($array['id']) ? $array['id'] : null;
         $issueLink->type = $array['type'];
         $issueLink->inwardIssue = isset($array['inwardIssue']) ? $array['inwardIssue'] : null;
         $issueLink->outwardIssue = isset($array['outwardIssue']) ? $array['outwardIssue'] : null;
@@ -65,5 +65,14 @@ class IssueLink
     public function isOutward()
     {
         return !is_null($this->outwardIssue);
+    }
+
+    public function __toString()
+    {
+        if ($this->isInward()) {
+            return sprintf('%s %s', $this->type()->inward(), $this->inwardIssue()->issueKey());
+        }
+
+        return sprintf('%s %s', $this->type()->outward(), $this->outwardIssue()->issueKey());
     }
 }

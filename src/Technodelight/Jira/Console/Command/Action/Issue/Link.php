@@ -55,32 +55,69 @@ class Link extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input, $output);
         $linkTypes = $this->jiraApi()->linkTypes();
 
-        $links = IssueLinkArgument::fromOptions($input->getOptions());
+        $existingLinks = $this->jiraApi()->retrieveIssue($issueKey)->links();
+        $links = IssueLinkArgument::fromOptions($this->optionsFromInput($input));
 
         foreach ($links as $link) {
-            $issueLink = $this->link($issueKey, $link, $linkTypes);
-            $this->showLinkInfo($output, $issueLink, $issueKey);
+            $this->link($issueKey, $link, $linkTypes);
+        }
+        $links = $this->jiraApi()->retrieveIssue($issueKey)->links();
+        $this->showLinkInfo($output, $existingLinks, $links, $issueKey);
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param IssueLink[] $existingLinks
+     * @param IssueLink[] $newLinks
+     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
+     */
+    private function showLinkInfo(OutputInterface $output, array $existingLinks, array $newLinks, IssueKey $issueKey)
+    {
+        $output->writeln(['<info>Done!</info>', '']);
+        $addedLinks = array_diff($newLinks, $existingLinks);
+        $removedLinks = array_diff($existingLinks, $newLinks);
+        $unchangedLinks = array_intersect($existingLinks, $newLinks);
+
+        if (!empty($addedLinks)) {
+            $output->writeln('<comment>Added:</comment>');
+            $this->writelnLinksArray($output, $issueKey, $addedLinks);
+        }
+        if (!empty($removedLinks)) {
+            $output->writeln('<comment>Removed:</comment>');
+            $this->writelnLinksArray($output, $issueKey, $removedLinks);
+        }
+        if (!empty($unchangedLinks)) {
+            $output->writeln('<comment>Unchanged:</comment>');
+            $this->writelnLinksArray($output, $issueKey, $unchangedLinks);
         }
     }
 
-    private function showLinkInfo(OutputInterface $output, IssueLink $link, IssueKey $issueKey)
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
+     * @param $links
+     */
+    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, $links): void
+    {
+        foreach ($links as $link) {
+            $output->writeln($this->renderLink($link, $issueKey));
+        }
+    }
+
+    private function renderLink(IssueLink $link, IssueKey $issueKey)
     {
         if ($link->isInward()) {
-            $output->writeln(
-                sprintf('<info>%s</info> %s %s', $link->inwardIssue()->issueKey(), $link->type()->inward(), $issueKey)
-            );
-        } else {
-            $output->writeln(
-                sprintf('<info>%s</info> %s %s', $issueKey, $link->type()->outward(), $link->outwardIssue()->issueKey())
-            );
+            return sprintf('<info>%s</info> is now %s <comment>%s</comment>', $link->inwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
         }
+
+        return sprintf('<info>%s</info> is now %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->outwardIssue()->issueKey());
     }
 
     /**
      * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
      * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
      * @param \Technodelight\Jira\Domain\IssueLink\Type[] $linkTypes
-     * @return \Technodelight\Jira\Domain\IssueLink
+     * @return void
      * @throws \InvalidArgumentException
      */
     private function link(IssueKey $issueKey, IssueLinkArgument $link, array $linkTypes)
@@ -90,18 +127,20 @@ class Link extends AbstractCommand
 
         foreach ($linkTypes as $linkType) {
             if ($this->canInwardLink($link, $linkType, $existingLinks)) {
-                return $this->jiraApi()->linkIssue(
+                $this->jiraApi()->linkIssue(
                     $link->issueKey(),
                     $issueKey,
                     $linkType->name()
                 );
+                return;
             }
             if ($this->canOutwardLink($link, $issueKey, $linkType, $linkedLinks)) {
-                return $this->jiraApi()->linkIssue(
+                $this->jiraApi()->linkIssue(
                     $issueKey,
                     $link->issueKey(),
                     $linkType->name()
                 );
+                return;
             }
         }
 
@@ -130,6 +169,28 @@ class Link extends AbstractCommand
     private function jiraApi()
     {
         return $this->getService('technodelight.jira.api');
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @return array
+     */
+    protected function optionsFromInput(InputInterface $input)
+    {
+        $aliasesConfiguration = $this->aliasesConfig();
+        $opts = [];
+        foreach ($input->getOptions() as $relation => $issueKey) {
+            $opts[$relation] = $aliasesConfiguration->aliasToIssueKey($issueKey);
+        }
+        return $opts;
+    }
+
+    /**
+     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration
+     */
+    private function aliasesConfig()
+    {
+        return $this->getService('technodelight.jira.config.aliases');
     }
 
     /**

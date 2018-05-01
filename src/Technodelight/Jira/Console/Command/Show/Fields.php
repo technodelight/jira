@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Command\AbstractCommand;
@@ -38,9 +39,9 @@ class Fields extends AbstractCommand
     protected function createFieldsTable()
     {
         $fields = $this->api()->fields();
-        $table = [['Name', 'Is custom?', 'Schema']];
+        $table = [['Key', 'Name', 'Is custom?', 'Schema']];
         foreach ($fields as $field) {
-            $table[] = [$field->name(), $field->isCustom() ? 'Yes' : 'No', $field->schemaType()];
+            $table[] = [$field->key(), $field->name(), $field->isCustom() ? 'Yes' : 'No', $field->schemaType()];
         }
         return $table;
     }

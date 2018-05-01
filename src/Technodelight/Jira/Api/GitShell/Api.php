@@ -51,7 +51,7 @@ class Api
     {
         if ($verbose) {
             if (!$this->verboseRemotes) {
-                $remotesDef = $this->shell->exec(Command::create()->withArgument('remote')->withOption('v'));
+                $remotesDef = $this->shell->exec(Command::create()->withArgument('remote')->withOption('v')->withStdErrTo('/dev/null'));
                 $this->verboseRemotes = [];
                 foreach ($remotesDef as $def) {
                     if (preg_match(self::VERBOSE_REMOTE_REGEX, trim($def), $matches)) {
@@ -75,7 +75,7 @@ class Api
             return $this->verboseRemotes;
         }
         if (!$this->remotes) {
-            $this->remotes = $this->shell->exec(Command::create()->withArgument('remote'));
+            $this->remotes = $this->shell->exec(Command::create()->withArgument('remote')->withStdErrTo('/dev/null'));
         }
         return $this->remotes;
     }

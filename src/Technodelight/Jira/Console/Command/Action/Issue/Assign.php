@@ -45,7 +45,7 @@ class Assign extends AbstractCommand
 
         $this->jiraApi()->assignIssue((string) $issueKey, $assignee);
         $output->writeln(
-            sprintf('Assigned <info>%s</info> successfully to <info>%s</info>', $issueKey, $assignee)
+            sprintf('<info>%s</info> was assigned successfully to <info>%s</info>', $issueKey, $assignee)
         );
     }
 

@@ -6,10 +6,11 @@
     <services>
         <!-- issue renderer upfront service -->
         <service id="technodelight.jira.issue_renderer" class="Technodelight\Jira\Template\IssueRenderer">
-            <argument type="service" id="technodelight.jira.renderer.issue.full" />
-            <argument type="service" id="technodelight.jira.renderer.issue.short" />
-            <argument type="service" id="technodelight.jira.renderer.issue.minimal" />
+            <argument type="collection" />
             <argument type="service" id="console.formatter_helper" />
+            <!--<argument type="service" id="technodelight.jira.renderer.issue.full" />-->
+            <!--<argument type="service" id="technodelight.jira.renderer.issue.short" />-->
+            <!--<argument type="service" id="technodelight.jira.renderer.issue.minimal" />-->
         </service>
 
         <service id="technodelight.jira.attachment_renderer" class="Technodelight\Jira\Template\AttachmentRenderer" />
@@ -79,6 +80,7 @@
         <service id="technodelight.jira.renderer.issue.worklog" class="Technodelight\Jira\Renderer\Issue\Worklog">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="seconds_to_none" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
             <tag name="issue_renderer" type="worklogs" />
         </service>
         <service id="technodelight.jira.renderer.issue.comment" class="Technodelight\Jira\Renderer\Issue\Comment">
@@ -86,6 +88,7 @@
             <argument type="service" id="technodelight.jira.color_extractor" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
+            <argument type="service" id="technodelight.jira.date_helper" />
             <tag name="issue_renderer" type="comments" />
         </service>
         <!-- new issue field renderers -->
@@ -105,21 +108,22 @@
 
         <service id="technodelight.jira.renderer.issue.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererProvider">
             <argument type="collection"/>
+            <!-- see RendererProviderCompilerPass -->
         </service>
 
-        <service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">
-            <argument type="collection">
-                <argument key="header" type="service" id="technodelight.jira.renderer.issue.minimal_header"/>
-            </argument>
-        </service>
-        <service id="technodelight.jira.renderer.issue.short" class="Technodelight\Jira\Renderer\Issue\Renderer">
-            <factory service="technodelight.jira.renderer.issue.factory" method="build" />
-            <argument>short</argument>
-        </service>
-        <service id="technodelight.jira.renderer.issue.full" class="Technodelight\Jira\Renderer\Issue\Renderer">
-            <factory service="technodelight.jira.renderer.issue.factory" method="build" />
-            <argument>full</argument>
-        </service>
+        <!--<service id="technodelight.jira.renderer.issue.minimal" class="Technodelight\Jira\Renderer\Issue\Renderer">-->
+            <!--<argument type="collection">-->
+                <!--<argument key="header" type="service" id="technodelight.jira.renderer.issue.minimal_header"/>-->
+            <!--</argument>-->
+        <!--</service>-->
+        <!--<service id="technodelight.jira.renderer.issue.short" class="Technodelight\Jira\Renderer\Issue\Renderer">-->
+            <!--<factory service="technodelight.jira.renderer.issue.factory" method="build" />-->
+            <!--<argument>short</argument>-->
+        <!--</service>-->
+        <!--<service id="technodelight.jira.renderer.issue.full" class="Technodelight\Jira\Renderer\Issue\Renderer">-->
+            <!--<factory service="technodelight.jira.renderer.issue.factory" method="build" />-->
+            <!--<argument>full</argument>-->
+        <!--</service>-->
         <service id="technodelight.jira.renderer.issue" alias="technodelight.jira.renderer.issue.short"/>
         <!-- issue renderers -->
 
@@ -159,6 +163,7 @@
         </service>
         <service id="technodelight.jira.renderer.dashboard.project_stats" class="Technodelight\Jira\Renderer\Dashboard\ProjectStats">
             <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.config.aliases" />
         </service>
         <service id="technodelight.jira.renderer.dashboard.logs_list" class="Technodelight\Jira\Renderer\Dashboard\LogsList">
             <argument type="service" id="technodelight.jira.date_helper" />
