@@ -61,14 +61,14 @@ class ApiSpec extends ObjectBehavior
 
     function it_lists_remotes(Shell $shell)
     {
-        $command = Command::create()->withArgument('remote');
+        $command = Command::create()->withArgument('remote')->withStdErrTo('/dev/null');
         $shell->exec($command)->shouldBeCalled()->willReturn(['origin']);
         $this->remotes()->shouldReturn(['origin']);
     }
 
     function it_lists_branches(Shell $shell)
     {
-        $command = Command::create()->withArgument('remote')->withOption('v');
+        $command = Command::create()->withArgument('remote')->withOption('v')->withStdErrTo('/dev/null');
         $shell->exec($command)->shouldBeCalled()->willReturn([
             'origin  git@github.com:technodelight/jira.git (fetch)',
             'origin  git@github.com:technodelight/jira.git (push)'
@@ -102,7 +102,7 @@ class ApiSpec extends ObjectBehavior
 
     function it_finds_branches_by_pattern(Shell $shell)
     {
-        $command = Command::create()->withArgument('remote')->withOption('v');
+        $command = Command::create()->withArgument('remote')->withOption('v')->withStdErrTo('/dev/null');
         $shell->exec($command)->shouldBeCalled()->willReturn([
             'origin  git@github.com:technodelight/jira.git (fetch)',
             'origin  git@github.com:technodelight/jira.git (push)'

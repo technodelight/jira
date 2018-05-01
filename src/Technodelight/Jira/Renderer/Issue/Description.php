@@ -45,8 +45,8 @@ class Description implements IssueRenderer
 
     public function render(OutputInterface $output, Issue $issue)
     {
-        if ($formattedDescription = $this->templateHelper->tabulate($this->formatDescription($output, $issue))) {
-            $output->writeln($formattedDescription);
+        if ($formattedDescription = $this->formatDescription($output, $issue)) {
+            $output->writeln($this->templateHelper->tabulate($formattedDescription));
         }
     }
 

@@ -57,9 +57,13 @@ class Comment extends AbstractCommand
             $issue = $this->jiraApi()->retrieveIssue($issueKey);
             $renderer = $this->issueRenderer();
             $renderer->render($output, $issue, true);
-            $output->write('<info>Comment: </>');
+            $autocomplete = new AutocompletedInput($this->jiraApi(), $issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
 
-            $autocomplete = new AutocompletedInput($issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
+            $output->writeln([
+                '',
+                '<info>Comment:</> ' . $autocomplete->helpText()
+            ]);
+
             $comment = $autocomplete->getValue();
             $output->write('</>');
             $input->setArgument('comment', $comment);

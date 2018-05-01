@@ -42,9 +42,13 @@ class Branch implements IssueRenderer
 
     private function getBranches(Issue $issue)
     {
-        $branches = $this->git->branches($issue->ticketNumber());
+        $generatedName = $this->gitBranchnameGenerator->fromIssue($issue);
+        $branches = array_merge(
+            $this->git->branches($issue->ticketNumber()),
+            $this->git->branches($generatedName)
+        );
         if (empty($branches)) {
-            return [$this->gitBranchnameGenerator->fromIssue($issue) . ' (generated)'];
+            return [$generatedName . ' (generated)'];
         } else {
             return array_unique(
                 array_map(

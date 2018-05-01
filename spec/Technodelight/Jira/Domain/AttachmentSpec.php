@@ -21,7 +21,7 @@ class AttachmentSpec extends ObjectBehavior
             "active" => true,
             "timeZone" => "Europe/London",
         ],
-        "created" => "2017-07-24 16:18:21",
+        "created" => "2017-07-24T16:18:21+00:00",
         "size" => 203872,
         "mimeType" => "application/pdf",
         "content" => "https://fixture.jira.phar/secure/attachment/12345/attachment-filename.pdf",

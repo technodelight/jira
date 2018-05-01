@@ -2,13 +2,16 @@
 
 namespace Technodelight\Jira\Renderer\Issue;
 
+use DateTime;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog as IssueWorklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Helper\Wordwrap;
 use Technodelight\Jira\Renderer\IssueRenderer;
 use Technodelight\SecondsToNone;
+use Technodelight\TimeAgo;
 
 class Worklog implements IssueRenderer
 {
@@ -20,11 +23,16 @@ class Worklog implements IssueRenderer
      * @var \Technodelight\SecondsToNone
      */
     private $secondsToNone;
+    /**
+     * @var \Technodelight\Jira\Helper\Wordwrap
+     */
+    private $wordwrap;
 
-    public function __construct(TemplateHelper $templateHelper, SecondsToNone $secondsToNone)
+    public function __construct(TemplateHelper $templateHelper, SecondsToNone $secondsToNone, Wordwrap $wordwrap)
     {
         $this->templateHelper = $templateHelper;
         $this->secondsToNone = $secondsToNone;
+        $this->wordwrap = $wordwrap;
     }
 
     public function render(OutputInterface $output, Issue $issue)
@@ -57,7 +65,7 @@ class Worklog implements IssueRenderer
     {
         $row = [$this->worklogHeader($worklog)];
         if ($comment = $worklog->comment()) {
-            $row[] = $this->tab(trim($comment));
+            $row[] = $this->tab(trim($this->wordwrap->wrap($comment)));
         }
         $output->writeln($this->tab($this->tab($row)));
     }
@@ -68,9 +76,9 @@ class Worklog implements IssueRenderer
      */
     private function worklogHeader(IssueWorklog $worklog)
     {
-        return <<<EOF
-<comment>{$worklog->author()->displayName()}</comment>: {$this->human($worklog->timeSpentSeconds())} at {$worklog->date()->format('Y-m-d H:i:s')} <fg=black>({$worklog->id()})</>
-EOF;
+        return <<<EOL
+<info>{$worklog->author()->displayName()}</info> <comment>[{$this->human($worklog->timeSpentSeconds())}]</> {$this->ago($worklog->date())}: <fg=black>({$worklog->id()}) ({$worklog->date()->format('Y-m-d H:i:s')})</>
+EOL;
     }
 
     private function human($seconds)
@@ -81,5 +89,10 @@ EOF;
     private function tab($string)
     {
         return $this->templateHelper->tabulate($string);
+    }
+
+    private function ago(DateTime $date)
+    {
+        return TimeAgo::fromDateTime($date)->inWords();
     }
 }

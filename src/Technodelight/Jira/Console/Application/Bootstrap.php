@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Configuration\Symfony\ApplicationConfigurationCompilerPass;
 use Technodelight\Jira\Configuration\Symfony\CommandInitialisationCompilerPass;
+use Technodelight\Jira\Configuration\Symfony\IssueRendererOptionsCompilerPass;
 use Technodelight\Jira\Configuration\Symfony\RendererProviderCompilerPass;
 use Technodelight\Jira\Configuration\Symfony\SyntheticServicesCompilerPass;
 use Technodelight\Jira\Console\Application;
@@ -31,6 +32,7 @@ class Bootstrap
         $container->addCompilerPass(new ApplicationConfigurationCompilerPass);
         $container->addCompilerPass(new RendererProviderCompilerPass);
         $container->addCompilerPass(new CommandInitialisationCompilerPass);
+        $container->addCompilerPass(new IssueRendererOptionsCompilerPass);
 
         $loader = new XmlFileLoader($container, new FileLocator);
         foreach ($this->containerPathsWithBaseDir($app, $containerPaths) as $containerPath) {
@@ -41,7 +43,6 @@ class Bootstrap
             }
         }
 
-        //@TODO: how to cache container properly?
         return $container;
     }
 

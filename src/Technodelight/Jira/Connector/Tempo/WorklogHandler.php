@@ -9,6 +9,7 @@ use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
+use Technodelight\Jira\Helper\DateHelper;
 
 class WorklogHandler implements WorklogHandlerInterface
 {
@@ -150,6 +151,6 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     private function convertDateFormat($date)
     {
-        return (new DateTime($date))->format('Y-m-d H:i:s');
+        return (new DateTime($date))->format(DateHelper::FORMAT_FROM_JIRA);
     }
 }

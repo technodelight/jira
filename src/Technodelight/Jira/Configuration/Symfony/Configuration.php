@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Configuration\Symfony;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
 
 class Configuration implements ConfigurationInterface
 {
@@ -231,11 +232,20 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('renderers');
 
         $rootNode
-            ->info('Custom rendering setup')
+            ->info('Rendering setup')
             ->addDefaultsIfNotSet()
             ->children()
                 ->arrayNode('short')
                     ->info('Fields to render in "short" mode (summary), used in list-type commands')
+                    ->beforeNormalization()
+                        ->always(function() {
+                            //@FIXME: remove in 0.9.10
+                            $style = new PaletteOutputFormatterStyle;
+                            $style->setForeground('red');
+                            print $style->apply("Configuration node 'short:' is deprecated and will be removed in 0.9.10. Please move it under renderers.modes.") . PHP_EOL;
+                            print $style->apply("Don't forget to add: '- name: short'") . PHP_EOL;
+                        })
+                    ->end()
                     ->children()
                         ->booleanNode('inherit')->defaultTrue()->end()
                         ->arrayNode('fields')
@@ -254,6 +264,15 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->arrayNode('full')
                     ->info('Fields to render in "full" mode (in-depth), just as in show command')
+                    ->beforeNormalization()
+                        ->always(function() {
+                            //@FIXME: remove in 0.9.10
+                            $style = new PaletteOutputFormatterStyle;
+                            $style->setForeground('red');
+                            print $style->apply("Configuration node 'full:' is deprecated and will be removed in 0.9.10. Please move it under renderers.modes.") . PHP_EOL;
+                            print $style->apply("Don't forget to add: '- name: full'") . PHP_EOL;
+                        })
+                    ->end()
                     ->children()
                         ->booleanNode('inherit')->defaultTrue()->end()
                         ->arrayNode('fields')
@@ -265,6 +284,36 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('after')->defaultValue(null)->end()
                                     ->scalarNode('before')->defaultValue(null)->end()
                                     ->booleanNode('remove')->defaultNull()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('modes')
+                    ->useAttributeAsKey('name', false)
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('name')
+                                ->cannotBeEmpty()
+                                ->isRequired()
+                                ->validate()
+                                    ->ifString()->then(function ($value) {
+                                        return strtolower(strtr($value, [' ' => '-']));
+                                    })
+                                ->end()
+                            ->end()
+                            ->booleanNode('inherit')->defaultTrue()->end()
+                            ->arrayNode('fields')
+                                ->info('see available fields in show:renderers command')
+                                ->prototype('array')
+                                    ->children()
+                                        ->scalarNode('name')->cannotBeEmpty()->isRequired()->end()
+                                        ->scalarNode('formatter')->defaultValue('default')->treatNullLike('default')->end()
+                                        ->booleanNode('inline')->defaultFalse()->treatNullLike(false)->end()
+                                        ->scalarNode('after')->defaultValue(null)->end()
+                                        ->scalarNode('before')->defaultValue(null)->end()
+                                        ->booleanNode('remove')->defaultNull()->end()
+                                    ->end()
                                 ->end()
                             ->end()
                         ->end()

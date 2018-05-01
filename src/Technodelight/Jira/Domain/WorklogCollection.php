@@ -146,6 +146,10 @@ class WorklogCollection implements Iterator, Countable
         return WorklogCollection::fromIterator($iterator);
     }
 
+    /**
+     * @param string $user
+     * @return \Technodelight\Jira\Domain\WorklogCollection
+     */
     public function filterByUser($user)
     {
         $iterator = new \CallbackFilterIterator($this, function(Worklog $log) use ($user) {

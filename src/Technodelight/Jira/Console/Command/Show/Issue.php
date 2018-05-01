@@ -4,10 +4,12 @@ namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Command\IssueRendererAware;
 
-class Issue extends AbstractCommand
+class Issue extends AbstractCommand implements IssueRendererAware
 {
     protected function configure()
     {
@@ -19,6 +21,7 @@ class Issue extends AbstractCommand
                 InputArgument::OPTIONAL,
                 'Issue key (ie. PROJ-123), defaults to current issue, taken from branch name'
             )
+            //@TODO: Add configuration for renderer_preference: list,view,change
         ;
     }
 
@@ -35,6 +38,6 @@ class Issue extends AbstractCommand
 
         /** @var \Technodelight\Jira\Template\IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->render($output, $issue, true);
+        $renderer->render($output, $issue, $input->getOptions());
     }
 }

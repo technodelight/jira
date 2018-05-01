@@ -9,36 +9,21 @@ use Technodelight\Jira\Domain\IssueCollection;
 
 class IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Renderer\IssueRenderer
-     */
-    private $fullRenderer;
-    /**
-     * @var \Technodelight\Jira\Renderer\IssueRenderer
-     */
-    private $shortRenderer;
-    /**
-     * @var \Symfony\Component\Console\Helper\FormatterHelper
-     */
-    private $formatterHelper;
-    /**
-     * @var \Technodelight\Jira\Renderer\IssueRenderer
-     */
-    private $minimalRenderer;
+    /** @var \Technodelight\Jira\Renderer\IssueRenderer[] */
+    private $renderers;
 
-    public function __construct($fullRenderer, $shortRenderer, $minimalRenderer, FormatterHelper $formatterHelper)
+    public function __construct(array $renderers, FormatterHelper $formatterHelper)
     {
-        $this->fullRenderer = $fullRenderer;
-        $this->shortRenderer = $shortRenderer;
-        $this->minimalRenderer = $minimalRenderer;
+        $this->renderers = $renderers;
         $this->formatterHelper = $formatterHelper;
     }
 
     /**
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @param  IssueCollection $issues
+     * @param mixed $mode
      */
-    public function renderIssues(OutputInterface $output, IssueCollection $issues)
+    public function renderIssues(OutputInterface $output, IssueCollection $issues, $mode = false)
     {
         $groupedIssues = $this->groupByParent(iterator_to_array($issues));
         foreach ($groupedIssues as $issueGroup) {
@@ -46,22 +31,20 @@ class IssueRenderer
                 $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
             );
             foreach ($issueGroup['issues'] as $issue) {
-                $this->render($output, $issue);
+                $this->render($output, $issue, $mode);
             }
         }
         $this->renderStats($output, $issues);
     }
 
-    public function render(OutputInterface $output, Issue $issue, $full = false)
+    public function render(OutputInterface $output, Issue $issue, $mode = false)
     {
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
             $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
-            $this->minimalRenderer->render($output, $issue);
+            $this->renderer('minimal')->render($output, $issue);
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
-        } else if ($full) {
-            $this->fullRenderer->render($output, $issue);
         } else {
-            $this->shortRenderer->render($output, $issue);
+            $this->renderer($mode)->render($output, $issue);
         }
     }
 
@@ -110,5 +93,38 @@ class IssueRenderer
         });
 
         return $groupedIssues;
+    }
+
+    /**
+     * @param array|bool $mode
+     * @return mixed|\Technodelight\Jira\Renderer\IssueRenderer
+     */
+    private function renderer($mode = false)
+    {
+        if ($mode === false) {
+            return $this->rendererByMode('short');
+        } else if ($mode === true) {
+            return $this->rendererByMode('full');
+        } else if (is_string($mode)) {
+            return $this->rendererByMode($mode);
+        } else if (is_array($mode)) {
+            $supportedRenderersToCheck = array_keys(array_intersect_key($this->renderers, $mode));
+            foreach ($supportedRenderersToCheck as $supportedRenderer) {
+                if (isset($mode[$supportedRenderer]) && $mode[$supportedRenderer] === true) {
+                    return $this->rendererByMode($supportedRenderer);
+                }
+            }
+            return $this->rendererByMode('full');
+        }
+        throw new \RuntimeException(sprintf(':\'( Cannot determine renderer mode. Argument was: %s', var_export($mode, true)));
+    }
+
+    private function rendererByMode($modeName)
+    {
+        if (isset($this->renderers[$modeName])) {
+            return $this->renderers[$modeName];
+        }
+
+        throw new \InvalidArgumentException(sprintf('Cannot find renderer mode %s', $modeName));
     }
 }

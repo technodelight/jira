@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Renderer;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\Factory;
@@ -40,12 +39,8 @@ class IssueRendererFactory
         $rendererConfig = $this->config($mode);
 
         $renderers = [];
-//        if (!$rendererConfig->inherit()) {
-//            $renderers = ['header' => array_shift($renderers)];
-//        }
 
         foreach ($rendererConfig->fields() as $fieldConfiguration) {
-//            $this->processConfiguration($fieldConfiguration, $renderers);
             $this->createField($fieldConfiguration, $renderers);
         }
         foreach ($rendererConfig->fields() as $fieldConfiguration) {
@@ -61,10 +56,7 @@ class IssueRendererFactory
      */
     private function config($mode)
     {
-        if ($mode == 'short') {
-            return $this->config->renderers()->short();
-        }
-        return $this->config->renderers()->full();
+        return $this->config->renderers()->mode($mode);
     }
 
     /**

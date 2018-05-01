@@ -188,7 +188,7 @@ class LogTime extends AbstractCommand
 
     private function interactiveTimelog(InputInterface $input, OutputInterface $output)
     {
-        $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime);
+        $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime)->filterByUser($this->jiraApi()->user()->key());
         $timeLeft = $this->dateHelper()->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
         if ($timeLeft <= 0) {
             $output->writeln(
@@ -255,7 +255,7 @@ class LogTime extends AbstractCommand
                 'id' => null,
                 'author' => $user,
                 'comment' => $comment,
-                'started' => date('Y-m-d H:i:s', strtotime($startDay)),
+                'started' => date(DateHelper::FORMAT_FROM_JIRA, strtotime($startDay)),
                 'timeSpentSeconds' => $this->dateHelper()->humanToSeconds($timeSpent)
             ], $issueKey)
         );
@@ -386,9 +386,11 @@ EOL;
 
     private function getWorklogCommentWithAutocomplete(OutputInterface $output, $defaultMessage, $issueKey, Worklog $worklog = null)
     {
+        // @TODO: refactor this as it looks shit
+        // @TODO: add words from the git log too (^HEAD..HEAD / <parent>..HEAD)
         $issue = $this->jiraApi()->retrieveIssue($issueKey);
         $history = array_map(function(Worklog $log) { return $log->comment(); }, iterator_to_array($this->worklogHandler()->findByIssue($issue)));
-        $input = new AutocompletedInput($issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $history);
+        $input = new AutocompletedInput($this->jiraApi(), $issue, null, [$defaultMessage, $issue->description(), $issue->summary()], $history);
         $output->write($this->worklogCommentDialogText($defaultMessage, $worklog));
         $output->writeln($input->helpText());
         $comment = $input->getValue();

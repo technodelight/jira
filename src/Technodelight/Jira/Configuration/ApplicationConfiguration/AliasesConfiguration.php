@@ -41,6 +41,16 @@ class AliasesConfiguration implements RegistrableConfiguration
         return $alias;
     }
 
+    public function issueKeyToAlias($issueKey)
+    {
+        foreach ($this->items() as $item) {
+            if ($item->issueKey() == $issueKey) {
+                return $item->alias();
+            }
+        }
+        return $issueKey;
+    }
+
     public function servicePrefix()
     {
         return 'aliases';

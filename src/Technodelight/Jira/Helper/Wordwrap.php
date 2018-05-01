@@ -18,7 +18,7 @@ class Wordwrap
 
     public function wrap($text)
     {
-        $termWidth = $this->application->getTerminalDimensions()[0];
+        $termWidth = $this->application->getTerminalDimensions()[0] ?: 80;
         $padding = ceil($termWidth * 0.1);
         return wordwrap($text, $termWidth - $padding);
     }

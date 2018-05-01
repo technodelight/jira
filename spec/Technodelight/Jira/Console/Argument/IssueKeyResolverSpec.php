@@ -12,15 +12,26 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfigurati
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Argument\InteractiveIssueSelector;
+use Technodelight\Jira\Domain\Issue;
 
 class IssueKeyResolverSpec extends ObjectBehavior
 {
-    function let(Git $git, AliasesConfiguration $configuration, InputInterface $input, InteractiveIssueSelector $issueSelector)
+    function let(
+        Git $git,
+        AliasesConfiguration $configuration,
+        InputInterface $input,
+        OutputInterface $output,
+        InteractiveIssueSelector $issueSelector,
+        Issue $issue
+    )
     {
         $input->hasArgument(IssueKeyResolver::ARGUMENT)->willReturn(true);
         $input->hasOption(IssueKeyResolver::OPTION)->willReturn(true);
         $input->setArgument(IssueKeyResolver::ARGUMENT, Argument::type('string'))->willReturn($input);
         $input->setOption(IssueKeyResolver::OPTION, Argument::type('string'))->willReturn($input);
+
+        $configuration->aliasToIssueKey(Argument::cetera())->willReturnArgument(0);
+        $issueSelector->chooseIssue($input, $output)->shouldNotBeCalled()->willReturn($issue);
 
         $this->beConstructedWith($git, $configuration, $issueSelector);
     }

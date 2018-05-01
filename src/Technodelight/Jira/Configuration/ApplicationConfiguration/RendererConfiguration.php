@@ -6,6 +6,8 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfigurat
 
 class RendererConfiguration
 {
+    /** @var string */
+    private $name;
     /** @var bool */
     private $inherit;
     /** @var FieldConfiguration[] */
@@ -14,6 +16,7 @@ class RendererConfiguration
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->name = $config['name'];
         $instance->inherit = isset($config['inherit']) ? $config['inherit'] : true;
         $instance->fields = array_map(
             function(array $field) {
@@ -23,6 +26,14 @@ class RendererConfiguration
         );
 
         return $instance;
+    }
+
+    /**
+     * @return string
+     */
+    public function name()
+    {
+        return $this->name;
     }
 
     /**

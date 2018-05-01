@@ -7,11 +7,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\ColorExtractor;
+use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\Wordwrap;
 use Technodelight\Jira\Renderer\IssueRenderer;
+use Technodelight\TimeAgo;
 
 class Comment implements IssueRenderer
 {
@@ -31,13 +33,18 @@ class Comment implements IssueRenderer
      * @var \Technodelight\Jira\Helper\Wordwrap
      */
     private $wordwrap;
+    /**
+     * @var \Technodelight\Jira\Helper\DateHelper
+     */
+    private $dateHelper;
 
-    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer, Wordwrap $wordwrap)
+    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer, Wordwrap $wordwrap, DateHelper $dateHelper)
     {
         $this->templateHelper = $templateHelper;
         $this->colorExtractor = $colorExtractor;
         $this->imageRenderer = $imageRenderer;
         $this->wordwrap = $wordwrap;
+        $this->dateHelper = $dateHelper;
     }
 
     public function render(OutputInterface $output, Issue $issue)
@@ -69,8 +76,10 @@ class Comment implements IssueRenderer
             $content = $this->imageRenderer->render($content, $issue);
         }
 
-        return "<info>{$comment->author()->name()}</info> ({$comment->created()->format('Y-m-d H:i:s')}): <fg=black>({$comment->id()}) {$this->commentUrl($comment, $issue)}</>" . PHP_EOL
-            . $this->tab($this->wordwrap->wrap($content));
+        return <<<EOL
+<info>{$comment->author()->displayName()}</info> <comment>[~{$comment->author()->name()}]</> {$this->ago($comment->created())}: <fg=black>({$comment->id()}) ({$comment->created()->format('Y-m-d H:i:s')}) {$this->commentUrl($comment, $issue)}</>
+{$this->tab($this->wordwrap->wrap($content))}
+EOL;
     }
 
     private function renderTags($output, $body)
@@ -89,11 +98,16 @@ class Comment implements IssueRenderer
      * @param \Technodelight\Jira\Domain\Issue $issue
      * @return string
      */
-    protected function commentUrl(IssueComment $comment, Issue $issue)
+    protected function commentUrl(IssueComment $comment, Issue $issue = null)
     {
         if ($issue) {
             return $issue->url() . '#comment-' . $comment->id();
         }
         return '';
+    }
+
+    private function ago(\DateTime $date)
+    {
+        return TimeAgo::fromDateTime($date)->inWords();
     }
 }

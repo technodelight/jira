@@ -23,4 +23,9 @@ class RendererProvider
     {
         return $this->renderers[$name];
     }
+
+    public function all()
+    {
+        return $this->renderers;
+    }
 }

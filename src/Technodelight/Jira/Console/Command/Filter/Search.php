@@ -19,6 +19,7 @@ class Search extends AbstractCommand
         $this
             ->setName('search')
             ->setDescription('Search in Jira using JQL')
+            ->setHelp('Search using JQL.' . PHP_EOL . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html')
             ->addArgument(
                 'jql',
                 InputArgument::REQUIRED,

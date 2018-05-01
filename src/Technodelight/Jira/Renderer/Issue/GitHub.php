@@ -52,9 +52,9 @@ class GitHub implements IssueRenderer
             function ($hubIssue) use ($statuses) {
                 return (join(PHP_EOL, array_filter([
                     sprintf(
-                        '<fg=yellow>[ %s ]</> #%d %s <fg=green>(%s)</> <fg=black>(%s)</>',
-                        $hubIssue['state'] == 'open' ? ' open ' : 'closed',
+                        '<info>#%d</> <comment>[%s]</> %s <fg=cyan>(%s)</> <fg=black>(%s)</>',
                         $hubIssue['number'],
+                        $hubIssue['state'],
                         $hubIssue['title'],
                         $hubIssue['user']['login'],
                         $hubIssue['html_url']

@@ -66,6 +66,23 @@ class Collection implements Iterator, Countable
         return $this->days;
     }
 
+    /**
+     * @param bool $onlyWorkDays return workdays only
+     * @return DateTime[]
+     */
+    public function fromToDateRange($onlyWorkDays = false)
+    {
+        $dates = [];
+        $current = clone $this->from;
+        while ($current <= $this->to) {
+            if ((in_array($current->format('N'), $this->workDays) && $onlyWorkDays) || $onlyWorkDays === false) {
+                $dates[] = clone $current;
+            }
+            $current->modify('+1 day');
+        }
+        return $dates;
+    }
+
     public function isADay()
     {
         return $this->days() == 1;
@@ -79,6 +96,35 @@ class Collection implements Iterator, Countable
     public function isAMonth()
     {
         return $this->daysRange() >= 28 && $this->daysRange() <= 31;
+    }
+
+    /**
+     * @return Collection[]
+     */
+    public function splitToWeeks()
+    {
+        $weeks = [];
+        foreach ($this as $date => $worklogCollection) {
+            $week = $date->format('W');
+            if (!isset($weeks[$week])) {
+                $weeks[$week] = new self(
+                    WorklogCollection::createEmpty(),
+                    new DateTime(sprintf('%sW%s monday', $date->format('Y'), $week)),
+                    new DateTime(sprintf('%sW%s sunday', $date->format('Y'), $week)),
+                    $this->workDays
+                );
+            }
+            /** @var Collection $currentWeek */
+            $currentWeek = $weeks[$week];
+            $currentWeek->collection->merge($worklogCollection);
+        }
+        foreach ($weeks as $dashCollection) {
+            $dashCollection->startDate = $this->findDate($dashCollection->collection, true)->format(self::DATE_FORMAT);
+            $dashCollection->endDate = $this->findDate($dashCollection->collection, false)->format(self::DATE_FORMAT);
+            $dashCollection->currentDate = $dashCollection->startDate;
+        }
+
+        return $weeks;
     }
 
     public function current()

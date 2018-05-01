@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Domain;
 
 use Technodelight\Jira\Domain\Issue\IssueType;
+use Technodelight\Jira\Helper\DateHelper;
 
 class Issue
 {
@@ -71,11 +72,17 @@ class Issue
         return Project::fromArray($this->findField('project') ?: []);
     }
 
+    /**
+     * @return string|false
+     */
     public function summary()
     {
         return $this->findField('summary');
     }
 
+    /**
+     * @return string|false
+     */
     public function description()
     {
         return $this->findField('description');
@@ -83,7 +90,7 @@ class Issue
 
     public function created()
     {
-        return \DateTime::createFromFormat('Y-m-d H:i:s', $this->findField('created'));
+        return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->findField('created'));
     }
 
     public function status()
@@ -299,7 +306,7 @@ class Issue
      * Find a custom issue field by it's name
      *
      * @param string $fieldName
-     * @return array|false
+     * @return string|array|false
      */
     public function findField($fieldName)
     {

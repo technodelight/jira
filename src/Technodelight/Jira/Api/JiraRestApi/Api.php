@@ -6,6 +6,7 @@ use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Field;
+use Technodelight\Jira\Domain\Issue\Meta;
 use Technodelight\Jira\Domain\IssueLink;
 use Technodelight\Jira\Domain\IssueLink\Type;
 use Technodelight\Jira\Domain\Project;
@@ -70,13 +71,14 @@ class Api
      */
     public function userPicker($query, $maxResults = null, $showAvatar = null, $exclude = null)
     {
-        $params = array_filter([
-            'query' => $query,
-            'maxResults' => $maxResults,
-            'showAvatar' => $showAvatar,
-            'excude' => $exclude,
-        ], function($value) { return !is_null($value); });
-        $response = $this->client->get('user/picker?' . http_build_query($params));
+        $response = $this->client->get(
+            'user/picker' . $this->queryStringFromParams([
+                'query' => $query,
+                'maxResults' => $maxResults,
+                'showAvatar' => $showAvatar,
+                'exclude' => $exclude,
+            ])
+        );
         return array_map(
             function (array $user) {
                 return UserPickerResult::fromArray($user);
@@ -92,7 +94,7 @@ class Api
      */
     public function project($projectKey)
     {
-        return Project::fromArray($this->client->get('project/' . $projectKey));
+        return Project::fromArray($this->client->get(sprintf('project/%s', $projectKey)));
     }
 
     /**
@@ -109,7 +111,7 @@ class Api
             function(array $project) {
                 return Project::fromArray($project);
             },
-            $this->client->get('project' . ($numberOfRecent ? '?recent=' . (int) $numberOfRecent : ''))
+            $this->client->get('project' . $this->queryStringFromParams(['recent' => $numberOfRecent ? (int) $numberOfRecent : null]))
         );
     }
 
@@ -172,7 +174,7 @@ class Api
         }
 
         $jiraRecord = $this->client->post(
-            sprintf('issue/%s/worklog', $issueKey) . '?' . http_build_query($params),
+            sprintf('issue/%s/worklog', $issueKey) . $this->queryStringFromParams($params),
             [
                 'comment' => $comment,
                 'started' => DateHelper::dateTimeToJira($started),
@@ -318,9 +320,24 @@ class Api
     }
 
     /**
+     * Edits the issue from a JSON representation.
+     *
+     * The fields available for update can be determined using the /rest/api/2/issue/{issueIdOrKey}/editmeta resource.
+     * If a field is hidden from the Edit screen then it will not be returned by the editmeta resource. A field
+     * validation error will occur if such field is submitted in an edit request. However connect add-on with admin
+     * scope may override a screen security configuration.
+     * If an issue cannot be edited in Jira because of its workflow status (for example the issue is closed), then
+     * you will not be able to edit it with this resource.
+     * Field to be updated should appear either in fields or update request’s body parameter, but not in both.
+     * To update a single sub-field of a complex field (e.g. timetracking) please use the update parameter of the edit
+     * operation. Using a “field_id”: field_value construction in the fields parameter is a shortcut of “set” operation
+     * in the update parameter.
+     *
      * @param  string $issueKey
      * @param  array  $data
      *
+     * @see Api::issueEditMeta()
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-put
      * @return array
      */
     public function updateIssue($issueKey, array $data)
@@ -338,6 +355,42 @@ class Api
     public function assignIssue($issueKey, $usernameKey)
     {
         return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['name' => $usernameKey]);
+    }
+
+    /**
+     * Returns the keys of all properties for the issue identified by the key or by the id.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-properties-get
+     * @param string $issueKey
+     * @return array
+     */
+    public function issueProperties($issueKey)
+    {
+        return $this->client->get(sprintf('issue/%s/properties', $issueKey));
+    }
+
+    /**
+     * Returns the metadata for editing an issue.
+     * The fields returned by editmeta resource are the ones shown on the issue’s Edit screen. Fields hidden from the
+     * screen will not be returned unless `overrideScreenSecurity` parameter is set to true.
+     * If an issue cannot be edited in Jira because of its workflow status (for example the issue is closed), then no
+     * fields will be returned, unless `overrideEditableFlag` is set to true.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-editmeta-get
+     * @param string $issueKey
+     * @param bool|null $screenSecurity overrideScreenSecurity
+     * @param bool|null $editableFlag overrideEditableFlag
+     * @return Meta
+     */
+    public function issueEditMeta($issueKey, $screenSecurity = null, $editableFlag = null)
+    {
+        $result = $this->client->get(
+            sprintf('issue/%s/editmeta', $issueKey) . $this->queryStringFromParams([
+                'overrideScreenSecurity' => $screenSecurity,
+                'overrideEditableFlag' => $editableFlag,
+            ])
+        );
+        return Meta::fromArrayAndIssueKey($result['fields'], $issueKey);
     }
 
     /**
@@ -482,15 +535,16 @@ class Api
         $showSubTaskParent = null
     )
     {
-        $params = http_build_query(array_filter([
-            'query' => $query,
-            'currentJQL' => $currentJql,
-            'currentIssueKey' => $currentIssueKey,
-            'currentProjectId' => $currentProjectId,
-            'showSubTasks' => $showSubTasks,
-            'showSubTaskParent' => $showSubTaskParent
-        ], function($value) { return !is_null($value); }));
-        $response = $this->client->get('issue/picker' . ($params ? '?' . $params : ''));
+        $response = $this->client->get(
+            'issue/picker' . $this->queryStringFromParams([
+                'query' => $query,
+                'currentJQL' => $currentJql,
+                'currentIssueKey' => $currentIssueKey,
+                'currentProjectId' => $currentProjectId,
+                'showSubTasks' => $showSubTasks,
+                'showSubTaskParent' => $showSubTaskParent
+            ])
+        );
         if (empty($response['sections'])) {
             throw new \ErrorException(
                 '"sections" is missing from response'
@@ -540,14 +594,15 @@ class Api
      */
     public function linkIssue($inwardIssueKey, $outwardIssueKey, $linkName, $comment = '')
     {
-        $result = $this->client->post('issueLink', array_filter([
+        $data = [
             'type' => ['name' => (string) $linkName],
             'inwardIssue' => ['key' => (string) $inwardIssueKey],
             'outwardIssue' => ['key' => (string) $outwardIssueKey],
             'comment' => !empty($comment) ? ['body' => (string) $comment] : false,
-        ]));
+        ];
+        $this->client->post('issueLink', array_filter($data));
 
-        return IssueLink::fromArray($result);
+        return IssueLink::fromArray($data);
     }
 
     /**
@@ -644,6 +699,12 @@ class Api
      */
     private function normaliseDate($jiraDate)
     {
-        return DateHelper::dateTimeFromJira($jiraDate)->format('Y-m-d H:i:s');
+        return DateHelper::dateTimeFromJira($jiraDate)->format(DateHelper::FORMAT_FROM_JIRA);
+    }
+
+    private function queryStringFromParams(array $query)
+    {
+        $params = http_build_query(array_filter($query, function($value) { return !is_null($value); }));
+        return $params ? '?' . $params : '';
     }
 }

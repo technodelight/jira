@@ -3,7 +3,9 @@
 namespace Technodelight\Jira\Console\HoaConsole;
 
 use Hoa\Console\Readline\Autocompleter\Autocompleter;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\UserPickerResult;
 
 class UsernameAutocomplete implements Autocompleter
 {
@@ -12,11 +14,17 @@ class UsernameAutocomplete implements Autocompleter
      */
     private $issue;
 
+    /**
+     * @var \Technodelight\Jira\Api\JiraRestApi\Api
+     */
+    private $api;
+
     private $usernames;
 
-    public function __construct(Issue $issue)
+    public function __construct(Issue $issue, Api $api)
     {
         $this->issue = $issue;
+        $this->api = $api;
     }
 
     /**
@@ -46,7 +54,8 @@ class UsernameAutocomplete implements Autocompleter
      */
     public function getWordDefinition()
     {
-        return '\[~\w*';
+        return '(\[~[^\b]+|@[^\b]+)';
+//        return '(\[~\w*|\b@\w*|^@\w*)';
     }
 
     private function getUsersFromIssue(Issue $issue)
@@ -64,15 +73,23 @@ class UsernameAutocomplete implements Autocompleter
 
     private function getMatchesForPrefix(Issue $issue, $prefix)
     {
-        return array_filter(
+        $userPrefix = ltrim($prefix, '[~@]');
+        $issueUsers = array_filter(
             $this->getUsersFromIssue($issue),
-            function($username) use ($prefix) {
-                if (empty(ltrim($prefix, '[~'))) {
+            function($username) use ($userPrefix) {
+                if (empty($userPrefix)) {
                     return true;
                 }
-                return strpos($username, ltrim($prefix, '[~')) !== false;
+                return strpos($username, $userPrefix) !== false;
             }
         );
+        $userPickerUsers = array_map(
+            function(UserPickerResult $user) {
+                return $user->name();
+            },
+            $this->api->userPicker($userPrefix)
+        );
+        return array_unique(array_merge($issueUsers, $userPickerUsers));
     }
 
     private function getAutocompletedValues(array $matches)
