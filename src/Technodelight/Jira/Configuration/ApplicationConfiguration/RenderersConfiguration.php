@@ -29,34 +29,6 @@ class RenderersConfiguration implements RegistrableConfiguration
     ];
 
     private $defaults = [
-        'short' => [ //@FIXME: remove in 0.9.10
-            'inherit' => true,
-            'fields' => [
-                ['name' => 'header'],
-                ['name' => 'user_details'],
-                ['name' => 'progress'],
-                ['name' => 'priority'],
-                ['name' => 'short_description'],
-                ['name' => 'versions'],
-            ],
-        ],
-        'full' => [ //@FIXME: remove in 0.9.10
-            'inherit' => true,
-            'fields' => [
-                ['name' => 'header'],
-                ['name' => 'user_details'],
-                ['name' => 'progress'],
-                ['name' => 'priority'],
-                ['name' => 'full_description'],
-                ['name' => 'issue_relations'],
-                ['name' => 'versions'],
-                ['name' => 'attachments'],
-                ['name' => 'branches'],
-                ['name' => 'github'],
-                ['name' => 'worklogs'],
-                ['name' => 'comments'],
-            ],
-        ],
         'modes' => [
             'minimal' => [
                 'name' => 'minimal',
@@ -120,8 +92,6 @@ class RenderersConfiguration implements RegistrableConfiguration
         foreach ($modes as $mode) {
             $instance->modes[$mode->name()] = $mode;
         }
-        self::addModesByDeprecatedNodes($config, 'short', $instance);
-        self::addModesByDeprecatedNodes($config, 'full', $instance);
         $instance->formatters = array_map(
             function (array $formatter)  {
                 return FormatterConfiguration::fromArray($formatter);
@@ -130,20 +100,6 @@ class RenderersConfiguration implements RegistrableConfiguration
         );
 
         return $instance;
-    }
-
-    /**
-     * @param array $config
-     * @param self $instance
-     * @return void
-     */
-    private static function addModesByDeprecatedNodes(array $config, $mode, self $instance)
-    {
-        if (isset($config[$mode])) {
-            $convertedConfig = $instance->configMerged($config, $mode);
-            $convertedConfig['name'] = $mode;
-            $instance->modes[$mode] = RendererConfiguration::fromArray($convertedConfig);
-        }
     }
 
     /**
@@ -181,26 +137,6 @@ class RenderersConfiguration implements RegistrableConfiguration
         } catch (\InvalidArgumentException $e) {
             return false;
         }
-    }
-
-    /**
-     * @FIXME: remove in 0.9.10
-     * @deprecated
-     * @return RendererConfiguration
-     */
-    public function short()
-    {
-        return $this->mode('short');
-    }
-
-    /**
-     * @FIXME: remove in 0.9.10
-     * @deprecated
-     * @return RendererConfiguration
-     */
-    public function full()
-    {
-        return $this->full;
     }
 
     public function formatters()

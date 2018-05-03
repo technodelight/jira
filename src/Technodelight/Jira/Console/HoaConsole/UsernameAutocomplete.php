@@ -55,20 +55,6 @@ class UsernameAutocomplete implements Autocompleter
     public function getWordDefinition()
     {
         return '(\[~[^\b]+|@[^\b]+)';
-//        return '(\[~\w*|\b@\w*|^@\w*)';
-    }
-
-    private function getUsersFromIssue(Issue $issue)
-    {
-        if (!isset($this->usernames)) {
-            $this->usernames = [$issue->creatorUser()->key(), $issue->assigneeUser()->key()];
-            foreach ($issue->comments() as $comment) {
-                $this->usernames[] = $comment->author()->key();
-            }
-            $this->usernames = array_unique($this->usernames);
-        }
-
-        return $this->usernames;
     }
 
     private function getMatchesForPrefix(Issue $issue, $prefix)
@@ -90,6 +76,19 @@ class UsernameAutocomplete implements Autocompleter
             $this->api->userPicker($userPrefix)
         );
         return array_unique(array_merge($issueUsers, $userPickerUsers));
+    }
+
+    private function getUsersFromIssue(Issue $issue)
+    {
+        if (!isset($this->usernames)) {
+            $this->usernames = [$issue->creatorUser()->key(), $issue->assigneeUser()->key()];
+            foreach ($issue->comments() as $comment) {
+                $this->usernames[] = $comment->author()->key();
+            }
+            $this->usernames = array_unique($this->usernames);
+        }
+
+        return $this->usernames;
     }
 
     private function getAutocompletedValues(array $matches)

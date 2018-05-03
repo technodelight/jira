@@ -15,6 +15,7 @@ use Technodelight\Jira\Console\Argument\AutocompletedInput;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
+use Technodelight\Jira\Console\Argument\LogTimeArgsOptsParser;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
@@ -77,11 +78,17 @@ class LogTime extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        $argParser = LogTimeArgsOptsParser::fromArgsOpts($input->getArguments(), $input->getOptions());
+
+        $input->setOption('interactive', $argParser->isInteractive());
+        $input->setArgument(IssueKeyOrWorklogIdResolver::NAME, $argParser->issueKeyOrWorklogId());
+        $input->setArgument('time', $argParser->time());
+        $input->setArgument('comment', $argParser->comment());
+        $input->setArgument('date', $argParser->date());
+
         if ($input->getOption('interactive')) {
             return;
         }
-        // @TODO: check both comment and date arguments to see if comment is missing
-        // @TODO: if one argument is missing then comment could be a date
 
         /** @var \Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId $issueKeyOrWorklogId */
         $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
@@ -115,7 +122,7 @@ class LogTime extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             if ($issueKeyOrWorklogId->isWorklogId()) {
-                $defaultMessage = null;
+                $defaultMessage = null; // force comment to be the existing comment when editing
             } else {
                 $defaultMessage = $this->worklogCommentFromGitCommits($issueKeyOrWorklogId->issueKey());
             }
@@ -235,7 +242,7 @@ class LogTime extends AbstractCommand
             $updatedWorklog->comment($comment);
         }
         if ($startDay) {
-            $updatedWorklog->date($this->dateHelper()->stringToFormattedDate($startDay, 'Y-m-d H:i:s'));
+            $updatedWorklog->date($this->dateHelper()->stringToFormattedDate($startDay, DateHelper::FORMAT_FROM_JIRA));
         }
 
         if (!$worklog->isSame($updatedWorklog)) {

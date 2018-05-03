@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\OpenApp\OpenApp;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
@@ -46,7 +47,7 @@ class Browse extends AbstractCommand
             if ($input->getOption('pr')) {
                 $this->openPr($output, $issue);
             } elseif ($input->getOption('ci')) {
-                $this->openCi($output, $issue);
+                $this->openCi($input, $output, $issue);
             } else {
                 $this->openIssueLink($output, $issue);
             }
@@ -93,7 +94,22 @@ class Browse extends AbstractCommand
         }
     }
 
-    private function openCi(OutputInterface $output, Issue $issue)
+    /**
+     * @param array $combined
+     * @return array
+     */
+    private function selectCiStatus(InputInterface $input, OutputInterface $output, array $statuses)
+    {
+        if (count($statuses) > 1) {
+            $opts = array_map(function(array $status) { return $status['context']; }, $statuses);
+            $q = new ChoiceQuestion('Select CI provider', $opts);
+            $idx = $this->questionHelper()->ask($input, $output, $q);
+            return $statuses[$idx];
+        }
+        return reset($statuses);
+    }
+
+    private function openCi(InputInterface $input, OutputInterface $output, Issue $issue)
     {
         $issues = $this->listOpenGitHubIssues($issue);
         $hubIssue = array_shift($issues);
@@ -101,11 +117,21 @@ class Browse extends AbstractCommand
             $commits = $this->gitHub()->prCommits($hubIssue['number']);
             $last = end($commits);
             $combined = $this->gitHub()->statusCombined($last['sha']);
-            $status = array_shift($combined['statuses']);
+            if (count($combined['statuses']) == 0) {
+                $output->writeln(
+                    sprintf(
+                        'No CI link for the <info>%s</info> issue\'s first open pull request <comment>#%d</comment>...',
+                        $issue->key(),
+                        $hubIssue['number']
+                    )
+                );
+                return;
+            }
+            $status = $this->selectCiStatus($input, $output, $combined['statuses']);
 
             $output->writeln(
                 sprintf(
-                    'Opening %s link for first open pull request <comment>#%d</comment>...',
+                    'Opening <info>%s</info> link for first open pull request <comment>#%d</comment>...',
                     $status['context'],
                     $hubIssue['number']
                 )
@@ -150,5 +176,13 @@ class Browse extends AbstractCommand
     private function gitHub()
     {
         return $this->getService('technodelight.jira.hub_helper');
+    }
+
+    /**
+     * @return \Symfony\Component\Console\Helper\QuestionHelper
+     */
+    private function questionHelper()
+    {
+        return $this->getService('console.question_helper');
     }
 }
