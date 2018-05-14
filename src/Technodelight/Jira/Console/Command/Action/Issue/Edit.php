@@ -53,11 +53,11 @@ class Edit extends Command
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        //@TODO implementation missing
+        //@TODO implement edit command
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        //@TODO implementation missing
+        //@TODO implement edit command
     }
 }

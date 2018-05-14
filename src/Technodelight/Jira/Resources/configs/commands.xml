@@ -167,14 +167,19 @@
             <call method="setJiraApi">
                 <argument type="service" id="technodelight.jira.api" />
             </call>
-            <!-- @TODO add back this command once implemented -->
-            <!--<tag name="command" />-->
+            <call method="setIssueKeyResolver">
+                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            </call>
+            <call method="setQuestionHelper">
+                <argument type="service" id="console.question_helper" />
+            </call>
+            <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.edit" class="Technodelight\Jira\Console\Command\Action\Issue\Version">
             <call method="setJiraApi">
                 <argument type="service" id="technodelight.jira.api" />
             </call>
-            <!-- @TODO add back this command once implemented -->
+            <!-- @TODO implement edit command -->
             <!--<tag name="command" />-->
         </service>
 

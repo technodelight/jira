@@ -4,18 +4,18 @@ namespace Technodelight\Jira\Console\HoaConsole;
 
 use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Domain\UserPickerResult;
 
-class UserPickerAutocomplete implements Autocompleter
+class IssueMetaAutocompleter implements Autocompleter
 {
     /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
+     * @var \Technodelight\Jira\Domain\Issue\Meta\Field
      */
-    private $jira;
+    private $field;
 
-    public function __construct(Api $jira)
+    public function __construct(Api $api, $issueKey, $fieldName)
     {
-        $this->jira = $jira;
+        $meta = $api->issueEditMeta($issueKey);
+        $this->field = $meta->field($fieldName);
     }
 
     /**
@@ -27,15 +27,14 @@ class UserPickerAutocomplete implements Autocompleter
      */
     public function complete(&$prefix)
     {
-        if (!empty($prefix)) {
-            $results = array_map(
-                function(UserPickerResult $user) {
-                    return $user->name();
-                },
-                $this->jira->userPicker($prefix)
-            );
-            return count($results) > 1 ? $results : current($results);
+        $matches = [];
+        foreach ($this->field->allowedValues() as $value) {
+            if (strpos($value, $prefix) !== false && count($matches) < 10) {
+                $matches[] = $value;
+            }
         }
+
+        return $matches ?: null;
     }
 
     /**
@@ -46,6 +45,6 @@ class UserPickerAutocomplete implements Autocompleter
      */
     public function getWordDefinition()
     {
-        return '[a-zA-Z0-9.- ]+';
+        return '.+';
     }
 }

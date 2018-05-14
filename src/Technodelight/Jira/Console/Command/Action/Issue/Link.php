@@ -97,7 +97,7 @@ class Link extends AbstractCommand
      * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
      * @param $links
      */
-    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, $links): void
+    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, $links)
     {
         foreach ($links as $link) {
             $output->writeln($this->renderLink($link, $issueKey));
@@ -107,10 +107,10 @@ class Link extends AbstractCommand
     private function renderLink(IssueLink $link, IssueKey $issueKey)
     {
         if ($link->isInward()) {
-            return sprintf('<info>%s</info> is now %s <comment>%s</comment>', $link->inwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
+            return sprintf('<info>%s</info> %s <comment>%s</comment>', $link->inwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
         }
 
-        return sprintf('<info>%s</info> is now %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->outwardIssue()->issueKey());
+        return sprintf('<info>%s</info> %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->outwardIssue()->issueKey());
     }
 
     /**

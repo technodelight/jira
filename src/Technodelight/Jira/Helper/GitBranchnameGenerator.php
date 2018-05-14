@@ -28,7 +28,7 @@ class GitBranchnameGenerator
     }
 
     /**
-     * @param \Technodelight\Jira\Api\Issue $issue
+     * @param \Technodelight\Jira\Domain\Issue $issue
      * @return string
      */
     public function fromIssueWithAutocomplete(Issue $issue)
@@ -64,7 +64,7 @@ class GitBranchnameGenerator
     }
 
     /**
-     * @param \Technodelight\Jira\Api\Issue $issue
+     * @param \Technodelight\Jira\Domain\Issue $issue
      * @return array
      */
     private function getAutocompleteWords(Issue $issue)
