@@ -58,9 +58,9 @@ class StatCollectorApiClient implements Client
         return $result;
     }
 
-    public function search($jql, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
-        $result = $this->client->search($jql, $fields, $expand, $properties);
+        $result = $this->client->search($jql, $startAt, $fields, $expand, $properties);
         $this->view($this->parseIssueKeys($jql));
         return $result;
     }

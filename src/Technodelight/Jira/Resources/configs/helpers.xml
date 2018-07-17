@@ -19,8 +19,6 @@
             <argument type="service" id="seconds_to_none.configuration" />
         </service>
 
-        <service id="technodelight.jira.git_helper" class="Technodelight\Jira\Helper\GitHelper" />
-
         <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper">
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.github.api" />
@@ -35,13 +33,24 @@
 
         <service id="technodelight.jira.pluralize_helper" class="Technodelight\Jira\Helper\PluralizeHelper" />
 
-        <service id="technodelight.jira.shell_command_helper" class="Technodelight\Jira\Helper\ShellCommandHelper" />
-
         <service id="technodelight.jira.template_helper" class="Technodelight\Jira\Helper\TemplateHelper" />
 
         <service id="technodelight.jira.git_branchname_generator" class="Technodelight\Jira\Helper\GitBranchnameGenerator" />
 
+        <service id="technodelight.jira.git_branch_collector" class="Technodelight\Jira\Helper\GitBranchCollector">
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator" />
+        </service>
+
         <service id="technodelight.jira.color_extractor" class="Technodelight\Jira\Helper\ColorExtractor" />
+
+        <service id="technodelight.jira.jira_tag_converter" class="Technodelight\Jira\Helper\JiraTagConverter" />
+        <service id="technodelight.jira.jira_tag_converter.no_color" class="Technodelight\Jira\Helper\JiraTagConverter">
+            <argument type="collection">
+                <argument key="strip_color" type="constant">TRUE</argument>
+                <argument key="images" type="constant">TRUE</argument>
+            </argument>
+        </service>
 
         <service id="technodelight.jira.word_wrap" class="Technodelight\Jira\Helper\Wordwrap">
             <argument type="service" id="technodelight.jira.app"/>

@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
@@ -26,6 +27,10 @@ class IntegrationsConfiguration implements RegistrableConfiguration
      * @var ITermConfiguration
      */
     private $iterm;
+    /**
+     * @var EditorConfiguration
+     */
+    private $editor;
 
     public static function fromArray(array $config)
     {
@@ -34,6 +39,7 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         $instance->git = GitConfiguration::fromArray($config['git']);
         $instance->tempo = TempoConfiguration::fromArray($config['tempo']);
         $instance->iterm = ITermConfiguration::fromArray($config['iterm']);
+        $instance->editor = EditorConfiguration::fromArray($config['editor']);
 
         return $instance;
     }
@@ -56,6 +62,11 @@ class IntegrationsConfiguration implements RegistrableConfiguration
     public function iterm()
     {
         return $this->iterm;
+    }
+
+    public function editor()
+    {
+        return $this->editor;
     }
 
     public function servicePrefix()

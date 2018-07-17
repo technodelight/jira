@@ -33,6 +33,7 @@ class Assign extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
+        $this->issueKeyArgument($input, $output);
         if (!$input->getArgument('assignee')) {
             $input->setArgument('assignee', $this->userPicker($output));
         }
@@ -65,13 +66,5 @@ class Assign extends AbstractCommand
     private function jiraApi()
     {
         return $this->getService('technodelight.jira.api');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Console\Argument\InteractiveIssueSelector
-     */
-    private function issueSelector()
-    {
-        return $this->getService('technodelight.jira.console.interactive_issue_selector');
     }
 }

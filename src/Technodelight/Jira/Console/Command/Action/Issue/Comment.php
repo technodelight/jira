@@ -55,18 +55,32 @@ class Comment extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             $issue = $this->jiraApi()->retrieveIssue($issueKey);
+            /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
+            $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
+            $worklogs = $worklogHandler->findByIssue($issue);
+            $issue->assignWorklogs($worklogs);
+
             $renderer = $this->issueRenderer();
             $renderer->render($output, $issue, true);
-            $autocomplete = new AutocompletedInput($this->jiraApi(), $issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
 
-            $output->writeln([
-                '',
-                '<info>Comment:</> ' . $autocomplete->helpText()
-            ]);
-
-            $comment = $autocomplete->getValue();
-            $output->write('</>');
-            $input->setArgument('comment', $comment);
+            // when updating comment, open in editor instead
+            if ($commentId = $input->getOption('update')) {
+                $output->write('</>');
+                $input->setArgument('comment',
+                    $this->editor()->edit(
+                        sprintf('Edit comment #%d on %s', $commentId, $issueKey),
+                        $this->jiraApi()->retrieveComment($issueKey, $commentId)->body()
+                    )
+                );
+            } else {
+                $autocomplete = new AutocompletedInput($this->jiraApi(), $issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
+                $output->writeln([
+                    '',
+                    '<info>Comment:</> ' . $autocomplete->helpText()
+                ]);
+                $output->write('</>');
+                $input->setArgument('comment', $autocomplete->getValue());
+            }
         }
     }
 
@@ -123,5 +137,13 @@ class Comment extends AbstractCommand
     private function commentRenderer()
     {
         return $this->getService('technodelight.jira.renderer.issue.comment');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Api\EditApp\EditApp
+     */
+    private function editor()
+    {
+        return $this->getService('technodelight.jira.console.edit');
     }
 }

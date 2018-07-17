@@ -11,25 +11,19 @@ class Comment
     private $body;
     private $created;
     private $updated;
-
-    public function __construct($id, $author, $body, $created, $updated)
-    {
-        $this->id = $id;
-        $this->author = $author;
-        $this->body = $body;
-        $this->created = $created;
-        $this->updated = $updated;
-    }
+    private $visibility;
 
     public static function fromArray(array $jiraRecord)
     {
-        return new self(
-            $jiraRecord['id'],
-            $jiraRecord['author'],
-            $jiraRecord['body'],
-            $jiraRecord['created'],
-            $jiraRecord['updated']
-        );
+        $instance = new self;
+        $instance->id = $jiraRecord['id'];
+        $instance->author = $jiraRecord['author'];
+        $instance->body = $jiraRecord['body'];
+        $instance->created = $jiraRecord['created'];
+        $instance->updated = $jiraRecord['updated'];
+        $instance->visibility = isset($jiraRecord['visibility']) ? $jiraRecord['visibility'] : [];
+
+        return $instance;
     }
 
     public function id()
@@ -45,6 +39,14 @@ class Comment
     public function author()
     {
         return User::fromArray($this->author);
+    }
+
+    public function visibility()
+    {
+        if (!empty($this->visibility)) {
+            return $this->visibility['value'];
+        }
+        return '';
     }
 
     public function created()

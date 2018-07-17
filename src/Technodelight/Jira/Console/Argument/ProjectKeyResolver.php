@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\Jira\Api\GitShell\Api as Git;
+use Technodelight\GitShell\Api as Git;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingProjectKeyException;
 
@@ -11,7 +11,7 @@ class ProjectKeyResolver
 {
     const ARGUMENT = 'projectKey';
     /**
-     * @var \Technodelight\Jira\Api\GitShell\Api
+     * @var \Technodelight\GitShell\Api
      */
     private $git;
     /**

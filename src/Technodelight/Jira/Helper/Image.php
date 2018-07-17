@@ -37,7 +37,7 @@ class Image
         if (preg_match_all('~!([^|]+)(\|thumbnail!)?~', $body, $matches)) {
             $replacePairs = [];
             foreach ($matches[1] as $k => $embeddedImage) {
-                if (empty($embeddedImage)) {
+                if (empty(trim($embeddedImage))) {
                     continue;
                 }
 
@@ -47,7 +47,7 @@ class Image
                     try {
                         $image = $this->renderThumbnail($issue, $embeddedImage);
                     } catch (\Exception $e) {
-                        $image = $embeddedImage;
+                        continue;
                     }
                 }
                 $replacePairs[$matches[0][$k]] = $image;

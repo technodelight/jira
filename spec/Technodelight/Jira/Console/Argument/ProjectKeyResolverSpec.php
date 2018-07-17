@@ -4,8 +4,8 @@ namespace spec\Technodelight\Jira\Console\Argument;
 
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\ProjectKey;
 use Technodelight\Jira\Console\Argument\ProjectKeyResolver;

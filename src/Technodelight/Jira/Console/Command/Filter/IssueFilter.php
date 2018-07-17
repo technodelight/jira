@@ -3,13 +3,15 @@
 namespace Technodelight\Jira\Console\Command\Filter;
 
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class IssueFilter extends AbstractCommand
+class IssueFilter extends AbstractCommand implements IssueRendererAware
 {
     private $name;
     private $jql;
@@ -43,6 +45,13 @@ class IssueFilter extends AbstractCommand
         $this
             ->setDescription($this->descriptionFromJql())
             ->setAliases([$this->name])
+            ->addOption(
+                'page',
+                'p',
+                InputOption::VALUE_REQUIRED,
+                'Page',
+                null
+            )
         ;
     }
 
@@ -52,13 +61,13 @@ class IssueFilter extends AbstractCommand
         $jira = $this->getService('technodelight.jira.api');
         /** @var IssueRenderer $renderer */
         $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $issues = $jira->search($this->jql, Api::FIELDS_ALL);
+        $issues = $jira->search($this->jql, $this->page($input), [Api::FIELDS_ALL, 'comment']);
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
             $output->writeln(sprintf('<fg=black>%s</>', $this->jql));
             return 0;
         }
-        $renderer->renderIssues($output, $jira->search($this->jql, Api::FIELDS_ALL));
+        $renderer->renderIssues($output, $issues, $input->getOptions());
     }
 
     private function descriptionFromJql()
@@ -66,5 +75,13 @@ class IssueFilter extends AbstractCommand
         return sprintf(
             'Runs filter: \'%s\'', $this->jql
         );
+    }
+
+    private function page(InputInterface $input)
+    {
+        if (is_numeric($input->getOption('page'))) {
+            return ($input->getOption('page') - 1) * 50;
+        }
+        return null;
     }
 }

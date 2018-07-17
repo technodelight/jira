@@ -20,4 +20,16 @@ class TemplateHelper
         return str_repeat($paddingChar, $pad)
             . implode(PHP_EOL . str_repeat($paddingChar, $pad), $string);
     }
+
+    /**
+     * @param string $string
+     * @param int $level
+     * @param int $pad
+     * @param string $paddingChar
+     * @return string
+     */
+    public function tabulateWithLevel($string, $level = 1, $pad = 4, $paddingChar = ' ')
+    {
+        return $this->tabulate($string, $level * $pad, $paddingChar);
+    }
 }

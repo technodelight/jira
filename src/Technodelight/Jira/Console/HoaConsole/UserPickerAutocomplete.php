@@ -28,13 +28,12 @@ class UserPickerAutocomplete implements Autocompleter
     public function complete(&$prefix)
     {
         if (!empty($prefix)) {
-            $results = array_map(
+            return array_map(
                 function(UserPickerResult $user) {
                     return $user->name();
                 },
                 $this->jira->userPicker($prefix)
             );
-            return count($results) > 1 ? $results : current($results);
         }
     }
 
@@ -46,6 +45,6 @@ class UserPickerAutocomplete implements Autocompleter
      */
     public function getWordDefinition()
     {
-        return '[a-zA-Z0-9.- ]+';
+        return '[a-zA-Z0-9. -]+';
     }
 }

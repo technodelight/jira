@@ -9,7 +9,7 @@ Feature: Tempo can be used to retrieve worklogs
     """
     And Tempo responds to "GET" "/worklogs?dateFrom=2017-08-23&dateTo=2017-08-23" with "worklogs"
     When I run the application with the following input:
-      | command | show:today |
+      | command | show:day   |
       | date    | 2017-08-23 |
     Then the exit code should be "0"
     And Tempo should have been called with "GET" "/worklogs?dateFrom=2017-08-23&dateTo=2017-08-23"

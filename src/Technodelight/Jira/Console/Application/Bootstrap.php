@@ -3,29 +3,44 @@
 namespace Technodelight\Jira\Console\Application;
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Technodelight\Jira\Configuration\Symfony\ApplicationConfigurationCompilerPass;
-use Technodelight\Jira\Configuration\Symfony\CommandInitialisationCompilerPass;
-use Technodelight\Jira\Configuration\Symfony\IssueRendererOptionsCompilerPass;
-use Technodelight\Jira\Configuration\Symfony\RendererProviderCompilerPass;
-use Technodelight\Jira\Configuration\Symfony\SyntheticServicesCompilerPass;
+use Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass;
+use Technodelight\Jira\Console\Application\DependencyInjection\CommandInitialisationCompilerPass;
+use Technodelight\Jira\Console\Application\DependencyInjection\IssueRendererOptionsCompilerPass;
+use Technodelight\Jira\Console\Application\DependencyInjection\RendererProviderCompilerPass;
+use Technodelight\Jira\Console\Application\DependencyInjection\SyntheticServicesCompilerPass;
 use Technodelight\Jira\Console\Application;
 
 class Bootstrap
 {
-
-    public function boot($version, array $containerPaths = [])
+    /**
+     * @param string $version
+     * @param array $containerPaths array of directory paths
+     * @param InputInterface $input
+     * @return Application
+     * @throws \Exception
+     */
+    public function boot($version, array $containerPaths = [], InputInterface $input)
     {
         $app = new Application('JIRA CLI', $version);
-        $container = $this->buildContainer($app, $containerPaths);
+        $container = $this->buildContainer($app, $containerPaths, $input);
         $app->setContainer($container);
         return $app;
     }
 
-    private function buildContainer(Application $app, array $containerPaths)
+    /**
+     * @param Application $app
+     * @param array $containerPaths
+     * @param InputInterface $input
+     * @return ContainerBuilder
+     * @throws \Exception
+     */
+    private function buildContainer(Application $app, array $containerPaths, InputInterface $input)
     {
         $container = new ContainerBuilder();
+        $this->setContainerParamsFromInput($container, $input);
 
         // add compiler passes
         $container->addCompilerPass(new SyntheticServicesCompilerPass($app));
@@ -36,18 +51,14 @@ class Bootstrap
 
         $loader = new XmlFileLoader($container, new FileLocator);
         foreach ($this->containerPathsWithBaseDir($app, $containerPaths) as $containerPath) {
-            foreach (scandir($containerPath) as $file) {
-                if ($this->isXml($file)) {
-                    $loader->load($containerPath . DIRECTORY_SEPARATOR . $file);
-                }
-            }
+            $loader->load($containerPath . DIRECTORY_SEPARATOR . 'services.xml');
         }
 
         return $container;
     }
 
     /**
-     * @param \Technodelight\Jira\Console\Application $app
+     * @param Application $app
      * @param array $containerPaths
      * @return array
      */
@@ -58,12 +69,15 @@ class Bootstrap
         }, $containerPaths);
     }
 
-    /**
-     * @param string $file
-     * @return bool
-     */
-    private function isXml($file)
+    private function setContainerParamsFromInput(ContainerBuilder $container, InputInterface $input)
     {
-        return pathinfo($file, PATHINFO_EXTENSION) == 'xml';
+        $container->setParameter(
+            'app.jira.debug',
+            $input->getParameterOption(['--debug', '-d'])
+        );
+        $container->setParameter(
+            'app.jira.instance',
+            $input->getParameterOption(['--instance', '-i']) ?: 'default'
+        );
     }
 }

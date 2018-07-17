@@ -84,6 +84,17 @@ class Field
         return '';
     }
 
+    /**
+     * @return string
+     */
+    public function schemaItemType()
+    {
+        if (isset($this->schema['items'])) {
+            return $this->schema['items'];
+        }
+        return '';
+    }
+
     public function __toString()
     {
         return (string) $this->key();

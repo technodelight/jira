@@ -16,10 +16,28 @@ class TableParser
         $this->body = $body;
     }
 
+    public function parseAndReplace()
+    {
+        return $this->replaceTables($this->parse());
+    }
+
+    private function replaceTables(array $tables)
+    {
+        foreach ($tables as $table) {
+            $originalTable = $table->source();
+            $startPos = strpos($this->body, $originalTable);
+            $this->body = substr($this->body, 0, $startPos)
+                . (string) $table
+                . substr($this->body, $startPos + strlen($originalTable));
+        }
+
+        return $this->body;
+    }
+
     /**
      * @return Table[]
      */
-    public function parse()
+    private function parse()
     {
         $lines = explode(PHP_EOL, $this->body);
         $noOfLines = count($lines);

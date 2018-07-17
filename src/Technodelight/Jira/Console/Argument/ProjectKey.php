@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
-use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Console\Argument\Exception\MissingProjectKeyException;
 
 class ProjectKey

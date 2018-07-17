@@ -73,7 +73,7 @@ class LogTimeArgsOptsParser
             $this->opts['interactive'] = true;
         }
 
-        if ($this->checkIfArgumentIsDot('issueKeyOrWorklogId')) {
+        if ($this->checkIfArgumentIsDotOrEmpty('issueKeyOrWorklogId')) {
             $this->arguments['issueKeyOrWorklogId'] = null;
         }
 
@@ -97,9 +97,10 @@ class LogTimeArgsOptsParser
         return false !== strtotime($this->arguments[$arg]);
     }
 
-    private function checkIfArgumentIsDot($arg)
+    private function checkIfArgumentIsDotOrEmpty($arg)
     {
-        return '.' == $this->arguments[$arg];
+        return '.' == $this->arguments[$arg]
+            || '' == $this->arguments[$arg];
     }
 
     private function shiftArguments()

@@ -34,7 +34,6 @@ class Progress implements DashboardRenderer
 
         $totalTimeInRange = $this->dateHelper->humanToSeconds(sprintf('%dd', $collection->days()));
         $summary = $collection->totalTimeSpentSeconds();
-        //@TODO: speed up API requests with curl multi!
         $output->writeln(
             sprintf(
                 'You have been working on %d %s %s' . PHP_EOL,

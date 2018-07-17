@@ -45,7 +45,7 @@ class Browse extends AbstractCommand
         try {
             $issue = $this->jiraApi()->retrieveIssue($issueKey);
             if ($input->getOption('pr')) {
-                $this->openPr($output, $issue);
+                $this->openPr($input, $output, $issue);
             } elseif ($input->getOption('ci')) {
                 $this->openCi($input, $output, $issue);
             } else {
@@ -68,55 +68,58 @@ class Browse extends AbstractCommand
      */
     private function openIssueLink(OutputInterface $output, Issue $issue)
     {
+        $this->renderHeader($output, $issue, false);
         $output->writeln(
-            sprintf('Opening <info>%s</info> in browser...', $issue->issueKey())
+            sprintf('Opening jira for <info>%s</info> in browser...', $issue->issueKey())
         );
         $this->openApp()->open($issue->url());
     }
 
-    private function openPr(OutputInterface $output, Issue $issue)
+    private function openPr(InputInterface $input, OutputInterface $output, Issue $issue)
     {
-        $issues = $this->listOpenGitHubIssues($issue);
+        $issues = $this->listGitHubIssues($issue, 'open');
         $hubIssue = array_shift($issues);
         if ($hubIssue && empty($issues)) {
-            $output->writeln(
-                sprintf(
-                    'Opening first open pull request <comment>#%d</comment> for issue <comment>%s</comment>...',
-                    $hubIssue['number'],
-                    $issue->ticketNumber()
-                )
-            );
-            $this->openApp()->open($hubIssue['html_url']);
-        } else {
-            $output->writeln(
-                sprintf('<error>Cannot find any open PR for issue %s</error>', $issue->ticketNumber())
-            );
+            $this->openHubIssue($output, $issue, $hubIssue);
+            return;
         }
-    }
 
-    /**
-     * @param array $combined
-     * @return array
-     */
-    private function selectCiStatus(InputInterface $input, OutputInterface $output, array $statuses)
-    {
-        if (count($statuses) > 1) {
-            $opts = array_map(function(array $status) { return $status['context']; }, $statuses);
-            $q = new ChoiceQuestion('Select CI provider', $opts);
-            $idx = $this->questionHelper()->ask($input, $output, $q);
-            return $statuses[$idx];
+        if (!empty($issues)) {
+            $selectedIdx = $this->questionHelper()->ask($input, $output, new ChoiceQuestion(
+                'Please select a Pull Request',
+                array_map(function (array $hubIssue) {
+                    return $hubIssue['number'] . ' ' . $hubIssue['name'];
+                }, $issues)
+            ));
+            $this->openHubIssue($output, $issue, $issues[$selectedIdx]);
+        } else {
+            $issues = $this->listGitHubIssues($issue, 'all');
+            if (empty($issues)) {
+                // choose from open PRs OR from closed PRs
+                $output->writeln(
+                    sprintf('<error>Cannot find any PRs for issue %s</error>', $issue->ticketNumber())
+                );
+                return;
+            }
+            $selectedIdx = $this->questionHelper()->ask($input, $output, new ChoiceQuestion(
+                'Please select a Pull Request',
+                array_map(function (array $hubIssue) {
+                    return $hubIssue['number'] . ' ' . $hubIssue['name'];
+                }, $issues)
+            ));
+            $this->openHubIssue($output, $issue, $issues[$selectedIdx]);
         }
-        return reset($statuses);
     }
 
     private function openCi(InputInterface $input, OutputInterface $output, Issue $issue)
     {
-        $issues = $this->listOpenGitHubIssues($issue);
+        $issues = $this->listGitHubIssues($issue, 'open');
         $hubIssue = array_shift($issues);
         if ($hubIssue && empty($issues)) {
             $commits = $this->gitHub()->prCommits($hubIssue['number']);
             $last = end($commits);
             $combined = $this->gitHub()->statusCombined($last['sha']);
+            $this->renderHeader($output, $issue);
             if (count($combined['statuses']) == 0) {
                 $output->writeln(
                     sprintf(
@@ -141,17 +144,60 @@ class Browse extends AbstractCommand
     }
 
     /**
-     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param array $combined
      * @return array
      */
-    private function listOpenGitHubIssues(Issue $issue)
+    private function selectCiStatus(InputInterface $input, OutputInterface $output, array $statuses)
+    {
+        if (count($statuses) > 1) {
+            $opts = array_map(function(array $status) { return $status['context']; }, $statuses);
+            $q = new ChoiceQuestion('Select CI provider', $opts);
+            $idx = $this->questionHelper()->ask($input, $output, $q);
+            return $statuses[$idx];
+        }
+        return reset($statuses);
+    }
+
+    /**
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param string $state
+     * @return array
+     */
+    private function listGitHubIssues(Issue $issue, $state)
     {
         return array_filter(
-            $this->gitHub()->issues('open'),
+            $this->gitHub()->issues($state),
             function ($hubIssue) use ($issue) {
                 return strpos($hubIssue['title'], $issue->issueKey()) === 0;
             }
         );
+    }
+
+    private function renderHeader(OutputInterface $output, Issue $issue, $withPr = true)
+    {
+        $this->issueHeaderRenderer()->render($output, $issue);
+        if ($withPr) {
+            $this->gitHubIssueRenderer()->render($output, $issue);
+        }
+        $output->writeln('');
+    }
+
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param array $hubIssue
+     */
+    private function openHubIssue(OutputInterface $output, Issue $issue, array $hubIssue)
+    {
+        $this->renderHeader($output, $issue);
+        $output->writeln(
+            sprintf(
+                'Opening first open pull request <info>#%d</info> for issue <comment>%s</comment>...',
+                $hubIssue['number'],
+                $issue->ticketNumber()
+            )
+        );
+        $this->openApp()->open($hubIssue['html_url']);
     }
 
     /**
@@ -184,5 +230,21 @@ class Browse extends AbstractCommand
     private function questionHelper()
     {
         return $this->getService('console.question_helper');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Renderer\Issue\GitHub
+     */
+    private function gitHubIssueRenderer()
+    {
+        return $this->getService('technodelight.jira.renderer.issue.github');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Renderer\Issue\Header
+     */
+    private function issueHeaderRenderer()
+    {
+        return $this->getService('technodelight.jira.renderer.issue.header');
     }
 }

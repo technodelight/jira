@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class HttpClient implements Client
 {
-    const REST_API_ENDPOINT_PATH = '/rest/tempo-timesheets/3/';
+    const REST_API_ENDPOINT_PATH = '/tempo-timesheets/3/';
 
     /**
      * @var string
@@ -17,21 +17,16 @@ class HttpClient implements Client
     /**
      * @var string
      */
-    private $username;
-    /**
-     * @var string
-     */
-    private $pass;
+    private $apiToken;
     /**
      * @var GuzzleClient
      */
     private $httpClient;
 
-    public function __construct($jiraUrl, $username, $pass)
+    public function __construct($jiraUrl, $apiToken)
     {
         $this->jiraUrl = $jiraUrl;
-        $this->username = $username;
-        $this->pass = $pass;
+        $this->apiToken = $apiToken;
     }
 
     /**
@@ -96,7 +91,9 @@ class HttpClient implements Client
         if (!isset($this->httpClient)) {
             $this->httpClient = new GuzzleClient([
                 'base_uri' => rtrim($this->jiraUrl, '/') . self::REST_API_ENDPOINT_PATH,
-                'auth' => [$this->username, $this->pass]
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiToken
+                ],
             ]);
         }
 
@@ -136,6 +133,6 @@ class HttpClient implements Client
      */
     private function decodeJsonResponse(ResponseInterface $response)
     {
-        return json_decode($response->getBody(), true);
+        return json_decode((string) $response->getBody(), true);
     }
 }

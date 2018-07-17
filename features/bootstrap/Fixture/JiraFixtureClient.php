@@ -45,7 +45,7 @@ class JiraFixtureClient implements Client
         return $results;
     }
 
-    public function search($jql, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
         return $this->read('get', $jql);
     }

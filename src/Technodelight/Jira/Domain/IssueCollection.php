@@ -40,6 +40,30 @@ class IssueCollection implements Iterator, Countable
     }
 
     /**
+     * @return int
+     */
+    public function total()
+    {
+        return $this->total;
+    }
+
+    /**
+     * @return int
+     */
+    public function startAt()
+    {
+        return $this->startAt;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLast()
+    {
+        return ($this->startAt + 50) >= $this->total;
+    }
+
+    /**
      * @return Issue
      */
     public function current()

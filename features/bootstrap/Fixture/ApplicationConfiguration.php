@@ -33,10 +33,29 @@ class ApplicationConfiguration extends BaseAppConf
             ],
             'tempo' => [
                 'enabled' => self::$useTempo,
-                'instances' => []
+                'instances' => [],
+                'apiToken' => '123321',
+                'version' => null,
+            ],
+            'editor' => [
+                'executable' => 'vim'
             ]
         ]);
     }
+
+    public function instances()
+    {
+        return BaseAppConf\InstancesConfiguration::fromArray([
+            [
+                'name' => 'test',
+                'domain' => 'fixture.jira.phar',
+                'username' => 'test',
+                'password' => 'test',
+                'tempo' => self::$useTempo
+            ]
+        ]);
+    }
+
 
     public function project()
     {

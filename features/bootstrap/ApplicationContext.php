@@ -63,7 +63,7 @@ class ApplicationContext implements Context
             $this->app = $boot->boot('behat', [
                  join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs']),
                  join(DIRECTORY_SEPARATOR, ['features', 'bootstrap', 'configs']),
-            ]);
+            ], new ArrayInput([]));
             $this->app->setAutoExit(false);
         }
 

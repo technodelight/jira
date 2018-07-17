@@ -8,6 +8,7 @@ class InstanceConfiguration
     private $domain;
     private $username;
     private $password;
+    private $isTempoEnabled;
 
     public static function fromArray(array $config)
     {
@@ -16,6 +17,7 @@ class InstanceConfiguration
         $instance->domain = $config['domain'];
         $instance->username = $config['username'];
         $instance->password = $config['password'];
+        $instance->isTempoEnabled = $config['tempo'];
 
         return $instance;
     }
@@ -38,6 +40,14 @@ class InstanceConfiguration
     public function password()
     {
         return $this->password;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isTempoEnabled()
+    {
+        return $this->isTempoEnabled;
     }
 
     private function __construct()

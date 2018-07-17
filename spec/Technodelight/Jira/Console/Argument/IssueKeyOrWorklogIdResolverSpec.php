@@ -4,6 +4,7 @@ namespace spec\Technodelight\Jira\Console\Argument;
 
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Input\InputInterface;
+use Technodelight\GitShell\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
@@ -23,9 +24,9 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
         'timeSpentSeconds' => 12345,
     ];
 
-    function let(AliasesConfiguration $config, WorklogHandler $worklogHandler)
+    function let(AliasesConfiguration $config, WorklogHandler $worklogHandler, Api $git)
     {
-        $this->beConstructedWith($config, $worklogHandler);
+        $this->beConstructedWith($config, $worklogHandler, $git);
     }
 
     function it_resolves_an_input_argument(AliasesConfiguration $config, InputInterface $input)

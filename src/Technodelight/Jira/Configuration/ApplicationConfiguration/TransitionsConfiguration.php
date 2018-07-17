@@ -33,7 +33,7 @@ class TransitionsConfiguration implements RegistrableConfiguration
     public function commandForTransition($transitionName)
     {
         foreach ($this->items() as $transition) {
-            if ($transition->transitions() == $transitionName) {
+            if (in_array($transitionName, $transition->transitions())) {
                 return $transition->command();
             }
         }

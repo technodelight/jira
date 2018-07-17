@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
-use Technodelight\Jira\Api\GitShell\Api as Git;
+use Technodelight\GitShell\Api as Git;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Console\IssueStats\StatCollector;
@@ -22,7 +22,7 @@ class InteractiveIssueSelector
      */
     private $jira;
     /**
-     * @var \Technodelight\Jira\Api\GitShell\Api
+     * @var \Technodelight\GitShell\Api
      */
     private $git;
     /**

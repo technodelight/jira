@@ -4,14 +4,14 @@ namespace Technodelight\Jira\Api\OpenApp\Driver;
 
 use Technodelight\Jira\Api\OpenApp\Driver;
 use Technodelight\Jira\Api\OpenApp\Exception;
-use Technodelight\Jira\Api\Shell\Command;
-use Technodelight\Jira\Api\Shell\Shell;
-use Technodelight\Jira\Api\Shell\ShellCommandException;
+use Technodelight\ShellExec\Command;
+use Technodelight\ShellExec\Shell;
+use Technodelight\ShellExec\ShellCommandException;
 
 class Opn implements Driver
 {
     /**
-     * @var \Technodelight\Jira\Api\Shell\Shell
+     * @var \Technodelight\ShellExec\Shell
      */
     private $shell;
 

@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
-use Technodelight\Jira\Api\SymfonyConfigurationInitialiser\Initialiser;
+use Technodelight\SymfonyConfigurationInitialiser\Initialiser;
 use Technodelight\Jira\Configuration\Symfony\Configuration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 
@@ -69,6 +69,7 @@ class Init extends AbstractCommand
             throw new \ErrorException('Config file already exists: ' . $path);
         }
         file_put_contents($path, Yaml::dump($config));
+        chmod($path, 0600);
     }
 
     /**
