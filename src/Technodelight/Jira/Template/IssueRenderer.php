@@ -4,18 +4,28 @@ namespace Technodelight\Jira\Template;
 
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 
 class IssueRenderer
 {
-    /** @var \Technodelight\Jira\Renderer\IssueRenderer[] */
+    /**
+     * @var \Technodelight\Jira\Renderer\IssueRenderer[]
+     */
     private $renderers;
+    /**
+     * @var RenderersConfiguration
+     */
+    private $configuration;
 
-    public function __construct(array $renderers, FormatterHelper $formatterHelper)
+    private $listMode = null;
+
+    public function __construct(array $renderers, FormatterHelper $formatterHelper, RenderersConfiguration $configuration)
     {
         $this->renderers = $renderers;
         $this->formatterHelper = $formatterHelper;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -25,6 +35,7 @@ class IssueRenderer
      */
     public function renderIssues(OutputInterface $output, IssueCollection $issues, $mode = false)
     {
+        $this->listMode = true;
         $groupedIssues = $this->groupByParent(iterator_to_array($issues));
         foreach ($groupedIssues as $issueGroup) {
             $output->writeln(
@@ -35,8 +46,14 @@ class IssueRenderer
             }
         }
         $this->renderStats($output, $issues);
+        $this->listMode = null;
     }
 
+    /**
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param \Technodelight\Jira\Domain\Issue $issue
+     * @param bool|array $mode when array, it should be a list of options
+     */
     public function render(OutputInterface $output, Issue $issue, $mode = false)
     {
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
@@ -53,8 +70,9 @@ class IssueRenderer
         $output->writeln('');
         $output->writeln(
             sprintf(
-                '<info>%d issues found</info>',
-                $issues->count()
+                '<info>%s issues listed of %d</info>',
+                $issues->startAt() > 0 ? sprintf('%d - %d', $issues->startAt(), $issues->startAt() + $issues->count()) : $issues->count(),
+                $issues->total()
             )
         );
     }
@@ -102,9 +120,9 @@ class IssueRenderer
     private function renderer($mode = false)
     {
         if ($mode === false) {
-            return $this->rendererByMode('short');
+            return $this->rendererByMode($this->configuration->preferredListRenderer());
         } else if ($mode === true) {
-            return $this->rendererByMode('full');
+            return $this->rendererByMode($this->configuration->preferredViewRenderer());
         } else if (is_string($mode)) {
             return $this->rendererByMode($mode);
         } else if (is_array($mode)) {
@@ -114,7 +132,7 @@ class IssueRenderer
                     return $this->rendererByMode($supportedRenderer);
                 }
             }
-            return $this->rendererByMode('full');
+            return $this->rendererByMode($this->listMode ? $this->configuration->preferredListRenderer() : $this->configuration->preferredViewRenderer());
         }
         throw new \RuntimeException(sprintf(':\'( Cannot determine renderer mode. Argument was: %s', var_export($mode, true)));
     }

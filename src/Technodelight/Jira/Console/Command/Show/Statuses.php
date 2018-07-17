@@ -62,18 +62,17 @@ class Statuses extends AbstractCommand
                 /** @var $status Status */
                 if ($idx == 0) {
                     $out[] = sprintf(
-                            '<bg=%s> %s </>',
-                            $this->colorExtractor()->extractColor($status->statusCategoryColor()) ?: 'black',
-                            $status->statusCategory()
-                        );
+                        '<fg=%s>  </> <comment>%s</>',
+                        $this->colorExtractor()->extractColor($status->statusCategoryColor()) ?: 'black',
+                        $status->statusCategory()
+                    );
+                    $out[] = '';
                 }
 
-                $out[] = $this->tab(
-                    sprintf(
-                        '<comment>%s</> <info>%s</>',
-                        $status->name(),
-                        $this->getCommandForStatus($status)
-                    )
+                $out[] = sprintf(
+                    '<comment>%s</> <info>%s</>',
+                    $status->name(),
+                    $this->getCommandForStatus($status)
                 );
                 if (!empty($status->description())) {
                     $out[] = $this->tab($this->tab(($status->description())));
@@ -94,6 +93,7 @@ class Statuses extends AbstractCommand
 
             $groupedStatuses[$status->statusCategory()][] = $status;
         }
+
         return $groupedStatuses;
     }
 

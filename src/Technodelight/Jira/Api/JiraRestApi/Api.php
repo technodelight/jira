@@ -6,6 +6,8 @@ use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Field;
+use Technodelight\Jira\Domain\Filter;
+use Technodelight\Jira\Domain\Issue\Changelog;
 use Technodelight\Jira\Domain\Issue\Meta;
 use Technodelight\Jira\Domain\IssueLink;
 use Technodelight\Jira\Domain\IssueLink\Type;
@@ -316,7 +318,17 @@ class Api
     {
         $query = SearchQueryBuilder::factory()
             ->issueKey($issueKeys);
-        return $this->search($query->assemble(), self::FIELDS_ALL);
+        $result = IssueCollection::createEmpty();
+        $startAt = 0;
+        do {
+            $issues = $this->search($query->assemble(), $startAt, self::FIELDS_ALL);
+            $result->merge($issues);
+            if (!$issues->isLast()) {
+                $startAt+= 50;
+            }
+        } while (!$issues->isLast());
+
+        return $result;
     }
 
     /**
@@ -394,6 +406,41 @@ class Api
     }
 
     /**
+     * Returns a paginated list of all updates of an issue, sorted by date, starting from the oldest.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-changelog-get
+     * @param string $issueKey
+     * @param null|int $startAt
+     * @param null|int $maxResults
+     * @return Changelog[]
+     */
+    public function issueChangelogs($issueKey, $startAt = null, $maxResults = null)
+    {
+        $result = $this->client->get(
+            sprintf('issue/%s/changelog', $issueKey) . $this->queryStringFromParams([
+                'startAt' => $startAt,
+                'maxResults' => $maxResults,
+            ])
+        );
+        $self = $this;
+        return array_map(function(array $changelog) use ($self, $issueKey) {
+            return Changelog::fromArray($self->normaliseDateFields($changelog), $issueKey);
+        }, $result['values']);
+    }
+
+    /**
+     * Performs an autocompletetion with issue meta autocomplete
+     *
+     * @param string $autocompleteUrl
+     * @param string $query
+     * @return mixed
+     */
+    public function autocompleteUrl($autocompleteUrl, $query)
+    {
+        return $this->client->get($autocompleteUrl . $query);
+    }
+
+    /**
      * @param string $issueKey
      *
      * @return Transition[]
@@ -430,18 +477,32 @@ class Api
     }
 
     /**
-     * @param string $jql
-     * @param string|null $fields
-     * @param array|null $expand
-     * @param array|null $properties
+     * Search for issues using jql
+     *
+     * The fields param (which can be specified multiple times) gives a comma-separated list of fields to include in the response.
+     * This can be used to retrieve a subset of fields. A particular field can be excluded by prefixing it with a minus.
+     * By default, only navigable (*navigable) fields are returned in this search resource. Note: the default is different
+     * in the get-issue resource – the default there all fields (*all).
+     *
+     * Properties: The properties param is similar to fields and specifies a comma-separated list of issue properties to include.
+     * Unlike fields, properties are not included by default. It is also not allowed to request all properties. The number of
+     * different properties that may be requested in one query is limited to 5.
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-search-post
+     * @param string $jql a JQL query string
+     * @param int|null $startAt
+     * @param array|string|null $fields the list of fields to return for each issue. By default, all navigable fields are returned.
+     * @param array|null $expand A list of the parameters to expand.
+     * @param array|null $properties the list of properties to return for each issue. By default no properties are returned.
      *
      * @return IssueCollection
      */
-    public function search($jql, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
         try {
             $results = $this->client->search(
                 $jql,
+                $startAt,
                 $fields,
                 $expand,
                 $properties
@@ -449,6 +510,7 @@ class Api
             foreach ($results['issues'] as $k => $issueArray) {
                 $results['issues'][$k] = $this->normaliseIssueArray($issueArray);
             }
+
             return IssueCollection::fromSearchArray($results);
         } catch (\Exception $e) {
             throw new \BadMethodCallException(
@@ -484,6 +546,22 @@ class Api
             [
                 'body' => $comment
             ]
+        );
+        return Comment::fromArray($this->normaliseDateFields($response));
+    }
+
+    /**
+     * Retrieve single comment
+     *
+     *
+     * @param string $issueKey
+     * @param string $commentId
+     * @return \Technodelight\Jira\Domain\Comment
+     */
+    public function retrieveComment($issueKey, $commentId)
+    {
+        $response = $this->client->get(
+            sprintf('issue/%s/comment/%s', $issueKey, $commentId)
         );
         return Comment::fromArray($this->normaliseDateFields($response));
     }
@@ -646,6 +724,34 @@ class Api
             function(array $linkType) { return Type::fromArray($linkType); },
             $this->client->get('issueLinkType')['issueLinkTypes']
         );
+    }
+
+    /**
+     * Returns all filters for the current user
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-filter-get
+     * @return Filter[]
+     */
+    public function retrieveFilters()
+    {
+        return array_map(
+            function (array $filter) {
+                return Filter::fromArray($filter);
+            },
+            $this->client->get('filter')
+        );
+    }
+
+    /**
+     * Returns a filter given an id
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-filter-id-get
+     * @param int $filterId
+     * @return Filter
+     */
+    public function retrieveFilter($filterId)
+    {
+        return Filter::fromArray($this->client->get(sprintf('filter/%s', $filterId)));
     }
 
     /**

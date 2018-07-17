@@ -3,7 +3,6 @@
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Fixture\GitHub\TestHttpClient;
-use Fixture\Shell\TestShell;
 
 class GithubContext implements Context
 {
@@ -25,7 +24,7 @@ class GithubContext implements Context
      */
     public function gitCommandReturns($command, PyStringNode $node)
     {
-        TestShell::$fixtures[$command] = $node->getStrings();
+        \Technodelight\ShellExec\TestShell::fixture($command, $node->getStrings());
     }
 
     private function read($fixture)

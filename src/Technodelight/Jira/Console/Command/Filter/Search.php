@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Console\Command\Filter;
 
-use Symfony\Component\Config\Definition\Dumper\YamlReferenceDumper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -11,8 +10,9 @@ use Symfony\Component\Yaml\Yaml;
 
 use Technodelight\Jira\Configuration\Symfony\Configuration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Command\IssueRendererAware;
 
-class Search extends AbstractCommand
+class Search extends AbstractCommand implements IssueRendererAware
 {
     protected function configure()
     {
@@ -36,6 +36,13 @@ class Search extends AbstractCommand
                 'o',
                 InputOption::VALUE_NONE,
                 'Open search in browser instead'
+            )
+            ->addOption(
+                'page',
+                'p',
+                InputOption::VALUE_REQUIRED,
+                'Page',
+                null
             )
         ;
     }

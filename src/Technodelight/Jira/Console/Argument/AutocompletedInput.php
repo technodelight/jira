@@ -34,7 +34,7 @@ class AutocompletedInput
      */
     private $history;
 
-    public function __construct(Api $api, Issue $issue, IssueCollection $issues = null, array $texts = [], $history = null)
+    public function __construct(Api $api, Issue $issue, IssueCollection $issues = null, array $texts = [], array $history = null)
     {
         $this->api = $api;
         $this->issue = $issue;
@@ -43,9 +43,9 @@ class AutocompletedInput
         $this->history = $history;
     }
 
-    public function getValue($prefix = null)
+    public function getValue($defaultBuffer = null, $prefix = null)
     {
-        $readline = $this->getReadline($this->issue, $this->issues, $this->words, $this->history);
+        $readline = $this->getReadline($this->issue, $this->issues, $this->words, $this->history, $defaultBuffer);
         return preg_replace('~^<new>~', '', $readline->readLine($prefix));
     }
 
@@ -54,7 +54,7 @@ class AutocompletedInput
         return '(Ctrl-A: beginning of the line, Ctrl-E: end of the line, Ctrl-B: backward one word, Ctrl-F: forward one word, Ctrl-W: delete first backward word)';
     }
 
-    private function getReadline(Issue $issue, IssueCollection $issues = null, array $words = [], $history = null)
+    private function getReadline(Issue $issue, IssueCollection $issues = null, array $words = [], $history = null, $defaultBuffer = null)
     {
         $readline = new Readline;
         if (!is_array($history)) {
@@ -65,10 +65,11 @@ class AutocompletedInput
                 $readline->addHistory($historyItem);
             }
         }
-        $readline->addHistory('<new>');
         $readline->setAutocompleter(
             $this->getAggregateAutocomplete($issue, $issues, $words)
         );
+        $readline->appendLine($defaultBuffer);
+
         return $readline;
     }
 

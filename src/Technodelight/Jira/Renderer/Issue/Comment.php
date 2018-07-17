@@ -1,12 +1,10 @@
 <?php
 
-
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\Jira\Helper\JiraTagConverter;
@@ -22,10 +20,6 @@ class Comment implements IssueRenderer
      */
     private $templateHelper;
     /**
-     * @var \Technodelight\Jira\Helper\ColorExtractor
-     */
-    private $colorExtractor;
-    /**
      * @var \Technodelight\Jira\Helper\Image
      */
     private $imageRenderer;
@@ -37,19 +31,29 @@ class Comment implements IssueRenderer
      * @var \Technodelight\Jira\Helper\DateHelper
      */
     private $dateHelper;
+    /**
+     * @var bool
+     */
+    private $verbose;
 
-    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer, Wordwrap $wordwrap, DateHelper $dateHelper)
+    public function __construct(
+        TemplateHelper $templateHelper,
+        Image $imageRenderer,
+        Wordwrap $wordwrap,
+        DateHelper $dateHelper,
+        $verbose = true
+    )
     {
         $this->templateHelper = $templateHelper;
-        $this->colorExtractor = $colorExtractor;
         $this->imageRenderer = $imageRenderer;
         $this->wordwrap = $wordwrap;
         $this->dateHelper = $dateHelper;
+        $this->verbose = $verbose;
     }
 
     public function render(OutputInterface $output, Issue $issue)
     {
-        if ($comments = $issue->comments()) {
+        if ($comments = $this->filterComments($issue->comments())) {
             $output->writeln($this->tab('<comment>comments:</comment>'));
             $output->writeln($this->tab($this->tab($this->renderComments($output, $comments, $issue))));
         }
@@ -77,15 +81,15 @@ class Comment implements IssueRenderer
         }
 
         return <<<EOL
-<info>{$comment->author()->displayName()}</info> <comment>[~{$comment->author()->name()}]</> {$this->ago($comment->created())}: <fg=black>({$comment->id()}) ({$comment->created()->format('Y-m-d H:i:s')}) {$this->commentUrl($comment, $issue)}</>
+<info>{$comment->author()->displayName()}</info> <comment>[~{$comment->author()->name()}]</>{$this->visibility($comment)} {$this->ago($comment->created())}: <fg=black>({$comment->id()}) ({$comment->created()->format('Y-m-d H:i:s')}) {$this->commentUrl($comment, $issue)}</>
 {$this->tab($this->wordwrap->wrap($content))}
 EOL;
     }
 
     private function renderTags($output, $body)
     {
-        $tagRenderer = new JiraTagConverter($output, $this->colorExtractor);
-        return $tagRenderer->convert($body);
+        $tagRenderer = new JiraTagConverter();
+        return $tagRenderer->convert($output, $body);
     }
 
     private function tab($string)
@@ -109,5 +113,31 @@ EOL;
     private function ago(\DateTime $date)
     {
         return TimeAgo::fromDateTime($date)->inWords();
+    }
+
+    private function visibility(IssueComment $comment)
+    {
+        if ($comment->visibility()) {
+            return sprintf(' <fg=red>(%s only)</>', $comment->visibility());
+        }
+        return '';
+    }
+
+    /**
+     * @param IssueComment[] $comments
+     * @return array
+     */
+    private function filterComments($comments)
+    {
+        if ($this->verbose) {
+            return $comments;
+        }
+
+        return array_filter(
+            $comments,
+            function (IssueComment $comment) {
+                return $comment->created() >= new \DateTime('-2 weeks');
+            }
+        );
     }
 }

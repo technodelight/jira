@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5753577c261b1843f7e7f860d5b5b6e4",
+    "content-hash": "a863ca9c1dc52eab8b3de8a3ead0f028",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -939,6 +939,54 @@
             "time": "2016-07-26T08:49:38+00:00"
         },
         {
+            "name": "loilo/fuse",
+            "version": "3.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Loilo/Fuse.git",
+                "reference": "f8048771b66249206526c382c15c3c551a084f58"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Loilo/Fuse/zipball/f8048771b66249206526c382c15c3c551a084f58",
+                "reference": "f8048771b66249206526c382c15c3c551a084f58",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Fuse\\": "src/"
+                },
+                "files": [
+                    "src/Bitap/matched_indices.php",
+                    "src/Bitap/pattern_alphabet.php",
+                    "src/Bitap/regex_search.php",
+                    "src/Bitap/score.php",
+                    "src/Bitap/search.php",
+                    "src/Helpers/deep_value.php",
+                    "src/Helpers/is_list.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Florian Reuschel",
+                    "email": "florian@loilo.de"
+                }
+            ],
+            "description": "Fuzzy search for PHP based on Bitap algorithm",
+            "time": "2018-04-02T21:05:34+00:00"
+        },
+        {
             "name": "psr/http-message",
             "version": "1.0.1",
             "source": {
@@ -1034,6 +1082,58 @@
                 "psr-3"
             ],
             "time": "2016-10-10T12:19:37+00:00"
+        },
+        {
+            "name": "sebastian/diff",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/diff.git",
+                "reference": "347c1d8b49c5c3ee30c7040ea6fc446790e6bddd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/347c1d8b49c5c3ee30c7040ea6fc446790e6bddd",
+                "reference": "347c1d8b49c5c3ee30c7040ea6fc446790e6bddd",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Kore Nordmann",
+                    "email": "mail@kore-nordmann.de"
+                },
+                {
+                    "name": "Sebastian Bergmann",
+                    "email": "sebastian@phpunit.de"
+                }
+            ],
+            "description": "Diff implementation",
+            "homepage": "https://github.com/sebastianbergmann/diff",
+            "keywords": [
+                "diff"
+            ],
+            "time": "2017-08-03T08:09:46+00:00"
         },
         {
             "name": "sirprize/queried",
@@ -1659,6 +1759,85 @@
             "time": "2018-01-20T15:04:53+00:00"
         },
         {
+            "name": "technodelight/bytes-in-human",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/bytes-in-human.git",
+                "reference": "8c11384bd1c73882a8759cc0f53b73d4570c332d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/bytes-in-human/zipball/8c11384bd1c73882a8759cc0f53b73d4570c332d",
+                "reference": "8c11384bd1c73882a8759cc0f53b73d4570c332d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.3||>=7.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\BytesInHuman\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Render bytes in human readable format wby using a simple value object",
+            "time": "2018-06-20T14:40:20+00:00"
+        },
+        {
+            "name": "technodelight/php-git",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-git.git",
+                "reference": "121e24f783ce219faea179701b9528017886f7c7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-git/zipball/121e24f783ce219faea179701b9528017886f7c7",
+                "reference": "121e24f783ce219faea179701b9528017886f7c7",
+                "shasum": ""
+            },
+            "require": {
+                "ext-libxml": "*",
+                "technodelight/shell-exec": "^1.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\GitShell\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Small library to execute git commands through shell",
+            "time": "2018-06-25T13:42:24+00:00"
+        },
+        {
             "name": "technodelight/php-time-ago",
             "version": "1.2.0",
             "source": {
@@ -1753,6 +1932,80 @@
             ],
             "description": "Seconds to human / human to seconds",
             "time": "2017-09-05T08:57:59+00:00"
+        },
+        {
+            "name": "technodelight/shell-exec",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/shell-exec.git",
+                "reference": "6b2076303fd1da42ea57e141f9695f2f3792ddc7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/shell-exec/zipball/6b2076303fd1da42ea57e141f9695f2f3792ddc7",
+                "reference": "6b2076303fd1da42ea57e141f9695f2f3792ddc7",
+                "shasum": ""
+            },
+            "require-dev": {
+                "behat/behat": "^3.4",
+                "phpspec/phpspec": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\ShellExec\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Assemble commands and execute in shell with PHP easier",
+            "time": "2018-06-20T15:57:48+00:00"
+        },
+        {
+            "name": "technodelight/symfony-configuration-cli-initialiser",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/symfony-configuration-cli-initialiser.git",
+                "reference": "ec3b08a9c95f5fc324f28d74de21ffd9b5706cbe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/symfony-configuration-cli-initialiser/zipball/ec3b08a9c95f5fc324f28d74de21ffd9b5706cbe",
+                "reference": "ec3b08a9c95f5fc324f28d74de21ffd9b5706cbe",
+                "shasum": ""
+            },
+            "require": {
+                "symfony/config": "^2.7||^3.0",
+                "symfony/console": "^2.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\SymfonyConfigurationInitialiser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Initialise your Symfony configuration in CLI interactively",
+            "time": "2018-06-26T10:28:44+00:00"
         }
     ],
     "packages-dev": [
@@ -2466,58 +2719,6 @@
                 "equality"
             ],
             "time": "2018-02-01T13:46:46+00:00"
-        },
-        {
-            "name": "sebastian/diff",
-            "version": "2.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "347c1d8b49c5c3ee30c7040ea6fc446790e6bddd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/347c1d8b49c5c3ee30c7040ea6fc446790e6bddd",
-                "reference": "347c1d8b49c5c3ee30c7040ea6fc446790e6bddd",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^6.2"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0-dev"
-                }
-            },
-            "autoload": {
-                "classmap": [
-                    "src/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Kore Nordmann",
-                    "email": "mail@kore-nordmann.de"
-                },
-                {
-                    "name": "Sebastian Bergmann",
-                    "email": "sebastian@phpunit.de"
-                }
-            ],
-            "description": "Diff implementation",
-            "homepage": "https://github.com/sebastianbergmann/diff",
-            "keywords": [
-                "diff"
-            ],
-            "time": "2017-08-03T08:09:46+00:00"
         },
         {
             "name": "sebastian/exporter",

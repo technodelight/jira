@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Api\OpenApp;
 use Technodelight\Jira\Api\OpenApp\Driver\Generic;
 use Technodelight\Jira\Api\OpenApp\Driver\Opn;
 use Technodelight\Jira\Api\OpenApp\Driver\XdgOpen;
-use Technodelight\Jira\Api\Shell\Passthru;
+use Technodelight\ShellExec\Passthru;
 
 class OsAdaptingFactory
 {

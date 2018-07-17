@@ -7,14 +7,6 @@ use Technodelight\Jira\Renderer\Issue\CustomField\DefaultFormatter;
 class RenderersConfiguration implements RegistrableConfiguration
 {
     /**
-     * @var RendererConfiguration
-     */
-    private $short;
-    /**
-     * @var RendererConfiguration
-     */
-    private $full;
-    /**
      * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\FormatterConfiguration[]
      */
     private $formatters;
@@ -23,6 +15,11 @@ class RenderersConfiguration implements RegistrableConfiguration
      * @var RendererConfiguration[]
      */
     private $modes = [];
+
+    /**
+     * @var array
+     */
+    private $preference = [];
 
     private $defaultFormatters = [
         ['name' => 'default', 'class' => DefaultFormatter::class],
@@ -65,6 +62,7 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'github'],
                     ['name' => 'worklogs'],
                     ['name' => 'comments'],
+                    ['name' => 'changelogs'],
                 ],
             ],
         ]
@@ -98,6 +96,15 @@ class RenderersConfiguration implements RegistrableConfiguration
             },
             array_merge($instance->defaultFormatters, isset($config['formatters']) ? $config['formatters'] : [])
         );
+
+        $instance->preference = isset($config['preference']) ? $config['preference'] : ['list' => 'short', 'view' => 'full'];
+        foreach ($instance->preference as $type => $renderer) {
+            if (!isset($instance->modes[$renderer])) {
+                throw new \InvalidArgumentException(
+                    sprintf('Preferred renderer "%s" for "%s" does not exists!', $renderer, $type)
+                );
+            }
+        }
 
         return $instance;
     }
@@ -139,9 +146,22 @@ class RenderersConfiguration implements RegistrableConfiguration
         }
     }
 
+    /**
+     * @return FormatterConfiguration[]
+     */
     public function formatters()
     {
         return $this->formatters;
+    }
+
+    public function preferredListRenderer()
+    {
+        return $this->preference['list'];
+    }
+
+    public function preferredViewRenderer()
+    {
+        return $this->preference['view'];
     }
 
     public function servicePrefix()

@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Promise;
-use Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider;
+use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
 
 class HttpClient implements Client
 {
@@ -17,16 +17,16 @@ class HttpClient implements Client
     private $httpClient;
 
     /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\HttpClient\ConfigProvider
+     * @var Config
      */
-    private $configProvider;
+    private $config;
 
     /**
-     * @param ConfigProvider $configProvider
+     * @param Config $config
      */
-    public function __construct(ConfigProvider $configProvider)
+    public function __construct(Config $config)
     {
-        $this->configProvider = $configProvider;
+        $this->config = $config;
     }
 
     public function post($url, $data = [])
@@ -96,21 +96,20 @@ class HttpClient implements Client
      *
      * @return array
      */
-    public function search($jql, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
         try {
             $result = $this->httpClient()->post(
-                sprintf(
-                    'search%s',
-                    $fields || $expand ? '?' . http_build_query(
-                            array_filter([
-                                'fields' => $fields,
-                                'expand' => $expand ? join(',', $expand) : null,
-                                'properties' => $properties ? join(',', $properties) : null
-                            ])
-                        ) : ''
-                ),
-                ['json' => ['jql' => $jql]]
+                'search',
+                [
+                    'json' => array_filter([
+                        'jql' => $jql,
+                        'startAt' => $startAt,
+                        'fields' => (array) $fields,
+                        'expand' => $expand !== null ? join(',', $expand) : null,
+                        'properties' => $properties !== null ? join(',', $properties) : null
+                    ])
+                ]
             );
             return json_decode($result->getBody(), true);
         } catch (GuzzleClientException $exception) {
@@ -140,8 +139,8 @@ class HttpClient implements Client
         if (!isset($this->httpClient)) {
             $this->httpClient = new GuzzleClient(
                 [
-                    'base_uri' => $this->apiUrl($this->configProvider->domain()),
-                    'auth' => [$this->configProvider->username(), $this->configProvider->password()],
+                    'base_uri' => $this->apiUrl($this->config->domain()),
+                    'auth' => [$this->config->username(), $this->config->password()],
                     'allow_redirects' => true,
                 ]
             );

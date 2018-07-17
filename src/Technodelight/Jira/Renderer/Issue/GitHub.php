@@ -18,6 +18,10 @@ class GitHub implements IssueRenderer
      * @var \Technodelight\Jira\Helper\HubHelper
      */
     private $hub;
+    /**
+     * @var int
+     */
+    private $tabulationLevel = 1;
 
     public function __construct(TemplateHelper $templateHelper, HubHelper $hub)
     {
@@ -28,8 +32,8 @@ class GitHub implements IssueRenderer
     public function render(OutputInterface $output, Issue $issue)
     {
         if ($hubIssues = $this->retrieveHubIssues($issue)) {
-            $output->writeln($this->tab('<comment>pull requests:</comment>'));
-            $output->writeln($this->tab($this->tab($hubIssues)));
+            $output->writeln($this->tabWithLevel('<comment>pull requests:</comment>'));
+            $output->writeln($this->tabWithLevel($this->tab($hubIssues)));
         }
     }
 
@@ -124,5 +128,10 @@ class GitHub implements IssueRenderer
     private function tab($string)
     {
         return $this->templateHelper->tabulate($string);
+    }
+
+    private function tabWithLevel($string)
+    {
+        return $this->templateHelper->tabulateWithLevel($string, $this->tabulationLevel);
     }
 }

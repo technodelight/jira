@@ -39,14 +39,6 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->container->setParameter(
-            'app.jira.debug',
-            $input->getParameterOption(['--debug', '-d'])
-        );
-        $this->container->setParameter(
-            'app.jira.instance',
-            $input->getParameterOption(['--instance', '-i']) ?: 'default'
-        );
         $this->container->compile();
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {

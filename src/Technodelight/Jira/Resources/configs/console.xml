@@ -30,6 +30,9 @@
         <service id="technodelight.jira.config.instances" class="Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration" synthetic="true">
              <!--see technodelight.jira.config.application_configuration.service.registator-->
         </service>
+        <service id="technodelight.jira.config.instances.current_instance" class="Technodelight\Jira\Configuration\ApplicationConfiguration\InstanceConfiguration" synthetic="true">
+            <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
         <service id="technodelight.jira.config.integrations" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration" synthetic="true">
              <!--see technodelight.jira.config.application_configuration.service.registator-->
         </service>
@@ -43,6 +46,9 @@
              <!--see technodelight.jira.config.application_configuration.service.registator-->
         </service>
         <service id="technodelight.jira.config.integrations.iterm" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration" synthetic="true">
+             <!--see technodelight.jira.config.application_configuration.service.registator-->
+        </service>
+        <service id="technodelight.jira.config.integrations.editor" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration" synthetic="true">
              <!--see technodelight.jira.config.application_configuration.service.registator-->
         </service>
         <service id="technodelight.jira.config.project" class="Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration" synthetic="true">
@@ -74,6 +80,52 @@
             <factory class="Technodelight\Jira\Api\OpenApp\OsAdaptingFactory" method="create" />
         </service>
         <!-- magic stuff -->
+        <!-- magic editing stuff -->
+        <service public="false"
+                 id="technodelight.jira.connector.edit_app.factory"
+                 class="Technodelight\Jira\Connector\EditApp\Factory">
+            <argument type="service" id="technodelight.jira.config.integrations.editor" />
+        </service>
+        <service id="technodelight.jira.console.edit" class="Technodelight\Jira\Api\EditApp\EditApp">
+            <factory service="technodelight.jira.connector.edit_app.factory" method="build" />
+        </service>
+        <!-- magic editing stuff -->
+
+        <!-- field editor -->
+        <service public="false"
+                 id="technodelight.jira.console.field_editor.editor.autocompleted_editor"
+                 class="Technodelight\Jira\Console\FieldEditor\Editor\AutocompletedEditor">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="console.question_helper" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.console.field_editor.editor.user_edtor"
+                 class="Technodelight\Jira\Console\FieldEditor\Editor\UserEditor">
+            <argument type="service" id="technodelight.jira.api" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.console.field_editor.editor.string_editor"
+                 class="Technodelight\Jira\Console\FieldEditor\Editor\StringEditor">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.edit"/>
+        </service>
+        <service id="technodelight.jira.console.field_editor"
+                 class="Technodelight\Jira\Console\FieldEditor\FieldEditor">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.console.field_editor.editor.user_edtor" />
+                <argument type="service" id="technodelight.jira.console.field_editor.editor.string_editor" />
+                <argument type="service" id="technodelight.jira.console.field_editor.editor.autocompleted_editor" />
+            </argument>
+        </service>
+        <!-- field editor -->
+
+        <!-- comment input reader -->
+        <service id="technodelight.jira.console.input.worklog.comment" class="Technodelight\Jira\Console\Input\Worklog\Comment">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+        </service>
+        <!-- comment input reader -->
 
         <!-- stats collector -->
         <service public="false" id="technodelight.jira.console.issue_stats.storage" class="ICanBoogie\Storage\Storage">
@@ -108,12 +160,17 @@
         <service id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver">
             <argument type="service" id="technodelight.jira.config.aliases" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
+            <argument type="service" id="technodelight.gitshell.api" />
         </service>
         <service id="technodelight.jira.console.argument.project_key_resolver" class="Technodelight\Jira\Console\Argument\ProjectKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <!-- argument resolvers -->
+
+        <!-- option checker -->
+        <service id="technodelight.jira.console.option.checker"
+                 class="Technodelight\Jira\Console\Option\Checker" />
 
         <!-- console output handlers -->
         <service id="technodelight.jira.console.dashboard.dashboard" class="Technodelight\Jira\Console\Dashboard\Dashboard" >

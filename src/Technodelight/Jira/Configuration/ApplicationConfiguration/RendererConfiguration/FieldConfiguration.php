@@ -69,7 +69,7 @@ class FieldConfiguration
      */
     public function shouldBeMoved()
     {
-        return $this->before || $this->after;
+        return !empty($this->before) || !empty($this->after);
     }
 
     /**

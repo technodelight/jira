@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Helper;
 
 use GitHub\Client as Hub;
-use Technodelight\Jira\Api\GitShell\Api as Git;
+use Technodelight\GitShell\Api as Git;
 
 class HubHelper
 {
@@ -53,10 +53,10 @@ class HubHelper
     private function setupOwnerAndRepo()
     {
         try {
-            foreach ($this->git->remotes(true) as $remote => $types) {
-                if (isset($types['push'])) {
-                    $this->owner = $types['push']['owner'];
-                    $this->repo = $types['push']['repo'];
+            foreach ($this->git->remotes(true) as $remote) {
+                if ($remote->type() == 'push') {
+                    $this->owner = $remote->owner();
+                    $this->repo = $remote->repo();
                     break;
                 }
             }

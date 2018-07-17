@@ -85,14 +85,14 @@ class CachedHttpClient implements Client
         return $mergedResults;
     }
 
-    public function search($jql, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
-        $key = $this->keyify($jql, (string) $fields, serialize($expand), serialize($properties));
+        $key = $this->keyify($jql, $startAt, is_array($fields) ? join(',', $fields) : $fields, serialize($expand), serialize($properties));
         $result = $this->storage->retrieve($key);
         if (!is_null($result)) {
             return $result;
         }
-        $result = $this->httpClient->search($jql, $fields, $expand, $properties);
+        $result = $this->httpClient->search($jql, $startAt, $fields, $expand, $properties);
         $this->storage->store($key, $result, $this->configuration->cacheTtl());
         return $result;
     }

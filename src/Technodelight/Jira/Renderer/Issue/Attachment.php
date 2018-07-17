@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\BytesInHuman\BytesInHuman;
+use Technodelight\BytesInHuman\BytesInHuman;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Attachment as IssueAttachment;
 use Technodelight\Jira\Helper\TemplateHelper;

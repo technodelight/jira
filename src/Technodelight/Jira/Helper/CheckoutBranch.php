@@ -7,8 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Technodelight\Jira\Api\GitShell\Api as GitShell;
-use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\GitShell\Api as GitShell;
+use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 use Technodelight\Jira\Domain\Issue;
 
@@ -19,7 +19,7 @@ class CheckoutBranch
      */
     private $config;
     /**
-     * @var \Technodelight\Jira\Api\GitShell\Api
+     * @var \Technodelight\GitShell\Api
      */
     private $git;
     /**

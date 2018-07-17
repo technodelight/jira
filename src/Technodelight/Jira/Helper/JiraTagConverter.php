@@ -4,80 +4,94 @@ namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
-use Technodelight\Jira\Helper\JiraTagConverter\Panel;
-use Technodelight\Jira\Helper\JiraTagConverter\Table;
+use Technodelight\Jira\Helper\JiraTagConverter\DelimiterBasedStringParser;
+use Technodelight\Jira\Helper\JiraTagConverter\PanelParser;
+use Technodelight\Jira\Helper\JiraTagConverter\SymfonyStyleDefinitionMerger;
 use Technodelight\Jira\Helper\JiraTagConverter\TableParser;
 
 class JiraTagConverter
 {
     /**
-     * @var \Symfony\Component\Console\Output\OutputInterface
+     * @var array
      */
-    private $output;
+    private $options;
     /**
-     * @var \Technodelight\Jira\Helper\ColorExtractor
+     * @var array
      */
-    private $colorExtractor;
+    private $defaultOptions = [
+        'code' => true,
+        'bold_underscore' => true,
+        'color' => true,
+        'mentions' => true,
+        'attachments' => true,
+        'images' => false,
+        'tables' => true,
+        'panels' => true,
+        'lists' => true,
+        'headings' => true,
+        'emojis' => true,
+        'palette' => PaletteOutputFormatterStyle::class,
+    ];
 
-    public function __construct(OutputInterface $output, ColorExtractor $colorExtractor)
+    public function __construct(array $options = [])
     {
-        $this->output = $output;
-        $this->colorExtractor = $colorExtractor;
+        $this->options = $options + $this->defaultOptions;
     }
 
-    public function convert($body)
+    public function convert(OutputInterface $output, $body)
     {
         try {
-            $this->convertCode($body);
-            $this->convertBoldUnderscore($body);
-            $this->convertColor($body);
-            $this->convertMentions($body);
-            $this->convertTables($body);
-            $this->convertPanel($body);
+            $this->shouldDo('code') && $this->convertCode($body);
+            $this->shouldDo('bold_underscore') && $this->convertBoldUnderscore($body);
+            $this->shouldDo('color') && $this->convertColor($body);
+            $this->shouldDo('mentions') && $this->convertMentions($body);
+            $this->shouldDo('attachments') && $this->convertAttachments($body);
+            $this->shouldDo('images') && $this->convertImages($body);
+            $this->shouldDo('tables') && $this->convertTables($body);
+            $this->shouldDo('panels') && $this->convertPanels($body);
+            $this->shouldDo('lists') && $this->convertLists($body);
+            $this->shouldDo('headings') && $this->convertHeadings($body);
+            $this->shouldDo('emojis') && $this->convertEmojis($body);
             $formattedBody = $this->mergeDefinitions($body);
-            $this->tryFormatter($formattedBody);
-            return $formattedBody;
+            // try formatting the body and ignore if an error happens
+            $output->getFormatter()->format($body);
+            return $formattedBody; // success! return the formatted body
         } catch (\Exception $exception) {
             return $body;
         }
     }
 
+    private function shouldDo($opt)
+    {
+        return !empty($this->options[$opt]);
+    }
+
+    private function opt($opt)
+    {
+        return $this->options[$opt];
+    }
+
     private function convertCode(&$body)
     {
         // code block
-        $startCode = false;
-        $buffer = '';
-        $collected = [];
-        for ($i = 0; $i < strlen($body); $i++) {
-            $char = substr($body, $i, 1);
-            $peek = substr($body, $i, 5);
-            if ($peek == '{code' && !$startCode) {
-                $startCode = true;
-                $buffer = $peek;
-                $i+= 4;
-            } else if ($startCode && $peek == 'code}') {
-                $startCode = false;
-                $buffer.= $peek;
-                $collected[] = $buffer;
-                $i+= 4;
-            } else if ($startCode) {
-                $buffer.= $char;
-            }
-        }
+        $parser = new DelimiterBasedStringParser('{code', 'code}');
+        $collected = $parser->parse($body);
         foreach ($collected as $replace) {
             $body = substr($body, 0, strpos($body, $replace))
                 . '<comment>' . preg_replace('~{code(:[^}]+)?}~', '', $replace) . '</>'
                 . substr($body, strpos($body, $replace) + strlen($replace));
         }
 
-        if ($numOfMatches = preg_match_all('~({{[^}]+}})~', $body, $matches)) {
-            for ($i = 0; $i < $numOfMatches; $i++) {
-                $body = str_replace(
-                    $matches[1][$i],
-                    '<comment>' . trim($matches[1][$i], '{}') . '</>',
-                    $body
-                );
-            }
+        // short code block
+        $parser = new DelimiterBasedStringParser('{{', '}}');
+        $collected = $parser->parse($body);
+
+        foreach ($collected as $replace) {
+            $body = str_replace(
+                $replace,
+                '<comment>' . substr($replace, 2, -2) . '</>',
+                $body
+            );
         }
     }
 
@@ -166,136 +180,102 @@ class JiraTagConverter
         }
     }
 
-    private function convertPanel(&$body)
+    private function convertAttachments(&$body)
     {
-        $lines = explode(PHP_EOL, $body);
-        $isPanelStarted = false;
-        $panel = new Panel;
-        $panels = [];
-        foreach ($lines as $line) {
-            if (strpos($line, '{panel}') !== false && !$isPanelStarted) {
-                $isPanelStarted = true;
-                $startPos = strpos($line, '{panel}');
-                $panel->appendSource(substr($line, $startPos) . PHP_EOL);
-            } else if ($isPanelStarted && strpos($line, '{panel}') !== false) {
-                $panel->appendSource(substr($line, 0, strpos($line, '{panel}') + 7) . PHP_EOL);
-                $panels[] = $panel;
-                $panel = new Panel;
-                $isPanelStarted = false;
-            } else if ($isPanelStarted) {
-                $panel->appendSource($line . PHP_EOL);
+        // attachments
+        if ($numOfMatches = preg_match_all('~(\[\^)([^]]+)(\])~smu', $body, $matches)) {
+            for ($i = 0; $i < $numOfMatches; $i++) {
+                $body = str_replace(
+                    $matches[1][$i].$matches[2][$i].$matches[3][$i],
+                    '🔗 <fg=cyan>' . $matches[2][$i] . '</>',
+                    $body
+                );
             }
         }
+    }
 
-        foreach ($panels as $panel) {
-            /** @var Table $panel */
-            $originalPanel = $panel->source();
-
-            $startPos = strpos($body, $originalPanel);
-            $body = substr($body, 0, $startPos)
-                . (string) $panel
-                . substr($body, $startPos + strlen($originalPanel));
+    private function convertImages(&$body)
+    {
+        if (preg_match_all('~!([^|!]+)(\|thumbnail)?!~', $body, $matches)) {
+            $replacePairs = [];
+            foreach ($matches[1] as $k => $embeddedImage) {
+                $replacePairs[$matches[0][$k]] = '<comment>jira download ' . $embeddedImage . '</>';
+            }
+            $body = strtr($body, $replacePairs);
         }
     }
 
     private function convertTables(&$body)
     {
         $parser = new TableParser($body);
-        $tables = $parser->parse();
-        foreach ($tables as $table) {
-            $originalTable = $table->source();
-            $startPos = strpos($body, $originalTable);
-            $body = substr($body, 0, $startPos)
-                . (string) $table
-                . substr($body, $startPos + strlen($originalTable));
+        $body = $parser->parseAndReplace();
+    }
+
+    private function convertPanels(&$body)
+    {
+        $parser = new PanelParser($body);
+        $body = $parser->parseAndReplace();
+    }
+
+    private function convertLists(&$body)
+    {
+        // lists
+        $body = preg_replace('~(\s+)### ~', '\1        • ', $body);
+        $body = preg_replace('~(\s+)## ~', '\1    • ', $body);
+        $body = preg_replace('~(\s+)# ~', '\1• ', $body);
+        $body = preg_replace('~\*\*\* ~', '\1        • ', $body);
+        $body = preg_replace('~\*\* ~', '\1    • ', $body);
+        $body = preg_replace('~\* ~', '\1• ', $body);
+    }
+
+    private function convertHeadings(&$body)
+    {
+        // h[1-5].
+        if ($numOfMatches = preg_match_all('~([ ]*)h[1-5]. (.*)~', $body, $matches)) {
+            for ($i = 0; $i < $numOfMatches; $i++) {
+                $wholeMatch = $matches[0][$i];
+                $padding = $matches[1][$i];
+                $heading = $matches[2][$i];
+                $trimmedLength = strlen(trim($heading));
+                $length = strlen($heading);
+                $body = str_replace(
+                    $wholeMatch,
+                    $padding . '<fg=white;options=bold>' . $heading . PHP_EOL
+                    . $padding . str_repeat('-', $trimmedLength) . str_repeat(' ', $length - $trimmedLength) . '</>',
+                    $body
+                );
+            }
         }
     }
 
-    /**
-     * @param string $body
-     */
-    private function tryFormatter($body)
+    private function convertEmojis(&$body)
     {
-        // try formatting the body and ignore if an error happens
-        $this->output->getFormatter()->format($body);
+        $body = strtr($body, [
+           '(?)' => '❓ ',
+           '(x)' => '❌ ',
+           '(/)' => '✅ ',
+           ':)' => '😀',
+           ':-)' => '😀',
+           ';)' => '😉',
+           ';-)' => '😉',
+        ]);
     }
 
     private function mergeDefinitions($body)
     {
-        // merge multiple closing tags
-        while (preg_match('~(</>[ ]*)+</>~u', $body)) {
-            $body = preg_replace('~(</>[ ]*)+</>~u', '</>', $body);
-        }
-
-        // collect all definitions terminated by a closing tag
-        $defs = [];
-        $def = [];
-        $startTag = false;
-        $currentDef = '';
-        for ($i = 0; $i < strlen($body); $i++) {
-            $char = $body[$i];
-            // start def
-            if ($char == '<') {
-                $startTag = $i;
-                $currentDef = '';
-                continue;
-            }
-            // end of prev defs
-            if ($char == '/' && $startTag !== false) {
-                $defs[] = $def;
-                $def = [];
-                $startTag = false;
-                continue;
-            }
-            // end def
-            if ($char == '>' && $startTag !== false) {
-                $def[$startTag] = $currentDef;
-                $startTag = false;
-                continue;
-            }
-            if ($startTag !== false) {
-                $currentDef.= $char;
-            }
-        }
-
-        // replace old definitions with new ones
-        foreach ($defs as $def) {
-            $byType = [];
-            $newDefinition = [];
-            foreach ($def as $definition) {
-                $preparedDefs = $this->prepareDef($definition);
-                foreach($preparedDefs as $preparedDef) {
-                    $byType[$preparedDef['type']] = array_merge(
-                        isset($byType[$preparedDef['type']]) ? $byType[$preparedDef['type']] : [],
-                        $preparedDef['options']
-                    );
-                }
-            }
-
-            if (isset($byType['fg'])) {
-                $newDefinition[] = 'fg=' . implode(',', $byType['fg']);
-            }
-            if (isset($byType['bg'])) {
-                $newDefinition[] = 'bg=' . implode(',', $byType['bg']);
-            }
-            if (isset($byType['options'])) {
-                $newDefinition[] = 'options=' . implode(',', $byType['options']);
-            }
-
-            if (!empty($newDefinition)) {
-                $newDefinition = '<' . implode(';', $newDefinition) . '>';
-
-                $body = preg_replace('~<' . (implode('>[ ]*<', array_map('preg_quote', $def))) . '>~', $newDefinition, $body);
-            }
-        }
-
-        return $body;
+        return SymfonyStyleDefinitionMerger::findAndMergeDefs($body);
     }
 
     private function formatColor($string, $colorDef)
     {
+        if ($this->shouldDo('strip_color')) {
+            return $string;
+        }
+
         $color = $this->extractColorFromDefinition($colorDef);
-        $style = new PaletteOutputFormatterStyle;
+        $paletteClass = $this->opt('palette');
+        /** @var PaletteOutputFormatterStyle $style */
+        $style = is_object($paletteClass) ? $paletteClass : new $paletteClass;
         $style->setForeground($color);
         return $style->apply($string);
     }
@@ -304,24 +284,5 @@ class JiraTagConverter
     {
         list(, $color) = explode(':', trim($colorDef, '{}'), 2) + ['', 'white'];
         return $color;
-    }
-
-    private function prepareDef($def)
-    {
-        $parts = explode(';', $def);
-        $preparedDef = [];
-        foreach ($parts as $k => $part) {
-            $params = explode('=', $part);
-            if (isset($params[1])) {
-                $options = array_unique(explode(',', $params[1]));
-            } else {
-                $options = [];
-            }
-            $preparedDef[] = [
-                'type' => $params[0],
-                'options' => $options,
-            ];
-        }
-        return $preparedDef;
     }
 }

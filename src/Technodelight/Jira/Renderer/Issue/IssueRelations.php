@@ -36,7 +36,7 @@ class IssueRelations implements IssueRenderer
     private function renderTasks(array $tasks, $header)
     {
         $rows = [
-            sprintf('<comment>%s:</comment>', $header)
+            sprintf('<comment>%s:</comment> %s', $header, count($tasks) > 1 ? sprintf('(%d)', count($tasks)) : '')
         ];
         foreach ($tasks as $task) {
             if ($task instanceof IssueLink) {

@@ -107,10 +107,10 @@ class Link extends AbstractCommand
     private function renderLink(IssueLink $link, IssueKey $issueKey)
     {
         if ($link->isInward()) {
-            return sprintf('<info>%s</info> %s <comment>%s</comment>', $link->inwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
+            return sprintf('<info>%s</info> %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->inwardIssue()->issueKey());
         }
 
-        return sprintf('<info>%s</info> %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->outwardIssue()->issueKey());
+        return sprintf('<info>%s</info> %s <comment>%s</comment>', $link->outwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
     }
 
     /**

@@ -52,7 +52,7 @@ class CustomField implements IssueRenderer
                     sprintf(
                         '<comment>%s:</> %s',
                         strtolower($field->name()),
-                        $this->formatter->format($field, $value)
+                        $this->formatter->format($field, $output, $value)
 
                     )
                 ));
@@ -61,7 +61,7 @@ class CustomField implements IssueRenderer
                     $this->tab(sprintf('<comment>%s:</>', strtolower($field->name())))
                 );
                 $output->writeln(
-                    $this->tab($this->tab($this->formatter->format($field, $value)))
+                    $this->tab($this->tab($this->formatter->format($field, $output, $value)))
                 );
             }
         }

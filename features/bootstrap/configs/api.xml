@@ -11,7 +11,7 @@
         </service>
         <!-- jira -->
         <!-- git -->
-        <service public="false" id="technodelight.gitshell.shell" class="Fixture\Shell\TestShell">
+        <service public="false" id="technodelight.gitshell.shell" class="Technodelight\ShellExec\TestShell">
             <argument>/usr/bin/env git</argument>
         </service>
         <!-- git -->

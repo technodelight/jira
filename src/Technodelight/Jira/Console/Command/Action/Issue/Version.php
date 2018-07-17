@@ -89,16 +89,16 @@ class Version extends Command
             $isRemove = $input->getOption('remove');
             $issueKey = $this->issueKeyResolver->argument($input, $output);
             $q = new ConfirmationQuestion(
-                sprintf('Do you want to %s fixVersion? [y/N] ', $isRemove ? 'remove' : 'set'), false
+                sprintf('<comment>Do you want to %s fixVersion?</comment> [y/N] ', $isRemove ? 'remove' : 'set'), false
             );
             if ($this->questionHelper->ask($input, $output, $q)) {
-                $input->setOption('fix-version', $this->autocompleteMeta($output, $issueKey, 'fixVersions'));
+                $input->setOption('fix-version', $this->autocompleteMeta($input, $output, $issueKey, 'fixVersions'));
             }
             $q = new ConfirmationQuestion(
-                sprintf('Do you want to %s affectedVersion? [y/N] ', $isRemove ? 'remove' : 'set'), false
+                sprintf('<comment>Do you want to %s affectedVersion?</comment> [y/N] ', $isRemove ? 'remove' : 'set'), false
             );
             if ($this->questionHelper->ask($input, $output, $q)) {
-                $input->setOption('affected-version', $this->autocompleteMeta($output, $issueKey, 'versions'));
+                $input->setOption('affected-version', $this->autocompleteMeta($input, $output, $issueKey, 'versions'));
             }
         }
     }
@@ -161,7 +161,11 @@ class Version extends Command
             }
         }
 
-        return array_filter($changeSet);
+        $changes = array_filter($changeSet);
+        if (empty($changes)) {
+            throw new \InvalidArgumentException('Nothing to do');
+        }
+        return $changes;
     }
 
     private function arrayOfNamesFromField(array $valueArray)
@@ -180,14 +184,28 @@ class Version extends Command
      * @param string $fieldName
      * @return string
      */
-    private function autocompleteMeta(OutputInterface $output, $issueKey, $fieldName)
+    private function autocompleteMeta(InputInterface $input, OutputInterface $output, $issueKey, $fieldName)
     {
         $readline = new Readline;
         $readline->setAutocompleter(
             new IssueMetaAutocompleter($this->jira, $issueKey, $fieldName)
         );
         $output->writeln(sprintf('<comment>Please select value for</comment> <info>%s:</info>', $fieldName));
-        return $readline->readLine();
+        $value = $readline->readLine();
+        $existingValues = $this->jira->issueEditMeta($issueKey)->field($fieldName)->allowedValues();
+        if (!in_array($value, $existingValues)) {
+            $q = new ConfirmationQuestion(
+                sprintf(
+                    'Value "%s" does not exists for %s, do you want to use this value anyway? [y/N] ',
+                    $value,
+                    $fieldName
+                ),
+                false
+            );
+            if ($this->questionHelper->ask($input, $output, $q)) {
+                return $value;
+            }
+        }
     }
 
     /**

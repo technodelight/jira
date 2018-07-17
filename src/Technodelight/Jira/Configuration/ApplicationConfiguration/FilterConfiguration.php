@@ -12,12 +12,22 @@ class FilterConfiguration
      * @var string
      */
     private $jql;
+    /**
+     * @var int
+     */
+    private $filterId;
+    /**
+     * @var string
+     */
+    private $instance;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
         $instance->command = $config['command'];
         $instance->jql = $config['jql'];
+        $instance->filterId = !empty($config['filterId']) ? $config['filterId'] : null;
+        $instance->instance = !empty($config['instance']) ? $config['instance'] : null;
 
         return $instance;
     }
@@ -30,6 +40,16 @@ class FilterConfiguration
     public function jql()
     {
         return $this->jql;
+    }
+
+    public function filterId()
+    {
+        return $this->filterId;
+    }
+
+    public function instance()
+    {
+        return $this->instance;
     }
 
     private function __construct()

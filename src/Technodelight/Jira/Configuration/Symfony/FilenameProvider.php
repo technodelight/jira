@@ -2,8 +2,7 @@
 
 namespace Technodelight\Jira\Configuration\Symfony;
 
-use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Helper\GitHelper;
+use Technodelight\GitShell\Api as Git;
 
 class FilenameProvider
 {

@@ -3,7 +3,6 @@
 namespace Technodelight\Jira\Helper\JiraTagConverter;
 
 use Symfony\Component\Console\Helper\TableSeparator;
-use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Helper\Table as TableRenderer;
 

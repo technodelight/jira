@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Configuration\Symfony;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Configuration implements ConfigurationInterface
 {
@@ -67,28 +67,40 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->info('Different JIRA instances to use')
+                ->requiresAtLeastOneElement()
+                ->useAttributeAsKey('name', false)
+                ->addDefaultChildrenIfNoneSet(['name', 'domain', 'username', 'password'])
                 ->prototype('array')
                     ->normalizeKeys(false)
                     ->children()
                         ->scalarNode('name')
                             ->info('Unique internal ID to use in command line arguments as reference (ie. --instance secondary)')
+                            ->defaultValue('default')
                             ->example('secondary')
                         ->end()
                         ->scalarNode('domain')
                             ->info('JIRA\'s domain without protocol, like something.atlassian.net')
                             ->example('something.atlassian.net')
+                            ->defaultValue('something.atlassian.net')
                             ->cannotBeEmpty()
                             ->isRequired()
                         ->end()
                         ->scalarNode('username')
                             ->info('Instance JIRA username')
                             ->isRequired()
+                            ->defaultValue('<your jira username>')
                             ->cannotBeEmpty()
                         ->end()
                         ->scalarNode('password')
+                            ->attribute('hidden', true)
                             ->info('Instance JIRA password')
+                            ->defaultValue('supersecretpassword')
                             ->isRequired()
                             ->cannotBeEmpty()
+                        ->end()
+                        ->booleanNode('tempo')
+                            ->info('Is tempo enabled for this instance?')
+                            ->defaultNull()
                         ->end()
                     ->end()
                 ->end()
@@ -108,7 +120,10 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('github')
                     ->info('GitHub credentials - used to retrieve pull request data, including webhook statuses. Visit this page to generate a token: https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool')
                     ->children()
-                        ->scalarNode('apiToken')->isRequired()->end()
+                        ->scalarNode('apiToken')
+                            ->attribute('hidden', true)
+                            ->isRequired()
+                        ->end()
                     ->end()
                 ->end()
                 ->arrayNode('git')
@@ -126,7 +141,35 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->treatNullLike(false)->end()
-                        ->scalarNode('instances')->defaultNull()->example('secondary')->end()
+                        ->scalarNode('version')->defaultNull()->end()
+                        ->scalarNode('apiToken')->defaultNull()->end()
+                        ->variableNode('instances')
+                            ->defaultNull()->example('secondary')
+                            ->validate()
+                                ->ifString()->then(function ($instance) {
+                                    $names = explode(',', $instance);
+                                    $instances = [];
+                                    foreach ($names as $name) {
+                                        $instances[] = ['name' => trim($name), 'apiToken' => null];
+                                    }
+
+                                    return $instances;
+                                })
+                                ->ifNull()->then(function () {
+                                    return [['name' => null, 'apiToken' => null]];
+                                })
+                                ->ifArray()->then(function (array $instances) {
+                                    foreach ($instances as $inst) {
+                                        if (empty($inst['name']) || empty($inst['apiToken'])) {
+                                            throw new \InvalidArgumentException(
+                                                'Tempo version 2: you must provide both "name" and "apiToken" for each instance. This seems to be invalid: ' . var_export($instances, true)
+                                            );
+                                        }
+                                    }
+                                    return $instances;
+                                })
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
                 ->arrayNode('iterm')
@@ -136,6 +179,13 @@ class Configuration implements ConfigurationInterface
                         ->booleanNode('renderImages')->defaultTrue()->treatNullLike(true)->end()
                         ->scalarNode('thumbnailWidth')->defaultValue(300)->treatNullLike(300)->end()
                         ->scalarNode('imageCacheTtl')->defaultValue(5)->treatNullLike(5)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('editor')
+                    ->info('Editor preferences')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('executable')->defaultValue('vim')->end()
                     ->end()
                 ->end()
             ->end();
@@ -219,8 +269,16 @@ class Configuration implements ConfigurationInterface
             ->prototype('array')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
-                    ->scalarNode('jql')->cannotBeEmpty()->isRequired()->end()
+                    ->scalarNode('jql')->defaultValue('')->end()
+                    ->scalarNode('filterId')->defaultNull()->end()
+                    ->scalarNode('instance')->defaultNull()->end()
                 ->end()
+                ->beforeNormalization()->ifArray()->then(function (array $value) {
+                    if (!empty($value['filterId']) && empty($value['instance'])) {
+                        throw new InvalidConfigurationException('value for filter.instance must be provided when using filterId');
+                    }
+                    return $value;
+                })
             ->end();
 
         return $rootNode;
@@ -235,6 +293,19 @@ class Configuration implements ConfigurationInterface
             ->info('Rendering setup')
             ->addDefaultsIfNotSet()
             ->children()
+                ->arrayNode('preference')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('list')
+                            ->info('Default view mode for lists')
+                            ->defaultValue('short')
+                        ->end()
+                        ->scalarNode('view')
+                            ->info('Default view mode for a single issue')
+                            ->defaultValue('full')
+                        ->end()
+                    ->end()
+                ->end()
                 ->arrayNode('modes')
                     ->useAttributeAsKey('name', false)
                     ->prototype('array')

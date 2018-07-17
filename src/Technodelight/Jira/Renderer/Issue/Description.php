@@ -4,7 +4,6 @@ namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\Jira\Helper\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -18,10 +17,6 @@ class Description implements IssueRenderer
      */
     private $templateHelper;
     /**
-     * @var \Technodelight\Jira\Helper\ColorExtractor
-     */
-    private $colorExtractor;
-    /**
      * @var \Technodelight\Jira\Helper\Image
      */
     private $imageRenderer;
@@ -34,10 +29,9 @@ class Description implements IssueRenderer
      */
     private $wordwrap;
 
-    public function __construct(TemplateHelper $templateHelper, ColorExtractor $colorExtractor, Image $imageRenderer, Wordwrap $wordwrap, $renderFullDescription = true)
+    public function __construct(TemplateHelper $templateHelper, Image $imageRenderer, Wordwrap $wordwrap, $renderFullDescription = true)
     {
         $this->templateHelper = $templateHelper;
-        $this->colorExtractor = $colorExtractor;
         $this->renderFullDescription = $renderFullDescription;
         $this->imageRenderer = $imageRenderer;
         $this->wordwrap = $wordwrap;
@@ -84,8 +78,8 @@ class Description implements IssueRenderer
      */
     private function renderContents(OutputInterface $output, Issue $issue, $description)
     {
-        $tagConverter = new JiraTagConverter($output, $this->colorExtractor);
-        $body = $this->wordwrap->wrap($tagConverter->convert($description));
+        $tagConverter = new JiraTagConverter();
+        $body = $this->wordwrap->wrap($tagConverter->convert($output, $description));
         if ($this->renderFullDescription) {
             $body = $this->imageRenderer->render($body, $issue);
         }

@@ -33,6 +33,7 @@ class IssueRendererFactory
     /**
      * @param string $mode
      * @return Renderer
+     * @throws RendererConfigurationError
      */
     public function build($mode)
     {
@@ -62,6 +63,7 @@ class IssueRendererFactory
     /**
      * @param FieldConfiguration $fieldConfiguration
      * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @throws RendererConfigurationError
      */
     private function changeField(FieldConfiguration $fieldConfiguration, array &$renderers)
     {
@@ -78,15 +80,20 @@ class IssueRendererFactory
      */
     private function createField(FieldConfiguration $fieldConfiguration, array &$renderers)
     {
-        $renderers[$fieldConfiguration->name()] = $this->createFieldRenderer($fieldConfiguration);
+        if (!$fieldConfiguration->remove()) {
+            $renderers[$fieldConfiguration->name()] = $this->createFieldRenderer($fieldConfiguration);
+        }
     }
 
     /**
      * @param FieldConfiguration $fieldConfiguration
      * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @throws RendererConfigurationError
      */
     private function moveField(FieldConfiguration $fieldConfiguration, array &$renderers)
     {
+        $this->validateMove($fieldConfiguration, $renderers);
+
         $moveName = $fieldConfiguration->name();
         $reorderedRenderers = [];
         if ($fieldConfiguration->after() == '-') {
@@ -153,5 +160,24 @@ class IssueRendererFactory
     private function createBuiltInFieldRenderer(FieldConfiguration $fieldConfiguration)
     {
         return $this->rendererProvider->get($fieldConfiguration->name());
+    }
+
+    /**
+     * @param FieldConfiguration $fieldConfiguration
+     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @throws RendererConfigurationError
+     */
+    private function validateMove(FieldConfiguration $fieldConfiguration, array &$renderers)
+    {
+        if (!empty($fieldConfiguration->before())
+            && !isset($renderers[$fieldConfiguration->before()])
+            && $fieldConfiguration->before() !== '-') {
+            throw RendererConfigurationError::fromFieldConfigurationWithBefore($fieldConfiguration, $renderers);
+        }
+        if (!empty($fieldConfiguration->after())
+            && !isset($renderers[$fieldConfiguration->after()])
+            && $fieldConfiguration->after() !== '-') {
+            throw RendererConfigurationError::fromFieldConfigurationWithAfter($fieldConfiguration, $renderers);
+        }
     }
 }

@@ -6,8 +6,8 @@ use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
@@ -40,12 +40,16 @@ class IssueKeyResolverSpec extends ObjectBehavior
     {
         $configuration->aliasToIssueKey('PROJ-123')->willReturn('PROJ-123');
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('PROJ-123');
+        $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'PROJ-123']);
+
         $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }
 
-    function it_resolves_issue_key_from_git(InputInterface $input, OutputInterface $output, Git $git)
+    function it_resolves_issue_key_from_git(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output, Git $git)
     {
+        $configuration->issueKeyToAlias('PROJ-123')->willReturnArgument(0);
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn(false);
+        $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => null]);
         $branch = Branch::fromArray(['name' => 'feature/PROJ-123-test-branch', 'remote' => false, 'current' => true]);
         $git->currentBranch()->willReturn($branch);
 
@@ -62,6 +66,8 @@ class IssueKeyResolverSpec extends ObjectBehavior
     function it_can_resolve_aliases_from_configuration(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output)
     {
         $configuration->aliasToIssueKey('something')->willReturn('PROJ-123');
+        $configuration->issueKeyToAlias('PROJ-123')->willReturn('something');
+        $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'something']);
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('something');
         $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }

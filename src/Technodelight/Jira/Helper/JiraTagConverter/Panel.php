@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Helper\JiraTagConverter;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\TableStyle;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 class Panel
 {

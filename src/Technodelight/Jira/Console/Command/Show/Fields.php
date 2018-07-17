@@ -3,10 +3,11 @@
 namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Domain\Field;
 
 class Fields extends AbstractCommand
 {
@@ -15,12 +16,24 @@ class Fields extends AbstractCommand
         $this
             ->setName('show:fields')
             ->setDescription('List all available issue fields')
+            ->addOption(
+                'issueKey',
+                '',
+                InputOption::VALUE_OPTIONAL,
+                'Check fields for a concrete issue',
+                ''
+            )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $table = $this->createFieldsTable();
+        if ($this->optionChecker()->hasOptionWithoutValue($input, 'issueKey')) {
+            $issueKey = $this->issueKeyResolver()->option($input, $output);
+            $table = $this->createFieldsTable($this->api()->issueEditMeta($issueKey)->fields());
+        } else {
+            $table = $this->createFieldsTable($this->api()->fields());
+        }
         $renderer = new Table($output);
         $renderer
             ->setHeaders(array_shift($table))
@@ -36,12 +49,31 @@ class Fields extends AbstractCommand
         return $this->getService('technodelight.jira.api');
     }
 
-    protected function createFieldsTable()
+    /**
+     * @return \Technodelight\Jira\Console\Argument\IssueKeyResolver
+     */
+    private function issueKeyResolver()
     {
-        $fields = $this->api()->fields();
-        $table = [['Key', 'Name', 'Is custom?', 'Schema']];
+        return $this->getService('technodelight.jira.console.argument.issue_key_resolver');
+    }
+
+    /**
+     * @return \Technodelight\Jira\Console\Option\Checker
+     */
+    private function optionChecker()
+    {
+        return $this->getService('technodelight.jira.console.option.checker');
+    }
+
+    /**
+     * @param Field[]|\Technodelight\Jira\Domain\Issue\Meta\Field[] $fields
+     * @return array
+     */
+    protected function createFieldsTable($fields)
+    {
+        $table = [['Name', 'Key', 'Is custom?', 'Schema', 'Item Type']];
         foreach ($fields as $field) {
-            $table[] = [$field->key(), $field->name(), $field->isCustom() ? 'Yes' : 'No', $field->schemaType()];
+            $table[] = ['<comment>'.$field->name() . '</comment>', $field->key(), $field->isCustom() ? 'Yes' : 'No', $field->schemaType(), $field->schemaItemType()];
         }
         return $table;
     }

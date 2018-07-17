@@ -4,8 +4,8 @@ namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\GitShell\Api as Git;
-use Technodelight\Jira\Api\GitShell\Branch;
+use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
@@ -33,9 +33,22 @@ class IssueKeyResolver
         if (!$input->hasArgument(self::ARGUMENT)) {
             return null;
         }
-        $value = $this->resolve($input->getArgument(self::ARGUMENT), $input, $output);
-        $input->setArgument(self::ARGUMENT, (string) $value);
-        return $value;
+        $issueKey = $this->resolve($input->getArgument(self::ARGUMENT), $input, $output);
+
+        if (!empty($issueKey)) {
+            $shift = false;
+            foreach ($input->getArguments() as $argument => $value) {
+                if ($argument == self::ARGUMENT && $this->isArgValueAnIssueKey($value, $issueKey)) {
+                    $shift = true;
+                    $previousArgumentValue = $input->getArgument(self::ARGUMENT);
+                    $input->setArgument($argument, (string) $issueKey);
+                } else if ($shift && isset($previousArgumentValue)) {
+                    $input->setArgument($argument, $previousArgumentValue);
+                    $previousArgumentValue = $value;
+                }
+            }
+        }
+        return $issueKey;
     }
 
     public function option(InputInterface $input, OutputInterface $output)
@@ -80,5 +93,11 @@ class IssueKeyResolver
         } catch (MissingIssueKeyException $exception) {
             return false;
         }
+    }
+
+    private function isArgValueAnIssueKey($value, $issueKey)
+    {
+        return ($value != $issueKey)
+            && ($value != $this->configuration->issueKeyToAlias($issueKey));
     }
 }

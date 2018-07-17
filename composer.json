@@ -16,7 +16,13 @@
         "technodelight/seconds-to-none": "^0.2.0",
         "hoa/console": "^3.17",
         "ssnepenthe/color-utils": "^0.4.2",
-        "technodelight/php-time-ago": "^1.1"
+        "technodelight/php-time-ago": "^1.1",
+        "loilo/fuse": "^3.2",
+        "sebastian/diff": "^2.0",
+        "technodelight/bytes-in-human": "^1.0",
+        "technodelight/shell-exec": "^1.0",
+        "technodelight/php-git": "^1.0",
+        "technodelight/symfony-configuration-cli-initialiser": "^1.0"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",
@@ -25,7 +31,7 @@
     "authors": [
         {
             "name": "Zsolt Gál",
-            "email": "technodelight@gmail.com"
+            "email": "zenc@zenc.hu"
         }
     ],
     "autoload": {"psr-0": {"Technodelight\\": "src"}},
