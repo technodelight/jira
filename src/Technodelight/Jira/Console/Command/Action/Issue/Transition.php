@@ -10,6 +10,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Input\Issue\Assignee;
+use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\GitShell\Api as GitShell;
 use Technodelight\Jira\Domain\Transition as IssueTransition;
@@ -62,8 +64,8 @@ class Transition extends AbstractCommand
             ->addOption(
                 'assign',
                 'a',
-                InputOption::VALUE_NONE,
-                'change assignee to you'
+                InputOption::VALUE_OPTIONAL,
+                'change assignee'
             )
             ->addOption(
                 'unassign',
@@ -90,8 +92,9 @@ class Transition extends AbstractCommand
             $this->checkGitChanges($input, $output, $transition);
             $this->jiraApi()->performIssueTransition($issueKey, $transition->id());
             $actionString = '';
-            if ($input->getOption('assign')) {
-                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $this->jiraApi()->user()->name()]]]);
+            if ($input->getOption('assign') || $this->optionChecker()->hasOptionWithoutValue($input, 'assign')) {
+                $assignee = $this->optionChecker()->hasOptionWithoutValue($input, 'assign') ? $this->assigneeInput()->userPicker($output) : $input->getOption('assign');
+                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
                 $actionString = ' and has been assigned to you';
             } else
             if ($input->getOption('unassign')) {
@@ -319,5 +322,21 @@ class Transition extends AbstractCommand
     private function questionHelper()
     {
         return $this->getHelper('question');
+    }
+
+    /**
+     * @return Checker
+     */
+    private function optionChecker()
+    {
+        return $this->getService('technodelight.jira.console.option.checker');
+    }
+
+    /**
+     * @return Assignee
+     */
+    private function assigneeInput()
+    {
+        return $this->getService('technodelight.jira.console.input.issue.assignee');
     }
 }

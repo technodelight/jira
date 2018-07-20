@@ -10,5 +10,5 @@ interface Client
     public function delete($url);
     public function multiGet(array $urls);
     public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null);
-    public function download($url, $filename);
+    public function download($url, $filename, callable $progressFunction = null);
 }

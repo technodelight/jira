@@ -35,7 +35,34 @@
 
         <service id="technodelight.jira.template_helper" class="Technodelight\Jira\Helper\TemplateHelper" />
 
-        <service id="technodelight.jira.git_branchname_generator" class="Technodelight\Jira\Helper\GitBranchnameGenerator" />
+        <!-- branch name generator -->
+        <service public="false"
+                 id="technodelight.jira.git_branchname_generator.string_cleaner_factory"
+                 class="Technodelight\Jira\Helper\GitBranchnameGenerator\StringCleanerFactory">
+            <argument type="service" id="technodelight.jira.config.integrations.git.branch_name_generator" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.git_branchname_generator.pattern_prepare"
+                 class="Technodelight\Jira\Helper\GitBranchnameGenerator\PatternPrepare">
+            <argument type="service" id="symfony.expression.language" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.git_branchname_generator.string_cleaner"
+                 class="Technodelight\Jira\Helper\GitBranchnameGenerator\StringCleaner">
+            <factory service="technodelight.jira.git_branchname_generator.string_cleaner_factory" method="build" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.git_branchname_generator.expression_language_provider"
+                 class="Technodelight\Jira\Helper\GitBranchnameGenerator\ExpressionLanguageProvider">
+            <argument type="service" id="technodelight.jira.git_branchname_generator.string_cleaner" />
+        </service>
+        <service id="technodelight.jira.git_branchname_generator" class="Technodelight\Jira\Helper\GitBranchnameGenerator">
+            <argument type="service" id="technodelight.jira.config.integrations.git.branch_name_generator" />
+            <argument type="service" id="symfony.expression.language" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator.pattern_prepare" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator.string_cleaner" />
+        </service>
+        <!-- branch name generator -->
 
         <service id="technodelight.jira.git_branch_collector" class="Technodelight\Jira\Helper\GitBranchCollector">
             <argument type="service" id="technodelight.gitshell.api" />

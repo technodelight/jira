@@ -39,7 +39,9 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->container->compile();
+        if (!$this->container->isFrozen()) {
+            $this->container->compile();
+        }
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             /** @var \ICanBoogie\Storage\Storage $cache */

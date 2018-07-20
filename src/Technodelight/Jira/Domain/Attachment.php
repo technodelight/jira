@@ -26,11 +26,17 @@ class Attachment
         return $instance;
     }
 
+    /**
+     * @return string
+     */
     public function id()
     {
         return $this->attachment['id'];
     }
 
+    /**
+     * @return string
+     */
     public function author()
     {
         if (isset($this->attachment['author']['displayName'])) {
@@ -39,26 +45,41 @@ class Attachment
         return '';
     }
 
+    /**
+     * @return \DateTime
+     */
     public function created()
     {
         return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->attachment['created']);
     }
 
+    /**
+     * @return int
+     */
     public function size()
     {
         return $this->attachment['size'];
     }
 
+    /**
+     * @return string
+     */
     public function filename()
     {
         return $this->attachment['filename'];
     }
 
+    /**
+     * @return string
+     */
     public function url()
     {
         return $this->attachment['content'];
     }
 
+    /**
+     * @return Issue
+     */
     public function issue()
     {
         return $this->issue;

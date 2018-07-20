@@ -103,13 +103,12 @@ class Edit extends Command
                 'Value(s) to set',
                 ''
             )
-            // @TODO: implement no-notify option
-//            ->addOption(
-//                'no-notifiy',
-//                '',
-//                InputOption::VALUE_NONE,
-//                'Skip notifying watchers about the change'
-//            )
+            ->addOption(
+                'no-notifiy',
+                '',
+                InputOption::VALUE_NONE,
+                'Skip notifying watchers about the change'
+            )
         ;
     }
 
@@ -159,7 +158,11 @@ class Edit extends Command
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
 
         $beforeUpdate = $this->jira->retrieveIssue($issueKey);
-        $this->jira->updateIssue($issueKey, ['update' => $this->prepareUpdateData($field, $input)]);
+        $this->jira->updateIssue(
+            $issueKey,
+            ['update' => $this->prepareUpdateData($field, $input)],
+            ['notifyUsers' => $input->getOption('no-notifiy') ? false : null]
+        );
         $afterUpdate = $this->jira->retrieveIssue($issueKey);
 
         $this->renderChange($field, $beforeUpdate, $afterUpdate, $output);

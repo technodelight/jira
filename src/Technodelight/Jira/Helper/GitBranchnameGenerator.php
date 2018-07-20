@@ -4,26 +4,48 @@ namespace Technodelight\Jira\Helper;
 
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\GitBranchnameGenerator\PatternPrepare;
+use Technodelight\Jira\Helper\GitBranchnameGenerator\StringCleaner;
 
 class GitBranchnameGenerator
 {
-    private $remove = ['BE', 'FE'];
-    private $replace = [' ', ':', '/', ','];
-    private $jiraPattern = 'feature/%s-%s';
-    private $separator = '-';
+    /**
+     * @var BranchNameGeneratorConfiguration
+     */
+    private $config;
+    /**
+     * @var ExpressionLanguage
+     */
+    private $expression;
+    /**
+     * @var PatternPrepare
+     */
+    private $patternPrepare;
+    /**
+     * @var StringCleaner
+     */
+    private $stringCleaner;
+
+    public function __construct(
+        BranchNameGeneratorConfiguration $config,
+        ExpressionLanguage $expression,
+        PatternPrepare $patternPrepare,
+        StringCleaner $stringCleaner
+    )
+    {
+        $this->config = $config;
+        $this->patternPrepare = $patternPrepare;
+        $this->stringCleaner = $stringCleaner;
+        $this->expression = $expression;
+    }
 
     public function fromIssue(Issue $issue)
     {
-        if (preg_match('~^Release ([.\d]+)~', $issue->summary(), $matches)) {
-            return sprintf('release/%s', $matches[1]);
-        }
-        return $this->cleanup(
-            sprintf(
-                $this->jiraPattern,
-                $issue->ticketNumber(),
-                strtolower($this->replace($this->remove($issue->summary())))
-            )
+        return $this->patternFromData(
+            ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($issue->summary()), 'issue' => $issue]
         );
     }
 
@@ -35,32 +57,26 @@ class GitBranchnameGenerator
     {
         $readline = new Readline;
         $readline->setAutocompleter(new Word($this->getAutocompleteWords($issue)));
-        $branchName = $readline->readLine(sprintf(
-            $this->jiraPattern,
-            $issue->ticketNumber(),
-            ''
-        ));
-        return sprintf($this->jiraPattern, $issue->ticketNumber(), $branchName);
-    }
 
-    private function remove($summary)
-    {
-        return str_replace($this->remove, '', $summary);
-    }
-
-    private function replace($summary)
-    {
-        return str_replace($this->replace, $this->separator, $summary);
-    }
-
-    private function cleanup($branchName)
-    {
-        $branchName = preg_replace('~[^A-Za-z0-9/-]~', '', $branchName);
-        return preg_replace(
-            '~[' . preg_quote($this->separator) . ']+~',
-            $this->separator,
-            trim($branchName, $this->separator)
+        $prefix = $this->patternFromData(
+            ['issueKey' => $issue->issueKey(), 'summary' => '', 'issue' => $issue]
         );
+        $summary = $readline->readLine($prefix);
+
+        return $this->patternFromData(
+            ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($summary), 'issue' => $issue]
+        );
+    }
+
+    private function patternFromData($expressionData)
+    {
+        foreach ($this->config->patterns() as $expression => $pattern) {
+            if ($this->expression->evaluate($expression, $expressionData)) {
+                return $this->patternPrepare->prepare($pattern, $expressionData);
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -69,6 +85,9 @@ class GitBranchnameGenerator
      */
     private function getAutocompleteWords(Issue $issue)
     {
-        return explode($this->separator, strtolower($this->replace($this->remove($issue->summary()))));
+        return array_merge(
+            explode($this->config->separator(), $this->stringCleaner->clean($issue->summary())),
+            ['fix', 'add', 'change', 'remove', 'implement']
+        );
     }
 }
