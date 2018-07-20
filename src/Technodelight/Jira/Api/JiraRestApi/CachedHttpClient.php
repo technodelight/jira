@@ -97,9 +97,9 @@ class CachedHttpClient implements Client
         return $result;
     }
 
-    public function download($url, $filename)
+    public function download($url, $filename, callable $progressFunction = null)
     {
-        $this->httpClient->download($url, $filename);
+        $this->httpClient->download($url, $filename, $progressFunction);
     }
 
     private function keyify()

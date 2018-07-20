@@ -2,16 +2,44 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
-use Hoa\Console\Readline\Readline;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Console\HoaConsole\UserPickerAutocomplete;
+use Technodelight\Jira\Console\Input\Issue\Assignee;
 
-class Assign extends AbstractCommand
+class Assign extends Command
 {
+    /**
+     * @var Assignee
+     */
+    private $assigneeInput;
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+
+    public function setAssigneeInput(Assignee $assignee)
+    {
+        $this->assigneeInput = $assignee;
+    }
+
+    public function setIssueKeyResolver(IssueKeyResolver $issueKeyResolver)
+    {
+        $this->issueKeyResolver = $issueKeyResolver;
+    }
+
+    public function setJiraApi(Api $api)
+    {
+        $this->api = $api;
+    }
+
     protected function configure()
     {
         $this
@@ -33,38 +61,20 @@ class Assign extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $this->issueKeyArgument($input, $output);
+        $this->issueKeyResolver->argument($input, $output);
         if (!$input->getArgument('assignee')) {
-            $input->setArgument('assignee', $this->userPicker($output));
+            $input->setArgument('assignee', $this->assigneeInput->userPicker($output));
         }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
         $assignee = $input->getArgument('assignee');
 
-        $this->jiraApi()->assignIssue((string) $issueKey, $assignee);
+        $this->api->assignIssue((string) $issueKey, $assignee);
         $output->writeln(
             sprintf('<info>%s</info> was assigned successfully to <comment>%s</comment>', $issueKey, $assignee)
         );
-    }
-
-    private function userPicker(OutputInterface $output)
-    {
-        $readline = new Readline;
-        $readline->setAutocompleter(
-            new UserPickerAutocomplete($this->jiraApi())
-        );
-        $output->write('<comment>Please provide a username for assignee:</comment> ');
-        return $readline->readLine();
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
     }
 }

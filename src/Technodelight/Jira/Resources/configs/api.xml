@@ -31,6 +31,7 @@
             <argument type="service" id="technodelight.jira.api" />
         </service>
         <!-- jira -->
+
         <!-- tempo -->
         <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
             <factory class="Technodelight\Jira\Connector\Tempo\HttpClientFactory" method="build" />
@@ -45,6 +46,7 @@
             <argument type="service" id="technodelight.jira.api_cache_storage" />
         </service>
         <!-- tempo -->
+
         <!-- tempo2 -->
         <service id="technodelight.jira.api.tempo2.client" class="Technodelight\Jira\Api\Tempo2\Client">
             <factory class="Technodelight\Jira\Connector\Tempo2\HttpClientFactory" method="build" />
@@ -59,6 +61,7 @@
             <argument type="service" id="technodelight.jira.api_cache_storage" />
         </service>
         <!-- tempo2 -->
+
         <!-- git -->
         <service public="false" id="technodelight.gitshell.shell" class="Technodelight\ShellExec\Exec">
             <argument>/usr/bin/env git</argument>
@@ -67,6 +70,7 @@
             <argument type="service" id="technodelight.gitshell.shell" />
         </service>
         <!-- git -->
+
         <!-- hub -->
         <service public="false" id="technodelight.github.api_builder" class="Technodelight\Jira\Connector\GitHub\ApiBuilder">
             <argument type="service" id="technodelight.jira.config.integrations.github" />
@@ -75,6 +79,7 @@
             <factory method="build" service="technodelight.github.api_builder" />
         </service>
         <!-- hub -->
+
         <!-- worklog handler -->
         <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
             <argument type="service" id="technodelight.jira.config.instances.current_instance"/>
@@ -87,6 +92,17 @@
             <factory service="technodelight.jira.connector.worklog_handler_factory" method="build"/>
         </service>
         <!-- worklog handler -->
+
+        <!-- expression language -->
+        <service public="false"
+                 id="technodelight.jira.connector.symfony_expression_language.factory"
+                 class="Technodelight\Jira\Connector\SymfonyExpressionLanguage\Factory">
+            <argument type="service" id="technodelight.jira.git_branchname_generator.expression_language_provider" />
+        </service>
+        <service id="symfony.expression.language" class="Symfony\Component\ExpressionLanguage\ExpressionLanguage">
+            <factory service="technodelight.jira.connector.symfony_expression_language.factory" method="build" />
+        </service>
+        <!-- expression language -->
 
     </services>
 

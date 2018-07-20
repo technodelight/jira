@@ -117,8 +117,19 @@ class HttpClient implements Client
         }
     }
 
-    public function download($url, $filename)
+    public function download($url, $filename, callable $progressFunction = null)
     {
+        if ($progressFunction) {
+            $this->httpClient()->get(
+                $url,
+                [
+                    'save_to' => $filename,
+                    'progress' => $progressFunction,
+                ]
+            );
+            return;
+        }
+
         $this->httpClient()->get($url, ['save_to' => $filename]);
     }
 

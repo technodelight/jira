@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,6 +11,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Attachment as IssueAttachment;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\Downloader;
 
 class Attachment extends AbstractCommand
 {
@@ -41,19 +43,30 @@ class Attachment extends AbstractCommand
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @throws \ErrorException
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        if (!$input->getArgument('filename')) {
-            $issueKey = $this->issueKeyArgument($input, $output);
-            $jira = $this->getService('technodelight.jira.api');
-            /** @var \Technodelight\Jira\Api\Issue $issue */
-            $issue = $jira->retrieveIssue($issueKey);
+        $issueKey = $this->issueKeyArgument($input, $output);
+
+        if (empty($input->getArgument('filename'))) {
+            /** @var \Technodelight\Jira\Domain\Issue $issue */
+            $issue = $this->jiraApi()->retrieveIssue($issueKey);
+
+            if (!count($issue->attachments())) {
+                throw new \ErrorException(
+                    sprintf('No attachments for %s', $issue->issueKey())
+                );
+            }
 
             /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
             $helper = $this->getHelper('question');
 
             $question = new ChoiceQuestion(
-                'Select file to download',
+                '<comment>Select file to download</comment>',
                 array_map(function (IssueAttachment $attachment) {
                     return $attachment->filename();
                 }, $issue->attachments()),
@@ -84,11 +97,27 @@ class Attachment extends AbstractCommand
         $formatter = $this->getHelper('formatter');
 
         try {
+            if (!count($issue->attachments())) {
+                throw new \ErrorException(
+                    sprintf('No attachments for %s', $issue->issueKey())
+                );
+            }
+
             // download file
-            $attachmentUrl = $this->findAttachment($issue, $filename);
+            $attachment = $this->findAttachment($issue, $filename);
             $targetFilePath = $input->getArgument('targetPath') . DIRECTORY_SEPARATOR . $filename;
             if ($this->confirmDownload($input, $output, $targetFilePath)) {
-                $this->jiraApi()->download($attachmentUrl, $targetFilePath);
+
+                $downloader = new Downloader;
+                $f = fopen($targetFilePath, 'w');
+                /** @var ProgressBar $progress */
+                list($progress, $callback) = $downloader->progressBarWithProgressFunction($output);
+                $progress->start($attachment->size());
+                $this->jiraApi()->download($attachment->url(), $f, $callback);
+                $progress->finish();
+
+                $output->writeln('');
+
                 $output->writeln(
                     $formatter->formatBlock(
                         sprintf(self::SUCCESS_MESSAGE, $filename, $targetFilePath),
@@ -111,11 +140,16 @@ class Attachment extends AbstractCommand
         }
     }
 
+    /**
+     * @param Issue $issue
+     * @param $filename
+     * @return IssueAttachment
+     */
     private function findAttachment(Issue $issue, $filename)
     {
         foreach ($issue->attachments() as $attachment) {
             if ($attachment->filename() == $filename) {
-                return $attachment->url();
+                return $attachment;
             }
         }
 
@@ -135,7 +169,7 @@ class Attachment extends AbstractCommand
 
         if (is_file($targetFilePath)) {
             $question = new ConfirmationQuestion(
-                sprintf('File "%s" already exists, do you want to overwrite it?', $targetFilePath),
+                sprintf('<comment>File "%s" already exists, do you want to overwrite it?</comment> [y/N] ', $targetFilePath),
                 false
             );
             /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */

@@ -50,7 +50,7 @@ class JiraFixtureClient implements Client
         return $this->read('get', $jql);
     }
 
-    public function download($url, $filename)
+    public function download($url, $filename, callable $progressFunction = null)
     {
         // ?
     }

@@ -352,9 +352,9 @@ class Api
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-put
      * @return array
      */
-    public function updateIssue($issueKey, array $data)
+    public function updateIssue($issueKey, array $data, array $params = [])
     {
-        return $this->client->put(sprintf('issue/%s', $issueKey), $data);
+        return $this->client->put(sprintf('issue/%s', $issueKey) . $this->queryStringFromParams($params), $data);
     }
 
     /**
@@ -528,10 +528,11 @@ class Api
      *
      * @param string $url
      * @param string $filename
+     * @param callable $progressFunction
      */
-    public function download($url, $filename)
+    public function download($url, $filename, callable $progressFunction = null)
     {
-        $this->client->download($url, $filename);
+        $this->client->download($url, $filename, $progressFunction);
     }
 
     /**

@@ -9,7 +9,6 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfig
 use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
-use Technodelight\Jira\Configuration\TransitionResolver;
 
 class ApplicationConfiguration extends BaseAppConf
 {
@@ -24,7 +23,17 @@ class ApplicationConfiguration extends BaseAppConf
                 'apiToken' => 'githu670k3n',
             ],
             'git' => [
-                'maxBranchNameLength' => 30
+                'maxBranchNameLength' => 30,
+                'branchNameGenerator' => [
+                    'whitelist' => 'A-Za-z0-9./-',
+                    'remove' => ['BE', 'FE'],
+                    'replace' => [' ', ':', '/', ','],
+                    'separator' => '-',
+                    'autocompleteWords' => ['fix', 'add', 'change', 'remove', 'implement'],
+                    'patterns' => [
+                        'preg_match("~^Release ~", issue.summary())' => ['pattern' => 'release/{clean(substr(issue.summary(), 8))}'],
+                        'preg_match("~.*~", issue.summary())' => ['pattern' => 'feature/{issueKey}-{summary}'],
+                    ]                ],
             ],
             'iterm' => [
                 'renderImages' => false,

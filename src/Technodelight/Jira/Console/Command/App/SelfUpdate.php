@@ -2,10 +2,10 @@
 
 namespace Technodelight\Jira\Console\Command\App;
 
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Helper\Downloader;
 
 class SelfUpdate extends AbstractCommand
 {
@@ -20,6 +20,12 @@ class SelfUpdate extends AbstractCommand
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null
+     * @throws \ErrorException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dialog = $this->getService('console.dialog_helper');
@@ -56,45 +62,22 @@ class SelfUpdate extends AbstractCommand
         return 0;
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $runningFile
+     * @param string $newReleaseUrl
+     * @throws \ErrorException
+     */
     private function update(OutputInterface $output, $runningFile, $newReleaseUrl)
     {
-        $progress = $this->createProgressBar($output);
-
-        $ch = curl_init($newReleaseUrl);
-        $f = fopen($runningFile, 'w');
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_FILE, $f);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function($ch, $downloadTotal, $downloadedBytes) use ($progress) {
-            if ($progress->getMaxSteps() == 0) {
-                $progress->start($downloadTotal);
-                $progress->setProgress($downloadedBytes);
-            } else {
-                $progress->setFormat('%bar% %percent%% %remaining%');
-                $progress->setProgress($downloadedBytes);
-            }
-        });
-        curl_exec($ch);
-        $err = curl_errno($ch);
-        curl_close($ch);
-        fclose($f);
-        $progress->finish();
-        $output->writeln('');
-        chmod($runningFile, 0755);
-        return $err == 0;
-    }
-
-    private function createProgressBar(OutputInterface $output)
-    {
-        $progress = new ProgressBar($output);
-        $progress->setFormat('%bar% %percent%%');
-        $progress->setBarCharacter('<bg=green> </>');
-        $progress->setEmptyBarCharacter('<bg=white> </>');
-        $progress->setProgressCharacter('<bg=green> </>');
-        $progress->setBarWidth(50);
-        $progress->setRedrawFrequency(500000);
-        return $progress;
+        $downloader = new Downloader;
+        if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
+            chmod($runningFile, 0755);
+        } else {
+            throw new \ErrorException(
+                'Cannot update to the latest release :('
+            );
+        }
     }
 
     private function getReleaseNotesSince($currentVersion, $newVersion)

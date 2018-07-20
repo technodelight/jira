@@ -65,9 +65,9 @@ class StatCollectorApiClient implements Client
         return $result;
     }
 
-    public function download($url, $filename)
+    public function download($url, $filename, callable $progressFunction = null)
     {
-        return $this->client->download($url, $filename);
+        return $this->client->download($url, $filename, $progressFunction);
     }
 
     private function parseIssueKeys($string)

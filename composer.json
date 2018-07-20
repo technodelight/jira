@@ -22,7 +22,8 @@
         "technodelight/bytes-in-human": "^1.0",
         "technodelight/shell-exec": "^1.0",
         "technodelight/php-git": "^1.0",
-        "technodelight/symfony-configuration-cli-initialiser": "^1.0"
+        "technodelight/symfony-configuration-cli-initialiser": "^1.0",
+        "symfony/expression-language": "^3.4"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

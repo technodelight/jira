@@ -6,6 +6,7 @@
 
     <services>
 
+        <!-- internal commands -->
         <service id="technodelight.jira.app.command.init" class="Technodelight\Jira\Console\Command\App\Init">
             <argument type="service" id="service_container"/>
             <tag name="command" />
@@ -22,6 +23,7 @@
             <argument type="service" id="service_container"/>
             <tag name="command" />
         </service>
+        <!-- internal commands -->
 
         <!-- show commands -->
         <service id="technodelight.jira.app.command.instances" class="Technodelight\Jira\Console\Command\Show\Instances">
@@ -78,6 +80,7 @@
         </service>
         <!-- show commands-->
 
+        <!-- action commands -->
         <service id="technodelight.jira.app.command.logtime" class="Technodelight\Jira\Console\Command\Action\Issue\LogTime">
             <argument type="service" id="service_container"/>
             <tag name="command" />
@@ -87,7 +90,15 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.assign" class="Technodelight\Jira\Console\Command\Action\Issue\Assign">
-            <argument type="service" id="service_container"/>
+            <call method="setAssigneeInput">
+                <argument type="service" id="technodelight.jira.console.input.issue.assignee" />
+            </call>
+            <call method="setJiraApi">
+                <argument type="service" id="technodelight.jira.api" />
+            </call>
+            <call method="setIssueKeyResolver">
+                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            </call>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.link" class="Technodelight\Jira\Console\Command\Action\Issue\Link">
@@ -106,10 +117,31 @@
             <argument type="service" id="service_container"/>
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.workinprogress" class="Technodelight\Jira\Console\Command\Filter\WorkInProgress">
-            <argument type="service" id="service_container"/>
+        <service id="technodelight.jira.app.command.edit" class="Technodelight\Jira\Console\Command\Action\Issue\Edit">
+            <call method="setJiraApi">
+                <argument type="service" id="technodelight.jira.api" />
+            </call>
+            <call method="setIssueKeyResolver">
+                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            </call>
+            <call method="setQuestionHelper">
+                <argument type="service" id="console.question_helper" />
+            </call>
+            <call method="setOptionChecker">
+                <argument type="service" id="technodelight.jira.console.option.checker" />
+            </call>
+            <call method="setFieldEditor">
+                <argument type="service" id="technodelight.jira.console.field_editor" />
+            </call>
             <tag name="command" />
         </service>
+        <service id="technodelight.jira.app.command.batch" class="Technodelight\Jira\Console\Command\Action\Batch">
+            <call method="setApp">
+                <argument type="service" id="technodelight.jira.app" />
+            </call>
+            <tag name="command" />
+        </service>
+        <!-- action commands -->
 
         <!-- progress commands -->
         <service id="technodelight.jira.app.command.progress.today" class="Technodelight\Jira\Console\Command\Show\Progress\Day">
@@ -177,40 +209,16 @@
         </service>
         <!-- progress commands -->
 
+        <!-- filter commands -->
+        <service id="technodelight.jira.app.command.workinprogress" class="Technodelight\Jira\Console\Command\Filter\WorkInProgress">
+            <argument type="service" id="service_container"/>
+            <tag name="command" />
+        </service>
         <service id="technodelight.jira.app.command.search" class="Technodelight\Jira\Console\Command\Filter\Search">
             <argument type="service" id="service_container"/>
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.version" class="Technodelight\Jira\Console\Command\Action\Issue\Version">
-            <call method="setJiraApi">
-                <argument type="service" id="technodelight.jira.api" />
-            </call>
-            <call method="setIssueKeyResolver">
-                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
-            </call>
-            <call method="setQuestionHelper">
-                <argument type="service" id="console.question_helper" />
-            </call>
-            <tag name="command" />
-        </service>
-        <service id="technodelight.jira.app.command.edit" class="Technodelight\Jira\Console\Command\Action\Issue\Edit">
-            <call method="setJiraApi">
-                <argument type="service" id="technodelight.jira.api" />
-            </call>
-            <call method="setIssueKeyResolver">
-                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
-            </call>
-            <call method="setQuestionHelper">
-                <argument type="service" id="console.question_helper" />
-            </call>
-            <call method="setOptionChecker">
-                <argument type="service" id="technodelight.jira.console.option.checker" />
-            </call>
-            <call method="setFieldEditor">
-                <argument type="service" id="technodelight.jira.console.field_editor" />
-            </call>
-            <tag name="command" />
-        </service>
+        <!-- filter commands -->
 
     </services>
 </container>
