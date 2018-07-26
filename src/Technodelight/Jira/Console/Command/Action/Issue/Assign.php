@@ -63,7 +63,7 @@ class Assign extends Command
     {
         $this->issueKeyResolver->argument($input, $output);
         if (!$input->getArgument('assignee')) {
-            $input->setArgument('assignee', $this->assigneeInput->userPicker($output));
+            $input->setArgument('assignee', $this->assigneeInput->userPicker($input, $output));
         }
     }
 

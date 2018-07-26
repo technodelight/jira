@@ -1,12 +1,13 @@
 <?php
 
-namespace spec\Technodelight\Jira\Helper;
+namespace spec\Technodelight\Jira\Api\JiraTagConverter;
 
 use PhpSpec\ObjectBehavior;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\NullOutput;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 
 class JiraTagConverterSpec extends ObjectBehavior
 {
@@ -64,7 +65,7 @@ test
 EOF;
 
         $bufferedOutput = new BufferedOutput();
-        $tableRenderer = new Table($bufferedOutput);
+        $tableRenderer = new PrettyTable($bufferedOutput);
         $tableRenderer
             ->setRows([
                 ['Attribute Name', 'Attribute PIM ID', 'New values', 'Values to be removed'],

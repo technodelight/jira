@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\OutputFormatter;
+namespace Technodelight\Jira\Api\SymfonyRgbOutputFormatter;
 
 use InvalidArgumentException;
 use function SSNepenthe\ColorUtils\color;
@@ -126,7 +126,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
      */
     public function apply($text)
     {
-//        ESC[ … 38;2;<r>;<g>;<b> … m Select RGB foreground color
+        // ESC[ … 38;2;<r>;<g>;<b> … m Select RGB foreground color
 
         $setCodes = array();
         $unsetCodes = array();

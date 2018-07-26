@@ -4,15 +4,24 @@ namespace Technodelight\Jira\Renderer\Issue\CustomField;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Field;
-use Technodelight\Jira\Helper\JiraTagConverter;
+use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
 
 class DefaultFormatter implements Formatter
 {
+    /**
+     * @var JiraTagConverter
+     */
+    private $tagConverter;
+
+    public function __construct(JiraTagConverter $tagConverter)
+    {
+        $this->tagConverter = $tagConverter;
+    }
+
     public function format(Field $field, OutputInterface $output, $value)
     {
         if ($field->schemaType() == 'string' || $field->schemaType() == 'any' && is_string($value)) {
-            $tagConverter = new JiraTagConverter();
-            return $tagConverter->convert($output, $value);
+            return $this->tagConverter->convert($output, $value, ['tabulation' => 8]);
         }
         if ($field->schemaType() == 'array' || $field->schemaType() == 'any' && is_array($value)) {
             $value = array_map(

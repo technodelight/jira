@@ -36,6 +36,7 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument type="string">1</argument>
             <tag name="issue_renderer" type="full_description" />
         </service>
@@ -43,6 +44,7 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument type="string">0</argument>
             <tag name="issue_renderer" type="short_description" />
         </service>
@@ -82,6 +84,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <tag name="issue_renderer" type="comments" />
         </service>
         <service id="technodelight.jira.renderer.issue.comment.latest" class="Technodelight\Jira\Renderer\Issue\Comment">
@@ -89,6 +92,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument>0</argument>
             <tag name="issue_renderer" type="comments.latest" />
         </service>
@@ -104,6 +108,7 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.jira_tag_converter.no_color" />
             <argument>today 00:00</argument>
+            <argument>10</argument>
             <tag name="issue_renderer" type="changelogs.nano" />
         </service>
         <service id="technodelight.jira.renderer.issue.changelog.verbose" class="Technodelight\Jira\Renderer\Issue\Changelog">
@@ -118,6 +123,7 @@
         <service id="technodelight.jira.renderer.issue.custom_field.factory" class="Technodelight\Jira\Renderer\Issue\CustomField\Factory">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
         </service>
 
         <!-- issue renderers -->

@@ -1,10 +1,9 @@
 <?php
 
-namespace Technodelight\Jira\Helper\JiraTagConverter;
+namespace Technodelight\Jira\Api\JiraTagConverter\Components;
 
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\Console\Helper\Table as TableRenderer;
 
 class Table
 {
@@ -48,7 +47,7 @@ class Table
     public function __toString()
     {
         $bufferedOutput = new BufferedOutput();
-        $tableRenderer = new TableRenderer($bufferedOutput);
+        $tableRenderer = new PrettyTable($bufferedOutput);
         if ($this->header) {
             $tableRenderer->setHeaders(array_values($this->header));
         }
@@ -61,8 +60,8 @@ class Table
             $tableRenderer->setRows($rows);
         }
 
+        // render table using factory table renderer
         $tableRenderer->render();
-
         return trim($bufferedOutput->fetch());
     }
 }

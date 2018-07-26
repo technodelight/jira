@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Helper\JiraTagConverter;
+namespace Technodelight\Jira\Api\JiraTagConverter\Components;
 
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\Helper;

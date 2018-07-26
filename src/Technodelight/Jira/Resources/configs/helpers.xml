@@ -71,8 +71,18 @@
 
         <service id="technodelight.jira.color_extractor" class="Technodelight\Jira\Helper\ColorExtractor" />
 
-        <service id="technodelight.jira.jira_tag_converter" class="Technodelight\Jira\Helper\JiraTagConverter" />
-        <service id="technodelight.jira.jira_tag_converter.no_color" class="Technodelight\Jira\Helper\JiraTagConverter">
+        <service public="false"
+                 id="technodelight.jira.connector.jira_tag_converter.factory"
+                 class="Technodelight\Jira\Connector\JiraTagConverter\Factory">
+            <argument type="service" id="technodelight.jira.app" />
+        </service>
+        <service id="technodelight.jira.jira_tag_converter" class="Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter">
+            <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
+            <argument type="collection" />
+            <argument type="constant">TRUE</argument>
+        </service>
+        <service id="technodelight.jira.jira_tag_converter.no_color" class="Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter">
+            <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
             <argument type="collection">
                 <argument key="strip_color" type="constant">TRUE</argument>
                 <argument key="images" type="constant">TRUE</argument>

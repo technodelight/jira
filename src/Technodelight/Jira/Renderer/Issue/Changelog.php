@@ -8,7 +8,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Issue\Changelog as DomainChangelog;
 use Technodelight\Jira\Domain\Issue\Changelog\Item;
-use Technodelight\Jira\Helper\JiraTagConverter;
+use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\IssueRenderer;
 use Technodelight\TimeAgo;
@@ -30,13 +30,18 @@ class Changelog implements IssueRenderer
     /**
      * @var string|bool
      */
+    private $timeLimit;
+    /**
+     * @var int|bool
+     */
     private $limit;
 
-    public function __construct(Api $api, TemplateHelper $helper, JiraTagConverter $tagConverter, $limit = false)
+    public function __construct(Api $api, TemplateHelper $helper, JiraTagConverter $tagConverter, $timeLimit = false, $limit = false)
     {
         $this->api = $api;
         $this->helper = $helper;
         $this->tagConverter = $tagConverter;
+        $this->timeLimit = $timeLimit;
         $this->limit = $limit;
     }
 
@@ -173,13 +178,20 @@ class Changelog implements IssueRenderer
      */
     private function filterChangelogs($changelogs)
     {
-        if ($this->limit === false) {
+        if ($this->timeLimit === false) {
             return $changelogs;
         }
 
-        $limit = $this->limit;
-        return array_filter($changelogs, function(DomainChangelog $changelog) use ($limit) {
-            return $changelog->created() >= new \DateTime($limit);
+        $timeLimit = $this->timeLimit;
+        $max = $this->limit;
+        $counter = 0;
+        return array_filter($changelogs, function(DomainChangelog $changelog) use ($timeLimit, $counter, $max) {
+            $counter++;
+            if ($max === false) {
+                return $changelog->created() >= new \DateTime($timeLimit);
+            }
+
+            return $changelog->created() >= new \DateTime($timeLimit) && $counter <= $max;
         });
     }
 }

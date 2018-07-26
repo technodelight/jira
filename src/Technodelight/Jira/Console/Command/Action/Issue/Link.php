@@ -55,13 +55,13 @@ class Link extends AbstractCommand
         $issueKey = $this->issueKeyArgument($input, $output);
         $linkTypes = $this->jiraApi()->linkTypes();
 
-        $existingLinks = $this->jiraApi()->retrieveIssue($issueKey)->links();
+        $existingLinks = $this->jiraApi()->retrieveIssue((string) $issueKey)->links();
         $links = IssueLinkArgument::fromOptions($this->optionsFromInput($input));
 
         foreach ($links as $link) {
             $this->link($issueKey, $link, $linkTypes);
         }
-        $links = $this->jiraApi()->retrieveIssue($issueKey)->links();
+        $links = $this->jiraApi()->retrieveIssue((string) $issueKey)->links();
         $this->showLinkInfo($output, $existingLinks, $links, $issueKey);
     }
 
@@ -95,9 +95,9 @@ class Link extends AbstractCommand
     /**
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
-     * @param $links
+     * @param IssueLink[] $links
      */
-    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, $links)
+    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, array $links)
     {
         foreach ($links as $link) {
             $output->writeln($this->renderLink($link, $issueKey));
