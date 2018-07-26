@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
+use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Issue\IssueType;
 use Technodelight\Jira\Domain\Status;

@@ -7,7 +7,7 @@ use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\Image;
-use Technodelight\Jira\Helper\JiraTagConverter;
+use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\Wordwrap;
 use Technodelight\Jira\Renderer\IssueRenderer;
@@ -16,21 +16,25 @@ use Technodelight\TimeAgo;
 class Comment implements IssueRenderer
 {
     /**
-     * @var \Technodelight\Jira\Helper\TemplateHelper
+     * @var TemplateHelper
      */
     private $templateHelper;
     /**
-     * @var \Technodelight\Jira\Helper\Image
+     * @var Image
      */
     private $imageRenderer;
     /**
-     * @var \Technodelight\Jira\Helper\Wordwrap
+     * @var Wordwrap
      */
     private $wordwrap;
     /**
-     * @var \Technodelight\Jira\Helper\DateHelper
+     * @var DateHelper
      */
     private $dateHelper;
+    /**
+     * @var JiraTagConverter
+     */
+    private $tagConverter;
     /**
      * @var bool
      */
@@ -41,6 +45,7 @@ class Comment implements IssueRenderer
         Image $imageRenderer,
         Wordwrap $wordwrap,
         DateHelper $dateHelper,
+        JiraTagConverter $tagConverter,
         $verbose = true
     )
     {
@@ -48,6 +53,7 @@ class Comment implements IssueRenderer
         $this->imageRenderer = $imageRenderer;
         $this->wordwrap = $wordwrap;
         $this->dateHelper = $dateHelper;
+        $this->tagConverter = $tagConverter;
         $this->verbose = $verbose;
     }
 
@@ -88,8 +94,7 @@ EOL;
 
     private function renderTags($output, $body)
     {
-        $tagRenderer = new JiraTagConverter();
-        return $tagRenderer->convert($output, $body);
+        return $this->tagConverter->convert($output, $body);
     }
 
     private function tab($string)

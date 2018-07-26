@@ -83,10 +83,10 @@ class GitHub implements IssueRenderer
     }
 
     /**
-     * @param $matchingIssues
+     * @param array $matchingIssues
      * @return array
      */
-    private function getHubPrIdsFromIssues($matchingIssues)
+    private function getHubPrIdsFromIssues(array $matchingIssues)
     {
         return array_map(
             function ($hubIssue) {
@@ -108,10 +108,10 @@ class GitHub implements IssueRenderer
     }
 
     /**
-     * @param $status
+     * @param array $status
      * @return string
      */
-    private function getCIStatusMark($status)
+    private function getCIStatusMark(array $status)
     {
         switch ($status['state']) {
             case 'success':

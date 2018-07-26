@@ -99,13 +99,12 @@ class Worklog
 
     /**
      * @param string|null $date
-     * @return \Datetime|$this
+     * @return \Datetime
      */
     public function date($date = null)
     {
         if ($date) {
             $this->date = $date;
-            return $this;
         }
 
         return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->date);

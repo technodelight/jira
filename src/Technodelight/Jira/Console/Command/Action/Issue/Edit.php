@@ -172,13 +172,15 @@ class Edit extends Command
     {
         if ($field->schemaType() == 'string') {
             $differ = new Differ;
+            $before = $before->findField($field->key()) ?: '';
+            $after = $after->findField($field->key()) ?: '';
 
             $output->writeln(
                 sprintf(
                     '<comment>%s</comment> was changed: ' . PHP_EOL . '%s',
                     $field->name(),
                     $this->formatDiff(
-                        $differ->diff($before->findField($field->key()), $after->findField($field->key()))
+                        $differ->diff($before, $after)
                     )
                 )
             );

@@ -54,7 +54,7 @@ class Comment extends AbstractCommand
         }
 
         if (!$input->getArgument('comment')) {
-            $issue = $this->jiraApi()->retrieveIssue($issueKey);
+            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
             /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
             $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
             $worklogs = $worklogHandler->findByIssue($issue);
@@ -69,7 +69,7 @@ class Comment extends AbstractCommand
                 $input->setArgument('comment',
                     $this->editor()->edit(
                         sprintf('Edit comment #%d on %s', $commentId, $issueKey),
-                        $this->jiraApi()->retrieveComment($issueKey, $commentId)->body()
+                        $this->jiraApi()->retrieveComment((string) $issueKey, $commentId)->body()
                     )
                 );
             } else {
@@ -93,14 +93,14 @@ class Comment extends AbstractCommand
         $render = $this->commentRenderer();
 
         if ($update) {
-            $comment = $this->jiraApi()->updateComment($issueKey, $update, $comment);
+            $comment = $this->jiraApi()->updateComment((string) $issueKey, $update, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
             $render->renderComment($output, $comment);
         } elseif ($delete) {
-            $this->jiraApi()->deleteComment($issueKey, $delete);
+            $this->jiraApi()->deleteComment((string) $issueKey, $delete);
             $output->writeln('<info>Comment has been deleted</>');
         } else {
-            $comment = $this->jiraApi()->addComment($issueKey, $comment);
+            $comment = $this->jiraApi()->addComment((string) $issueKey, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
             $render->renderComment($output, $comment);
         }

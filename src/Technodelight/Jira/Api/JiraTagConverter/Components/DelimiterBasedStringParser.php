@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Helper\JiraTagConverter;
+namespace Technodelight\Jira\Api\JiraTagConverter\Components;
 
 class DelimiterBasedStringParser
 {

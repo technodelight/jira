@@ -85,24 +85,24 @@ class Transition extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input, $output);
-        $transitions = $this->jiraApi()->retrievePossibleTransitionsForIssue($issueKey);
+        $transitions = $this->jiraApi()->retrievePossibleTransitionsForIssue((string) $issueKey);
 
         try {
             $transition = $this->findTransitionByName($transitions, $this->transitions);
             $this->checkGitChanges($input, $output, $transition);
-            $this->jiraApi()->performIssueTransition($issueKey, $transition->id());
+            $this->jiraApi()->performIssueTransition((string) $issueKey, $transition->id());
             $actionString = '';
             if ($input->getOption('assign') || $this->optionChecker()->hasOptionWithoutValue($input, 'assign')) {
-                $assignee = $this->optionChecker()->hasOptionWithoutValue($input, 'assign') ? $this->assigneeInput()->userPicker($output) : $input->getOption('assign');
-                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
-                $actionString = ' and has been assigned to you';
+                $assignee = $this->optionChecker()->hasOptionWithoutValue($input, 'assign') ? $this->assigneeInput()->userPicker($input, $output) : $input->getOption('assign');
+                $this->jiraApi()->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
+                $actionString = sprintf(' and has been assigned to <fg=cyan>%s</>', $assignee == $this->jiraApi()->user()->key() ? 'you' : $assignee);
             } else
             if ($input->getOption('unassign')) {
-                $this->jiraApi()->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
+                $this->jiraApi()->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => '']]]);
                 $actionString = ' and has been unassigned';
             }
 
-            $issue = $this->jiraApi()->retrieveIssue($issueKey);
+            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
             $output->writeln(
                 sprintf(
                     'Task <info>%s</info> has been successfully moved to <comment>%s</comment>%s',
@@ -114,7 +114,7 @@ class Transition extends AbstractCommand
             $output->writeln($this->renderSuccessMessage($issue));
             $this->checkoutToBranch($input, $output, $issue);
         } catch (UnexpectedValueException $exception) {
-            $issue = $this->jiraApi()->retrieveIssue($issueKey);
+            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
 
             $this->getApplication()->renderException($exception, $output);
             $output->writeln($this->renderUnsuccesfulMessage($issue, $transitions));
@@ -197,11 +197,11 @@ class Transition extends AbstractCommand
         $list = [];
         foreach ($transitions as $transition) {
             try {
+                $commandString = '';
                 if ($command = $this->config()->transitions()->commandForTransition($transition->name())) {
                     $commandString = "<comment>[jira workflow:$command {$issue->key()}]</comment>";
                 }
             } catch (\Exception $e) {
-                $commandString = '';
             }
 
             $list[] = sprintf(

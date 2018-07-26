@@ -1,13 +1,13 @@
 <?php
 
-namespace Technodelight\Jira\Helper;
+namespace Technodelight\Jira\Api\JiraTagConverter;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\OutputFormatter\PaletteOutputFormatterStyle;
-use Technodelight\Jira\Helper\JiraTagConverter\DelimiterBasedStringParser;
-use Technodelight\Jira\Helper\JiraTagConverter\PanelParser;
-use Technodelight\Jira\Helper\JiraTagConverter\SymfonyStyleDefinitionMerger;
-use Technodelight\Jira\Helper\JiraTagConverter\TableParser;
+use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle;
+use Technodelight\Jira\Api\JiraTagConverter\Components\DelimiterBasedStringParser;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PanelParser;
+use Technodelight\Jira\Api\JiraTagConverter\Components\SymfonyStyleDefinitionMerger;
+use Technodelight\Jira\Api\JiraTagConverter\Components\TableParser;
 
 class JiraTagConverter
 {
@@ -26,21 +26,28 @@ class JiraTagConverter
         'attachments' => true,
         'images' => false,
         'tables' => true,
+        'lines' => true,
         'panels' => true,
         'lists' => true,
         'headings' => true,
         'emojis' => true,
         'palette' => PaletteOutputFormatterStyle::class,
+        'terminalWidth' => null,
+        'tabulation' => 0,
     ];
+    private $prevOpts;
 
     public function __construct(array $options = [])
     {
         $this->options = $options + $this->defaultOptions;
     }
 
-    public function convert(OutputInterface $output, $body)
+    public function convert(OutputInterface $output, $body, array $opts = [])
     {
         try {
+            if ($opts) {
+                $this->setTempOpts($opts);
+            }
             $this->shouldDo('code') && $this->convertCode($body);
             $this->shouldDo('bold_underscore') && $this->convertBoldUnderscore($body);
             $this->shouldDo('color') && $this->convertColor($body);
@@ -48,6 +55,7 @@ class JiraTagConverter
             $this->shouldDo('attachments') && $this->convertAttachments($body);
             $this->shouldDo('images') && $this->convertImages($body);
             $this->shouldDo('tables') && $this->convertTables($body);
+            $this->shouldDo('lines') && $this->convertLines($body);
             $this->shouldDo('panels') && $this->convertPanels($body);
             $this->shouldDo('lists') && $this->convertLists($body);
             $this->shouldDo('headings') && $this->convertHeadings($body);
@@ -55,8 +63,11 @@ class JiraTagConverter
             $formattedBody = $this->mergeDefinitions($body);
             // try formatting the body and ignore if an error happens
             $output->getFormatter()->format($body);
+            $this->restoreOpts();
             return $formattedBody; // success! return the formatted body
         } catch (\Exception $exception) {
+            $this->restoreOpts();
+
             return $body;
         }
     }
@@ -98,28 +109,14 @@ class JiraTagConverter
     private function convertColor(&$body)
     {
         // color
+        $parser = new DelimiterBasedStringParser('{color', 'color}');
+        $collected = $parser->parse($body);
         $replacePairs = [];
-        $startColor = false;
-        $length = false;
-        for ($i = 0; $i < strlen($body); $i++) {
-            if ($body[$i] == '{') {
-                // check if it's a color
-                $peek = substr($body, $i + 1, strlen('color'));
-                if ($peek == 'color' && $startColor !== false && $length === false) {
-                    $length = $i + strlen('color}') - $startColor + 1;
-                }
-                if ($peek == 'color' && $startColor === false) {
-                    $startColor = $i;
-                }
-            }
-
-            if (preg_match('~({color[^}]*})(.*)({color})~', substr($body, $startColor, $length), $matches)) {
-                $replacePairs[substr($body, $startColor, $length)] = $this->formatColor($matches[2], $matches[1]);
-                $startColor = false;
-                $length = false;
+        foreach ($collected as $replace) {
+            if (preg_match('~({color[^}]*})(.*)({color})~', $replace, $matches)) {
+                $replacePairs[$replace] = $this->formatColor($matches[2], $matches[1]);
             }
         }
-
         $body = strtr($body, $replacePairs);
     }
 
@@ -211,6 +208,20 @@ class JiraTagConverter
         $body = $parser->parseAndReplace();
     }
 
+    private function convertLines(&$body)
+    {
+        $lines = explode(PHP_EOL, $body);
+        $maxLength = 1;
+        foreach ($lines as $line) {
+            $maxLength = max($maxLength, strlen(trim($line)));
+        }
+        if ($this->opt('terminalWidth') && $maxLength > $this->opt('terminalWidth')) {
+            $maxLength = $this->opt('terminalWidth') - $this->opt('tabulation');
+        }
+
+        $body = preg_replace('~^-----~m', str_repeat('─', $maxLength), $body);
+    }
+
     private function convertPanels(&$body)
     {
         $parser = new PanelParser($body);
@@ -284,5 +295,19 @@ class JiraTagConverter
     {
         list(, $color) = explode(':', trim($colorDef, '{}'), 2) + ['', 'white'];
         return $color;
+    }
+
+    private function setTempOpts($opts)
+    {
+        $this->prevOpts = $this->options;
+        $this->options = array_merge($this->options, $opts);
+    }
+
+    private function restoreOpts()
+    {
+        if ($this->prevOpts) {
+            $this->options = $this->prevOpts;
+            $this->prevOpts = null;
+        }
     }
 }

@@ -54,7 +54,7 @@ class Attachment extends AbstractCommand
 
         if (empty($input->getArgument('filename'))) {
             /** @var \Technodelight\Jira\Domain\Issue $issue */
-            $issue = $this->jiraApi()->retrieveIssue($issueKey);
+            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
 
             if (!count($issue->attachments())) {
                 throw new \ErrorException(
@@ -92,7 +92,7 @@ class Attachment extends AbstractCommand
         $filename = $input->getArgument('filename');
 
         /** @var \Technodelight\Jira\Domain\Issue $issue */
-        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
         /** @var \Symfony\Component\Console\Helper\FormatterHelper $formatter */
         $formatter = $this->getHelper('formatter');
 
@@ -142,7 +142,7 @@ class Attachment extends AbstractCommand
 
     /**
      * @param Issue $issue
-     * @param $filename
+     * @param string $filename
      * @return IssueAttachment
      */
     private function findAttachment(Issue $issue, $filename)
@@ -161,7 +161,7 @@ class Attachment extends AbstractCommand
     /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param $targetFilePath
+     * @param string $targetFilePath
      * @return bool
      */
     protected function confirmDownload(InputInterface $input, OutputInterface $output, $targetFilePath)
