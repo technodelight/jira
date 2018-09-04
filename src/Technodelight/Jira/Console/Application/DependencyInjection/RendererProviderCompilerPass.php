@@ -12,21 +12,30 @@ class RendererProviderCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $builder)
     {
-        $renderers = [];
+        $renderersByType = [];
         $rendererTags = $builder->findTaggedServiceIds('issue_renderer');
         foreach ($rendererTags as $serviceId => $tags) {
             foreach ($tags as $tag) {
-                if (!isset($tag['type'])) {
+                if (!isset($tag['key'])) {
                     continue;
                 }
+                if (!isset($tag['types'])) {
+                    $tag['types'] = ['standard'];
+                } else {
+                    $tag['types'] = array_map('trim', explode(',', $tag['types']));
+                }
 
-                $name = $tag['type'];
-                $renderers[$name] = $builder->get($serviceId);
+                $key = $tag['key'];
+                foreach ($tag['types'] as $type) {
+                    $renderersByType[$type][$key] = $builder->getDefinition($serviceId);
+                }
             }
         }
 
-        $builder
-            ->getDefinition('technodelight.jira.renderer.issue.renderer_provider')
-            ->setArguments([$renderers]);
+        foreach ($renderersByType as $type => $renderers) {
+            $builder
+                ->getDefinition(sprintf('technodelight.jira.renderer.issue.%s.renderer_provider', $type))
+                ->setArguments([$renderers]);
+        }
     }
 }

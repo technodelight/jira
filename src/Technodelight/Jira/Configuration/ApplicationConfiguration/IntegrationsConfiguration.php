@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\DaemonConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
@@ -31,15 +32,25 @@ class IntegrationsConfiguration implements RegistrableConfiguration
      * @var EditorConfiguration
      */
     private $editor;
+    /**
+     * @var DaemonConfiguration
+     */
+    private $daemon;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->github = GitHubConfiguration::fromArray($config['github']);
         $instance->git = GitConfiguration::fromArray($config['git']);
         $instance->tempo = TempoConfiguration::fromArray($config['tempo']);
         $instance->iterm = ITermConfiguration::fromArray($config['iterm']);
         $instance->editor = EditorConfiguration::fromArray($config['editor']);
+        $instance->daemon = DaemonConfiguration::fromArray($config['daemon']);
 
         return $instance;
     }
@@ -69,9 +80,22 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         return $this->editor;
     }
 
+    public function daemon()
+    {
+        return $this->daemon;
+    }
+
     public function servicePrefix()
     {
         return 'integrations';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

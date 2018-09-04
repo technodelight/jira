@@ -2,10 +2,12 @@
 
 namespace Technodelight\Jira\Console\Input\Issue;
 
+use Hoa\Console\Readline\Autocompleter\Aggregate;
 use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\HoaConsole\DefaultUsersAutocomplete;
 use Technodelight\Jira\Console\HoaConsole\UserPickerAutocomplete;
 
 class Assignee
@@ -14,10 +16,15 @@ class Assignee
      * @var Api
      */
     private $api;
+    /**
+     * @var AssigneeResolver
+     */
+    private $assigneeResolver;
 
-    public function __construct(Api $api)
+    public function __construct(Api $api, AssigneeResolver $assigneeResolver)
     {
         $this->api = $api;
+        $this->assigneeResolver = $assigneeResolver;
     }
 
     public function userPicker(InputInterface $input, OutputInterface $output)
@@ -28,9 +35,12 @@ class Assignee
 
         $readline = new Readline;
         $readline->setAutocompleter(
-            new UserPickerAutocomplete($this->api)
+            new Aggregate([
+                new DefaultUsersAutocomplete($this->assigneeResolver),
+                new UserPickerAutocomplete($this->api),
+            ])
         );
         $output->write('<comment>Please provide a username for assignee:</comment> ');
-        return $readline->readLine();
+        return $this->assigneeResolver->fetchValueForDefaultUser($readline->readLine());
     }
 }

@@ -73,6 +73,16 @@ class Issue
     }
 
     /**
+     * @return int
+     */
+    public function sequenceNumber()
+    {
+        list(, $sequenceNumber) = explode('-', $this->key, 2);
+
+        return (int) $sequenceNumber;
+    }
+
+    /**
      * @return string|false
      */
     public function summary()
@@ -194,12 +204,16 @@ class Issue
         return IssueType::createEmpty();
     }
 
+    /**
+     * @return Priority
+     */
     public function priority()
     {
         if ($field = $this->findField('priority')) {
-            return $field['name'];
+            return Priority::fromArray($field);
         }
-        return '';
+
+        return Priority::createEmpty();
     }
 
     public function url()
@@ -311,6 +325,11 @@ class Issue
     public function findField($fieldName)
     {
         return isset($this->fields[$fieldName]) ? $this->fields[$fieldName] : false;
+    }
+
+    public function __call($fieldName, $arguments = null)
+    {
+        return $this->findField($fieldName);
     }
 
     public static function fromArray($resultArray)

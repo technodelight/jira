@@ -6,8 +6,11 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\FilterConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionConfiguration;
 use Technodelight\Jira\Console\Command\Action\Issue\Transition;
 use Technodelight\Jira\Console\Command\Filter\IssueFilter;
+use Technodelight\Jira\Console\Command\Filter\StoredIssueFilter;
 
 class CommandInitialisationCompilerPass implements CompilerPassInterface
 {
@@ -17,62 +20,48 @@ class CommandInitialisationCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $commands = [];
-        $commandServiceIds = array_keys($container->findTaggedServiceIds('command'));
-
-        foreach ($commandServiceIds as $serviceId) {
-            $commands[$serviceId] = $container->get($serviceId);
-        }
-
         /** @var ApplicationConfiguration $config */
         $config = $container->get('technodelight.jira.config');
-        $this->prepareCommandsFromConfiguration($container, $config, $commands);
-
-        /** @var \Technodelight\Jira\Console\Application $app */
-        $app = $container->get('technodelight.jira.app');
-        $app->addCommands($commands);
+        $this->prepareCommandsFromConfiguration($container, $config);
     }
 
     /**
      * @param ContainerBuilder $container
      * @param ApplicationConfiguration $config
-     * @param array $commands
+     * @return Definition[]
      * @throws \Exception
      */
-    private function prepareCommandsFromConfiguration(ContainerBuilder $container, ApplicationConfiguration $config, array &$commands)
+    private function prepareCommandsFromConfiguration(ContainerBuilder $container, ApplicationConfiguration $config)
     {
+        $commands = [];
         foreach ($config->transitions()->items() as $transition) {
             $commands[] = $this->createServiceCommand(
                 'transition',
                 $transition->command(),
                 $container,
-                new Definition(
-                    Transition::class,
-                    [
-                        $container,
-                        $transition->command(),
-                        $transition->transitions()
-                    ]
-                )
+                $this->createTransitionDef($container, $transition)
             );
         }
 
-        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
-        $jira = $container->get('technodelight.jira.api');
-
         // issue listing commands
         $filters = $config->filters();
-        $currentInstance = $container->getParameter('app.jira.instance');
         foreach ($filters->items() as $filter) {
-            if (!empty($filter->filterId()) && $filter->instance() == $currentInstance) {
-                $arguments = [$container, $filter->command(), $filter->jql() . $jira->retrieveFilter($filter->filterId())->jql()];
+            if (!empty($filter->filterId())) {
+                $commands[] = $this->createStoredFilterDef(
+                    $container,
+                    $filter
+                );
             } else {
-                $arguments = [$container, $filter->command(), $filter->jql()];
+                $commands[] = $this->createServiceCommand(
+                    'filter',
+                    $filter->command(),
+                    $container,
+                    $this->createFilterDef($container, [$filter->command(), $filter->jql()])
+                );
             }
-
-            $definition = new Definition(IssueFilter::class, $arguments);
-            $commands[] = $this->createServiceCommand('filter', $filter->command(), $container, $definition);
         }
+
+        return $commands;
     }
 
     /**
@@ -80,14 +69,85 @@ class CommandInitialisationCompilerPass implements CompilerPassInterface
      * @param string $command
      * @param ContainerBuilder $container
      * @param Definition $definition
-     * @return object
+     * @return Definition
      * @throws \Exception
      */
     private function createServiceCommand($type, $command, ContainerBuilder $container, Definition $definition)
     {
-        $serviceId = sprintf('technodelight.jira.app.command.%s.%s', $type, $command);
+        $serviceId = sprintf(
+            'technodelight.jira.app.command.%s.%s',
+            $type,
+            strtr($command, ['-' => '_'])
+        );
         $container->setDefinition($serviceId, $definition);
         $container->getDefinition($serviceId)->addTag('command');
-        return $container->get($serviceId);
+        return $container->getDefinition($serviceId);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param TransitionConfiguration $transition
+     * @return Definition
+     */
+    private function createTransitionDef(ContainerBuilder $container, TransitionConfiguration $transition)
+    {
+        $definition = new Definition(
+            Transition::class,
+            [
+                $transition->command(),
+                $transition->transitions(),
+                $container->getDefinition('technodelight.jira.api'),
+                $container->getDefinition('technodelight.jira.console.argument.issue_key_resolver'),
+                $container->getDefinition('technodelight.jira.config'),
+                $container->getDefinition('technodelight.jira.checkout_branch'),
+                $container->getDefinition('technodelight.jira.git_branch_collector'),
+                $container->getDefinition('technodelight.gitshell.api'),
+                $container->getDefinition('technodelight.jira.template_helper'),
+                $container->getDefinition('technodelight.jira.word_wrap'),
+                $container->getDefinition('technodelight.jira.console.option.checker'),
+                $container->getDefinition('technodelight.jira.console.input.issue.assignee')
+            ]
+        );
+
+        return $definition;
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param array $arguments
+     * @return Definition
+     */
+    private function createFilterDef(ContainerBuilder $container, array $arguments)
+    {
+        $definition = new Definition(IssueFilter::class, $arguments);
+        $definition->addMethodCall('setJiraApi', [$container->getDefinition('technodelight.jira.api')]);
+        $definition->addMethodCall('setIssueRenderer', [$container->getDefinition('technodelight.jira.issue_renderer')]);
+
+        return $definition;
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param FilterConfiguration $filter
+     * @return Definition
+     */
+    private function createStoredFilterDef(ContainerBuilder $container, FilterConfiguration $filter)
+    {
+        $filterDef = new Definition(FilterConfiguration::class);
+        $filterDef->setFactory([FilterConfiguration::class, 'fromArray']);
+        $filterDef->setArguments([
+            [
+                'command' => $filter->command(),
+                'jql' => $filter->jql(),
+                'filterId' => $filter->filterId(),
+                'instance' => $filter->instance()
+            ]
+        ]);
+
+        return new Definition(StoredIssueFilter::class, [
+            $container->getDefinition('technodelight.jira.api'),
+            $container->getDefinition('technodelight.jira.issue_renderer'),
+            $filterDef
+        ]);
     }
 }

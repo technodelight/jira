@@ -33,10 +33,15 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
      * @var string[]
      */
     private $replace;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->patterns = !empty($config['patterns']) ? $config['patterns'] : $instance->defaultPatterns;
         $instance->separator = $config['separator'];
         $instance->whitelist = $config['whitelist'];
@@ -78,5 +83,17 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'branch_name_generator';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
+    }
+
+    private function __construct()
+    {
     }
 }

@@ -73,6 +73,7 @@ class SelfUpdate extends AbstractCommand
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
             chmod($runningFile, 0755);
+            $this->container->get('technodelight.jira.console.di.cache_maintainer')->clear();
         } else {
             throw new \ErrorException(
                 'Cannot update to the latest release :('

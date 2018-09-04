@@ -20,6 +20,10 @@ class RenderersConfiguration implements RegistrableConfiguration
      * @var array
      */
     private $preference = [];
+    /**
+     * @var array
+     */
+    private $config;
 
     private $defaultFormatters = [
         ['name' => 'default', 'class' => DefaultFormatter::class],
@@ -42,7 +46,9 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'user_details'],
                     ['name' => 'progress'],
                     ['name' => 'priority'],
+                    ['name' => 'transitions.short'],
                     ['name' => 'short_description'],
+                    ['name' => 'attachments.short'],
                     ['name' => 'versions'],
                 ],
             ],
@@ -54,12 +60,14 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'user_details'],
                     ['name' => 'progress'],
                     ['name' => 'priority'],
+                    ['name' => 'transitions'],
                     ['name' => 'full_description'],
                     ['name' => 'issue_relations'],
                     ['name' => 'versions'],
                     ['name' => 'attachments'],
                     ['name' => 'branches'],
                     ['name' => 'github'],
+                    ['name' => 'taskwarrior'],
                     ['name' => 'worklogs'],
                     ['name' => 'comments'],
                     ['name' => 'changelogs'],
@@ -71,6 +79,7 @@ class RenderersConfiguration implements RegistrableConfiguration
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         /** @var RendererConfiguration[] $modes */
         $modesConfigMerged = $instance->configMerged($config, 'modes');
         foreach ($modesConfigMerged as $name => $config) {
@@ -167,6 +176,14 @@ class RenderersConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'renderers';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

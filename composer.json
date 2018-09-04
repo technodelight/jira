@@ -10,7 +10,6 @@
         "symfony/config": "^3.2",
         "symfony/dependency-injection": "^2.7",
         "sirprize/queried": "^0.1.0",
-        "knplabs/github-api": "^1.7",
         "symfony/yaml": "^3.2",
         "icanboogie/storage": "^2.1",
         "technodelight/seconds-to-none": "^0.2.0",
@@ -23,7 +22,10 @@
         "technodelight/shell-exec": "^1.0",
         "technodelight/php-git": "^1.0",
         "technodelight/symfony-configuration-cli-initialiser": "^1.0",
-        "symfony/expression-language": "^3.4"
+        "symfony/expression-language": "^3.4",
+        "shaneharter/php-daemon": "^2.0",
+        "kriswallsmith/buzz": "^0.17.2",
+        "knplabs/github-api": "^2.10"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

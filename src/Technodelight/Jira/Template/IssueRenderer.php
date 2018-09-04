@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
+use Technodelight\Jira\Renderer\Board\Renderer as BoardRenderer;
 
 class IssueRenderer
 {
@@ -20,12 +21,17 @@ class IssueRenderer
     private $configuration;
 
     private $listMode = null;
+    /**
+     * @var BoardRenderer
+     */
+    private $boardRenderer;
 
-    public function __construct(array $renderers, FormatterHelper $formatterHelper, RenderersConfiguration $configuration)
+    public function __construct(array $renderers, FormatterHelper $formatterHelper, RenderersConfiguration $configuration, BoardRenderer $boardRenderer)
     {
         $this->renderers = $renderers;
         $this->formatterHelper = $formatterHelper;
         $this->configuration = $configuration;
+        $this->boardRenderer = $boardRenderer;
     }
 
     /**
@@ -35,18 +41,22 @@ class IssueRenderer
      */
     public function renderIssues(OutputInterface $output, IssueCollection $issues, $mode = false)
     {
-        $this->listMode = true;
-        $groupedIssues = $this->groupByParent(iterator_to_array($issues));
-        foreach ($groupedIssues as $issueGroup) {
-            $output->writeln(
-                $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
-            );
-            foreach ($issueGroup['issues'] as $issue) {
-                $this->render($output, $issue, $mode);
+        if (is_array($mode) && isset($mode['board']) && $mode['board'] === true) {
+            $this->boardRenderer->render($output, $issues);
+        } else {
+            $this->listMode = true;
+            $groupedIssues = $this->groupByParent(iterator_to_array($issues));
+            foreach ($groupedIssues as $issueGroup) {
+                $output->writeln(
+                    $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
+                );
+                foreach ($issueGroup['issues'] as $issue) {
+                    $this->render($output, $issue, $mode);
+                }
             }
+            $this->renderStats($output, $issues);
+            $this->listMode = null;
         }
-        $this->renderStats($output, $issues);
-        $this->listMode = null;
     }
 
     /**

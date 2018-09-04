@@ -7,13 +7,13 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration;
 class ApplicationConfigurationBuilder
 {
     /**
-     * @var ConfigurationLoader
+     * @var array
      */
-    private $loader;
+    private $symfonyConfigurationArray;
 
-    public function __construct(ConfigurationLoader $loader)
+    public function __construct(array $symfonyConfigurationArray)
     {
-        $this->loader = $loader;
+        $this->symfonyConfigurationArray = $symfonyConfigurationArray;
     }
 
     /**
@@ -21,6 +21,6 @@ class ApplicationConfigurationBuilder
      */
     public function build()
     {
-        return ApplicationConfiguration::fromSymfonyConfigArray($this->loader->load());
+        return ApplicationConfiguration::fromSymfonyConfigArray($this->symfonyConfigurationArray);
     }
 }

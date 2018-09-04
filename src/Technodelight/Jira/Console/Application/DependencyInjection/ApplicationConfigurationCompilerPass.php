@@ -2,26 +2,30 @@
 
 namespace Technodelight\Jira\Console\Application\DependencyInjection;
 
+use Fixture\ApplicationConfiguration;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Symfony\Component\DependencyInjection\Definition;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
+use Technodelight\Jira\Configuration\Symfony\ConfigurationLoader;
 
 class ApplicationConfigurationCompilerPass implements CompilerPassInterface
 {
     /**
      * You can modify the container here before it is dumped to PHP code.
      *
+     * @param ContainerBuilder $container
      * @throws \Exception
      */
     public function process(ContainerBuilder $container)
     {
+        $this->prepareConfigurationBuilder($container);
         /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration $config */
         $config = $container->get('technodelight.jira.config');
-        $this->register($container, $config, $config->servicePrefix());
-        $this->setCurrentInstanceAlias($container, $config);
+
+        $this->collectRegistrablesAndProcess($container, $config, $config->servicePrefix());
     }
 
     /**
@@ -30,7 +34,7 @@ class ApplicationConfigurationCompilerPass implements CompilerPassInterface
      * @param string $parentPrefix
      * @throws \ReflectionException
      */
-    private function register(ContainerBuilder $container, RegistrableConfiguration $config, $parentPrefix)
+    private function collectRegistrablesAndProcess(ContainerBuilder $container, RegistrableConfiguration $config, $parentPrefix)
     {
         $reflection = new ReflectionClass($config);
 
@@ -40,37 +44,38 @@ class ApplicationConfigurationCompilerPass implements CompilerPassInterface
             }
             $methodName = $method->name;
             $childConfig = $config->$methodName();
-            if ($childConfig instanceof RegistrableConfiguration) {
-                $this->registerService($container, $parentPrefix, $childConfig->servicePrefix(), $childConfig);
-                $this->register(
-                    $container,
-                    $childConfig,
-                    $this->prefix($parentPrefix, $childConfig->servicePrefix())
-                );
+            if (is_array($childConfig)) {
+                foreach ($childConfig as $conf) {
+                    $this->processRegistrableConfiguration($container, $parentPrefix, $conf);
+                }
+            } else {
+                $this->processRegistrableConfiguration($container, $parentPrefix, $childConfig);
             }
         }
     }
 
-    private function registerService(ContainerBuilder $container, $parentPrefix, $servicePrefix, $config)
+    /**
+     * @param ContainerBuilder $container
+     * @param string $parentPrefix
+     * @param string $servicePrefix
+     * @param RegistrableConfiguration $config
+     */
+    private function addServiceDefinition(ContainerBuilder $container, $parentPrefix, $servicePrefix, RegistrableConfiguration $config)
     {
-        $container->set($this->prefix($parentPrefix, $servicePrefix), $config);
-    }
+        $definition = new Definition(
+            get_class($config)
+        );
+        $definition->setFactory([
+            get_class($config), 'fromArray'
+        ]);
+        $definition->setArguments([$config->configAsArray()]);
 
-    private function setCurrentInstanceAlias(ContainerBuilder $container, ApplicationConfiguration $config)
-    {
-        $currentInstance = $container->getParameter('app.jira.instance') ?: 'default';
-        if (!empty($currentInstance)) {
-            $instance = $config->instances()->findByName($currentInstance);
-        } else {
-            $instance = reset($config->instances()->items());
-        }
-
-        if (!empty($instance)) {
-            $container->set(
-                'technodelight.jira.config.instances.current_instance',
-                $instance
-            );
-        }
+        $serviceId = $this->prefix($parentPrefix, $servicePrefix);
+        $container->removeDefinition($serviceId);
+        $container->setDefinition(
+            $serviceId,
+            $definition
+        );
     }
 
     /**
@@ -81,5 +86,44 @@ class ApplicationConfigurationCompilerPass implements CompilerPassInterface
     private function prefix($parentPrefix, $servicePrefix)
     {
         return sprintf('%s.%s', $parentPrefix, $servicePrefix);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @throws \Exception
+     */
+    private function prepareConfigurationBuilder(ContainerBuilder $container)
+    {
+        $configDef = $container->getDefinition('technodelight.jira.config');
+        if (defined('ENVIRONMENT') && ENVIRONMENT == 'test') {
+            /** @var ApplicationConfiguration $fixtureConfig */
+            $fixtureConfig = $container->get('fixture.jira.config');
+            $configDef->setArguments([$fixtureConfig->configAsArray()]);
+            return;
+        }
+
+        /** @var ConfigurationLoader $loader */
+        $loader = $container->get('technodelight.jira.configuration.symfony.configuration_loader');
+        $configDef->setArguments([
+            $loader->load()
+        ]);
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param string $parentPrefix
+     * @param mixed $childConfig
+     * @throws \ReflectionException
+     */
+    private function processRegistrableConfiguration(ContainerBuilder $container, $parentPrefix, $childConfig)
+    {
+        if ($childConfig instanceof RegistrableConfiguration) {
+            $this->addServiceDefinition($container, $parentPrefix, $childConfig->servicePrefix(), $childConfig);
+            $this->collectRegistrablesAndProcess(
+                $container,
+                $childConfig,
+                $this->prefix($parentPrefix, $childConfig->servicePrefix())
+            );
+        }
     }
 }

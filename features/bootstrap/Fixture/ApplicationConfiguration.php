@@ -21,6 +21,8 @@ class ApplicationConfiguration extends BaseAppConf
         return IntegrationsConfiguration::fromArray([
             'github' => [
                 'apiToken' => 'githu670k3n',
+                'owner' => 'technodelight',
+                'repo' => 'jira',
             ],
             'git' => [
                 'maxBranchNameLength' => 30,
@@ -48,6 +50,11 @@ class ApplicationConfiguration extends BaseAppConf
             ],
             'editor' => [
                 'executable' => 'vim'
+            ],
+            'daemon' => [
+                'enabled' => false,
+                'address' => '0.0.0.0',
+                'port' => 1234
             ]
         ]);
     }
@@ -76,13 +83,13 @@ class ApplicationConfiguration extends BaseAppConf
         ]);
     }
 
-
     public function transitions()
     {
         $transitions = [];
         foreach (self::$transitions as $command => $transition) {
             $transitions[] = ['command' => $command, 'transition' => (array) $transition];
         }
+
         return TransitionsConfiguration::fromArray($transitions);
     }
 
@@ -99,5 +106,18 @@ class ApplicationConfiguration extends BaseAppConf
     public function renderers()
     {
         return RenderersConfiguration::fromArray([]);
+    }
+
+    public function configAsArray()
+    {
+        return [
+            'instances' => $this->instances()->configAsArray(),
+            'integrations' => $this->integrations()->configAsArray(),
+            'project' => $this->project()->configAsArray(),
+            'transitions' => $this->transitions()->configAsArray(),
+            'aliases' => $this->aliases()->configAsArray(),
+            'filters' => $this->filters()->configAsArray(),
+            'renderers' => $this->renderers()->configAsArray(),
+        ];
     }
 }

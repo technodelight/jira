@@ -10,10 +10,15 @@ class EditorConfiguration implements RegistrableConfiguration
      * @var string
      */
     private $executable;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->executable = $config['executable'];
 
         return $instance;
@@ -27,5 +32,17 @@ class EditorConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'editor';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
+    }
+
+    private function __construct()
+    {
     }
 }

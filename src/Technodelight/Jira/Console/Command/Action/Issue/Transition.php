@@ -2,53 +2,132 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Console\Input\Issue\Assignee;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\GitShell\Api as GitShell;
 use Technodelight\Jira\Domain\Transition as IssueTransition;
+use Technodelight\Jira\Helper\CheckoutBranch;
 use Technodelight\Jira\Helper\GitBranchCollector;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\Wordwrap;
 use \UnexpectedValueException;
 
-class Transition extends AbstractCommand
+class Transition extends Command
 {
     const TRANSITION_DESCRIPTION_SINGLE = 'Moves issue to %s';
     const TRANSITION_DESCRIPTION_MULTIPLE = 'Moves issue to one of: %s (whichever applies first)';
 
+    /**
+     * @var string
+     */
     private $name;
-
+    /**
+     * @var array
+     */
     private $transitions;
+    /**
+     * @var Api
+     */
+    private $jira;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+    /**
+     * @var ApplicationConfiguration
+     */
+    private $configuration;
+    /**
+     * @var CheckoutBranch
+     */
+    private $checkoutBranch;
+    /**
+     * @var GitBranchCollector
+     */
+    private $gitBranchCollector;
+    /**
+     * @var GitShell
+     */
+    private $git;
+    /**
+     * @var TemplateHelper
+     */
+    private $templateHelper;
+    /**
+     * @var Wordwrap
+     */
+    private $wordwrap;
+    /**
+     * @var Checker
+     */
+    private $optionChecker;
+    /**
+     * @var Assignee
+     */
+    private $assignee;
 
     /**
      * Constructor.
      *
-     * @throws \UnexpectedValueException When the command name is empty
+     * @param string $name
+     * @param string[] $transitions
+     * @param Api $jira
+     * @param IssueKeyResolver $issueKeyResolver
+     * @param ApplicationConfiguration $configuration
+     * @param CheckoutBranch $checkoutBranch
+     * @param GitBranchCollector $gitBranchCollector
+     * @param GitShell $git
+     * @param TemplateHelper $templateHelper
+     * @param Wordwrap $wordwrap
+     * @param Checker $optionChecker
+     * @param Assignee $assignee
      */
-    public function __construct(ContainerBuilder $container, $name, $transitions)
+    public function __construct(
+        $name,
+        $transitions,
+        Api $jira,
+        IssueKeyResolver $issueKeyResolver,
+        ApplicationConfiguration $configuration,
+        CheckoutBranch $checkoutBranch,
+        GitBranchCollector $gitBranchCollector,
+        GitShell $git,
+        TemplateHelper $templateHelper,
+        Wordwrap $wordwrap,
+        Checker $optionChecker,
+        Assignee $assignee
+    )
     {
         if (empty($transitions)) {
             throw new UnexpectedValueException(
                 sprintf('No transitions were defined for command: "%s"', $name)
             );
         }
+
         $this->name = $name;
         $this->transitions = $transitions;
-        parent::__construct($container, $this->prepareIssueTransitionCommandName($name));
-    }
+        $this->jira = $jira;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->configuration = $configuration;
+        $this->checkoutBranch = $checkoutBranch;
+        $this->gitBranchCollector = $gitBranchCollector;
+        $this->git = $git;
+        $this->templateHelper = $templateHelper;
+        $this->wordwrap = $wordwrap;
+        $this->optionChecker = $optionChecker;
+        $this->assignee = $assignee;
 
-    private function prepareIssueTransitionCommandName($name)
-    {
-        return sprintf('workflow:%s', $name);
+        parent::__construct($this->prepareIssueTransitionCommandName($name));
     }
 
     protected function configure()
@@ -82,27 +161,33 @@ class Transition extends AbstractCommand
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|null
+     * @throws \Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
-        $transitions = $this->jiraApi()->retrievePossibleTransitionsForIssue((string) $issueKey);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
+        $transitions = $this->jira->retrievePossibleTransitionsForIssue((string) $issueKey);
 
         try {
             $transition = $this->findTransitionByName($transitions, $this->transitions);
             $this->checkGitChanges($input, $output, $transition);
-            $this->jiraApi()->performIssueTransition((string) $issueKey, $transition->id());
+            $this->jira->performIssueTransition((string) $issueKey, $transition->id());
             $actionString = '';
-            if ($input->getOption('assign') || $this->optionChecker()->hasOptionWithoutValue($input, 'assign')) {
-                $assignee = $this->optionChecker()->hasOptionWithoutValue($input, 'assign') ? $this->assigneeInput()->userPicker($input, $output) : $input->getOption('assign');
-                $this->jiraApi()->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
-                $actionString = sprintf(' and has been assigned to <fg=cyan>%s</>', $assignee == $this->jiraApi()->user()->key() ? 'you' : $assignee);
+            if ($input->getOption('assign') || $this->optionChecker->hasOptionWithoutValue($input, 'assign')) {
+                $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign') ? $this->assignee->userPicker($input, $output) : $input->getOption('assign');
+                $this->jira->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
+                $actionString = sprintf(' and has been assigned to <fg=cyan>%s</>', $assignee == $this->jira->user()->key() ? 'you' : $assignee);
             } else
             if ($input->getOption('unassign')) {
-                $this->jiraApi()->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => '']]]);
+                $this->jira->updateIssue((string) $issueKey, ['fields' => ['assignee' => ['name' => '']]]);
                 $actionString = ' and has been unassigned';
             }
 
-            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
+            $issue = $this->jira->retrieveIssue((string) $issueKey);
             $output->writeln(
                 sprintf(
                     'Task <info>%s</info> has been successfully moved to <comment>%s</comment>%s',
@@ -112,15 +197,22 @@ class Transition extends AbstractCommand
                 )
             );
             $output->writeln($this->renderSuccessMessage($issue));
+
+            $output->writeln(['', 'Transitions to move from this state:']);
+            $command = $this->getApplication()->get('show:transitions');
+            $command->run(new ArrayInput(['issueKey' => $issueKey]), $output);
+
             $this->checkoutToBranch($input, $output, $issue);
         } catch (UnexpectedValueException $exception) {
-            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
+            $issue = $this->jira->retrieveIssue((string) $issueKey);
 
             $this->getApplication()->renderException($exception, $output);
             $output->writeln($this->renderUnsuccesfulMessage($issue, $transitions));
             $this->checkoutToBranch($input, $output, $issue);
             return 1;
         }
+
+        return 0;
     }
 
     private function renderSuccessMessage(Issue $issue)
@@ -157,7 +249,7 @@ class Transition extends AbstractCommand
     private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
     {
         if ($input->getOption('branch')) {
-            $this->checkoutBranch()->checkoutToBranch($input, $output, $issue);
+            $this->checkoutBranch->checkoutToBranch($input, $output, $issue);
         }
     }
 
@@ -184,7 +276,7 @@ class Transition extends AbstractCommand
 
     private function retrieveGitBranches(Issue $issue)
     {
-        return implode(PHP_EOL, $this->branchCollector()->forIssueWithAutoGenerated($issue));
+        return implode(PHP_EOL, $this->gitBranchCollector->forIssueWithAutoGenerated($issue));
     }
 
     /**
@@ -196,9 +288,9 @@ class Transition extends AbstractCommand
     {
         $list = [];
         foreach ($transitions as $transition) {
+            $commandString = '';
             try {
-                $commandString = '';
-                if ($command = $this->config()->transitions()->commandForTransition($transition->name())) {
+                if ($command = $this->configuration->transitions()->commandForTransition($transition->name())) {
                     $commandString = "<comment>[jira workflow:$command {$issue->key()}]</comment>";
                 }
             } catch (\Exception $e) {
@@ -209,7 +301,7 @@ class Transition extends AbstractCommand
                 $transition->name(),
                 $commandString,
                 $this->tab(
-                    $this->wordwrapHelper()->wrap("Moves issue to <fg=cyan>{$transition->resolvesToName()}</>. {$transition->resolvesToDescription()}")
+                    $this->wordwrap->wrap("Moves issue to <fg=cyan>{$transition->resolvesToName()}</>. {$transition->resolvesToDescription()}")
                 )
             );
         }
@@ -219,15 +311,13 @@ class Transition extends AbstractCommand
 
     private function checkGitChanges(InputInterface $input, OutputInterface $output, IssueTransition $transition)
     {
-        $git = $this->gitShell();
         $helper = $this->questionHelper();
-        $templateHelper = $this->templateHelper();
 
-        if ($diff = $git->diff()) {
+        if ($diff = $this->git->diff()) {
             $output->writeln('It seems you have the following uncommited changes on your current branch:');
             foreach ($diff as $entry) {
                 $output->writeln(
-                    $templateHelper->tabulate(
+                    $this->tab(
                         sprintf('<comment>%s</comment> %s', $entry->state(), $entry->file())
                     )
                 );
@@ -256,64 +346,7 @@ class Transition extends AbstractCommand
 
     private function tab($string)
     {
-        return $this->templateHelper()->tabulate($string);
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Helper\CheckoutBranch
-     */
-    private function checkoutBranch()
-    {
-        return $this->getService('technodelight.jira.checkout_branch');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration
-     */
-    private function config()
-    {
-        return $this->getService('technodelight.jira.config');
-    }
-
-    /**
-     * @return GitBranchCollector
-     */
-    private function branchCollector()
-    {
-        return $this->getService('technodelight.jira.git_branch_collector');
-    }
-
-    /**
-     * @return \Technodelight\GitShell\Api
-     */
-    private function gitShell()
-    {
-        /** @var GitShell $git */
-        return $this->getService('technodelight.gitshell.api');
-    }
-
-    /**
-     * @return TemplateHelper
-     */
-    private function templateHelper()
-    {
-        return $this->getService('technodelight.jira.template_helper');
-    }
-
-    /**
-     * @return Wordwrap
-     */
-    private function wordwrapHelper()
-    {
-        return $this->getService('technodelight.jira.word_wrap');
+        return $this->templateHelper->tabulate($string);
     }
 
     /**
@@ -324,19 +357,8 @@ class Transition extends AbstractCommand
         return $this->getHelper('question');
     }
 
-    /**
-     * @return Checker
-     */
-    private function optionChecker()
+    private function prepareIssueTransitionCommandName($name)
     {
-        return $this->getService('technodelight.jira.console.option.checker');
-    }
-
-    /**
-     * @return Assignee
-     */
-    private function assigneeInput()
-    {
-        return $this->getService('technodelight.jira.console.input.issue.assignee');
+        return sprintf('workflow:%s', $name);
     }
 }

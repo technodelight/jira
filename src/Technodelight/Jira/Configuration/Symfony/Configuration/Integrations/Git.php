@@ -68,9 +68,9 @@ class Git implements Configuration
                             ->info('Include these words into autocompleter when shortening branch name due to generated name exceeding max length. Can be an array or a list of words separated by comma.')
                             ->defaultValue(['fix', 'add', 'change', 'remove', 'implement'])
                             ->beforeNormalization()
-                            ->ifString()->then(function($value) {
-                                return explode(',', $value);
-                            })
+                                ->ifString()->then(function($value) {
+                                    return explode(',', $value);
+                                })
                             ->end()
                         ->end()
                     ->end()

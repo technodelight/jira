@@ -54,26 +54,19 @@ class UsageStats extends AbstractCommand
                 $output->writeln($issueKey);
                 $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
             } else {
-                $output->writeln(sprintf('<info>%s</info>', $issueKey));
                 $output->writeln(
-                    $this->tab(
-                        sprintf(
-                            '<comment>total:</> %d <comment>view:</> %d <comment>update:</> %d',
-                            $stat['total'],
-                            $stat['view'],
-                            $stat['update']
-                        )
+                    sprintf(
+                        '<info>%s</info> <comment>total:</> %d <comment>view:</> %d <comment>update:</> %d',
+                        $issueKey,
+                        $stat['total'],
+                        $stat['view'],
+                        $stat['update']
                     )
                 );
             }
         }
     }
-
-    private function tab($string)
-    {
-        return $this->getService('technodelight.jira.template_helper')->tabulate($string);
-    }
-
+    
     /**
      * @return \Technodelight\Jira\Console\IssueStats\StatCollector
      */

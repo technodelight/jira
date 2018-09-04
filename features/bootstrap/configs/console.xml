@@ -5,7 +5,9 @@
 
     <services>
         <!-- config -->
-        <service id="technodelight.jira.config" class="Fixture\ApplicationConfiguration" />
+
+        <service id="fixture.jira.config" class="Fixture\ApplicationConfiguration" lazy="true" />
+
         <!-- config -->
     </services>
 

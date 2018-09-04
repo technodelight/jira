@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Console\Application\DependencyInjection;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -18,37 +17,49 @@ class IssueRendererOptionsCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        /** @var Command[] $commands */
-        $commands = [];
-        $commandServiceIds = array_keys($container->findTaggedServiceIds('command'));
-
-        foreach ($commandServiceIds as $serviceId) {
-            $command = $container->get($serviceId);
-            if ($command instanceof IssueRendererAware) {
-                $commands[$serviceId] = $container->get($serviceId);
-            }
-        }
-
         /** @var RenderersConfiguration $renderersConfiguration */
         $renderersConfiguration = $container->get('technodelight.jira.config.renderers');
         $this->addContainerDefinitionsForRenderers($renderersConfiguration, $container);
 
-        // add command options by renderers
-        foreach ($commands as $command) {
-            $this->addCommandOptions($renderersConfiguration, $command);
-        }
-    }
+        $commandServiceIds = array_keys($container->findTaggedServiceIds('command'));
+        foreach ($commandServiceIds as $serviceId) {
+            $commandDef = $container->getDefinition($serviceId);
 
-    private function addCommandOptions(RenderersConfiguration $config, Command $command)
-    {
-        foreach ($config->modes() as $modeName => $rendererConfiguration) {
-            $optionName = $this->optionNameFromRendererMode($command, $modeName);
-            $command->addOption(
-                $optionName,
-                null,
-                InputOption::VALUE_NONE,
-                sprintf('Render issues with %s mode', $modeName)
-            );
+            if ($container->get($serviceId) instanceof IssueRendererAware) {
+                foreach ($renderersConfiguration->modes() as $configuration) {
+                    $commandDef->addMethodCall(
+                        'addOption',
+                        [
+                            $configuration->name(),
+                            null,
+                            InputOption::VALUE_NONE,
+                            sprintf('Render issues using %s mode', $configuration->name())
+                        ]
+                    );
+                    $container->get($serviceId)->addOption(
+                        $configuration->name(),
+                        null,
+                        InputOption::VALUE_NONE,
+                        sprintf('Render issues using %s mode', $configuration->name())
+                    );
+                }
+                // special, board renderer
+                $commandDef->addMethodCall(
+                    'addOption',
+                    [
+                        'board',
+                        null,
+                        InputOption::VALUE_NONE,
+                        sprintf('Render in board view')
+                    ]
+                );
+                $container->get($serviceId)->addOption(
+                    'board',
+                    null,
+                    InputOption::VALUE_NONE,
+                    sprintf('Render in board view')
+                );
+            }
         }
     }
 
@@ -67,25 +78,5 @@ class IssueRendererOptionsCompilerPass implements CompilerPassInterface
         }
 
         $coreRendererDefinition->replaceArgument(0, $rendererCollectionArgument);
-    }
-
-    /**
-     * @param \Symfony\Component\Console\Command\Command $command
-     * @param string $modeName
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    private function optionNameFromRendererMode(Command $command, $modeName)
-    {
-        $optionName = $modeName;
-        if ($command->getDefinition()->hasOption($optionName)) {
-            $optionName = sprintf('render-%s', $modeName);
-        }
-        if ($command->getDefinition()->hasOption($optionName)) {
-            throw new \InvalidArgumentException(
-                sprintf('Cannot use %s as renderer option, as the command already has it explicitly defined. Please choose another name for this renderer.', $modeName)
-            );
-        }
-        return $optionName;
     }
 }

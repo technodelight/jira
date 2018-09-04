@@ -9,6 +9,11 @@ use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
+/**
+ * @TODO: this class should be more powerful.
+ * @TODO: it should re-use the pattern defs (may need rework) for recognising issues from branch name
+ * @TODO: this should be also working with URLs like https://instance.atlassian.net/browse/ISSUE-123
+ */
 class IssueKeyResolver
 {
     private $git;

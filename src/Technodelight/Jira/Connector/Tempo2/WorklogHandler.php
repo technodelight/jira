@@ -172,8 +172,8 @@ class WorklogHandler implements WorklogHandlerInterface
     }
 
     /**
-     * @param string $startDate
-     * @param string $startTime
+     * @param string $date
+     * @param string $time
      * @return string
      */
     private function convertDateFormat($date, $time)

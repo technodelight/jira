@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Configuration\Symfony\Configuration;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Technodelight\Jira\Configuration\Symfony\Configuration\Integrations\Daemon;
 use Technodelight\Jira\Configuration\Symfony\Configuration\Integrations\Editor;
 use Technodelight\Jira\Configuration\Symfony\Configuration\Integrations\Git;
 use Technodelight\Jira\Configuration\Symfony\Configuration\Integrations\Github;
@@ -28,6 +29,7 @@ class Integrations implements Configuration
                 ->append((new Tempo)->configurations())
                 ->append((new Iterm)->configurations())
                 ->append((new Editor)->configurations())
+                ->append((new Daemon)->configurations())
             ->end();
 
         return $root;

@@ -52,7 +52,7 @@ class Dashboard
             case self::MODE_DAILY:
                 return new DateTime($dateString);
             case self::MODE_WEEKLY:
-                return new DateTime($this->defineWeekStr($dateString, $start ? 1 : 5));
+                return new DateTime($this->defineWeekStr($dateString, $start ? 1 : 7));
             case self::MODE_MONTHLY:
                 return new DateTime($this->defineMonthStr($dateString, $start ? true : false));
         }

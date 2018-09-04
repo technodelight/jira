@@ -22,7 +22,7 @@ class TemplateHelper
     }
 
     /**
-     * @param string $string
+     * @param array|string $string
      * @param int $level
      * @param int $pad
      * @param string $paddingChar

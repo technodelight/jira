@@ -15,10 +15,15 @@ class GitConfiguration implements RegistrableConfiguration
      * @var BranchNameGeneratorConfiguration
      */
     private $branchNameGenerator;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->maxBranchNameLength = $config['maxBranchNameLength'];
         $instance->branchNameGenerator = BranchNameGeneratorConfiguration::fromArray($config['branchNameGenerator']);
 
@@ -44,6 +49,14 @@ class GitConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'git';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

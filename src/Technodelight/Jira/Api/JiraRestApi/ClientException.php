@@ -61,6 +61,10 @@ class ClientException extends \RuntimeException
 
     private static function decodeResponse(GuzzleClientException $exception)
     {
-        return json_decode($exception->getResponse()->getBody(), true);
+        if (null !== $exception->getResponse()) {
+            return json_decode($exception->getResponse()->getBody(), true);
+        }
+
+        return [];
     }
 }

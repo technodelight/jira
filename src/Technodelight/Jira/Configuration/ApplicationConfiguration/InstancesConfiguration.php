@@ -11,10 +11,15 @@ class InstancesConfiguration implements RegistrableConfiguration
      * @var InstanceConfiguration[]
      */
     private $instances;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->instances = array_map(
             function (array $instance) {
                 return InstanceConfiguration::fromArray($instance);
@@ -60,6 +65,14 @@ class InstancesConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'instances';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

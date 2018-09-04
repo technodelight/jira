@@ -6,6 +6,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Field;
 
@@ -34,7 +35,7 @@ class Fields extends AbstractCommand
         } else {
             $table = $this->createFieldsTable($this->api()->fields());
         }
-        $renderer = new Table($output);
+        $renderer = new PrettyTable($output);
         $renderer
             ->setHeaders(array_shift($table))
             ->setRows(array_values($table));

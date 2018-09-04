@@ -21,6 +21,12 @@ class Github implements Configuration
                     ->attribute('hidden', true)
                     ->isRequired()
                 ->end()
+                ->scalarNode('owner')
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('repo')
+                    ->defaultNull()
+                ->end()
             ->end();
 
     }

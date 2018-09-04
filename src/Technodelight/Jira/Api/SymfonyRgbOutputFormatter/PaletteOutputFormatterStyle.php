@@ -11,6 +11,8 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyleInterface;
 class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
 {
     const UNSET_CODE = 0;
+    const UNSET_FG_CODE = 39;
+    const UNSET_BG_CODE = 49;
 
     private static $availableOptions = [
         'bold' => ['set' => 1, 'unset' => 22],
@@ -137,7 +139,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             $setCodes[] = $this->foreground->getRed();
             $setCodes[] = $this->foreground->getGreen();
             $setCodes[] = $this->foreground->getBlue();
-            $unsetCodes[] = self::UNSET_CODE;
+            $unsetCodes[] = self::UNSET_FG_CODE;
         }
         if (null !== $this->background) {
             $setCodes[] = 48;
@@ -145,7 +147,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             $setCodes[] = $this->background->getRed();
             $setCodes[] = $this->background->getGreen();
             $setCodes[] = $this->background->getBlue();
-            $unsetCodes[] = self::UNSET_CODE;
+            $unsetCodes[] = self::UNSET_BG_CODE;
         }
 
         if (count($this->options)) {
@@ -174,7 +176,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             }
             return color($colorDef)->getRgb();
         } catch (InvalidColorException $e) {
-            return color('default')->getRgb();
+            return color('white')->getRgb();
         }
     }
 }

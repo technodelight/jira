@@ -6,38 +6,39 @@ ini_set('display_errors', 1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
+define('APPLICATION_ROOT_DIR', __DIR__ . DIRECTORY_SEPARATOR . '..');
+
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Console\Application\Bootstrap;
 
-try {;
-    $version = trim(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.version'));
+try {
     $boot = new Bootstrap();
     $input = new ArgvInput();
     $output = new ConsoleOutput();
     $app = $boot->boot(
-        $version,
+        '@git-version@',
         [
             join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs'])
-        ],
-        $input
+        ]
     );
+    $app->setDaemonFilename(__FILE__);
     $app->run($input, $output);
-} catch (Technodelight\Jira\Configuration\Symfony\MissingConfigurationException $exc) {
+} catch (Technodelight\Jira\Configuration\Symfony\MissingConfigurationException $exception) {
     // allow init method when configuration is missing
     if ($input->getFirstArgument() == 'init') {
         $app->run($input, $output);
     } else {
         $output = new ConsoleOutput;
-        $output->writeLn('No configuration file found. Please run `init` first.');
+        $output->writeLn('No configuration file found. Please run <info>init</> first.');
     }
-} catch (Exception $exc) {
+} catch (Exception $exception) {
     $output = new ConsoleOutput;
     $output->setVerbosity(ConsoleOutput::VERBOSITY_VERBOSE);
     $errorApp = isset($app) ? $app : new \Symfony\Component\Console\Application;
-    $errorApp->renderException($exc, $output);
-    if (is_numeric($exc->getCode())) {
-        exit($exc->getCode());
+    $errorApp->renderException($exception, $output);
+    if (is_numeric($exception->getCode())) {
+        exit($exception->getCode());
     }
     exit(128);
 }

@@ -10,10 +10,15 @@ class FiltersConfiguration implements RegistrableConfiguration
      * @var FilterConfiguration[]
      */
     private $filters;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
 
         $instance->filters = array_map(
             function (array $filter) {
@@ -36,6 +41,14 @@ class FiltersConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'filters';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

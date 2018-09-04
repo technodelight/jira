@@ -41,6 +41,10 @@ class ApplicationConfiguration implements RegistrableConfiguration
      * @var RenderersConfiguration
      */
     private $renderers;
+    /**
+     * @var array
+     */
+    private $config;
 
     /**
      * @return InstancesConfiguration
@@ -101,6 +105,7 @@ class ApplicationConfiguration implements RegistrableConfiguration
     public static function fromSymfonyConfigArray(array $config)
     {
         $configuration = new self;
+        $configuration->config = $config;
 
         if (isset($config['credentials'])) {
             print 'Using "credentials" node in configuration is deprecated. Please use a "default" instance instead.' . PHP_EOL . PHP_EOL;
@@ -127,5 +132,13 @@ class ApplicationConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'technodelight.jira.config';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 }

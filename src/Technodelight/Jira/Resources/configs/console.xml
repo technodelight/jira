@@ -3,13 +3,46 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
+    <parameters>
+        <parameter key="technodelight.jira.app.name">JIRA CLI</parameter>
+        <parameter key="technodelight.jira.app.version">testing</parameter>
+    </parameters>
+
     <services>
 
-        <!-- synthetic services added by synthetic services compiler pass -->
-        <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" synthetic="true"/>
-        <service id="console.formatter_helper" class="Symfony\Component\Console\Helper\FormatterHelper" synthetic="true"/>
-        <service id="console.dialog_helper" class="Symfony\Component\Console\Helper\DialogHelper" synthetic="true"/>
-        <service id="console.question_helper" class="Symfony\Component\Console\Helper\QuestionHelper" synthetic="true"/>
+        <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
+            <argument type="string">%technodelight.jira.app.name%</argument>
+            <argument type="string">%technodelight.jira.app.version%</argument>
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
+        </service>
+
+        <service id="technodelight.jira.app.default_helper_set"
+                 public="false"
+                 class="Symfony\Component\Console\Helper\HelperSet">
+            <factory service="technodelight.jira.app" method="getDefaultHelperSet" />
+        </service>
+
+        <service id="console.formatter_helper" class="Symfony\Component\Console\Helper\FormatterHelper">
+            <factory service="technodelight.jira.app.default_helper_set" method="get" />
+            <argument type="string">formatter</argument>
+        </service>
+
+        <service id="console.dialog_helper" class="Symfony\Component\Console\Helper\DialogHelper">
+            <factory service="technodelight.jira.app.default_helper_set" method="get" />
+            <argument type="string">dialog</argument>
+        </service>
+
+        <service id="console.question_helper" class="Symfony\Component\Console\Helper\QuestionHelper">
+            <factory service="technodelight.jira.app.default_helper_set" method="get" />
+            <argument type="string">question</argument>
+        </service>
+
+        <!-- container caching, etc -->
+        <service id="technodelight.jira.console.di.cache_maintainer" class="Technodelight\Jira\Console\Application\DependencyInjection\CacheMaintainer">
+            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+        </service>
 
         <!-- magic stuff -->
         <service id="technodelight.jira.console.interactive_issue_selector" class="Technodelight\Jira\Console\Argument\InteractiveIssueSelector">
@@ -68,10 +101,14 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
         </service>
-        <!-- comment input reader -->
+        <!-- issue assignee input -->
         <service id="technodelight.jira.console.input.issue.assignee" class="Technodelight\Jira\Console\Input\Issue\Assignee">
             <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver"/>
+
         </service>
+        <service id="technodelight.jira.console.input.issue.assignee_resolver"
+                 class="Technodelight\Jira\Console\Input\Issue\AssigneeResolver" />
 
         <!-- stats collector -->
         <service public="false" id="technodelight.jira.console.issue_stats.storage" class="ICanBoogie\Storage\Storage">
@@ -113,6 +150,20 @@
             <argument type="service" id="technodelight.jira.config" />
         </service>
         <!-- argument resolvers -->
+
+        <!-- daemon client -->
+        <service id="technodelight.jira.console.daemon.client.runtime_configuration"
+                 class="Technodelight\Jira\Console\Application\Daemon\Client\RuntimeConfiguration" />
+
+        <service public="false"
+                 id="technodelight.jira.console.daemon.client.factory"
+                 class="Technodelight\Jira\Console\Application\Daemon\Client\Factory">
+            <argument type="service" id="technodelight.jira.config.integrations.daemon" />
+            <argument type="service" id="technodelight.jira.console.daemon.client.runtime_configuration" />
+        </service>
+        <service id="technodelight.jira.console.daemon.client" class="Technodelight\Jira\Console\Application\Daemon\Client">
+            <factory service="technodelight.jira.console.daemon.client.factory" method="create" />
+        </service>
 
         <!-- option checker -->
         <service id="technodelight.jira.console.option.checker"

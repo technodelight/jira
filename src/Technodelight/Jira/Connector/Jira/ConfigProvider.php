@@ -3,32 +3,32 @@
 namespace Technodelight\Jira\Connector\Jira;
 
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\InstanceConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
 
 class ConfigProvider implements Config
 {
     /**
-     * @var InstanceConfiguration
+     * @var CurrentInstanceProvider
      */
-    private $config;
+    private $instanceProvider;
 
-    public function __construct(InstanceConfiguration $currentInstanceConfig)
+    public function __construct(CurrentInstanceProvider $currentInstanceProvider)
     {
-        $this->config = $currentInstanceConfig;
+        $this->instanceProvider = $currentInstanceProvider;
     }
 
     public function username()
     {
-        return $this->config->username();
+        return $this->instanceProvider->currentInstance()->username();
     }
 
     public function password()
     {
-        return $this->config->password();
+        return $this->instanceProvider->currentInstance()->password();
     }
 
     public function domain()
     {
-        return $this->config->domain();
+        return $this->instanceProvider->currentInstance()->domain();
     }
 }

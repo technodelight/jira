@@ -38,6 +38,7 @@ class ConfigurationLoader
         if (!$configs) {
             throw MissingConfigurationException::noConfigsFound();
         }
+
         return $configs;
     }
 

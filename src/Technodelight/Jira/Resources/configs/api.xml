@@ -11,7 +11,7 @@
             <factory service="technodelight.jira.api_cache_storage.builder" method="build" />
         </service>
         <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Connector\Jira\ConfigProvider">
-            <argument type="service" id="technodelight.jira.config.instances.current_instance" />
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
         </service>
         <service public="false" id="technodelight.jira.api_client" class="Technodelight\Jira\Api\JiraRestApi\HttpClient">
             <argument type="service" id="technodelight.jira.api_client.config_provider" />
@@ -22,7 +22,7 @@
             <argument type="service" id="technodelight.jira.api_client" />
             <argument type="service" id="technodelight.jira.api_cache_storage" />
             <argument type="service" id="technodelight.jira.config.project" />
-            <argument>%app.jira.instance%</argument>
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
         </service>
         <service id="technodelight.jira.api" class="Technodelight\Jira\Api\JiraRestApi\Api">
             <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector_api_client" />
@@ -33,10 +33,10 @@
         <!-- jira -->
 
         <!-- tempo -->
-        <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client">
+        <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client" lazy="true">
             <factory class="Technodelight\Jira\Connector\Tempo\HttpClientFactory" method="build" />
             <argument type="service" id="technodelight.jira.config.integrations.tempo" />
-            <argument type="string">%app.jira.instance%</argument>
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
         </service>
         <service id="technodelight.jira.api.tempo.api" class="Technodelight\Jira\Api\Tempo\Api">
             <argument type="service" id="technodelight.jira.api.tempo.client" />
@@ -51,7 +51,7 @@
         <service id="technodelight.jira.api.tempo2.client" class="Technodelight\Jira\Api\Tempo2\Client">
             <factory class="Technodelight\Jira\Connector\Tempo2\HttpClientFactory" method="build" />
             <argument type="service" id="technodelight.jira.config.integrations.tempo" />
-            <argument type="string">%app.jira.instance%</argument>
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
         </service>
         <service id="technodelight.jira.api.tempo2.api" class="Technodelight\Jira\Api\Tempo2\Api">
             <argument type="service" id="technodelight.jira.api.tempo2.client" />
@@ -82,7 +82,7 @@
 
         <!-- worklog handler -->
         <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
-            <argument type="service" id="technodelight.jira.config.instances.current_instance"/>
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider"/>
             <argument type="service" id="technodelight.jira.config.integrations.tempo"/>
             <argument type="service" id="technodelight.jira.connector.tempo_worklog_handler"/>
             <argument type="service" id="technodelight.jira.connector.tempo2_worklog_handler"/>
@@ -103,6 +103,13 @@
             <factory service="technodelight.jira.connector.symfony_expression_language.factory" method="build" />
         </service>
         <!-- expression language -->
+
+        <!-- task -->
+        <service public="false" id="technodelight.task.shell" class="Technodelight\ShellExec\Exec" />
+        <service id="technodelight.task.api" class="Technodelight\Jira\Api\TaskWarrior\Api">
+            <argument type="service" id="technodelight.task.shell" />
+        </service>
+        <!-- task -->
 
     </services>
 
