@@ -21,6 +21,7 @@ class Filters extends Command
     {
         $this
             ->setName('show:filters')
+            ->setDescription('Show available filters')
             ->addOption(
                 'search',
                 's',

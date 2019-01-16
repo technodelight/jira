@@ -2,10 +2,12 @@
 
 namespace Fixture\GitHub;
 
-use Github\HttpClient\HttpClientInterface;
-use Guzzle\Http\Message\Response;
+use Http\Client\HttpClient;
+use Nyholm\Psr7\Response;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
-class TestHttpClient implements HttpClientInterface
+class TestHttpClient implements HttpClient
 {
     public $authenticated = false;
 
@@ -48,6 +50,8 @@ class TestHttpClient implements HttpClientInterface
         if (isset(self::$fixtures['get'][$path])) {
             return new Response(200, ['content-type' => 'application/json'], self::$fixtures['get'][$path]);
         }
+
+        return new Response(400, [], sprintf('%s: no fixture has been found for %s', __CLASS__, $path));
     }
 
     public function post($path, $body = null, array $headers = array())
@@ -73,5 +77,31 @@ class TestHttpClient implements HttpClientInterface
     public function request($path, $body, $httpMethod = 'GET', array $headers = array())
     {
         $this->requests[$httpMethod][] = $path;
+    }
+
+    /**
+     * Sends a PSR-7 request.
+     *
+     * @param RequestInterface $request
+     *
+     * @return ResponseInterface
+     *
+     * @throws \Http\Client\Exception If an error happens during processing the request.
+     * @throws \Exception             If processing the request is impossible (eg. bad configuration).
+     */
+    public function sendRequest(RequestInterface $request)
+    {
+        switch ($request->getMethod()) {
+            case 'GET':
+                return $this->get($request->getUri()->getPath());
+            case 'POST':
+                return $this->post($request->getUri()->getPath());
+            case 'PUT':
+                return $this->put($request->getUri()->getPath());
+            case 'DELETE':
+                return $this->delete($request->getUri()->getPath());
+            default:
+                return new Response(400);
+        }
     }
 }

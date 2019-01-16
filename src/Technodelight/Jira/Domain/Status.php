@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Technodelight\Jira\Domain;
-
 
 class Status
 {

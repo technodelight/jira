@@ -18,10 +18,15 @@ class ITermConfiguration implements RegistrableConfiguration
      * @var int
      */
     private $imageCacheTtl;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->renderImages = $config['renderImages'];
         $instance->thumbnailWidth = (int) $config['thumbnailWidth'];
         $instance->imageCacheTtl = (int) $config['imageCacheTtl'];
@@ -47,6 +52,14 @@ class ITermConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'iterm';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

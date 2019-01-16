@@ -2,9 +2,9 @@
 
 namespace Technodelight\Jira\Renderer\Dashboard;
 
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Console\Dashboard\Collection;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Renderer\DashboardRenderer;
@@ -21,6 +21,11 @@ class LogsTable implements DashboardRenderer
         $this->dateHelper = $dateHelper;
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param Collection $collection
+     * @throws \Exception
+     */
     public function render(OutputInterface $output, Collection $collection)
     {
         if (!$collection->count()) {
@@ -35,8 +40,8 @@ class LogsTable implements DashboardRenderer
 
     private function renderWeek(OutputInterface $output, Collection $collection, $weekCount)
     {
-        $headers = $this->tableHeaders($collection);
         $dailySum = array_fill_keys($this->createDaysArray($collection), 0);
+        $headers = $this->tableHeaders($collection, array_keys($dailySum));
 
         foreach ($collection as $date => $logs) {
             $dayNo = $date->format('N');
@@ -63,7 +68,7 @@ class LogsTable implements DashboardRenderer
         $this->tableFooter($rows, $dailySum);
 
         // use the style for this table
-        $table = new Table($output);
+        $table = new PrettyTable($output);
         $table
             ->setHeaders(array_values($headers))
             ->setRows(array_values($rows));
@@ -73,12 +78,16 @@ class LogsTable implements DashboardRenderer
         $table->render();
     }
 
-    private function tableHeaders(Collection $collection)
+    private function tableHeaders(Collection $collection, array $days)
     {
         $headers = ['Issue'];
-        foreach ($collection->fromToDateRange(true) as $date) {
-            $headers[$date->format('N')] = $date->format('l');
+
+        foreach ($collection->fromToDateRange(false) as $date) {
+            if (in_array($date->format('N'), $days)) {
+                $headers[$date->format('N')] = $date->format('l');
+            }
         }
+        ksort($headers);
 
         return $headers;
     }
@@ -110,8 +119,17 @@ class LogsTable implements DashboardRenderer
 
     private function createDaysArray(Collection $collection)
     {
-        return array_map(function(\DateTime $date) {
-            return $date->format('N');
-        }, $collection->fromToDateRange(true));
+        $weekends = [6,7];
+        $days = array_filter(array_map(function(\DateTime $date) use ($weekends, $collection) {
+            $day = $date->format('N');
+            if (in_array($day, $weekends)) {
+                return ($collection->findMatchingLogsForDate($date)->count() > 0) ? $day : null;
+            }
+
+            return $day;
+        }, $collection->fromToDateRange(false)));
+        sort($days);
+
+        return $days;
     }
 }

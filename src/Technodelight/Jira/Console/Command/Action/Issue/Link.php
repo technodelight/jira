@@ -128,16 +128,16 @@ class Link extends AbstractCommand
         foreach ($linkTypes as $linkType) {
             if ($this->canInwardLink($link, $linkType, $existingLinks)) {
                 $this->jiraApi()->linkIssue(
-                    $link->issueKey(),
-                    $issueKey,
+                    (string) $link->issueKey(),
+                    (string) $issueKey,
                     $linkType->name()
                 );
                 return;
             }
             if ($this->canOutwardLink($link, $issueKey, $linkType, $linkedLinks)) {
                 $this->jiraApi()->linkIssue(
-                    $issueKey,
-                    $link->issueKey(),
+                    (string) $issueKey,
+                    (string) $link->issueKey(),
                     $linkType->name()
                 );
                 return;

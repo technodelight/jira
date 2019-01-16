@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Connector;
 
-use Technodelight\Jira\Configuration\ApplicationConfiguration\InstanceConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
 use Technodelight\Jira\Connector\Tempo\WorklogHandler as TempoHandler;
 use Technodelight\Jira\Connector\Tempo2\WorklogHandler as Tempo2Handler;
@@ -11,9 +11,9 @@ use Technodelight\Jira\Connector\Jira\WorklogHandler as JiraHandler;
 class WorklogHandlerFactory
 {
     /**
-     * @var InstanceConfiguration
+     * @var CurrentInstanceProvider
      */
-    private $instanceConfiguration;
+    private $instanceProvider;
     /**
      * @var TempoConfiguration
      */
@@ -32,14 +32,14 @@ class WorklogHandlerFactory
     private $jiraHandler;
 
     public function __construct(
-        InstanceConfiguration $configuration,
+        CurrentInstanceProvider $instanceProvider,
         TempoConfiguration $tempoConfiguration,
         TempoHandler $tempoHandler,
         Tempo2Handler $tempo2Handler,
         JiraHandler $jiraHandler
     )
     {
-        $this->instanceConfiguration = $configuration;
+        $this->instanceProvider = $instanceProvider;
         $this->tempoHandler = $tempoHandler;
         $this->tempo2Handler = $tempo2Handler;
         $this->jiraHandler = $jiraHandler;
@@ -76,7 +76,7 @@ class WorklogHandlerFactory
      */
     private function isTempoSelectivelyEnabledForInstance()
     {
-        return $this->instanceConfiguration->isTempoEnabled() === true;
+        return $this->instanceProvider->currentInstance()->isTempoEnabled() === true;
     }
 
     /**
@@ -93,6 +93,6 @@ class WorklogHandlerFactory
     private function isTempoEnabledForSpecificInstances()
     {
         return $this->tempoConfiguration->isEnabled()
-            || $this->tempoConfiguration->instanceIsEnabled($this->instanceConfiguration->name());
+            || $this->tempoConfiguration->instanceIsEnabled($this->instanceProvider->currentInstance()->name());
     }
 }

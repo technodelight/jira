@@ -3,6 +3,8 @@
 namespace Technodelight\Jira\Api\JiraTagConverter;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraTagConverter\Components\Chunk;
+use Technodelight\Jira\Api\JiraTagConverter\Components\TerminalHighlight;
 use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Api\JiraTagConverter\Components\DelimiterBasedStringParser;
 use Technodelight\Jira\Api\JiraTagConverter\Components\PanelParser;
@@ -19,7 +21,9 @@ class JiraTagConverter
      * @var array
      */
     private $defaultOptions = [
+        'issueKeys' => true,
         'code' => true,
+        'quote' => true,
         'bold_underscore' => true,
         'color' => true,
         'mentions' => true,
@@ -49,6 +53,7 @@ class JiraTagConverter
                 $this->setTempOpts($opts);
             }
             $this->shouldDo('code') && $this->convertCode($body);
+            $this->shouldDo('quote') && $this->convertQuote($body);
             $this->shouldDo('bold_underscore') && $this->convertBoldUnderscore($body);
             $this->shouldDo('color') && $this->convertColor($body);
             $this->shouldDo('mentions') && $this->convertMentions($body);
@@ -88,9 +93,20 @@ class JiraTagConverter
         $parser = new DelimiterBasedStringParser('{code', 'code}');
         $collected = $parser->parse($body);
         foreach ($collected as $replace) {
+            $strippedString = trim(preg_replace('~{code(:[^}]+)?}~', '', $replace), PHP_EOL);
+            $syntax = '';
+            if (preg_match('~^{code:([^}]+)}~', $replace, $matches)) {
+                $syntax = $matches[1];
+            }
+            if (TerminalHighlight::isAvailable() && !empty($syntax)) {
+                $codeBlock = TerminalHighlight::formatCode($strippedString, $syntax);
+            } else {
+                $codeBlock = '<comment>' . $strippedString . '</>';
+            }
+
             $body = substr($body, 0, strpos($body, $replace))
-                . '<comment>' . preg_replace('~{code(:[^}]+)?}~', '', $replace) . '</>'
-                . substr($body, strpos($body, $replace) + strlen($replace));
+            . $codeBlock
+            . substr($body, strpos($body, $replace) + strlen($replace));
         }
 
         // short code block
@@ -103,6 +119,21 @@ class JiraTagConverter
                 '<comment>' . substr($replace, 2, -2) . '</>',
                 $body
             );
+        }
+    }
+
+    private function convertQuote(&$body)
+    {
+        $parser = new DelimiterBasedStringParser('{quote}', '{quote}');
+        $collected = $parser->parse($body);
+        $quoteDecor = '│ ';
+        foreach ($collected as $replace) {
+            $rawQuoteBlock = substr($replace, strlen('{quote}'), strlen('{quote}') * -1);
+            $quoteBlock = $quoteDecor . join(PHP_EOL . $quoteDecor, explode(PHP_EOL, trim($rawQuoteBlock, PHP_EOL)));
+
+            $body = substr($body, 0, strpos($body, $replace))
+                . $quoteBlock
+                . substr($body, strpos($body, $replace) + strlen($replace));
         }
     }
 
@@ -252,23 +283,47 @@ class JiraTagConverter
                 $body = str_replace(
                     $wholeMatch,
                     $padding . '<fg=white;options=bold>' . $heading . PHP_EOL
-                    . $padding . str_repeat('-', $trimmedLength) . str_repeat(' ', $length - $trimmedLength) . '</>',
+                    . $padding . str_repeat('▔', $trimmedLength) . str_repeat(' ', $length - $trimmedLength) . '</>',
                     $body
                 );
             }
         }
     }
 
+    /**
+     * @link https://confluence.atlassian.com/conf61/symbols-emoticons-and-special-characters-877187546.html#Symbols,EmoticonsandSpecialCharacters-Insertemoticons
+     * @param $body
+     */
     private function convertEmojis(&$body)
     {
         $body = strtr($body, [
            '(?)' => '❓ ',
            '(x)' => '❌ ',
            '(/)' => '✅ ',
-           ':)' => '😀',
-           ':-)' => '😀',
+           ':)' => '🙂',
+           ':-)' => '🙂',
+           ':D' => '😀',
+           ':-D' => '😀',
            ';)' => '😉',
            ';-)' => '😉',
+           ':(' => '🙁',
+           ':-(' => '🙁',
+           ':P' => '😛',
+           ':-P' => '😛',
+           '(y)' => '👍',
+           '(n)' => '👎',
+           '(on)' => '💡',
+           '(*)' => '⭐',
+           '(*y)' => '⭐',
+           '(*r)' => '✴',
+           '(*g)' => '❇',
+           '(*b)' => '✳',
+           '(i)' => 'ℹ',
+           '(!)' => '⚠',
+           '(+)' => '➕',
+           '(-)' => '➖',
+           '<3' => '❤',
+           '</3' => '💔',
         ]);
     }
 

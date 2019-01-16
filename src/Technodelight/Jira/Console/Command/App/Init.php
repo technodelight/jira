@@ -87,7 +87,7 @@ class Init extends AbstractCommand
 
         $this->configurationDumper()->dump($path, $input->getOption('global'));
 
-        $output->writeLn('Sample configuration has been written to ' . $path);
+        $output->writeln('Sample configuration has been written to ' . $path);
     }
 
     /**

@@ -2,18 +2,55 @@
 
 namespace Technodelight\Jira\Console\Command\Filter;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Api\OpenApp\OpenApp;
+use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\Symfony\Configuration;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
+use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Template\IssueRenderer;
 
-class Search extends AbstractCommand implements IssueRendererAware
+class Search extends Command implements IssueRendererAware
 {
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueRenderer
+     */
+    private $renderer;
+    /**
+     * @var TemplateHelper
+     */
+    private $templateHelper;
+    /**
+     * @var OpenApp
+     */
+    private $openApp;
+    /**
+     * @var ApplicationConfiguration
+     */
+    private $configuration;
+
+    public function __construct(Api $api, IssueRenderer $renderer, TemplateHelper $templateHelper, OpenApp $openApp, ApplicationConfiguration $configuration)
+    {
+        $this->api = $api;
+        $this->renderer = $renderer;
+        $this->templateHelper = $templateHelper;
+        $this->openApp = $openApp;
+        $this->configuration = $configuration;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -51,27 +88,34 @@ class Search extends AbstractCommand implements IssueRendererAware
     {
         // open in browser instead
         if ($input->getOption('open')) {
-            $this->openApp()->open(
+            $this->openApp->open(
                 sprintf(
                     'https://%s/issues/?jql=%s',
-                    $this->config()->instances()->findByName('default')->domain(),
+                    $this->configuration->instances()->findByName('default')->domain(),
                     urlencode($input->getArgument('jql'))
                 )
             );
             return;
         }
+        if (!$input->isInteractive()) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
+        }
 
         // render query results in console
-        $command = new IssueFilter($this->container, 'run_' . md5(microtime(true)), $input->getArgument('jql') ?: null);
+        $command = new IssueFilter('run_' . md5(microtime(true)), $input->getArgument('jql') ?: null);
+        $command->setIssueRenderer($this->renderer);
+        $command->setJiraApi($this->api);
         $command->execute($input, $output);
+
         if ($input->getOption('dump-config')) {
             $this->dumpFilterConfiguration($output, '<insert your preferred filter command here>', $input->getArgument('jql'));
         }
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param $filterName
+     * @param OutputInterface $output
+     * @param string $filterName
+     * @param string $jql
      */
     protected function dumpFilterConfiguration(OutputInterface $output, $filterName, $jql)
     {
@@ -89,33 +133,9 @@ class Search extends AbstractCommand implements IssueRendererAware
                 $value = $child->normalize([['command' => $filterName, 'jql' => $jql]]);
                 $output->writeln([
                     'filters:',
-                    $this->templateHelper()->tabulate(Yaml::dump($child->finalize($value)))
+                    $this->templateHelper->tabulate(Yaml::dump($child->finalize($value)))
                 ]);
             }
         }
-    }
-
-    /**
-     * @return \Technodelight\Jira\Helper\TemplateHelper
-     */
-    private function templateHelper()
-    {
-        return $this->getService('technodelight.jira.template_helper');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\OpenApp\OpenApp
-     */
-    private function openApp()
-    {
-        return $this->getService('technodelight.jira.console.open');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration
-     */
-    private function config()
-    {
-        return $this->getService('technodelight.jira.config');
     }
 }

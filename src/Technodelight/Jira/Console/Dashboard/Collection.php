@@ -26,11 +26,19 @@ class Collection implements Iterator, Countable
         return new self($collection, $from, $to, $workDays);
     }
 
+    /**
+     * @return DateTime
+     * @throws \Exception
+     */
     public function start()
     {
         return new DateTime($this->startDate);
     }
 
+    /**
+     * @return DateTime
+     * @throws \Exception
+     */
     public function end()
     {
         return new DateTime($this->endDate);
@@ -100,6 +108,7 @@ class Collection implements Iterator, Countable
 
     /**
      * @return Collection[]
+     * @throws \Exception
      */
     public function splitToWeeks()
     {
@@ -109,7 +118,7 @@ class Collection implements Iterator, Countable
             if (!isset($weeks[$week])) {
                 $weeks[$week] = new self(
                     WorklogCollection::createEmpty(),
-                    new DateTime(sprintf('%sW%s monday', $date->format('Y'), $week)),
+                    new DateTime(sprintf('%sW%s last monday', $date->format('Y'), $week)),
                     new DateTime(sprintf('%sW%s sunday', $date->format('Y'), $week)),
                     $this->workDays
                 );
@@ -127,6 +136,22 @@ class Collection implements Iterator, Countable
         return $weeks;
     }
 
+    /**
+     * @param DateTime $findDate
+     * @return WorklogCollection
+     */
+    public function findMatchingLogsForDate(DateTime $findDate)
+    {
+        $matchingLogs = WorklogCollection::createEmpty();
+        foreach ($this->collection as $worklog) {
+            /** @var $worklog Worklog */
+            if ($worklog->date()->format(self::DATE_FORMAT) == $findDate->format(self::DATE_FORMAT)) {
+                $matchingLogs->push($worklog);
+            }
+        }
+        return $matchingLogs;
+    }
+
     public function current()
     {
         $matchingLogs = WorklogCollection::createEmpty();
@@ -141,14 +166,23 @@ class Collection implements Iterator, Countable
 
     public function next()
     {
-        do {
-            $this->currentDate = date(
-                self::DATE_FORMAT,
-                strtotime('+1 day', strtotime($this->currentDate))
-            );
-        } while(!in_array(date('N', strtotime($this->currentDate)), [1,2,3,4,5]));
+        $this->currentDate = date(
+            self::DATE_FORMAT,
+            strtotime('+1 day', strtotime($this->currentDate))
+        );
+        //TODO: check why this was added as a while loop?
+//        do {
+//            $this->currentDate = date(
+//                self::DATE_FORMAT,
+//                strtotime('+1 day', strtotime($this->currentDate))
+//            );
+//        } while(!in_array(date('N', strtotime($this->currentDate)), [1,2,3,4,5,6,7]));
     }
 
+    /**
+     * @return DateTime|mixed|null
+     * @throws \Exception
+     */
     public function key()
     {
         if ($this->currentDate <= $this->endDate) {

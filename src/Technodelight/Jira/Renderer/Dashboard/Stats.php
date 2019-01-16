@@ -10,7 +10,7 @@ use Technodelight\Jira\Renderer\DashboardRenderer;
 class Stats implements DashboardRenderer
 {
     /**
-     * @var \Technodelight\Jira\Helper\DateHelper
+     * @var DateHelper
      */
     private $dateHelper;
 
@@ -33,13 +33,14 @@ class Stats implements DashboardRenderer
                 $this->dateHelper->secondsToHuman($summary),
                 sprintf('%dd', $collection->days()),
                 ($summary / $totalTimeInRange) * 100, // percentage
-                $this->missingTimeText($totalTimeInRange - $summary)
+                $this->timeDifferenceText($totalTimeInRange - $summary)
             )
         );
         if ($collection->days() > 1) {
             $output->writeln(
                 sprintf(
-                    '%0.2f issues per day, %0.2f worklogs per day, average time spent %s',
+                    'Total of %d issues, %0.2f issues per day, %0.2f worklogs per day, average time spent %s',
+                    $collection->issuesCount(),
                     $collection->issuesCount() / $collection->days(),
                     $collection->count() / $collection->days(),
                     $this->dateHelper->secondsToHuman(ceil($collection->totalTimeSpentSeconds() / $collection->count()))
@@ -49,7 +50,7 @@ class Stats implements DashboardRenderer
         $output->writeln('');
     }
 
-    private function missingTimeText($missingTime)
+    private function timeDifferenceText($missingTime)
     {
         if ($missingTime >= 0) {
             return sprintf(
@@ -57,6 +58,7 @@ class Stats implements DashboardRenderer
                 $this->dateHelper->secondsToHuman($missingTime)
             );
         }
+
         return sprintf(
             '<bg=red>%s overtime</>',
             $this->dateHelper->secondsToHuman(abs($missingTime))

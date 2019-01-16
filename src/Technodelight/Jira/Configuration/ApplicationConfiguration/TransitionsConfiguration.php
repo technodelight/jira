@@ -10,10 +10,15 @@ class TransitionsConfiguration implements RegistrableConfiguration
      * @var TransitionConfiguration[]
      */
     private $transitions;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
 
         $instance->transitions = array_map(
             function (array $transition) {
@@ -59,6 +64,14 @@ class TransitionsConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'transitions';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

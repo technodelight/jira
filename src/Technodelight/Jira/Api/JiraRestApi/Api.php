@@ -11,6 +11,7 @@ use Technodelight\Jira\Domain\Issue\Changelog;
 use Technodelight\Jira\Domain\Issue\Meta;
 use Technodelight\Jira\Domain\IssueLink;
 use Technodelight\Jira\Domain\IssueLink\Type;
+use Technodelight\Jira\Domain\Priority;
 use Technodelight\Jira\Domain\Project;
 use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\Transition;
@@ -103,7 +104,7 @@ class Api
      * Return available projects
      * $recent returns the most recent x amount
      *
-     * @param  int|null $recent
+     * @param  int|null $numberOfRecent
      *
      * @return Project[]
      */
@@ -166,7 +167,7 @@ class Api
      * @param string $comment
      * @param string $adjustEstimate
      * @param string $newEstimate if adjustEstimate is 'new' this arg should be provided
-     *
+     * @return Worklog
      */
     public function worklog($issueKey, $timeSpentSeconds, $comment, $started, $adjustEstimate = 'auto', $newEstimate = null)
     {
@@ -291,7 +292,7 @@ class Api
             $query->worklogAuthor($username);
         }
 
-        $issues = $this->search($query->assemble(), 'issueKey');
+        $issues = $this->search($query->assemble(), null, 'issueKey');
         $this->fetchAndAssignWorklogsToIssues($issues, $from, $to, $username, $limit);
 
         return $issues;
@@ -350,6 +351,10 @@ class Api
      *
      * @see Api::issueEditMeta()
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-put
+     *
+     * @param string $issueKey
+     * @param array $data
+     * @param array $params
      * @return array
      */
     public function updateIssue($issueKey, array $data, array $params = [])
@@ -360,8 +365,18 @@ class Api
     /**
      * Update issue assignee
      *
+     * Assigns an issue to a user. Use this operation when the calling user does not have the Edit Issues permission
+     * but has the Assign issue permission for the project that the issue is in.
+     *
+     * Note that:
+     * - Only the name property needs to be set in the request object.
+     * - If name in the request object is set to "-1", then the issue is assigned to the default assignee for the project.
+     * - If name in the request object is set to null, then the issue is set to unassigned.
+     *
+     * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-assignee-put
+     *
      * @param string $issueKey
-     * @param string $usernameKey
+     * @param string|int|null $usernameKey
      * @return mixed
      */
     public function assignIssue($issueKey, $usernameKey)
@@ -497,7 +512,7 @@ class Api
      *
      * @return IssueCollection
      */
-    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = ['priority'])
     {
         try {
             $results = $this->client->search(
@@ -521,6 +536,18 @@ class Api
                 $e
             );
         }
+    }
+
+    /**
+     * Returns an issue priority.
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-priority-id-get
+     * @param int $priorityId
+     * @return Priority
+     */
+    public function priority($priorityId)
+    {
+        return Priority::fromArray($this->client->get(sprintf('priority/%d', $priorityId)));
     }
 
     /**
@@ -674,11 +701,12 @@ class Api
     public function linkIssue($inwardIssueKey, $outwardIssueKey, $linkName, $comment = '')
     {
         $data = [
-            'type' => ['name' => (string) $linkName],
-            'inwardIssue' => ['key' => (string) $inwardIssueKey],
-            'outwardIssue' => ['key' => (string) $outwardIssueKey],
-            'comment' => !empty($comment) ? ['body' => (string) $comment] : false,
+            'type' => ['name' => $linkName],
+            'inwardIssue' => ['key' => $inwardIssueKey],
+            'outwardIssue' => ['key' => $outwardIssueKey],
+            'comment' => !empty($comment) ? ['body' => $comment] : false,
         ];
+
         $this->client->post('issueLink', array_filter($data));
 
         return IssueLink::fromArray($data);

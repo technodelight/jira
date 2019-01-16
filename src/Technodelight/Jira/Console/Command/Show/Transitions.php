@@ -3,11 +3,11 @@
 namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Domain\Transition;
@@ -80,7 +80,7 @@ class Transitions extends Command
 
     private function renderTableOutput($issueKey, OutputInterface $output)
     {
-        $renderer = new Table($output);
+        $renderer = new PrettyTable($output);
         $renderer->setHeaders(['Transition', 'Command']);
         $renderer->setRows($this->collectTableRows($issueKey));
         $renderer->render();

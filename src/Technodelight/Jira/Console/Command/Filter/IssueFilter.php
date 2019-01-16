@@ -2,19 +2,32 @@
 
 namespace Technodelight\Jira\Console\Command\Filter;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Template\IssueRenderer;
 
-class IssueFilter extends AbstractCommand implements IssueRendererAware
+class IssueFilter extends Command implements IssueRendererAware
 {
+    /**
+     * @var string
+     */
     private $name;
+    /**
+     * @var string
+     */
     private $jql;
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueRenderer
+     */
+    private $issueRenderer;
 
     /**
      * Constructor.
@@ -24,7 +37,7 @@ class IssueFilter extends AbstractCommand implements IssueRendererAware
      *
      * @throws \LogicException When the command name is empty
      */
-    public function __construct(ContainerBuilder $container, $name, $jql)
+    public function __construct($name, $jql)
     {
         if (empty($jql)) {
             throw new \InvalidArgumentException('JQL is empty');
@@ -32,7 +45,17 @@ class IssueFilter extends AbstractCommand implements IssueRendererAware
         $this->name = $name;
         $this->jql = $jql;
 
-        parent::__construct($container, $this->prepareCommandName($name));
+        parent::__construct($this->prepareCommandName($name));
+    }
+
+    public function setJiraApi(Api $api)
+    {
+        $this->api = $api;
+    }
+
+    public function setIssueRenderer(IssueRenderer $issueRenderer)
+    {
+        $this->issueRenderer = $issueRenderer;
     }
 
     private function prepareCommandName($name)
@@ -57,17 +80,13 @@ class IssueFilter extends AbstractCommand implements IssueRendererAware
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var Api $jira */
-        $jira = $this->getService('technodelight.jira.api');
-        /** @var IssueRenderer $renderer */
-        $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $issues = $jira->search($this->jql, $this->page($input), [Api::FIELDS_ALL, 'comment']);
+        $issues = $this->api->search($this->jql, $this->page($input), [Api::FIELDS_ALL, 'comment']);
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
             $output->writeln(sprintf('<fg=black>%s</>', $this->jql));
             return 0;
         }
-        $renderer->renderIssues($output, $issues, $input->getOptions());
+        $this->issueRenderer->renderIssues($output, $issues, $input->getOptions());
     }
 
     private function descriptionFromJql()

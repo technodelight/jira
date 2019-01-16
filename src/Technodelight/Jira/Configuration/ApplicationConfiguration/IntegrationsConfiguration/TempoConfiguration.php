@@ -22,10 +22,15 @@ class TempoConfiguration implements RegistrableConfiguration
      * @var null|string
      */
     private $apiToken;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->enabled = (bool) $config['enabled'];
         $instance->version = $config['version']; // can be: null or string
         $instance->apiToken = $config['apiToken']; // can be: null or string
@@ -114,6 +119,14 @@ class TempoConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'tempo';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

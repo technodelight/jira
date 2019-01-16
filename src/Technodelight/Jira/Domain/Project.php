@@ -26,7 +26,7 @@ class Project
         $instance->id = $project['id'];
         $instance->key = $project['key'];
         $instance->name = $project['name'];
-        $instance->projectTypeKey = $project['projectTypeKey'];
+        $instance->projectTypeKey = isset($project['projectTypeKey']) ? $project['projectTypeKey'] : null;
         $instance->versions = isset($project['versions']) ? $project['versions'] : [];
         $instance->lead = isset($project['lead']) ? User::fromArray($project['lead']) : null;
         $instance->components = isset($project['components']) ? $project['components'] : [];

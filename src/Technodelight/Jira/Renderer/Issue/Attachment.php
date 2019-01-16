@@ -16,16 +16,25 @@ class Attachment implements IssueRenderer
      * @var \Technodelight\Jira\Helper\TemplateHelper
      */
     private $templateHelper;
+    /**
+     * @var bool
+     */
+    private $shortMode;
 
-    public function __construct(TemplateHelper $templateHelper)
+    public function __construct(TemplateHelper $templateHelper, $shortMode = false)
     {
         $this->templateHelper = $templateHelper;
+        $this->shortMode = $shortMode;
     }
 
     public function render(OutputInterface $output, Issue $issue)
     {
         if ($attachments = $issue->attachments()) {
-            $output->writeln($this->templateHelper->tabulate($this->renderAttachments($attachments)));
+            if ($this->shortMode) {
+                $output->writeln($this->templateHelper->tabulate($this->renderSummary($attachments)));
+            } else {
+                $output->writeln($this->templateHelper->tabulate($this->renderAttachments($attachments)));
+            }
         }
     }
 
@@ -53,6 +62,23 @@ class Attachment implements IssueRenderer
             $timeAgo->inWords(),
             $attachment->issue()->issueKey(),
             $attachment->filename()
+        );
+    }
+
+    /**
+     * @param IssueAttachment[] $attachments
+     */
+    private function renderSummary(array $attachments)
+    {
+        $totalSize = 0;
+        foreach ($attachments as $attachment) {
+            $totalSize+= $attachment->size();
+        }
+        return sprintf(
+            '<comment>attachments:</comment> %d %s (%s)',
+            count($attachments),
+            count($attachments) == 1 ? 'file' : 'files',
+            BytesInHuman::fromBytes($totalSize)
         );
     }
 }

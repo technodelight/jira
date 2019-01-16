@@ -19,7 +19,7 @@ class GithubClientBuilder
 
     public function build()
     {
-        $client = new Client($this->testHttpClient);
+        $client = Client::createWithHttpClient($this->testHttpClient);
         $client->authenticate($this->configuration->token(), null, Client::AUTH_URL_TOKEN);
         return $client;
     }

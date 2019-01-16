@@ -28,12 +28,14 @@ class UserPickerAutocomplete implements Autocompleter
     public function complete(&$prefix)
     {
         if (!empty($prefix)) {
-            return array_map(
+            $users = array_map(
                 function(UserPickerResult $user) {
                     return $user->name();
                 },
                 $this->jira->userPicker($prefix)
             );
+
+            return !empty($users) ? $users : null;
         }
     }
 

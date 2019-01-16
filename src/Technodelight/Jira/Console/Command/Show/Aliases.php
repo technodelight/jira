@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Command\Show;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 
 class Aliases extends AbstractCommand
@@ -21,7 +22,7 @@ class Aliases extends AbstractCommand
     {
         if ($rows = $this->issueAliases()) {
             $output->writeln(['<comment>Issue Aliases:</comment>', '']);
-            $table = new Table($output);
+            $table = new PrettyTable($output);
             $table->setHeaders(['Alias', 'Issue key']);
             $table->addRows($rows);
             $table->render();
@@ -29,7 +30,7 @@ class Aliases extends AbstractCommand
         }
 
         $output->writeln(['<comment>Command Aliases:</comment>', '']);
-        $table = new Table($output);
+        $table = new PrettyTable($output);
         $table->setHeaders(['Command', 'Aliases']);
         $table->addRows($this->commandAliases());
         $table->render();

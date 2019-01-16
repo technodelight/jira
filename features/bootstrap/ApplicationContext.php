@@ -59,11 +59,16 @@ class ApplicationContext implements Context
     public function app()
     {
         if (!isset($this->app)) {
+            if (!defined('APPLICATION_ROOT_DIR')) {
+                define('APPLICATION_ROOT_DIR', realpath(__DIR__ . '/../..'));
+                define('SKIP_CACHE_CONTAINER', true);
+                define('ENVIRONMENT', 'test');
+            }
             $boot = new Bootstrap();
             $this->app = $boot->boot('behat', [
                  join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs']),
                  join(DIRECTORY_SEPARATOR, ['features', 'bootstrap', 'configs']),
-            ], new ArrayInput([]));
+            ]);
             $this->app->setAutoExit(false);
         }
 

@@ -7,16 +7,10 @@ use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Issue\IssueType;
 use Technodelight\Jira\Domain\Status;
-use Technodelight\Jira\Helper\ColorExtractor;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Header implements IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Helper\ColorExtractor
-     */
-    private $colorExtractor;
-
     /**
      * Formats for various issue types
      *
@@ -27,11 +21,6 @@ class Header implements IssueRenderer
         'Defect' => '<error> %s </error>',
         'Bug' => '<error> %s </error>',
     ];
-
-    public function __construct(ColorExtractor $colorExtractor)
-    {
-        $this->colorExtractor = $colorExtractor;
-    }
 
     public function render(OutputInterface $output, Issue $issue)
     {

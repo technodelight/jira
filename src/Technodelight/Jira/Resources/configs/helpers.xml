@@ -22,6 +22,7 @@
         <service id="technodelight.jira.hub_helper" class="Technodelight\Jira\Helper\HubHelper">
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.github.api" />
+            <argument type="service" id="technodelight.jira.config.integrations.github" />
         </service>
 
         <service id="technodelight.jira.checkout_branch" class="Technodelight\Jira\Helper\CheckoutBranch">

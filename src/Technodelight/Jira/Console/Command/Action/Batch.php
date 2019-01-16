@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Application;
 
 class Batch extends Command
@@ -15,20 +16,26 @@ class Batch extends Command
      * @var Application
      */
     private $app;
+    /**
+     * @var Api
+     */
+    private $api;
+
+    public function __construct(Application $app, Api $api)
+    {
+        $this->app = $app;
+        $this->api = $api;
+
+        parent::__construct();
+    }
 
     protected function configure()
     {
         $this
             ->setName('batch')
-            ->setDescription('Batch any command and execute in one go')
+            ->setDescription('Batch any command and execute in one go. Use the plus sign ("+") to mark the place of issueKey in your command.')
             ->ignoreValidationErrors()
         ;
-    }
-
-
-    public function setApp(Application $app)
-    {
-        $this->app = $app;
     }
 
     /**
@@ -41,16 +48,20 @@ class Batch extends Command
     {
         $issueKeys = file('php://stdin', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $args = $_SERVER['argv'];
+
+        // fetch everything once then proceed from cache
+        $this->api->retrieveIssues($issueKeys);
+
         $this->app->setAutoExit(false);
         foreach ($issueKeys as $issueKey) {
-            $this->app->run($this->prepareArgs($issueKey, $args), $output);
+            $this->app->run(new StringInput(join(' ', $this->prepareArgs($issueKey, $args))), $output);
         }
         $this->app->setAutoExit(true);
     }
 
     /**
      * @param array $args
-     * @return ArgvInput
+     * @return array
      */
     protected function prepareArgs($issueKey, array $args)
     {
@@ -68,7 +79,12 @@ class Batch extends Command
         } else {
             array_push($args, $issueKey);
         }
+        foreach ($args as $idx => $arg) {
+            if (strpos($arg, ' ') !== false) {
+                $args[$idx] = "'" . strtr($arg, ["'" => "\'"]) . "'";
+            }
+        }
 
-        return new StringInput(join(' ', $args));
+        return $args;
     }
 }

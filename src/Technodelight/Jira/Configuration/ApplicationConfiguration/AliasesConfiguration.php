@@ -10,10 +10,15 @@ class AliasesConfiguration implements RegistrableConfiguration
      * @var AliasConfiguration[]
      */
     private $aliases;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
 
         $instance->aliases = array_map(
             function (array $transition) {
@@ -54,6 +59,14 @@ class AliasesConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'aliases';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

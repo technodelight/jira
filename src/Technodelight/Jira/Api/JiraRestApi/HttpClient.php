@@ -106,8 +106,8 @@ class HttpClient implements Client
                         'jql' => $jql,
                         'startAt' => $startAt,
                         'fields' => (array) $fields,
-                        'expand' => $expand !== null ? join(',', $expand) : null,
-                        'properties' => $properties !== null ? join(',', $properties) : null
+                        'expand' => $expand,
+                        'properties' => $properties,
                     ])
                 ]
             );

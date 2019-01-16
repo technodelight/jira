@@ -5,10 +5,12 @@ namespace Technodelight\Jira\Console\Command\Action\Issue;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Assignee;
+use Technodelight\Jira\Console\Input\Issue\AssigneeResolver;
 
 class Assign extends Command
 {
@@ -56,13 +58,25 @@ class Assign extends Command
                 InputArgument::OPTIONAL,
                 'Assignee username'
             )
+            ->addOption(
+                'unassign',
+                'u',
+                InputOption::VALUE_NONE,
+                'Unassign issue'
+            )
+            ->addOption(
+                'default',
+                null,
+                InputOption::VALUE_NONE,
+                'Assign issue to default assignee'
+            )
         ;
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         $this->issueKeyResolver->argument($input, $output);
-        if (!$input->getArgument('assignee')) {
+        if (!$input->getArgument('assignee') && !$input->getOption('unassign')) {
             $input->setArgument('assignee', $this->assigneeInput->userPicker($input, $output));
         }
     }
@@ -70,11 +84,38 @@ class Assign extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
-        $assignee = $input->getArgument('assignee');
+        $assignee = $this->determineAssigneeFromInput($input);
 
         $this->api->assignIssue((string) $issueKey, $assignee);
-        $output->writeln(
-            sprintf('<info>%s</info> was assigned successfully to <comment>%s</comment>', $issueKey, $assignee)
-        );
+
+        if ($assignee === AssigneeResolver::UNASSIGN) {
+            $output->writeln(
+                sprintf('<info>%s</info> was unassigned successfully', $issueKey)
+            );
+        } else {
+            $output->writeln(
+                sprintf(
+                    '<info>%s</info> was assigned successfully to <comment>%s</comment>',
+                    $issueKey,
+                    $assignee === AssigneeResolver::DEFAULT_ASSIGNEE ? 'Default asignee' : $assignee
+                )
+            );
+        }
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return int|mixed|null
+     */
+    protected function determineAssigneeFromInput(InputInterface $input)
+    {
+        switch (true) {
+            case $input->getOption('unassign'):
+                return AssigneeResolver::UNASSIGN;
+            case $input->getOption('default'):
+                return AssigneeResolver::DEFAULT_ASSIGNEE;
+            default:
+                return $input->getArgument('assignee');
+        }
     }
 }

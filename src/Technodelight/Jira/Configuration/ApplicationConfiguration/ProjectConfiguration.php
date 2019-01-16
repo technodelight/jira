@@ -10,10 +10,15 @@ class ProjectConfiguration implements RegistrableConfiguration
     private $defaultWorklogTimestamp;
     private $oneDay;
     private $cacheTtl;
+    /**
+     * @var array
+     */
+    private $config;
 
     public static function fromArray(array $config)
     {
         $instance = new self;
+        $instance->config = $config;
         $instance->yesterdayAsWeekday = $config['yesterdayAsWeekday'];
         $instance->defaultWorklogTimestamp = $config['defaultWorklogTimestamp'];
         $instance->oneDay = $config['oneDay'];
@@ -57,6 +62,14 @@ class ProjectConfiguration implements RegistrableConfiguration
     public function servicePrefix()
     {
         return 'project';
+    }
+
+    /**
+     * @return array
+     */
+    public function configAsArray()
+    {
+        return $this->config;
     }
 
     private function __construct()

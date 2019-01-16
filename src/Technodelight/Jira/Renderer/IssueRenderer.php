@@ -1,13 +1,4 @@
 <?php
-/**
- * @category Heidelberg
- * @package Heidelberg_<module>
- * @subpackage Heidelberg_<module>_<classtype>
- * @author Zsolt Gal <zgal@inviqa.com>
- * @copyright 2017 Inviqa
- * @license http://inviqa.de Inviqa
- * @link http://inviqa.de
- */
 
 namespace Technodelight\Jira\Renderer;
 

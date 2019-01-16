@@ -2,10 +2,9 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
 use Technodelight\Jira\Console\Command\AbstractCommand;
@@ -24,8 +23,8 @@ class Instances extends AbstractCommand
         /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration $config */
         $config = $this->container->get('technodelight.jira.config.instances');
         if (empty($config->items())) {
-            $this->renderTable($output, $this->addGlobalInstanceRow($config, [], false));
-            $output->writeln('No extra instances configured.');
+//            $this->renderTable($output, $this->addGlobalInstanceRow($config, [], false));
+            $output->writeln('No instances configured.');
             return;
         }
 
@@ -54,7 +53,7 @@ class Instances extends AbstractCommand
      */
     protected function renderTable(OutputInterface $output, $rows)
     {
-        $table = new Table($output);
+        $table = new PrettyTable($output);
         $table
             ->setHeaders(['Name', 'Domain', 'Username'])
             ->setRows($rows);

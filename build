@@ -1,68 +1,309 @@
 #!/usr/bin/env php
 <?php
 
-$start = microtime(true);
+use Symfony\Component\Console\Output\ConsoleOutput;
+
 require __DIR__ . '/vendor/autoload.php';
 
+/**
+ * @param int $size
+ * @param int $precision
+ * @return string
+ */
 function formatBytes($size, $precision = 4)
 {
     $base = log($size, 1024);
     $suffixes = array('', 'K', 'M', 'G', 'T');
 
-    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
+    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[(int) floor($base)];
 }
 
-function cp($in, $out, $mod = null)
+/**
+ * @param string $in infile
+ * @param string $out outfile
+ * @param int|null $mod chmod settings
+ * @return bool
+ */
+function cp(ConsoleOutput $output, $in, $out, $mod = null)
 {
-    echo sprintf("Copy %s to %s", $in, $out) . PHP_EOL;
-    $res = copy($in, $out);
-    if (!$res) {
-        echo sprintf('  Something bad happened...') . PHP_EOL;
+    $output->writeln(sprintf('  Copying %s to %s', $in, $out));
+    $result = copy($in, $out);
+    if (!$result) {
+        $output->getErrorOutput()->writeln(sprintf('  <error>Something bad happened...</error>'));
     }
-    if ($res && $mod) chmod($out, $mod);
-    return $res;
+
+    if ($result && $mod) {
+        chmod($out, $mod);
+    }
+
+    return $result;
 }
 
-$tools = ['git', 'box', 'unzip', 'composer', 'wget'];
-foreach ($tools as $tool) {
-    if (!trim(`which $tool`)) {
-        die("Please install $tool into \$PATH to continue");
+function init(ConsoleOutput $output)
+{
+    $configFile = __DIR__ . DIRECTORY_SEPARATOR . 'build.json';
+    if (!is_file($configFile)) {
+        $output->getErrorOutput()->writeln(sprintf('  <error>Cannot find configuration file build.json</error>'));
+        exit(255);
+    }
+    $config = json_decode(file_get_contents($configFile), true);
+    if (empty($config['repository'])) {
+        $output->getErrorOutput()->writeln(sprintf('  <error>Please define "repository" in your build.json</error>'));
+        exit(255);
+    }
+    if (empty($config['pharName'])) {
+        $output->getErrorOutput()->writeln(sprintf('  <error>Please define "pharName" in your build.json</error>'));
+        exit(255);
+    }
+
+    define('BUILD_START_TIME', microtime(true));
+    define('REPO_URL', $config['repository']);
+    define('BUILD_COMMIT', isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'master');
+    define('PHAR_NAME', $config['pharName']);
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param array $tools
+ */
+function checkToolsInstalled(ConsoleOutput $output)
+{
+    $tools = [
+        'git' => [
+            'version' => '2.5',
+            'url' => 'https://git-scm.com/downloads',
+        ],
+        'box' => [
+            'version' => '3.0',
+            'url' => 'https://github.com/humbug/box/blob/master/doc/installation.md#installation',
+            'legend' => 'box is a tool used for building PHAR files',
+        ],
+        'composer' => [
+            'version' => '1.5',
+            'url' => 'https://getcomposer.org/download/',
+        ],
+    ];
+
+    foreach ($tools as $tool => $hints) {
+        if (!trim(`which $tool`)) {
+            $output->getErrorOutput()->writeln(
+                "<error>Please install $tool and make available in \$PATH to continue</error>"
+            );
+            if (isset($hints['legend'])) {
+                $output->writeln(sprintf('<info>hint:</info> ', $hints['legend']));
+            }
+            if (isset($hints['url'])) {
+                $output->writeln(sprintf('Please visit %s for more info', $hints['url']));
+            }
+            exit(1);
+        }
+        list(,,$version) = explode(' ', `$tool --version`);
+        if (!version_compare($version, $hints['version'], '>=')) {
+            $output->getErrorOutput()->writeln(
+                sprintf(
+                  "<error>Please make sure %s is at least version %s (current version is %s)</error>",
+                    $tool,
+                    $hints['version'],
+                    $version
+                )
+            );
+            if (isset($hints['legend'])) {
+                $output->writeln(sprintf('<info>hint:</info> ', $hints['legend']));
+            }
+            if (isset($hints['url'])) {
+                $output->writeln(sprintf('Please visit %s for more info', $hints['url']));
+            }
+            exit(1);
+        }
     }
 }
 
-$version = trim(`git describe --abbrev=0 --tags`);
-$output = new Symfony\Component\Console\Output\ConsoleOutput;
-
-$dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . uniqid();
-mkdir($dir, 0733, true);
-passthru("wget https://codeload.github.com/technodelight/jira/zip/master -O $dir/zipball.zip");
-chdir($dir);
-`unzip zipball.zip`;
-`cd jira-master && composer install --no-dev -o`;
-$dir.= '/jira-master';
-file_put_contents($dir . '/bin/.version', $version);
-
-
-$buildfile = $dir . DIRECTORY_SEPARATOR . 'jira.phar';
-echo 'Building phar... ';
-`cd $dir && box build`;
-if (!is_file($buildfile)) die('Phar has not built!');
-echo 'done.' . PHP_EOL;
-echo 'Copying files' . PHP_EOL;
-$releasefile = __DIR__ . DIRECTORY_SEPARATOR . 'builds' . DIRECTORY_SEPARATOR . 'jira-' . $version . '-' . md5(file_get_contents($buildfile)) . '.phar';
-$currentbuildfile = __DIR__ . DIRECTORY_SEPARATOR . 'jira.phar';
-
-cp($buildfile, $releasefile, 0755);
-cp($releasefile, $currentbuildfile, 0755);
-
-if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] == 'install') {
-    if (!cp($releasefile, '/usr/local/bin/jira')) {
-        die ("Cannot copy $releasefile to /usr/local/bin/jira");
+/**
+ * @param ConsoleOutput $output
+ * @return string
+ */
+function createBuildDirectory(ConsoleOutput $output)
+{
+    $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME .'-' . BUILD_COMMIT . '-' . uniqid();
+    $output->writeln('<info>Creating build directory</info>');
+    $output->writeln($buildDir);
+    mkdir($buildDir, 0733, true);
+    if (!is_dir($buildDir)) {
+        $output->getErrorOutput()->writeln('<error>Cannot create build directory!</error>');
+        exit(2);
     }
-    if (!cp($releasefile, getenv('HOME') . '/Dropbox/jira.phar')) {
-        die ("Cannot copy $releasefile to " . getenv('HOME') . "/Dropbox/jira.phar");
+    chdir($buildDir);
+
+    return $buildDir;
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param $buildDir
+ */
+function cloneSingleCommitIntoBuildDir(ConsoleOutput $output, $buildDir)
+{
+    $output->writeln('<info>Initialising git repo for build</info>');
+
+    chdir($buildDir);
+    passthru(sprintf('git init && git remote add origin %s && git fetch origin', REPO_URL), $result);
+    if ($result !== 0) {
+        $output->getErrorOutput()->writeln(
+            '<error>Cannot perform git init in build directory</error>'
+        );
+        exit(3);
+    }
+    passthru(
+        sprintf('git checkout %s', BUILD_COMMIT),
+        $result
+    );
+
+    if (!is_dir($buildDir . DIRECTORY_SEPARATOR . '.git') || $result !== 0) {
+        $output->getErrorOutput()->writeln('<error>Git init failed!</error>');
+        exit(3);
     }
 }
-echo "Seems to be done properly!" . PHP_EOL . PHP_EOL;
 
-printf ('%s (%s), %.4f seconds', $releasefile, formatBytes(filesize($releasefile), 2), microtime(true) - $start);
+function composerInstall(ConsoleOutput $output, $buildDir)
+{
+    chdir($buildDir);
+    $output->writeln('<info>Running composer install...</info>');
+    exec('composer install --no-dev -o');
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param string $buildDir
+ */
+function generateBoxJson(ConsoleOutput $output, $buildDir)
+{
+    $output->writeln('<info>Generating box config</info>');
+    $configFile = __DIR__ . DIRECTORY_SEPARATOR . 'build.json';
+    $config = json_decode(file_get_contents($configFile), true);
+    $boxFile = $buildDir . DIRECTORY_SEPARATOR . 'box.json';
+    $boxConfig = [
+        'directories' => ['src'],
+        'files' => [
+            'vendor/symfony/dependency-injection/Loader/schema/dic/services/services-1.0.xsd',
+        ],
+        'output' => PHAR_NAME . '.phar',
+        'finder' => [
+            [
+                'name' => '*.*',
+                'exclude' => ['tests', 'spec', 'features', 'example', 'doc', 'docs', '*.md', '*.rst', '*.txt'],
+                'in' => 'vendor'
+            ]
+        ],
+        'compactors' => [
+            'KevinGH\Box\Compactor\Php'
+        ],
+        'git-version' => 'git-version',
+    ];
+    $generatedConfig = array_merge_recursive($boxConfig, isset($config['box']) ? $config['box'] : []);
+    $output->writeln(json_encode($generatedConfig));
+
+    file_put_contents($boxFile, json_encode($generatedConfig));
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param string $buildDir
+ * @return string
+ */
+function buildPhar(ConsoleOutput $output, $buildDir)
+{
+    $buildfile = $buildDir . DIRECTORY_SEPARATOR . PHAR_NAME . '.phar';
+    $output->writeln('<info>Building phar...</info>');
+
+    passthru('box validate');
+    passthru('box compile', $compileResult);
+
+    if (!is_file($buildfile) || $compileResult !== 0) {
+        $output->getErrorOutput()->writeln('<error>Error while building phar!</error>');
+        exit(4);
+    } else {
+        $output->writeln('<info>Done!</info>');
+    }
+
+    return $buildfile;
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param string $buildfile
+ * @return string
+ */
+function copyPharToDestinations(ConsoleOutput $output, $buildfile)
+{
+    $output->writeln('<info>Copying files</info>');
+
+    $releaseFile = __DIR__
+        . DIRECTORY_SEPARATOR . 'builds'
+        . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . md5_file($buildfile) . '.phar';
+    $localBuildFile = __DIR__
+        . DIRECTORY_SEPARATOR . PHAR_NAME . '.phar';
+
+    if (cp($output, $buildfile, $releaseFile, 0755) !== true || cp($output, $buildfile, $localBuildFile, 0755) !== true) {
+        $output->getErrorOutput()->writeln(
+            "<error>Unable to copy files into destination</error>"
+        );
+        exit(5);
+    }
+
+    return $releaseFile;
+}
+
+/**
+ * @param ConsoleOutput $output
+ * @param string $pharFile
+ */
+function testPhar(ConsoleOutput $output, $pharFile)
+{
+    $output->writeln('<info>Testing phar...</info>');
+    chdir(dirname($pharFile));
+
+    passthru(sprintf('box verify %s', $pharFile), $verifyResult);
+    if ($verifyResult !== 0) {
+      $output->getErrorOutput()->writeln('<error>Box verify failed!!</error>');
+      exit(6);
+    }
+
+    $output->writeln('<info>Checking if phar version works</info>');
+    passthru(sprintf('./%s --version', pathinfo($pharFile, PATHINFO_BASENAME)), $result);
+    if ($result !== 0) {
+        $output->getErrorOutput()->writeln('<error>Error in PHAR file, please check the output above</error>');
+        exit(6);
+    }
+}
+
+/**
+ * @return void
+ */
+function main() {
+    $output = new ConsoleOutput;
+
+    init($output);
+    checkToolsInstalled($output);
+    $buildDir = createBuildDirectory($output);
+    cloneSingleCommitIntoBuildDir($output, $buildDir);
+    composerInstall($output, $buildDir);
+    generateBoxJson($output, $buildDir);
+    $buildFile = buildPhar($output, $buildDir);
+    testPhar($output, $buildFile);
+    $releaseFile = copyPharToDestinations($output, $buildFile);
+
+    $output->writeln([
+        "<info>🍺  Build done</info>",
+        '',
+        sprintf(
+            'Built %s (size %s) in %.4f seconds, consumed %s memory',
+            $releaseFile,
+            formatBytes(filesize($releaseFile), 2),
+            microtime(true) - BUILD_START_TIME,
+            formatBytes(memory_get_peak_usage(true), 2)
+        )
+    ]);
+    exit(0);
+}
+
+main();

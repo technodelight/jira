@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use ICanBoogie\Storage\Storage;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 
 class CachedHttpClient implements Client
@@ -10,22 +11,19 @@ class CachedHttpClient implements Client
     private $httpClient;
     private $storage;
     private $configuration;
-    /**
-     * @var
-     */
-    private $instanceName;
+    private $instanceProvider;
 
     public function __construct(
         HttpClient $httpClient,
         Storage $storage,
         ProjectConfiguration $configuration,
-        $instanceName
+        CurrentInstanceProvider $instanceProvider
     )
     {
         $this->httpClient = $httpClient;
         $this->storage = $storage;
         $this->configuration = $configuration;
-        $this->instanceName = $instanceName;
+        $this->instanceProvider = $instanceProvider;
     }
 
     public function post($url, $data = [])
@@ -105,7 +103,7 @@ class CachedHttpClient implements Client
     private function keyify()
     {
         $components = func_get_args();
-        array_unshift($components, $this->instanceName);
+        array_unshift($components, $this->instanceProvider->currentInstance()->name());
         return md5(implode('', $components));
     }
 }

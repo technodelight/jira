@@ -61,7 +61,7 @@ class DashboardSpec extends ObjectBehavior
         $worklogCollection = WorklogCollection::createEmpty();
         $worklogCollection->push($log);
         $start = new \DateTime('2018-01-08');
-        $end = new \DateTime('2018-01-12');
+        $end = new \DateTime('2018-01-14');
         $worklogHandler->find($start, $end)->willReturn($worklogCollection);
 
         $jira->retrieveIssues([self::ISSUEKEY])->shouldBeCalled()->willReturn($issueCollection);
