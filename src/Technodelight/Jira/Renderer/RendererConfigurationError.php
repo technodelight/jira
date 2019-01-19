@@ -16,7 +16,7 @@ class RendererConfigurationError extends \Exception
     {
         return new self(
             sprintf(
-                'Cannot display %s field before "%s" field as it does not exists'
+                'Cannot display "%s" field before "%s" field as it does not exists'
                 . self::guessText($fieldConfiguration->before(), $renderers),
                 $fieldConfiguration->name(),
                 $fieldConfiguration->before()

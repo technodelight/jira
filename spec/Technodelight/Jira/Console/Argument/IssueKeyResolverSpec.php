@@ -11,6 +11,7 @@ use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\Argument\InteractiveIssueSelector;
 use Technodelight\Jira\Domain\Issue;
 
@@ -18,7 +19,7 @@ class IssueKeyResolverSpec extends ObjectBehavior
 {
     function let(
         Git $git,
-        AliasesConfiguration $configuration,
+        Guesser $guesser,
         InputInterface $input,
         OutputInterface $output,
         InteractiveIssueSelector $issueSelector,
@@ -30,43 +31,46 @@ class IssueKeyResolverSpec extends ObjectBehavior
         $input->setArgument(IssueKeyResolver::ARGUMENT, Argument::type('string'))->willReturn($input);
         $input->setOption(IssueKeyResolver::OPTION, Argument::type('string'))->willReturn($input);
 
-        $configuration->aliasToIssueKey(Argument::cetera())->willReturnArgument(0);
         $issueSelector->chooseIssue($input, $output)->shouldNotBeCalled()->willReturn($issue);
 
-        $this->beConstructedWith($git, $configuration, $issueSelector);
+        $this->beConstructedWith($git, $guesser, $issueSelector);
     }
 
-    function it_resolves_issue_key_argument_from_input(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output)
+    function it_resolves_issue_key_argument_from_input(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $configuration->aliasToIssueKey('PROJ-123')->willReturn('PROJ-123');
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn('PROJ-123');
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('PROJ-123');
         $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'PROJ-123']);
 
         $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }
 
-    function it_resolves_issue_key_from_git(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output, Git $git)
+    function it_resolves_issue_key_from_git(Guesser $guesser, InputInterface $input, OutputInterface $output, Git $git)
     {
-        $configuration->issueKeyToAlias('PROJ-123')->willReturnArgument(0);
+        $resolvedIssueKey = IssueKey::fromString('PROJ-123');
+        $branch = Branch::fromArray(['name' => 'feature/PROJ-123-test-branch', 'remote' => false, 'current' => true]);
+        $guesser->guessIssueKey(false, $branch)->willReturn($resolvedIssueKey);
+        $guesser->guessIssueKey($resolvedIssueKey, null)->willReturn($resolvedIssueKey);
+
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn(false);
         $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => null]);
-        $branch = Branch::fromArray(['name' => 'feature/PROJ-123-test-branch', 'remote' => false, 'current' => true]);
+
         $git->currentBranch()->willReturn($branch);
 
-        $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
+        $this->argument($input, $output)->shouldBeLike($resolvedIssueKey);
     }
 
-    function it_can_resolve_options(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output)
+    function it_can_resolve_options(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $configuration->aliasToIssueKey('PROJ-123')->willReturn('PROJ-123');
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn('PROJ-123');
         $input->getOption(IssueKeyResolver::OPTION)->willReturn('PROJ-123');
         $this->option($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }
 
-    function it_can_resolve_aliases_from_configuration(AliasesConfiguration $configuration, InputInterface $input, OutputInterface $output)
+    function it_can_resolve_aliases_from_configuration(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $configuration->aliasToIssueKey('something')->willReturn('PROJ-123');
-        $configuration->issueKeyToAlias('PROJ-123')->willReturn('something');
+        $guesser->guessIssueKey('something', null)->willReturn('PROJ-123');
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn('something');
         $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'something']);
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('something');
         $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));

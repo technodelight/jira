@@ -83,8 +83,8 @@ class HubHelper
     public function createPr($title, $body, $base, $branch)
     {
         return $this->hub->pullRequest()->create(
-            $this->hub->currentUser()->show()['login'],
-            $this->owner . '/' . $this->repo,
+            $this->owner,
+            $this->repo,
             [
                 'title' => $title,
                 'body' => $body,
@@ -102,8 +102,8 @@ class HubHelper
     public function prForHead($head, $state = 'all')
     {
         return $this->hub->pullRequests()->all(
-            $this->hub->currentUser()->show()['login'],
-            $this->owner . '/' . $this->repo,
+            $this->owner,
+            $this->repo,
             [
                 'state' => $state,
                 'head' => $head
@@ -112,13 +112,52 @@ class HubHelper
     }
 
     /**
-     * @return \Github\Api\Issue\Labels
+     * @return array
      */
     public function labels()
     {
-        return $this->hub->issues()->labels();
+        return $this->hub->repo()->labels()->all($this->owner, $this->repo);
     }
-    
+
+    public function milestones()
+    {
+        return $this->hub->repo()->milestones($this->owner, $this->repo);
+    }
+
+    public function addLabels($prNumber, array $labels)
+    {
+        $this->hub->issue()->update(
+            $this->owner,
+            $this->repo,
+            $prNumber,
+            [
+                'labels' => $labels,
+            ]
+        );
+    }
+
+    public function addMilestone($prNumber, $milestoneTitle)
+    {
+        $milestones = $this->milestones();
+        $milestoneNumber = null;
+        foreach ($milestones as $milestone) {
+            if ($milestone['title'] == $milestoneTitle) {
+                $milestoneNumber = $milestone['number'];
+            }
+        }
+
+        if (!empty($milestoneNumber)) {
+            $this->hub->issue()->update(
+                $this->owner,
+                $this->repo,
+                $prNumber,
+                [
+                    'milestone' => $milestoneNumber,
+                ]
+            );
+        }
+    }
+
     private function setupOwnerAndRepo()
     {
         if (!empty($this->configuration->owner()) && !empty($this->configuration->repo())) {

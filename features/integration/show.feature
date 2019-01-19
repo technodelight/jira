@@ -9,7 +9,11 @@ Scenario: I want to see the details of an issue
   """
   And Git command "branch -a | grep 'GEN-359'" returns:
   """
-    feature/GEN-359-something
+  * feature/GEN-359-something
+  """
+  And Git command "branch -a | grep '* '" returns:
+  """
+  * feature/GEN-359-something
   """
   And Git command "branch -a | grep 'feature/GEN-359-training-self-study'" returns:
   """

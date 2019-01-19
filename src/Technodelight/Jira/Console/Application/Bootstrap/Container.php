@@ -59,8 +59,6 @@ class Container
             }
         }
 
-        //@TODO: because of reasons, this thing doesn't work as expected. Somehow the application does not have any commands after regenerating container
-        //@TODO: check if anything builds up the application before commands are added?
         return $this->rebuildContainer($version, $containerPaths);
     }
 
