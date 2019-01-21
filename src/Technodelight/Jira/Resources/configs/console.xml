@@ -105,10 +105,17 @@
         <service id="technodelight.jira.console.input.issue.assignee" class="Technodelight\Jira\Console\Input\Issue\Assignee">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver"/>
-
         </service>
         <service id="technodelight.jira.console.input.issue.assignee_resolver"
                  class="Technodelight\Jira\Console\Input\Issue\AssigneeResolver" />
+
+        <!-- pull request input -->
+        <service id="technodelight.jira.console.input.pull_request.editor_input"
+                 class="Technodelight\Jira\Console\Input\PullRequest\EditorInput">
+            <argument type="service" id="technodelight.jira.console.edit" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.hub_helper" />
+        </service>
 
         <!-- stats collector -->
         <service public="false" id="technodelight.jira.console.issue_stats.storage" class="ICanBoogie\Storage\Storage">
@@ -134,8 +141,14 @@
         <!-- argument resolvers -->
         <service id="technodelight.jira.console.argument.issue_key_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />
-            <argument type="service" id="technodelight.jira.config.aliases" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
             <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
+        </service>
+        <service public="false"
+                 id="technodelight.jira.console.argument.issue_key_resolver.guesser"
+                 class="Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser">
+            <argument type="service" id="technodelight.jira.config.aliases" />
+            <argument type="service" id="technodelight.jira.config.integrations.git.branch_name_generator" />
         </service>
         <service id="technodelight.jira.console.argument.date_resolver" class="Technodelight\Jira\Console\Argument\DateResolver">
             <argument type="service" id="technodelight.jira.config.project" />

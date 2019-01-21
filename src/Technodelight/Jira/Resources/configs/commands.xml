@@ -134,6 +134,16 @@
             </call>
             <tag name="command" />
         </service>
+
+        <service id="technodelight.jira.app.command.pull_request" class="Technodelight\Jira\Console\Command\Action\Issue\PullRequest">
+            <argument type="service" id="technodelight.jira.hub_helper" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.input.pull_request.editor_input" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <tag name="command" />
+        </service>
+
         <service id="technodelight.jira.app.command.batch" class="Technodelight\Jira\Console\Command\Action\Batch">
             <argument type="service" id="technodelight.jira.app" />
             <argument type="service" id="technodelight.jira.api" />

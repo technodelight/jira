@@ -25,11 +25,11 @@ class Init extends AbstractCommand
                 InputOption::VALUE_NONE,
                 'Create user-global configuration file at ~/.jira.yml'
             )
-            ->addArgument(
+            ->addOption(
                 'sample',
-                InputArgument::OPTIONAL,
-                'Dump sample configuration instead of interactive init',
-                false
+                null,
+                InputOption::VALUE_NONE,
+                'Dump sample configuration instead of interactive init'
             )
         ;
     }
@@ -42,7 +42,7 @@ class Init extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($input->getArgument('sample')) {
+        if ($input->getOption('sample')) {
             $this->dumpSample($input, $output);
         } else {
             $this->interactiveInit($input, $output);

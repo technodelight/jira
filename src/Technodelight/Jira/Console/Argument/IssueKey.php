@@ -30,6 +30,11 @@ class IssueKey
         return new IssueKey($issueKey);
     }
 
+    /**
+     * @deprecated since 0.9.15
+     * @param Branch $branch
+     * @return IssueKey
+     */
     public static function fromBranch(Branch $branch)
     {
         $issueKey = '';
