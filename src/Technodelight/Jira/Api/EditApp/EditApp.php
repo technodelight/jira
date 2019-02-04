@@ -14,8 +14,8 @@ class EditApp
         $this->driver = $driver;
     }
 
-    public function edit($title, $content)
+    public function edit($title, $content, $stripComments = true)
     {
-        return $this->driver->edit($title, $content);
+        return $this->driver->edit($title, $content, $stripComments);
     }
 }

@@ -2,17 +2,52 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
-use Technodelight\Jira\Console\Argument\AutocompletedInput;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Argument\CommentId;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Input\Issue\Comment\Comment as CommentInput;
+use Technodelight\Jira\Renderer\Issue\Comment as CommentRenderer;
+use Technodelight\Jira\Template\IssueRenderer;
 
-class Comment extends AbstractCommand
+class Comment extends Command
 {
+    /**
+     * @var Api
+     */
+    private $jira;
+    /**
+     * @var CommentInput
+     */
+    private $commentInput;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+    /**
+     * @var IssueRenderer
+     */
+    private $issueRenderer;
+    /**
+     * @var CommentRenderer
+     */
+    private $commentRenderer;
+
+    public function __construct(Api $jira, CommentInput $commentInput, IssueKeyResolver $issueKeyResolver, IssueRenderer $issueRenderer, CommentRenderer $commentRenderer)
+    {
+        $this->jira = $jira;
+        $this->commentInput = $commentInput;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->issueRenderer = $issueRenderer;
+        $this->commentRenderer = $commentRenderer;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -48,102 +83,43 @@ class Comment extends AbstractCommand
 
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
         if ($input->getOption('delete')) {
             return;
         }
 
         if (!$input->getArgument('comment')) {
-            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
-            /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
-            $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
-            $worklogs = $worklogHandler->findByIssue($issue);
-            $issue->assignWorklogs($worklogs);
+            $issue = $this->jira->retrieveIssue((string) $issueKey);
 
-            $renderer = $this->issueRenderer();
-            $renderer->render($output, $issue, true);
+            $this->issueRenderer->render($output, $issue);
 
-            // when updating comment, open in editor instead
-            if ($commentId = $input->getOption('update')) {
-                $output->write('</>');
-                $input->setArgument('comment',
-                    $this->editor()->edit(
-                        sprintf('Edit comment #%d on %s', $commentId, $issueKey),
-                        $this->jiraApi()->retrieveComment((string) $issueKey, $commentId)->body()
-                    )
-                );
-            } else {
-                $autocomplete = new AutocompletedInput($this->jiraApi(), $issue, $this->getPossibleIssues(), [$issue->summary(), $issue->description()]);
-                $output->writeln([
-                    '',
-                    '<info>Comment:</> ' . $autocomplete->helpText()
-                ]);
-                $output->write('</>');
-                $input->setArgument('comment', $autocomplete->getValue());
+            try {
+                $commentId = CommentId::fromString($input->getOption('update'));
+                $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
+            } catch (\InvalidArgumentException $e) {
+                $input->setArgument('comment', $this->commentInput->createComment($issue, $output));
             }
         }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
         $comment = $input->getArgument('comment');
-        $delete = $input->getOption('delete');
-        $update = $input->getOption('update');
-        $render = $this->commentRenderer();
+        $deleteCommentId = $input->getOption('delete');
+        $updateCommentId = $input->getOption('update');
 
-        if ($update) {
-            $comment = $this->jiraApi()->updateComment((string) $issueKey, $update, $comment);
+        if ($updateCommentId) {
+            $comment = $this->jira->updateComment((string) $issueKey, (string) CommentId::fromString($updateCommentId), $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
-            $render->renderComment($output, $comment);
-        } elseif ($delete) {
-            $this->jiraApi()->deleteComment((string) $issueKey, $delete);
+            $this->commentRenderer->renderComment($output, $comment);
+        } elseif ($deleteCommentId) {
+            $this->jira->deleteComment((string) $issueKey, CommentId::fromString($deleteCommentId));
             $output->writeln('<info>Comment has been deleted</>');
         } else {
-            $comment = $this->jiraApi()->addComment((string) $issueKey, $comment);
+            $comment = $this->jira->addComment((string) $issueKey, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
-            $render->renderComment($output, $comment);
+            $this->commentRenderer->renderComment($output, $comment);
         }
-    }
-
-    private function getPossibleIssues()
-    {
-        return $this->jiraApi()->search(
-            Builder::factory()
-                ->issueKeyInHistory()
-                ->assemble()
-        );
-    }
-
-    /**
-     * @return Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Template\IssueRenderer
-     */
-    private function issueRenderer()
-    {
-        return $this->getService('technodelight.jira.issue_renderer');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\Issue\Comment
-     */
-    private function commentRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.issue.comment');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\EditApp\EditApp
-     */
-    private function editor()
-    {
-        return $this->getService('technodelight.jira.console.edit');
     }
 }

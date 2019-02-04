@@ -78,19 +78,23 @@ class HubHelper
      * @param string $body
      * @param string $base
      * @param string $branch
+     * @param string|null $milestone
+     * @param array|null $labels
      * @throws \Github\Exception\MissingArgumentException
      */
-    public function createPr($title, $body, $base, $branch)
+    public function createPr($title, $body, $base, $branch, $milestone = null, array $labels = null)
     {
         return $this->hub->pullRequest()->create(
             $this->owner,
             $this->repo,
-            [
+            array_filter([
                 'title' => $title,
                 'body' => $body,
                 'base' => $base,
                 'head' => $branch,
-            ]
+                'milestone' => $milestone,
+                'labels' => $labels
+            ])
         );
     }
 
@@ -122,6 +126,16 @@ class HubHelper
     public function milestones()
     {
         return $this->hub->repo()->milestones($this->owner, $this->repo);
+    }
+
+    public function assignees()
+    {
+        return $this->hub->issue()->assignees()->listAvailable($this->owner, $this->repo, ['type' => 'Contributor']);
+    }
+
+    public function collaborators()
+    {
+        return $this->hub->repo()->collaborators()->all($this->owner, $this->repo);
     }
 
     public function addLabels($prNumber, array $labels)
@@ -156,6 +170,18 @@ class HubHelper
                 ]
             );
         }
+    }
+
+    public function addAssignees($prNumber, array $assignees)
+    {
+        $this->hub->issue()->update(
+            $this->owner,
+            $this->repo,
+            $prNumber,
+            [
+                'assignees' => $assignees,
+            ]
+        );
     }
 
     private function setupOwnerAndRepo()

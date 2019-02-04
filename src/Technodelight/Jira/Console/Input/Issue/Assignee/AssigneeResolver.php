@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Input\Issue;
+namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
 class AssigneeResolver
 {

@@ -9,8 +9,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
-use Technodelight\Jira\Console\Input\Issue\Assignee;
-use Technodelight\Jira\Console\Input\Issue\AssigneeResolver;
+use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee;
+use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
 
 class Assign extends Command
 {

@@ -2,15 +2,21 @@
 
 namespace Technodelight\Jira\Console\Input\Worklog;
 
+use Hoa\Console\Readline\Autocompleter\Aggregate;
+use Hoa\Console\Readline\Autocompleter\Autocompleter;
+use Hoa\Console\Readline\Autocompleter\Word;
+use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\GitShell\Api as Git;
 use Technodelight\GitShell\Branch;
 use Technodelight\GitShell\LogEntry;
 use Technodelight\GitShell\LogMessage;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Connector\HoaConsole\UsernameAutocomplete;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\AutocompletedInput;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Worklog;
 
 class Comment
@@ -37,17 +43,83 @@ class Comment
 
     public function read(OutputInterface $output, Issue $issue = null, Worklog $worklog = null, $keepDefault = false)
     {
-        $defaultMessage = $this->defaultMessage($worklog, $issue);
+        $defaultMessage = $this->defaultMessage($issue, $worklog);
         if ($keepDefault) {
             return $defaultMessage;
         }
 
-        $input = $this->prepareAutocompleter($issue, $defaultMessage);
+        $reader = $this->buildReadline(
+            $this->buildAutocompleter($issue, $this->fetchWordsList($issue)),
+            $issue,
+            $defaultMessage
+        );
+
         $output->write($this->worklogCommentDialogText($defaultMessage, $worklog));
-        $output->writeln($input->helpText());
-        $comment = $input->getValue();
+        $output->writeln($this->helpText());
+        $comment = $reader->readLine();
         $output->write('</>');
+
         return $comment;
+    }
+
+    private function buildAutocompleter(Issue $issue, array $words = [])
+    {
+        $autocompleters = [
+            $words ? new Word(array_unique($words)) : null,
+            new UsernameAutocomplete($issue, $this->api)
+        ];
+
+        return new Aggregate(array_filter($autocompleters));
+    }
+
+    private function buildReadline(Autocompleter $autocompleter, Issue $issue, $defaultMessage)
+    {
+        $reader = new Readline;
+        $reader->setAutocompleter($autocompleter);
+        $reader->addHistory($this->worklogCommentFromGitCommits($issue->key()));
+        foreach ($this->collectWorklogComments($issue, $this->api->user()) as $worklogComment) {
+            $reader->addHistory($worklogComment);
+        }
+        $reader->addHistory($defaultMessage);
+
+        return $reader;
+    }
+
+    private function helpText()
+    {
+        return '(Ctrl-A: beginning of the line, Ctrl-E: end of the line, Ctrl-B: backward one word, Ctrl-F: forward one word, Ctrl-W: delete first backward word)';
+    }
+
+    private function fetchWordsList(Issue $issue)
+    {
+        $list = $issue->comments();
+        $list[] = $issue->description();
+        $list[] = $issue->summary();
+
+        return $this->collectWords($list);
+    }
+
+    private function collectWords(array $texts)
+    {
+        $words = [];
+        foreach ($texts as $text) {
+            $words = array_merge($words, $this->collectAutocompleteableWords($text));
+        }
+
+        return array_unique($words);
+    }
+
+    private function collectAutocompleteableWords($text)
+    {
+        $text = preg_replace('~[^a-zA-Z0-9\s\']+~', '', $text);
+
+        $words = array_map(function($word) {
+            return trim(strtolower($word));
+        }, preg_split('~\s~', $text));
+
+        return array_filter($words, function($word) {
+            return mb_strlen($word) > 2;
+        });
     }
 
     /**
@@ -58,13 +130,7 @@ class Comment
     protected function prepareAutocompleter(Issue $issue, $defaultMessage)
     {
         $user = $this->api->user();
-        $history = array_filter(array_map(function (Worklog $log) use ($user) {
-            if ($log->author()->key() == $user->key()) {
-                return $log->comment();
-            }
-
-            return null;
-        }, iterator_to_array($this->worklogHandler->findByIssue($issue))));
+        $history = $this->collectWorklogComments($issue, $user);
         $history[] = $this->worklogCommentFromGitCommits($issue->key());
         $history[] = $defaultMessage;
 
@@ -81,7 +147,7 @@ class Comment
         );
     }
 
-    private function defaultMessage(Worklog $worklog = null, Issue $issue)
+    private function defaultMessage(Issue $issue, Worklog $worklog = null)
     {
         if (!is_null($worklog)) {
             return null; // force comment to be the existing comment when editing
@@ -113,9 +179,7 @@ EOL;
     private function worklogCommentFromGitCommits($issueKey)
     {
         if ($commitMessages = $this->retrieveGitCommitMessages($issueKey)) {
-            return count($commitMessages) == 1
-                ? $this->prepareWorklogCommentFromOneCommitMessage($commitMessages)
-                : $this->prepareWorklogCommentFromMultipleCommitMessages($commitMessages);
+            return $this->prepareWorklogCommentFromCommitMessages($commitMessages);
         }
 
         return "Worked on $issueKey";
@@ -130,13 +194,14 @@ EOL;
         $messages = array_filter(
             $this->gitLog($issueKey),
             function (LogEntry $entry) use ($issueKey) {
-                return strpos((string) $entry->message(), $issueKey) !== false;
+                return strpos((string) $entry->message(), (string) $issueKey) !== false;
             }
         );
 
         return array_map(
             function (LogEntry $entry) use ($issueKey) {
                 $message = $entry->message();
+
                 return LogMessage::fromString(
                     ucfirst(preg_replace('~^\s*'.preg_quote($issueKey).'\s+~', '', $message->getHeader())) . PHP_EOL
                     . PHP_EOL
@@ -145,6 +210,30 @@ EOL;
             },
             $messages
         );
+    }
+
+    /**
+     * @param LogMessage[] $commitMessages
+     * @return string
+     */
+    private function prepareWorklogCommentFromCommitMessages(array $commitMessages)
+    {
+        return join(', ', array_filter(
+            array_map([$this, 'prepareWorklogCommentCommitMessage'], $commitMessages)
+        ));
+    }
+
+    /**
+     * @param LogMessage $commitMessages
+     * @return string
+     */
+    private function prepareWorklogCommentCommitMessage(LogMessage $commitMessage)
+    {
+        $comments = array_map(function ($line) {
+            return trim($line, '- ,' . PHP_EOL);
+        }, explode(PHP_EOL, $commitMessage->getBody() ?: $commitMessage->getHeader()));
+
+        return join(', ', array_filter($comments));
     }
 
     private function gitLog($issueKey)
@@ -170,34 +259,18 @@ EOL;
     }
 
     /**
-     * @param array $commitMessages
-     * @return string
+     * @param Issue $issue
+     * @param User $user
+     * @return string[]
      */
-    private function prepareWorklogCommentFromOneCommitMessage(array $commitMessages)
+    protected function collectWorklogComments(Issue $issue, User $user)
     {
-        $commitMessage = end($commitMessages);
-        $comments = array_map(function ($line) {
-            return trim($line, '- ,' . PHP_EOL);
-        }, explode(PHP_EOL, $commitMessage->getBody() ?: $commitMessage->getHeader()));
+        return array_filter(array_map(function (Worklog $log) use ($user) {
+            if ($log->author()->key() == $user->key()) {
+                return $log->comment();
+            }
 
-        return join(', ', array_filter($comments));
-    }
-
-    /**
-     * @param array $commitMessages
-     * @return string
-     */
-    private function prepareWorklogCommentFromMultipleCommitMessages(array $commitMessages)
-    {
-        $messages = [];
-        foreach ($commitMessages as $message) {
-            // format the message a bit
-            $comments = array_map(function ($line) {
-                return trim($line, '- ,' . PHP_EOL);
-            }, explode(PHP_EOL, $message->getHeader()));
-            $messages[] = join(', ', array_filter($comments));
-        }
-
-        return join(', ', array_filter($messages));
+            return null;
+        }, iterator_to_array($this->worklogHandler->findByIssue($issue))));
     }
 }

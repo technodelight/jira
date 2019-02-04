@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\HoaConsole;
+namespace Technodelight\Jira\Connector\HoaConsole;
 
 use Fuse\Fuse;
 use Hoa\Console\Readline\Autocompleter\Autocompleter;

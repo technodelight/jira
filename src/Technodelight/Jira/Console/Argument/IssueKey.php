@@ -5,6 +5,9 @@ namespace Technodelight\Jira\Console\Argument;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
 
+/**
+ * @todo: move this class under the domain namespace
+ */
 class IssueKey
 {
     const ISSUE_PATTERN = '~^[A-Z]+-[0-9]+$~';
@@ -31,7 +34,8 @@ class IssueKey
     }
 
     /**
-     * @deprecated since 0.9.15
+     * @deprecated since 0.9.15, will be removed in 0.9.17
+     * @todo remove this method as unused
      * @param Branch $branch
      * @return IssueKey
      */

@@ -48,6 +48,12 @@ class ProjectKeyResolver
         }
     }
 
+    /**
+     * @TODO refactor to the same way as issue key guesser
+     * @TODO maybe reuse the same guesser
+     * @param $branch
+     * @return bool|ProjectKey
+     */
     private function fromBranch($branch)
     {
         try {

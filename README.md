@@ -1,3 +1,5 @@
+![logo](./docs/logo.png)
+
 # JIRA in command line
 
 [![Build Status](https://travis-ci.org/technodelight/jira.svg?branch=master)](https://travis-ci.org/technodelight/jira)
@@ -83,6 +85,14 @@ And other powerful features such as:
 - define how much work hours do you have per day, to easily track your overtime 
 
 Please bear in mind *this app is still in development* and it may have bugs. If you find one or you have a feature request/suggestion, please open an issue [here](https://github.com/technodelight/jira/issues).
+
+
+# Tips
+
+- **Add .jira.yml to your global gitignore:** 
+
+  `echo .jira.yml | tee -a ~/.gitignore_global`
+
 
 # Configuration reference
 
@@ -298,10 +308,10 @@ renderers:
 
 # Useful links
 
-- JQL: https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
+- **Register GitHub api token:** https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool
+- **JQL:** https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
 - Tempo Timesheets: https://www.tempo.io/jira-project-management-tool
-- Register GitHub api token: https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool
-- 
+- Steps on how to gather an **API token for Tempo Timesheets** (section "Using the REST API as an individual user"): https://tempo-io.github.io/tempo-api-docs/
 
 # License
 

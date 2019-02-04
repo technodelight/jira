@@ -58,4 +58,9 @@ class Comment
     {
         return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->updated);
     }
+
+    public function __toString()
+    {
+        return $this->body;
+    }
 }

@@ -96,7 +96,7 @@ class IssueRenderer
     {
         $groupedIssues = [];
         foreach ($issues as $issue) {
-            $group = $issue->parent() ? $issue->parent()->issueKey() : 'Other issues';
+            $group = $issue->parent() ? (string) $issue->parent()->issueKey() : 'Other issues';
             if (!isset($groupedIssues[$group])) {
                 $groupedIssues[$group] = [
                     'parentInfo' => array_filter(

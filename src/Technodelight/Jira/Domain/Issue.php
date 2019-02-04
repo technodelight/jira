@@ -2,46 +2,56 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Issue\IssueType;
 use Technodelight\Jira\Helper\DateHelper;
 
 class Issue
 {
-    private $id, $link, $key, $fields;
-
+    /**
+     * @var string
+     */
+    private $id;
+    /**
+     * @var string
+     */
+    private $link;
+    /**
+     * @var string
+     */
+    private $key;
+    /**
+     * @var array
+     */
+    private $fields = [];
     /**
      * Parent issue, if any
      *
      * @var Issue|null
      */
     private $parent;
-
     /**
      * Subtasks
      *
      * @var Issue[]
      */
     private $subtasks;
-
     /**
      * Worklogs, if all fields are returned by API
      *
      * @var WorklogCollection
      */
     private $worklogs;
-
     /**
      * Comments, if any
      *
      * @var Comment[]
      */
     private $comments = [];
-
     /**
      * @var Attachment[]
      */
     private $attachments = [];
-
     /**
      * @var IssueLink[]
      */
@@ -54,12 +64,12 @@ class Issue
 
     public function key()
     {
-        return $this->key;
+        return IssueKey::fromString($this->key);
     }
 
     public function ticketNumber()
     {
-        return $this->key;
+        return IssueKey::fromString($this->key);
     }
 
     public function issueKey()

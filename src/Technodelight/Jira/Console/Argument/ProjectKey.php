@@ -5,6 +5,10 @@ namespace Technodelight\Jira\Console\Argument;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Console\Argument\Exception\MissingProjectKeyException;
 
+/**
+ * @deprecated
+ * @see \Technodelight\Jira\Domain\ProjectKey
+ */
 class ProjectKey
 {
     const GIT_PATTERN = '~^feature/([A-Z]+-[0-9]+)-(.*)~';
@@ -20,6 +24,11 @@ class ProjectKey
         return $instance;
     }
 
+    /**
+     * @deprecated
+     * @param Branch $branch
+     * @return ProjectKey
+     */
     public static function fromBranch(Branch $branch)
     {
         $projectKey = '';

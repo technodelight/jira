@@ -12,7 +12,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
-use Technodelight\Jira\Console\Input\Issue\Assignee;
+use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\GitShell\Api as GitShell;

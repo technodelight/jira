@@ -50,6 +50,7 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <argument type="service" id="console.question_helper" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
         </service>
         <service id="technodelight.jira.console.open" class="Technodelight\Jira\Api\OpenApp\OpenApp">
             <factory class="Technodelight\Jira\Api\OpenApp\OsAdaptingFactory" method="create" />
@@ -95,19 +96,28 @@
         </service>
         <!-- field editor -->
 
-        <!-- comment input reader -->
+        <!-- worklog comment input reader -->
         <service id="technodelight.jira.console.input.worklog.comment" class="Technodelight\Jira\Console\Input\Worklog\Comment">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
         </service>
+
         <!-- issue assignee input -->
-        <service id="technodelight.jira.console.input.issue.assignee" class="Technodelight\Jira\Console\Input\Issue\Assignee">
+        <service id="technodelight.jira.console.input.issue.assignee" class="Technodelight\Jira\Console\Input\Issue\Assignee\Assignee">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver"/>
         </service>
         <service id="technodelight.jira.console.input.issue.assignee_resolver"
-                 class="Technodelight\Jira\Console\Input\Issue\AssigneeResolver" />
+                 class="Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver" />
+
+        <!-- issue comment input -->
+        <service id="technodelight.jira.console.input.issue.comment"
+                 class="Technodelight\Jira\Console\Input\Issue\Comment\Comment"
+                 public="false">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.edit" />
+        </service>
 
         <!-- pull request input -->
         <service id="technodelight.jira.console.input.pull_request.editor_input"
@@ -154,9 +164,9 @@
             <argument type="service" id="technodelight.jira.config.project" />
         </service>
         <service id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" class="Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver">
-            <argument type="service" id="technodelight.jira.config.aliases" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
             <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
         </service>
         <service id="technodelight.jira.console.argument.project_key_resolver" class="Technodelight\Jira\Console\Argument\ProjectKeyResolver">
             <argument type="service" id="technodelight.gitshell.api" />

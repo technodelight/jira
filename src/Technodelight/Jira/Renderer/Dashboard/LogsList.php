@@ -50,8 +50,8 @@ class LogsList implements DashboardRenderer
 
             foreach ($worklogs as $worklog) {
                 /** @var $worklog Worklog */
-                $rows[$worklog->issueKey()][] = $worklog;
-                $totalTimes[$worklog->issueKey()]+= $worklog->timeSpentSeconds();
+                $rows[(string) $worklog->issueKey()][] = $worklog;
+                $totalTimes[(string) $worklog->issueKey()]+= $worklog->timeSpentSeconds();
             }
 
             if ($daysCount > 1) {

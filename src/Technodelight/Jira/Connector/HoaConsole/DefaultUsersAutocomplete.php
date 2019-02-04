@@ -1,9 +1,9 @@
 <?php
 
-namespace Technodelight\Jira\Console\HoaConsole;
+namespace Technodelight\Jira\Connector\HoaConsole;
 
 use Hoa\Console\Readline\Autocompleter\Autocompleter;
-use Technodelight\Jira\Console\Input\Issue\AssigneeResolver;
+use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
 
 class DefaultUsersAutocomplete implements Autocompleter
 {

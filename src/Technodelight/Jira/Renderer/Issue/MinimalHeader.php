@@ -12,6 +12,6 @@ class MinimalHeader implements IssueRenderer
 {
     public function render(OutputInterface $output, Issue $issue)
     {
-        $output->writeln($issue->key());
+        $output->writeln((string) $issue->key());
     }
 }

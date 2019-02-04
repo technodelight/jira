@@ -9,6 +9,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\GitShell\Api;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
+use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput;
 use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -32,11 +34,15 @@ class PullRequest extends Command
      */
     private $prInput;
     /**
+     * @var Guesser
+     */
+    private $guesser;
+    /**
      * @var TemplateHelper
      */
     private $templateHelper;
 
-    public function __construct(HubHelper $hub, Api $git, Jira $jira, EditorInput $prInput, TemplateHelper $templateHelper)
+    public function __construct(HubHelper $hub, Api $git, Jira $jira, EditorInput $prInput, Guesser $guesser, TemplateHelper $templateHelper)
     {
         parent::__construct();
 
@@ -44,6 +50,7 @@ class PullRequest extends Command
         $this->git = $git;
         $this->jira = $jira;
         $this->prInput = $prInput;
+        $this->guesser = $guesser;
         $this->templateHelper = $templateHelper;
     }
 
@@ -55,14 +62,14 @@ class PullRequest extends Command
             ->setDescription('Create pull request from current branch')
             ->addOption(
                 'base',
-                'b',
+                'B',
                 InputOption::VALUE_OPTIONAL,
                 'Specify base branch to create the PR against',
                 'develop'
             )
             ->addOption(
                 'head',
-                'h',
+                'H',
                 InputOption::VALUE_OPTIONAL,
                 'Specify head branch, defaults to current branch',
                 false
@@ -80,7 +87,8 @@ class PullRequest extends Command
     {
         $base = $input->getOption('base');
         $head = $input->getOption('head') === false ? $this->git->currentBranch()->name() : $input->getOption('head');
-        $this->checkIfBranchIsBehind($input, $output, $head);
+
+        $this->checkForUncommitedChanges($input, $output);
         if (false === $this->checkIfHasPr($input, $output, $head)) {
             $output->writeln(sprintf('<error>You already have an open PR for %s</error>', $head));
             return 1;
@@ -88,40 +96,58 @@ class PullRequest extends Command
 
         $pr = $this->prInput->gatherDataForPr($base, $head);
 
-        $createdPr = $this->hub->createPr($pr->title(), $pr->body(), $base, $head);
-        $prNumber = $createdPr['number'];
-        $output->writeln(sprintf('<info>You have successfully created PR #%s</info> <fg=black>(%s)</>', $prNumber, $createdPr['url']));
-        if (!empty($pr->labels())) {
-            $this->hub->addLabels($prNumber, $pr->labels());
-            $output->writeln(sprintf('Labels added: <comment>%s</>', join(', ', $pr->labels())));
+        try {
+
+            $createdPr = $this->hub->createPr($pr->title(), $pr->body(), $base, $head, $pr->milestone(), $pr->labels());
+            $prNumber = $createdPr['number'];
+            $output->writeln(sprintf('<info>You have successfully created PR #%s</info> <fg=black>(%s)</>', $prNumber, $createdPr['html_url']));
+
+            if (!empty($pr->labels())) {
+                $this->hub->addLabels($prNumber, $pr->labels());
+                $output->writeln(sprintf('Labels added: <comment>%s</>', join(', ', $pr->labels())));
+            }
+
+            if (!empty($pr->milestone())) {
+                $this->hub->addMilestone($prNumber, $pr->milestone());
+                $output->writeln(sprintf('Milestone added: <comment>%s</>', $pr->milestone()));
+            }
+
+            if (!empty($pr->assignees())) {
+                $this->hub->addAssignees($prNumber, $pr->assignees());
+                $output->writeln(sprintf('Users assigned: <comment>%s</>', join(', ', $pr->assignees())));
+            }
+
+        } catch (\Github\Exception\ValidationFailedException $e) {
+            $output->writeln([
+                sprintf('<error>%s</>', $e->getMessage()),
+                '',
+                'Did you maybe forget to push your changes to the remote?',
+            ]);
         }
     }
 
-    private function checkIfBranchIsBehind(InputInterface $input, OutputInterface $output, $head)
+    private function checkForUncommitedChanges(InputInterface $input, OutputInterface $output)
     {
-        //@TODO: check also when the head is not the current branch!
-        //@TODO: check for uncommited files too!
-        if ($head === $this->git->currentBranch()) {
-            $logs = $this->git->log('origin/' . $head, $head);
-            if (!empty($logs) || $diff = $this->git->diff()) {
-                $helper = $this->questionHelper();
+        $diff = $this->git->diff();
 
-                $output->writeln('It seems you have the following uncommited changes on your current branch:');
-                foreach ($diff as $entry) {
-                    $output->writeln(
-                        $this->tab(
-                            sprintf('<comment>%s</comment> %s', $entry->state(), $entry->file())
-                        )
-                    );
-                }
-                $question = new ConfirmationQuestion(
-                    'Are you sure you want to create a PR? [Y/n] ',
-                true
+        if (!empty($diff)) {
+            $helper = $this->questionHelper();
+
+            $output->writeln('It seems you have the following uncommited changes on your current branch:');
+            foreach ($diff as $entry) {
+                $output->writeln(
+                    $this->tab(
+                        sprintf('<comment>%s</comment> %s', $entry->state(), $entry->file())
+                    )
                 );
+            }
+            $question = new ConfirmationQuestion(
+                'Are you sure you want to create a PR? [Y/n] ',
+            true
+            );
 
-                if (!$helper->ask($input, $output, $question)) {
-                    throw new \RuntimeException('OK. See you later ;)');
-                }
+            if (!$helper->ask($input, $output, $question)) {
+                throw new \RuntimeException('OK. See you later ;)');
             }
         }
     }
@@ -129,9 +155,19 @@ class PullRequest extends Command
     private function checkIfHasPr(InputInterface $input, OutputInterface $output, $head)
     {
         $prs = $this->hub->prForHead($head, 'open');
-        if (!empty($prs)) {
-            $output->writeln('You already have an open PR for this branch!');
-            return false;
+        foreach ($this->git->branches($head) as $branch) {
+            $currentIssueKey = $this->guesser->guessIssueKey(false, $branch);
+            foreach ($prs as $pr) {
+                if ($pr['state'] !== 'open') {
+                    continue;
+                }
+                /** @var IssueKey $key */
+                $key = $this->guesser->guessIssueKey($pr['head']['ref']);
+                if ((string) $key === (string) $currentIssueKey && $key !== false && $currentIssueKey !== false) {
+                    $output->writeln(sprintf('You already have an open PR for this branch! <fg=black>%s</>', $pr['html_url']));
+                    return false;
+                }
+            }
         }
 
         return true;

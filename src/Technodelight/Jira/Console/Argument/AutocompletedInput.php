@@ -6,11 +6,14 @@ use Hoa\Console\Readline\Autocompleter\Aggregate;
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\HoaConsole\IssueAutocomplete;
-use Technodelight\Jira\Console\HoaConsole\UsernameAutocomplete;
+use Technodelight\Jira\Connector\HoaConsole\IssueAutocomplete;
+use Technodelight\Jira\Connector\HoaConsole\UsernameAutocomplete;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 
+/**
+ * @deprecated use Input\Comment\Comment instead
+ */
 class AutocompletedInput
 {
     /**

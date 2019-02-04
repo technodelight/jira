@@ -34,7 +34,7 @@ class TempoConfiguration implements RegistrableConfiguration
         $instance->enabled = (bool) $config['enabled'];
         $instance->version = $config['version']; // can be: null or string
         $instance->apiToken = $config['apiToken']; // can be: null or string
-        if ($instance->version == '2' && empty($instance->apiToken) && empty($config['instances'])) {
+        if ($instance->version == '2' && empty($instance->apiToken) && empty($config['instances']) && $instance->enabled) {
             throw new \InvalidArgumentException(
                 'Tempo2: you must provide an API token to use this feature'
             );

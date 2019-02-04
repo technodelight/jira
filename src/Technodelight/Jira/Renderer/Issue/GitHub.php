@@ -6,6 +6,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Renderer\Elements\Badge;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
 class GitHub implements IssueRenderer
@@ -63,6 +64,7 @@ class GitHub implements IssueRenderer
                         $hubIssue['user']['login'],
                         $hubIssue['html_url']
                     ),
+                    join(' ', array_filter([$this->formatLabels($hubIssue), $this->formatMilestone($hubIssue)])),
                     isset($statuses[$hubIssue['number']]) ? join(PHP_EOL, $statuses[$hubIssue['number']]) : ''
                 ])));
             },
@@ -78,7 +80,7 @@ class GitHub implements IssueRenderer
     {
         $issues = $this->hub->issues();
         return array_filter($issues, function ($hubIssue) use ($issue) {
-            return strpos($hubIssue['title'], $issue->issueKey()) === 0;
+            return strpos($hubIssue['title'], (string) $issue->issueKey()) === 0;
         });
     }
 
@@ -94,6 +96,32 @@ class GitHub implements IssueRenderer
             },
             $matchingIssues
         );
+    }
+
+    private function formatLabels(array $hubIssue)
+    {
+        if (empty($hubIssue['labels'])) {
+            return '';
+        }
+
+        $labels = $hubIssue['labels'];
+        $badges = [];
+        foreach ($labels as $label) {
+            $badge = new Badge($label['name'], 'white', '#' . $label['color']);
+            $badges[] = (string) $badge;
+        }
+
+        return $this->tab(join(' ', $badges));
+    }
+
+    private function formatMilestone($hubIssue)
+    {
+        if (empty($hubIssue['milestone'])) {
+            return '';
+        }
+
+        $badge = new Badge(sprintf('🏷  %s', $hubIssue['milestone']['title']), 'cyan');
+        return '['. $badge . ']';
     }
 
     private function formatCIStatus(array $status)
