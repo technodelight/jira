@@ -522,7 +522,7 @@ class Api
      *
      * @return IssueCollection
      */
-    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = ['priority'])
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = [])
     {
         try {
             $results = $this->client->search(

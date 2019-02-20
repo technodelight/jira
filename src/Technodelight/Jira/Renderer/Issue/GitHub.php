@@ -57,12 +57,13 @@ class GitHub implements IssueRenderer
             function ($hubIssue) use ($statuses) {
                 return (join(PHP_EOL, array_filter([
                     sprintf(
-                        '<info>#%d</> <comment>[%s]</> %s <fg=cyan>(%s)</> <fg=black>(%s)</>',
+                        '<info>#%d</> <comment>[%s]</> %s <fg=cyan>(%s)</> <fg=black>(%s) (%s)</>',
                         $hubIssue['number'],
                         $hubIssue['state'],
                         $hubIssue['title'],
                         $hubIssue['user']['login'],
-                        $hubIssue['html_url']
+                        $hubIssue['html_url'],
+                        (new \DateTime($hubIssue['created_at']))->format('Y-m-d H:i:s')
                     ),
                     join(' ', array_filter([$this->formatLabels($hubIssue), $this->formatMilestone($hubIssue)])),
                     isset($statuses[$hubIssue['number']]) ? join(PHP_EOL, $statuses[$hubIssue['number']]) : ''

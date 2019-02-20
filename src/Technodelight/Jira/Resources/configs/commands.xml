@@ -18,7 +18,6 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.shellfeatures" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
-            <argument type="service" id="service_container"/>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.usagestats" class="Technodelight\Jira\Console\Command\Internal\UsageStats">
