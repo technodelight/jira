@@ -140,11 +140,11 @@ class HttpClient implements Client
             $parts['host'] = $parts['path'];
             unset($parts['path']);
         }
-        $url = array_filter([
+        $url = join('', array_filter([
             isset($parts['user']) && isset($parts['pass']) ? $parts['user'] . ':' . $parts['pass'] . '@' : null,
             $parts['host'],
             isset($parts['port']) ? ':' . $parts['port'] : null,
-        ]);
+        ]));
         return sprintf(
             '%s://%s%s',
             isset($parts['proto']) ? $parts['proto'] : 'https',
