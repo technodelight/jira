@@ -136,6 +136,10 @@ class HttpClient implements Client
     private function apiUrl($projectDomain)
     {
         $parts = parse_url($projectDomain);
+        if (count($parts) === 1 && isset($parts['path'])) {
+            $parts['host'] = $parts['path'];
+            unset($parts['path']);
+        }
         $url = array_filter([
             isset($parts['user']) && isset($parts['pass']) ? $parts['user'] . ':' . $parts['pass'] . '@' : null,
             $parts['host'],
