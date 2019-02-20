@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\HoaConsole;
+namespace Technodelight\Jira\Connector\HoaConsole;
 
 use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
@@ -43,6 +43,7 @@ class UsernameAutocomplete implements Autocompleter
         } elseif (count($autocompletedValues) > 1) {
             return $autocompletedValues;
         }
+
         return null;
     }
 
@@ -54,7 +55,7 @@ class UsernameAutocomplete implements Autocompleter
      */
     public function getWordDefinition()
     {
-        return '(\[~[^\b]+|@[^\b]+)';
+        return '\[~[^]]+|@[^]]+';
     }
 
     private function getMatchesForPrefix(Issue $issue, $prefix)

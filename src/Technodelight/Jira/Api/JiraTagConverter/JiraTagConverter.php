@@ -250,7 +250,7 @@ class JiraTagConverter
             $maxLength = $this->opt('terminalWidth') - $this->opt('tabulation');
         }
 
-        $body = preg_replace('~^-----~m', str_repeat('─', $maxLength), $body);
+        $body = preg_replace('~^-----*~m', str_repeat('─', $maxLength), $body);
     }
 
     private function convertPanels(&$body)

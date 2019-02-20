@@ -135,9 +135,16 @@ class HttpClient implements Client
 
     private function apiUrl($projectDomain)
     {
+        $parts = parse_url($projectDomain);
+        $url = array_filter([
+            isset($parts['user']) && isset($parts['pass']) ? $parts['user'] . ':' . $parts['pass'] . '@' : null,
+            $parts['host'],
+            isset($parts['port']) ? ':' . $parts['port'] : null,
+        ]);
         return sprintf(
-            'https://%s%s',
-            $projectDomain,
+            '%s://%s%s',
+            isset($parts['proto']) ? $parts['proto'] : 'https',
+            $url,
             self::API_PATH
         );
     }

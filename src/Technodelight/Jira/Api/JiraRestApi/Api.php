@@ -23,6 +23,9 @@ use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
+/**
+ * @todo: as IssueKey was introduced to domain level, refactor API methods to await IssueKey arguments everywhere
+ */
 class Api
 {
     const FIELDS_ALL = '*all';
@@ -456,8 +459,11 @@ class Api
     }
 
     /**
-     * @param string $issueKey
+     * Returns either all transitions or a transition that can be performed by the user on an issue, based on the issue's status.
+     * Note, if a request is made for a transition that does not exist or cannot be performed on the issue, given its status, the response will return any empty transitions list.
      *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/?utm_source=%2Fcloud%2Fjira%2Fplatform%2Frest%2F&utm_medium=302#api-api-3-issue-issueIdOrKey-transitions-get
+     * @param string $issueKey
      * @return Transition[]
      */
     public function retrievePossibleTransitionsForIssue($issueKey)
@@ -471,13 +477,17 @@ class Api
                 $result['transitions']
             );
         }
+
         return [];
     }
 
     /**
+     * Performs an issue transition and, if the transition has a screen, updates the fields from the transition screen. Optionally, issue properties can be set.
+     * To update the fields on the transition screen, specify the fields in the fields or update parameters in the request body. Get details about the fields by calling fields by Get transition and using the transitions.fields expand.
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/?utm_source=%2Fcloud%2Fjira%2Fplatform%2Frest%2F&utm_medium=302#api-api-3-issue-issueIdOrKey-transitions-post
      * @param string $issueKey
      * @param int $transitionId returned by retrieveTransitions
-     *
      * @return array
      */
     public function performIssueTransition($issueKey, $transitionId)
@@ -512,7 +522,7 @@ class Api
      *
      * @return IssueCollection
      */
-    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = ['priority'])
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = [])
     {
         try {
             $results = $this->client->search(
@@ -563,6 +573,19 @@ class Api
     }
 
     /**
+     * Upload an attachment to an issue
+     *
+     * @TODO change client implementation to provide arbitrary headers
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-attachments-post
+     * @param string $issueKey
+     * @param string $attachmentFilePath
+     */
+    public function addAttachment($issueKey, $attachmentFilePath)
+    {
+
+    }
+
+    /**
      * @param string $issueKey
      * @param string $comment
      * @return \Technodelight\Jira\Domain\Comment
@@ -580,7 +603,6 @@ class Api
 
     /**
      * Retrieve single comment
-     *
      *
      * @param string $issueKey
      * @param string $commentId

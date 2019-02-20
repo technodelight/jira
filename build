@@ -90,7 +90,7 @@ function checkToolsInstalled(ConsoleOutput $output)
                 "<error>Please install $tool and make available in \$PATH to continue</error>"
             );
             if (isset($hints['legend'])) {
-                $output->writeln(sprintf('<info>hint:</info> ', $hints['legend']));
+                $output->writeln(sprintf('<info>hint:</info> %s', $hints['legend']));
             }
             if (isset($hints['url'])) {
                 $output->writeln(sprintf('Please visit %s for more info', $hints['url']));
@@ -108,7 +108,7 @@ function checkToolsInstalled(ConsoleOutput $output)
                 )
             );
             if (isset($hints['legend'])) {
-                $output->writeln(sprintf('<info>hint:</info> ', $hints['legend']));
+                $output->writeln(sprintf('<info>hint:</info> %s', $hints['legend']));
             }
             if (isset($hints['url'])) {
                 $output->writeln(sprintf('Please visit %s for more info', $hints['url']));

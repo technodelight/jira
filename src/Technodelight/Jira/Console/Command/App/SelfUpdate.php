@@ -2,14 +2,38 @@
 
 namespace Technodelight\Jira\Console\Command\App;
 
+use Github\Client;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Application\DependencyInjection\CacheMaintainer;
 use Technodelight\Jira\Helper\Downloader;
 
-class SelfUpdate extends AbstractCommand
+class SelfUpdate extends Command
 {
     const DEFAULT_LOCAL_BIN_JIRA = '/usr/local/bin/jira';
+    /**
+     * @var Client
+     */
+    private $github;
+    /**
+     * @var CacheMaintainer
+     */
+    private $cacheMaintainer;
+    /**
+     * @var DialogHelper
+     */
+    private $dialogHelper;
+
+    public function __construct(Client $github, CacheMaintainer $cacheMaintainer, DialogHelper $dialogHelper)
+    {
+        $this->github = $github;
+        $this->cacheMaintainer = $cacheMaintainer;
+        $this->dialogHelper = $dialogHelper;
+
+        parent::__construct();
+    }
 
     protected function configure()
     {
@@ -28,9 +52,8 @@ class SelfUpdate extends AbstractCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dialog = $this->getService('console.dialog_helper');
         $runningFile = \Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
-        $release = $this->gitHubApi()->api('repo')->releases()->all('technodelight', 'jira')[0];
+        $release = $this->github->repo()->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
         if (version_compare($currentVersion, $release['tag_name'], '<') && isset($release['assets'][0])) {
@@ -39,7 +62,7 @@ class SelfUpdate extends AbstractCommand
             $output->writeln($this->getReleaseNotesSince($currentVersion, $release['tag_name']));
             $output->writeln('');
             $output->writeln("Release date is {$release['published_at']}");
-            $consent = $dialog->askConfirmation(
+            $consent = $this->dialogHelper->askConfirmation(
                 $output,
                 PHP_EOL . "<comment>Do you want to perform an update now?</comment> [y/N]",
                 false
@@ -73,7 +96,7 @@ class SelfUpdate extends AbstractCommand
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
             chmod($runningFile, 0755);
-            $this->container->get('technodelight.jira.console.di.cache_maintainer')->clear();
+            $this->cacheMaintainer->clear();
         } else {
             throw new \ErrorException(
                 'Cannot update to the latest release :('
@@ -84,7 +107,7 @@ class SelfUpdate extends AbstractCommand
     private function getReleaseNotesSince($currentVersion, $newVersion)
     {
         $releasesSince = array_filter(
-            array_reverse($this->gitHubApi()->api('repo')->releases()->all('technodelight', 'jira')),
+            array_reverse($this->github->repo()->releases()->all('technodelight', 'jira')),
             function (array $release) use ($currentVersion, $newVersion) {
                 return version_compare($currentVersion, $release['tag_name'], '<') && isset($release['assets'][0])
                     && version_compare($newVersion, $release['tag_name'], '>=');
@@ -100,13 +123,5 @@ class SelfUpdate extends AbstractCommand
             }
         }
         return $releaseNotes;
-    }
-
-    /**
-     * @return object
-     */
-    protected function gitHubApi()
-    {
-        return $this->getService('technodelight.github.api');
     }
 }

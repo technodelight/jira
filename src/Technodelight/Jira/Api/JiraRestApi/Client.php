@@ -4,6 +4,12 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 interface Client
 {
+    /**
+     * @TODO refactor this so we can send arbitrary headers too for file uploading etc.
+     * @param string $url
+     * @param array $data
+     * @return mixed
+     */
     public function post($url, $data = []);
     public function put($url, $data = []);
     public function get($url);

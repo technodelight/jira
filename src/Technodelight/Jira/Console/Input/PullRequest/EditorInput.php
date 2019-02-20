@@ -34,15 +34,17 @@ class EditorInput
             $head,
             iterator_to_array($this->git->log($base, $head)),
             $this->hub->labels(),
-            $this->hub->milestones()
+            $this->hub->milestones(),
+            $this->hub->assignees()
         );
         $output = $this->editor->edit(
             $input->title(),
-            $input->content()
+            $input->content(),
+            false
         );
         $parser = new OutputParser($output);
         $parser->parse();
 
-        return new PullRequest($parser->title(), $parser->content(), $parser->labels());
+        return new PullRequest($parser->title(), $parser->content(), $parser->labels(), $parser->milestone(), $parser->assignees());
     }
 }

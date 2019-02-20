@@ -1,14 +1,14 @@
 <?php
 
-namespace Technodelight\Jira\Console\Input\Issue;
+namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
 use Hoa\Console\Readline\Autocompleter\Aggregate;
 use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\HoaConsole\DefaultUsersAutocomplete;
-use Technodelight\Jira\Console\HoaConsole\UserPickerAutocomplete;
+use Technodelight\Jira\Connector\HoaConsole\DefaultUsersAutocomplete;
+use Technodelight\Jira\Connector\HoaConsole\UserPickerAutocomplete;
 
 class Assignee
 {

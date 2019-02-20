@@ -23,7 +23,7 @@ class Vim implements Driver
      * @param string $content
      * @return string
      */
-    public function edit($title, $content)
+    public function edit($title, $content, $stripComments = true)
     {
         $filename = $this->filenameFromTitle($title);
         file_put_contents(
@@ -35,7 +35,7 @@ class Vim implements Driver
                 ->withArgument($filename)
                 ->withStdErrTo('/dev/null')
         );
-        $editedContent = $this->fetchEditedContentWithoutComments($filename);
+        $editedContent = $this->fetchEditedContent($filename, $stripComments);
         unlink($filename);
         return $editedContent;
     }
@@ -60,13 +60,18 @@ class Vim implements Driver
 
     /**
      * @param string $filename
+     * @param bool $stripComments
      * @return string
      */
-    private function fetchEditedContentWithoutComments($filename)
+    private function fetchEditedContent($filename, $stripComments)
     {
         return join(PHP_EOL, array_filter(
             file($filename, FILE_IGNORE_NEW_LINES),
-            function ($row) {
+            function ($row) use ($stripComments) {
+                if (!$stripComments) {
+                    return true;
+                }
+
                 return strpos($row, '#') !== 0;
             }
         ));

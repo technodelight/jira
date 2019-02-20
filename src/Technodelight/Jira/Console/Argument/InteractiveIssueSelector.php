@@ -10,6 +10,7 @@ use Symfony\Component\Console\Question\Question;
 use Technodelight\GitShell\Api as Git;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\IssueStats\StatCollector;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
@@ -18,28 +19,33 @@ use Technodelight\Jira\Domain\Project;
 class InteractiveIssueSelector
 {
     /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
+     * @var Api
      */
     private $jira;
     /**
-     * @var \Technodelight\GitShell\Api
+     * @var Git
      */
     private $git;
     /**
-     * @var \Technodelight\Jira\Console\IssueStats\StatCollector
+     * @var StatCollector
      */
     private $statCollector;
     /**
-     * @var \Symfony\Component\Console\Helper\QuestionHelper
+     * @var QuestionHelper
      */
     private $questionHelper;
+    /**
+     * @var Guesser
+     */
+    private $guesser;
 
-    public function __construct(Api $jira, Git $git, StatCollector $statCollector, QuestionHelper $questionHelper)
+    public function __construct(Api $jira, Git $git, StatCollector $statCollector, QuestionHelper $questionHelper, Guesser $guesser)
     {
         $this->jira = $jira;
         $this->git = $git;
         $this->statCollector = $statCollector;
         $this->questionHelper = $questionHelper;
+        $this->guesser = $guesser;
     }
 
     /**
@@ -197,8 +203,8 @@ class InteractiveIssueSelector
                 }
 
                 try {
-                    $issueKey = (string) IssueKey::fromBranch($branch);
-                    if (!$issuesToChooseFrom->has($issueKey)) {
+                    $issueKey = $this->guesser->guessIssueKey(null, $branch);
+                    if ($issueKey && !$issuesToChooseFrom->has($issueKey)) {
                         $issueKeys[] = $issueKey;
                     }
                 } catch (\Exception $e) {

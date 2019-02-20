@@ -10,7 +10,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKey;
 use Technodelight\Jira\Console\FieldEditor\Editor;
-use Technodelight\Jira\Console\HoaConsole\IssueMetaAutocompleter;
+use Technodelight\Jira\Connector\HoaConsole\IssueMetaAutocompleter;
 use Technodelight\Jira\Domain\Issue\Meta\Field;
 
 class AutocompletedEditor implements Editor

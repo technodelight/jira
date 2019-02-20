@@ -168,7 +168,7 @@ class Browse extends AbstractCommand
         return array_filter(
             $this->gitHub()->issues($state),
             function ($hubIssue) use ($issue) {
-                return strpos($hubIssue['title'], $issue->issueKey()) === 0;
+                return strpos($hubIssue['title'], (string) $issue->issueKey()) === 0;
             }
         );
     }

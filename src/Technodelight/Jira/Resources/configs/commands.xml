@@ -12,11 +12,12 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.selfupdate" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.github.api" />
+            <argument type="service" id="technodelight.jira.console.di.cache_maintainer" />
+            <argument type="service" id="console.dialog_helper" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.shellfeatures" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
-            <argument type="service" id="service_container"/>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.usagestats" class="Technodelight\Jira\Console\Command\Internal\UsageStats">
@@ -85,7 +86,11 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.comment" class="Technodelight\Jira\Console\Command\Action\Issue\Comment">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.input.issue.comment" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.issue_renderer" />
+            <argument type="service" id="technodelight.jira.renderer.issue.comment" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.assign" class="Technodelight\Jira\Console\Command\Action\Issue\Assign">
@@ -140,6 +145,7 @@
             <argument type="service" id="technodelight.gitshell.api" />
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.input.pull_request.editor_input" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
             <argument type="service" id="technodelight.jira.template_helper" />
             <tag name="command" />
         </service>

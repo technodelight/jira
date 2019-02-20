@@ -9,6 +9,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfigurati
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Domain\Worklog;
 
 class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
@@ -24,9 +25,9 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
         'timeSpentSeconds' => 12345,
     ];
 
-    function let(AliasesConfiguration $config, WorklogHandler $worklogHandler, Api $git)
+    function let(WorklogHandler $worklogHandler, Guesser $guesser, Api $git)
     {
-        $this->beConstructedWith($config, $worklogHandler, $git);
+        $this->beConstructedWith($worklogHandler, $git, $guesser);
     }
 
     function it_resolves_an_input_argument(AliasesConfiguration $config, InputInterface $input)

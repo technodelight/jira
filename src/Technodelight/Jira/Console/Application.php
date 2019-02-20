@@ -115,7 +115,11 @@ class Application extends BaseApp
                               \|__|         \/__/
 BANNER;
 
-        return sprintf('<fg=cyan>%s</>', $banner) . PHP_EOL . PHP_EOL . parent::getLongVersion();
+        return sprintf('<fg=cyan>%s</>', $banner)
+            . PHP_EOL . PHP_EOL
+            . parent::getLongVersion() . PHP_EOL . PHP_EOL
+            . 'GNU GPLv3, Copyright (c) 2015-2019 Zsolt Gál' . PHP_EOL
+            . 'See https://github.com/technodelight/jira/blob/master/LICENSE.';
     }
 
     protected function runWithClientOrApp(InputInterface $input, OutputInterface $output)

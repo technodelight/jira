@@ -70,7 +70,6 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'taskwarrior'],
                     ['name' => 'worklogs'],
                     ['name' => 'comments'],
-                    ['name' => 'changelogs'],
                 ],
             ],
         ]

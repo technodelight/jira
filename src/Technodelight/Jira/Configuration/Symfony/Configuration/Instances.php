@@ -30,7 +30,7 @@ class Instances implements Configuration
                         ->example('secondary')
                     ->end()
                     ->scalarNode('domain')
-                        ->info('JIRA\'s domain without protocol, like something.atlassian.net')
+                        ->info('JIRA host like something.atlassian.net or with proto://user:pass@host:port: http://user:pass@localhost:8080')
                         ->example('something.atlassian.net')
                         ->defaultValue('something.atlassian.net')
                         ->cannotBeEmpty()

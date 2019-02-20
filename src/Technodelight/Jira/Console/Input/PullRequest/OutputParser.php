@@ -8,7 +8,8 @@ class OutputParser
     private $title = '';
     private $content = '';
     private $labels = [];
-    private $milestone = '';
+    private $milestones = [];
+    private $assignees = [];
 
     public function __construct($output)
     {
@@ -21,9 +22,9 @@ class OutputParser
         $this->title = '';
         $this->content = '';
         $this->labels = [];
-        $foundLabels = false;
-        $foundMilestones = false;
-        foreach ($rows as $row) {
+        $track = array_fill_keys(['labels', 'milestones', 'assignees'], false);
+
+        foreach ($rows as $idx => $row) {
             if (empty($this->title) && strpos($row, '#') === false) {
                 $this->title = $row;
                 continue;
@@ -32,19 +33,25 @@ class OutputParser
                 $this->content.= $row . PHP_EOL;
                 continue;
             }
-            if (!empty($row) && strpos($row, '# labels') === 0) {
-                $foundLabels = true;
+
+            // track if we're reached milestones section
+            foreach ($track as $type => $index) {
+                if ($index === false && strpos($row, '# ' . $type) === 0) {
+                    $track[$type] = $idx;
+                    continue;
+                }
             }
-            if (!empty($row) && strpos($row, '# milestones') === 0) {
-                $foundMilestones = true;
-            }
-            if ($foundMilestones && preg_match('~\[([xXy+ ]{1})\] (.*)~', $row, $matches)) {
-                $this->milestone = trim($matches[2]);
-                continue;
-            }
-            if ($foundLabels && preg_match('~\[([xXy+ ]{1})\] (.*)~', $row, $matches)) {
-                if (!empty(trim($matches[1]))) {
-                    $this->labels[] = trim($matches[2]);
+
+            // reached a tickbox
+            if (preg_match('~^# \[([xXy+ ]{1})\] (.*)~', $row, $matches)) {
+                foreach (array_reverse($track) as $type => $index) {
+                    if ($index === false) {
+                        continue; // not set yet
+                    }
+                    if (!empty(trim($matches[1]))) {
+                        array_push($this->$type, trim($matches[2]));
+                        break;
+                    }
                 }
             }
         }
@@ -67,6 +74,11 @@ class OutputParser
 
     public function milestone()
     {
-        return $this->milestone;
+        return end($this->milestones) ?: null;
+    }
+
+    public function assignees()
+    {
+        return $this->assignees;
     }
 }
