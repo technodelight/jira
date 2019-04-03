@@ -11,6 +11,9 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee;
 use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
+use Technodelight\Jira\Renderer\Action\Issue\Assign\Error;
+use Technodelight\Jira\Renderer\Action\Issue\Assign\Success;
+use Technodelight\Jira\Renderer\Action\Renderer;
 
 class Assign extends Command
 {
@@ -23,23 +26,27 @@ class Assign extends Command
      */
     private $api;
     /**
+     * @var AssigneeResolver
+     */
+    private $assigneeResolver;
+    /**
      * @var IssueKeyResolver
      */
     private $issueKeyResolver;
+    /**
+     * @var Renderer
+     */
+    private $resultRenderer;
 
-    public function setAssigneeInput(Assignee $assignee)
-    {
-        $this->assigneeInput = $assignee;
-    }
-
-    public function setIssueKeyResolver(IssueKeyResolver $issueKeyResolver)
-    {
-        $this->issueKeyResolver = $issueKeyResolver;
-    }
-
-    public function setJiraApi(Api $api)
+    public function __construct(Api $api, Assignee $assigneeInput, AssigneeResolver $assigneeResolver, IssueKeyResolver $issueKeyResolver, Renderer $resultRenderer)
     {
         $this->api = $api;
+        $this->assigneeInput = $assigneeInput;
+        $this->assigneeResolver = $assigneeResolver;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->resultRenderer = $resultRenderer;
+
+        parent::__construct();
     }
 
     protected function configure()
@@ -84,38 +91,33 @@ class Assign extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
-        $assignee = $this->determineAssigneeFromInput($input);
+        $assignee = $this->assigneeResolver->resolve($input);
 
-        $this->api->assignIssue((string) $issueKey, $assignee);
+        try {
+            $this->api->assignIssue($issueKey, $assignee);
 
-        if ($assignee === AssigneeResolver::UNASSIGN) {
-            $output->writeln(
-                sprintf('<info>%s</info> was unassigned successfully', $issueKey)
+            return $this->resultRenderer->render(
+                $output,
+                Success::fromIssueKeyAndAssignee($issueKey, $this->assigneeName($assignee))
             );
-        } else {
-            $output->writeln(
-                sprintf(
-                    '<info>%s</info> was assigned successfully to <comment>%s</comment>',
-                    $issueKey,
-                    $assignee === AssigneeResolver::DEFAULT_ASSIGNEE ? 'Default asignee' : $assignee
-                )
+        } catch (\Exception $e) {
+            return $this->resultRenderer->render(
+                $output,
+                Error::fromExceptionIssueKeyAndAssignee($e, $issueKey, $this->assigneeName($assignee))
             );
         }
     }
 
     /**
-     * @param InputInterface $input
-     * @return int|mixed|null
+     * @param $assignee
+     * @return |null
      */
-    protected function determineAssigneeFromInput(InputInterface $input)
+    protected function assigneeName($assignee)
     {
-        switch (true) {
-            case $input->getOption('unassign'):
-                return AssigneeResolver::UNASSIGN;
-            case $input->getOption('default'):
-                return AssigneeResolver::DEFAULT_ASSIGNEE;
-            default:
-                return $input->getArgument('assignee');
+        if ($assignee === AssigneeResolver::UNASSIGN) {
+            return null;
         }
+
+        return $assignee === AssigneeResolver::DEFAULT_ASSIGNEE ? 'Default assignee' : $assignee;
     }
 }

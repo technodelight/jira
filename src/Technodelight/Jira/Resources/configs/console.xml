@@ -119,6 +119,20 @@
             <argument type="service" id="technodelight.jira.console.edit" />
         </service>
 
+        <!-- issue dowloadable attachment input -->
+        <service id="technodelight.jira.console.input.issue.attachment.downloadable_attachment"
+                 class="Technodelight\Jira\Console\Input\Issue\Attachment\DownloadableAttachment">
+            <argument type="service" id="technodelight.jira.api" />
+        </service>
+
+        <!-- issue uploadable attachment input -->
+        <service id="technodelight.jira.console.input.issue.attachment.uploadable_attachment"
+                 class="Technodelight\Jira\Console\Input\Issue\Attachment\UploadableAttachment" />
+
+        <!-- issue attachment target path resolver -->
+        <service id="technodelight.jira.console.input.issue.attachment.target_path"
+                 class="Technodelight\Jira\Console\Input\Issue\Attachment\TargetPath" />
+
         <!-- pull request input -->
         <service id="technodelight.jira.console.input.pull_request.editor_input"
                  class="Technodelight\Jira\Console\Input\PullRequest\EditorInput">

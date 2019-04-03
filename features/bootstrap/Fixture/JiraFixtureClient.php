@@ -55,6 +55,11 @@ class JiraFixtureClient implements Client
         // ?
     }
 
+    public function upload($url, $filename)
+    {
+        // ?
+    }
+
     public static function setup($method, $url, $response)
     {
         self::$setups[$method][$url] = $response;

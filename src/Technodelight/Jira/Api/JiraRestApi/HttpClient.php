@@ -133,6 +133,25 @@ class HttpClient implements Client
         $this->httpClient()->get($url, ['save_to' => $filename]);
     }
 
+    public function upload($url, $filename)
+    {
+        $this->httpClient()->post($url, [
+            'headers' => [
+                'X-Atlassian-Token' => 'no-check'
+            ],
+            'multipart' => [
+                [
+                    'name' => 'file',
+                    'contents' => fopen($filename, 'r'),
+                    'filename' => pathinfo($filename, PATHINFO_BASENAME),
+                    'headers' => [
+                        'X-Atlassian-Token' => 'no-check'
+                    ],
+                ]
+            ]
+        ]);
+    }
+
     private function apiUrl($projectDomain)
     {
         $parts = parse_url($projectDomain);

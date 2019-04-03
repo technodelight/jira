@@ -3,7 +3,7 @@
 namespace spec\Technodelight\Jira\Domain;
 
 use PhpSpec\ObjectBehavior;
-use Prophecy\Argument;
+use Technodelight\Jira\Domain\Filter\FilterId;
 use Technodelight\Jira\Domain\User;
 
 class FilterSpec extends ObjectBehavior
@@ -89,7 +89,7 @@ class FilterSpec extends ObjectBehavior
     {
         $this->beConstructedThrough('fromArray', [$this->filter]);
         $this->shouldHaveType('Technodelight\Jira\Domain\Filter');
-        $this->id()->shouldReturn($this->filter['id']);
+        $this->id()->shouldBeLike(FilterId::fromString($this->filter['id']));
         $this->isFavourite()->shouldReturn(false);
         $this->jql()->shouldReturn($this->filter['jql']);
         $this->name()->shouldReturn($this->filter['name']);

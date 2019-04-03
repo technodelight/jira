@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Connector\HoaConsole;
 use Fuse\Fuse;
 use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class IssueMetaAutocompleter implements Autocompleter
 {
@@ -18,7 +19,7 @@ class IssueMetaAutocompleter implements Autocompleter
      */
     private $api;
 
-    public function __construct(Api $api, $issueKey, $fieldName)
+    public function __construct(Api $api, IssueKey $issueKey, $fieldName)
     {
         $meta = $api->issueEditMeta($issueKey);
         $this->field = $meta->field($fieldName);

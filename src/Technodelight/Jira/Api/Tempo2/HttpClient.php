@@ -8,8 +8,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class HttpClient implements Client
 {
-    const REST_API_URL = 'https://api.tempo.io';
-    const REST_API_VERSION = '2';
+    const REST_API_URL = 'https://api.tempo.io/core';
+    const REST_API_VERSION = '3';
 
     /**
      * @var string

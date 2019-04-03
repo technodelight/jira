@@ -1,28 +1,57 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command\Action\Issue;
+namespace Technodelight\Jira\Console\Command\Action\Issue\Attachment;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Domain\Attachment as IssueAttachment;
-use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Console\Input\Issue\Attachment\DownloadableAttachment;
+use Technodelight\Jira\Console\Input\Issue\Attachment\TargetPath;
 use Technodelight\Jira\Helper\Downloader;
 
-class Attachment extends AbstractCommand
+class Download extends Command
 {
     const SUCCESS_MESSAGE = 'File "%s" has been successfully downloaded to "%s" .';
     const CANCEL_MESSAGE = 'Skipped downloading file "%s"';
     const ERROR_MESSAGE = 'Something went wrong while downloading "%s."';
 
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+    /**
+     * @var DownloadableAttachment
+     */
+    private $downloadableAttachmentInput;
+    /**
+     * @var TargetPath
+     */
+    private $targetPathInput;
+
+    public function __construct(Api $api, IssueKeyResolver $issueKeyResolver, DownloadableAttachment $downloadableAttachmentInput, TargetPath $targetPathInput)
+    {
+        $this->api = $api;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->downloadableAttachmentInput = $downloadableAttachmentInput;
+        $this->targetPathInput = $targetPathInput;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
-            ->setName('issue:attachment')
+            ->setName('issue:attachment:download')
             ->setDescription('Download attachment from a ticket')
             ->setAliases(['download'])
             ->addArgument(
@@ -50,49 +79,19 @@ class Attachment extends AbstractCommand
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
 
-        if (empty($input->getArgument('filename'))) {
-            /** @var \Technodelight\Jira\Domain\Issue $issue */
-            $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
-
-            if (!count($issue->attachments())) {
-                throw new \ErrorException(
-                    sprintf('No attachments for %s', $issue->issueKey())
-                );
-            }
-
-            /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-            $helper = $this->getHelper('question');
-
-            $question = new ChoiceQuestion(
-                '<comment>Select file to download</comment>',
-                array_map(function (IssueAttachment $attachment) {
-                    return $attachment->filename();
-                }, $issue->attachments()),
-                0
-            );
-            $question->setErrorMessage('Filename %s is invalid.');
-
-            $filename = $helper->ask($input, $output, $question);
-            $input->setArgument('filename', $filename);
-        }
-        if (!$input->getArgument('targetPath')) {
-            $input->setArgument('targetPath', getcwd());
-        }
-        $input->setArgument(
-            'targetPath',
-            rtrim($input->getArgument('targetPath'), '/\\' . DIRECTORY_SEPARATOR)
-        );
+        $input->setArgument('filename', $this->downloadableAttachmentInput->resolve($input, $output, $issueKey));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
         $filename = $input->getArgument('filename');
+        $targetPath = $this->targetPathInput->resolve($input);
 
         /** @var \Technodelight\Jira\Domain\Issue $issue */
-        $issue = $this->jiraApi()->retrieveIssue((string) $issueKey);
+        $issue = $this->api->retrieveIssue($issueKey);
         /** @var \Symfony\Component\Console\Helper\FormatterHelper $formatter */
         $formatter = $this->getHelper('formatter');
 
@@ -104,8 +103,8 @@ class Attachment extends AbstractCommand
             }
 
             // download file
-            $attachment = $this->findAttachment($issue, $filename);
-            $targetFilePath = $input->getArgument('targetPath') . DIRECTORY_SEPARATOR . $filename;
+            $attachment = $this->downloadableAttachmentInput->findAttachmentByFilename($issue, $filename);
+            $targetFilePath = $targetPath . DIRECTORY_SEPARATOR . $filename;
             if ($this->confirmDownload($input, $output, $targetFilePath)) {
 
                 $downloader = new Downloader;
@@ -113,7 +112,7 @@ class Attachment extends AbstractCommand
                 /** @var ProgressBar $progress */
                 list($progress, $callback) = $downloader->progressBarWithProgressFunction($output);
                 $progress->start($attachment->size());
-                $this->jiraApi()->download($attachment->url(), $f, $callback);
+                $this->api->download($attachment->url(), $f, $callback);
                 $progress->finish();
 
                 $output->writeln('');
@@ -141,24 +140,6 @@ class Attachment extends AbstractCommand
     }
 
     /**
-     * @param Issue $issue
-     * @param string $filename
-     * @return IssueAttachment
-     */
-    private function findAttachment(Issue $issue, $filename)
-    {
-        foreach ($issue->attachments() as $attachment) {
-            if ($attachment->filename() == $filename) {
-                return $attachment;
-            }
-        }
-
-        throw new \InvalidArgumentException(
-            sprintf('Attachment "%s" cannot be found', $filename)
-        );
-    }
-
-    /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
      * @param string $targetFilePath
@@ -166,25 +147,15 @@ class Attachment extends AbstractCommand
      */
     protected function confirmDownload(InputInterface $input, OutputInterface $output, $targetFilePath)
     {
-
         if (is_file($targetFilePath)) {
             $question = new ConfirmationQuestion(
                 sprintf('<comment>File "%s" already exists, do you want to overwrite it?</comment> [y/N] ', $targetFilePath),
                 false
             );
-            /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
-            $helper = $this->getHelper('question');
+            $helper = new QuestionHelper;
             return $helper->ask($input, $output, $question);
         }
 
         return true;
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
     }
 }

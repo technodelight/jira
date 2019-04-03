@@ -2,13 +2,48 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\Argument\ProjectKeyResolver;
+use Technodelight\Jira\Renderer\Project\Renderer;
 
-class Project extends AbstractCommand
+class Project extends Command
 {
+    /**
+     * @var ProjectKeyResolver
+     */
+    private $projectKeyResolver;
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var Renderer
+     */
+    private $projectRenderer;
+    /**
+     * @var Renderer
+     */
+    private $fullProjectRenderer;
+
+    public function __construct(
+        ProjectKeyResolver $projectKeyResolver,
+        Api $api,
+        Renderer $projectRenderer,
+        Renderer $fullProjectRenderer
+    )
+    {
+        $this->projectKeyResolver = $projectKeyResolver;
+        $this->api = $api;
+        $this->projectRenderer = $projectRenderer;
+        $this->fullProjectRenderer = $fullProjectRenderer;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -24,44 +59,16 @@ class Project extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $project = $this->jiraApi()->project($this->projectKeyResolver()->argument($input));
+        $projectKey = $this->projectKeyResolver->argument($input);
+        if (null === $projectKey) {
+            throw new \InvalidArgumentException('Please specify project key!');
+        }
+        $project = $this->api->project($projectKey);
 
         if ($output->getVerbosity() > OutputInterface::VERBOSITY_NORMAL) {
-            $this->fullProjectRenderer()->render($output, $project);
+            $this->fullProjectRenderer->render($output, $project);
         } else {
-            $this->projectRenderer()->render($output, $project);
+            $this->projectRenderer->render($output, $project);
         }
-    }
-
-    /**
-     * @return \Technodelight\Jira\Console\Argument\ProjectKeyResolver
-     */
-    private function projectKeyResolver()
-    {
-        return $this->getService('technodelight.jira.console.argument.project_key_resolver');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\Project\Renderer
-     */
-    private function projectRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.project');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\Project\Renderer
-     */
-    private function fullProjectRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.project.full');
     }
 }

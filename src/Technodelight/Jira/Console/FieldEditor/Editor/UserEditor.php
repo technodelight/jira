@@ -6,9 +6,9 @@ use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Connector\HoaConsole\UserPickerAutocomplete;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\FieldEditor\Editor;
-use Technodelight\Jira\Console\HoaConsole\UserPickerAutocomplete;
 use Technodelight\Jira\Domain\Issue\Meta\Field;
 
 class UserEditor implements Editor

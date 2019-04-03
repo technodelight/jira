@@ -94,7 +94,7 @@ class WorklogHandler implements WorklogHandlerInterface
     public function create(Worklog $worklog)
     {
         $response = $this->api->create(
-            $worklog->issueKey(),
+            (string) $worklog->issueKey(),
             $worklog->author()->name(),
             $worklog->date()->format(Api::TEMPO_DATETIME_FORMAT),
             $worklog->timeSpentSeconds(),

@@ -4,11 +4,12 @@ namespace Technodelight\Jira\Domain;
 
 class User
 {
-    private $key, $name, $emailAddress, $avatarUrls, $displayName, $active, $timeZone, $locale;
+    private $id, $key, $name, $emailAddress, $avatarUrls, $displayName, $active, $timeZone, $locale;
 
     public static function fromArray(array $array)
     {
         $user = new self;
+        $user->id = $array['accountId'];
         $user->key = $array['key'];
         $user->name = $array['name'];
         $user->emailAddress = isset($array['emailAddress']) ? $array['emailAddress'] : '';
@@ -22,7 +23,7 @@ class User
 
     public function id()
     {
-        return $this->key;
+        return $this->id;
     }
 
     public function key()

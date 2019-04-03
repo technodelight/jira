@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use DateTime;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -173,8 +174,10 @@ class LogTime extends AbstractCommand
             } else {
                 $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
                 $output->writeln(
-                    sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKeyOrWorklogId->worklog()
-                        ->id())
+                    sprintf(
+                        '<comment>Worklog <info>%d</info> has been updated</comment>',
+                        (string) $issueKeyOrWorklogId->worklog()->id()
+                    )
                 );
             }
 
@@ -228,7 +231,7 @@ class LogTime extends AbstractCommand
 
     private function interactiveTimelog(InputInterface $input, OutputInterface $output)
     {
-        $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime)->filterByUser($this->jiraApi()->user()->key());
+        $worklogs = $this->worklogHandler()->find(new DateTime, new DateTime)->filterByUser($this->jiraApi()->user());
         $timeLeft = $this->dateHelper()->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
         if ($timeLeft <= 0) {
             $output->writeln(

@@ -7,7 +7,7 @@ use Prophecy\Argument;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class GuesserSpec extends ObjectBehavior
 {

@@ -48,19 +48,20 @@ class LogsTable implements DashboardRenderer
 
             foreach ($logs as $log) {
                 /** @var $log \Technodelight\Jira\Domain\Worklog */
-                if (!isset($rows[$log->issueKey()])) {
-                    $rows[$log->issueKey()] = array_fill_keys(array_keys($headers), '');
-                    $rows[$log->issueKey()][0] = $log->issueKey();
+                $key = (string) $log->issueIdentifier();
+                if (!isset($rows[$key])) {
+                    $rows[$key] = array_fill_keys(array_keys($headers), '');
+                    $rows[$key][0] = $log->issueKey();
                 }
-                if (!isset($rows[$log->issueKey()][$dayNo])) {
-                    $rows[$log->issueKey()][$dayNo] = '';
+                if (!isset($rows[$key][$dayNo])) {
+                    $rows[$key][$dayNo] = '';
                 }
-                $rows[$log->issueKey()][$dayNo].= sprintf(
+                $rows[$key][$dayNo].= sprintf(
                     PHP_EOL . '%s %s',
                     $this->dateHelper->secondsToHuman($log->timeSpentSeconds()),
                     $this->shortenWorklogComment($log->comment())
                 );
-                $rows[$log->issueKey()][$dayNo] = trim($rows[$log->issueKey()][$dayNo]);
+                $rows[$key][$dayNo] = trim($rows[$key][$dayNo]);
                 $dailySum[$dayNo]+= $log->timeSpentSeconds();
             }
         }

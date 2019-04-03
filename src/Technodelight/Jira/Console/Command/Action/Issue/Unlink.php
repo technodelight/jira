@@ -2,13 +2,26 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Domain\IssueLink\IssueLinkId;
 
-class Unlink extends AbstractCommand
+class Unlink extends Command
 {
+    /**
+     * @var Api
+     */
+    private $api;
+
+    public function __construct(Api $api)
+    {
+        parent::__construct();
+        $this->api = $api;
+    }
+
     protected function configure()
     {
         $this
@@ -25,15 +38,7 @@ class Unlink extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $linkId = $input->getArgument('linkId');
-        $this->jiraApi()->removeIssueLink($linkId);
+        $this->api->removeIssueLink(IssueLinkId::fromString($linkId));
         $output->writeln(sprintf('Link <info>%s</info> has been successfully removed.', $linkId));
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
     }
 }

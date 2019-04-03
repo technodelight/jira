@@ -7,7 +7,7 @@ use Technodelight\Jira\Domain\ProjectKey;
 
 class IssueKey
 {
-    const ISSUE_PATTERN = '~^[A-Z]+-[0-9]+$~';
+    const ISSUE_PATTERN = '~^[A-Z0-9]+-[0-9]+$~';
 
     private $issueKey;
     private $issueId;

@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\FieldEditor\FieldEditor;
 use Technodelight\Jira\Console\Option\Checker;

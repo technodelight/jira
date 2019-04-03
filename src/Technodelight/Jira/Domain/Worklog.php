@@ -2,24 +2,64 @@
 
 namespace Technodelight\Jira\Domain;
 
+use DateTime;
+use Technodelight\Jira\Domain\Issue\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueId;
+use Technodelight\Jira\Domain\Worklog\WorklogId;
 use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\SecondsToNone;
 
 class Worklog
 {
-    private $issueKey, $worklogId, $author, $comment, $date, $timeSpentSeconds, $issue = null;
+    /**
+     * @var IssueKey
+     */
+    private $issueKey;
+    /**
+     * @var WorklogId
+     */
+    private $worklogId;
+    /**
+     * @var User|null
+     */
+    private $author;
+    /**
+     * @var string
+     */
+    private $comment;
+    /**
+     * @var DateTime
+     */
+    private $date;
+    /**
+     * @var int
+     */
+    private $timeSpentSeconds;
+    /**
+     * @var Issue|null
+     */
+    private $issue = null;
 
-    private function __construct($issueKey, $worklogId, $author, $comment, $date, $timeSpentSeconds)
+    private function __construct($issueKeyOrId, $worklogId, $author, $comment, $date, $timeSpentSeconds)
     {
-        $this->issueKey = $issueKey;
-        $this->worklogId = $worklogId;
+        if (is_numeric($issueKeyOrId)) {
+            $this->issueId = IssueId::fromString($issueKeyOrId);
+        } else if ($issueKeyOrId instanceof IssueId) {
+            $this->issueId = $issueKeyOrId;
+        }
+        if ($issueKeyOrId instanceof IssueKey) {
+            $this->issueKey = $issueKeyOrId;
+        } else if (is_string($issueKeyOrId) && !isset($this->issueId)) {
+            $this->issueKey = IssueKey::fromString($issueKeyOrId);
+        }
+        $this->worklogId = is_string($worklogId) ? WorklogId::fromString($worklogId) : $worklogId;
         if (!empty($author) && is_array($author)) {
             $this->author = User::fromArray($author);
         } else {
             $this->author = $author;
         }
         $this->comment = $comment;
-        $this->date = $date;
+        $this->date = DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $date);
         $this->timeSpentSeconds = $timeSpentSeconds;
     }
 
@@ -52,6 +92,20 @@ class Worklog
         return $this->issueKey;
     }
 
+    public function issueId()
+    {
+        return $this->issueId;
+    }
+
+    /**
+     * Can be one of: issueKey or issueId
+     * @return IssueKey|IssueId
+     */
+    public function issueIdentifier()
+    {
+        return $this->issueKey ?: $this->issueId;
+    }
+
     /**
      * @return \Technodelight\Jira\Domain\Issue
      */
@@ -62,7 +116,7 @@ class Worklog
 
     public function assignIssue(Issue $issue)
     {
-        if (!empty($this->issueKey) && $issue->issueKey() != $this->issueKey) {
+        if (!empty($this->issueKey) && ((string)$issue->issueKey() !== (string) $this->issueKey)) {
             throw new \UnexpectedValueException(
                 'Unable to assign issue'
             );
@@ -71,6 +125,9 @@ class Worklog
         $issue->worklogs()->push($this);
     }
 
+    /**
+     * @return WorklogId
+     */
     public function id()
     {
         return $this->worklogId;
@@ -98,16 +155,16 @@ class Worklog
     }
 
     /**
-     * @param string|null $date
-     * @return \Datetime
+     * @param DateTime|string|null $date
+     * @return DateTime
      */
     public function date($date = null)
     {
         if ($date) {
-            $this->date = $date;
+            $this->date = $date instanceof DateTime ? $date : DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $date);
         }
 
-        return \DateTime::createFromFormat(DateHelper::FORMAT_FROM_JIRA, $this->date);
+        return $this->date;
     }
 
     /**

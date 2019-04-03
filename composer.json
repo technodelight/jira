@@ -5,6 +5,7 @@
     "require": {
         "php": ">= 7.0",
         "ext-json": "*",
+        "ext-curl": "*",
         "symfony/console": "^2.7",
         "stecman/symfony-console-completion": "^0.5.1",
         "guzzlehttp/guzzle": "^6.2",

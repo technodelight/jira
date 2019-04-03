@@ -70,6 +70,11 @@ class StatCollectorApiClient implements Client
         return $this->client->download($url, $filename, $progressFunction);
     }
 
+    public function upload($url, $filename)
+    {
+        return $this->client->upload($url, $filename);
+    }
+
     private function parseIssueKeys($string)
     {
         return StringParser::parse($string);

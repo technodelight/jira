@@ -7,6 +7,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\Worklog\WorklogId;
 use Technodelight\Jira\Domain\WorklogCollection;
 
 class WorklogHandler implements WorklogHandlerInterface
@@ -28,7 +29,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function find(DateTime $from, DateTime $to)
     {
-        $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user()->name());
+        $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user());
 
         $worklogCollection = WorklogCollection::createEmpty();
         foreach ($issues as $issue) {
@@ -53,12 +54,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function create(Worklog $worklog)
     {
-        return $this->api->worklog(
-            $worklog->issueKey(),
-            $worklog->timeSpentSeconds(),
-            $worklog->comment(),
-            $worklog->date()->format('Y-m-d H:i:s')
-        );
+        return $this->api->createWorklog($worklog);
     }
 
     /**
@@ -76,7 +72,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function retrieve($worklogId)
     {
-        return $this->api->retrieveWorklogs([$worklogId])->current();
+        return $this->api->retrieveWorklogs([WorklogId::fromString($worklogId)])->current();
     }
 
     /**

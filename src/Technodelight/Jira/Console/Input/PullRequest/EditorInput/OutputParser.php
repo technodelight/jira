@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Input\PullRequest;
+namespace Technodelight\Jira\Console\Input\PullRequest\EditorInput;
 
 class OutputParser
 {

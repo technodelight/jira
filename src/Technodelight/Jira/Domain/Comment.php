@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Helper\DateHelper;
 
 class Comment
@@ -16,7 +17,7 @@ class Comment
     public static function fromArray(array $jiraRecord)
     {
         $instance = new self;
-        $instance->id = $jiraRecord['id'];
+        $instance->id = CommentId::fromString($jiraRecord['id']);
         $instance->author = $jiraRecord['author'];
         $instance->body = $jiraRecord['body'];
         $instance->created = $jiraRecord['created'];
@@ -26,6 +27,9 @@ class Comment
         return $instance;
     }
 
+    /**
+     * @return CommentId
+     */
     public function id()
     {
         return $this->id;

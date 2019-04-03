@@ -4,12 +4,19 @@ namespace Technodelight\Jira\Api\JiraTagConverter\Components;
 
 class TableParser
 {
-    private $body;
-    private $table;
-
     const HEADER_LIMITER = '||';
-
     const COL_LIMITER = '|';
+
+    /**
+     * @var string
+     */
+    private $body;
+    /**
+     * current table collected
+     *
+     * @var Table|null
+     */
+    private $table;
 
     public function __construct($body)
     {
@@ -43,10 +50,11 @@ class TableParser
         $noOfLines = count($lines);
         $tables = [];
 
+        //@TODO handle multiline headers/rows, where the end delimiter can be in a separate row
         foreach ($lines as $row => $line) {
             if ($this->isTableRow($line)) {
                 if ($headers = $this->extract($line, self::HEADER_LIMITER)) {
-                    $this->table()->addHeader($headers);
+                    $this->table()->setHeaders($headers);
                 } elseif ($fields = $this->extract($line, self::COL_LIMITER)) {
                     $this->table()->addRow($fields);
                 }

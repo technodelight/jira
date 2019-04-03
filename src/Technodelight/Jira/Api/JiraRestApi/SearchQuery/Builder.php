@@ -2,6 +2,9 @@
 
 namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
+use Technodelight\Jira\Domain\Issue\IssueKey;
+use Technodelight\Jira\Domain\User;
+
 class Builder
 {
     /**
@@ -61,6 +64,11 @@ class Builder
         return $this;
     }
 
+    /**
+     * @param IssueKey|string|IssueKey[]|string[] $issueKey
+     * @return $this
+     * @throws \Sirprize\Queried\QueryException
+     */
     public function issueKey($issueKey)
     {
         if (!is_array($issueKey)) {
@@ -122,9 +130,10 @@ class Builder
         return $this;
     }
 
-    public function worklogAuthor($worklogAuthor)
+    /** @TODO: check if this still works */
+    public function worklogAuthor(User $worklogAuthor)
     {
-        $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => $worklogAuthor]);
+        $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => $worklogAuthor->key()]);
         return $this;
     }
 

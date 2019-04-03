@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\FieldEditor\Editor;
 use Technodelight\Jira\Connector\HoaConsole\IssueMetaAutocompleter;
 use Technodelight\Jira\Domain\Issue\Meta\Field;
@@ -42,7 +42,7 @@ class AutocompletedEditor implements Editor
     {
         $readline = new Readline;
         $readline->setAutocompleter(
-            new IssueMetaAutocompleter($this->api, (string) $issueKey, $field->name())
+            new IssueMetaAutocompleter($this->api, $issueKey, $field->name())
         );
         $output->writeln(sprintf('<comment>Please select value to %s for</comment> <info>%s:</info>', $optionName, $field->name()));
         $value = $readline->readLine();

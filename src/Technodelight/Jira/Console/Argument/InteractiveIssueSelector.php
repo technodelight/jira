@@ -13,6 +13,7 @@ use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\IssueStats\StatCollector;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Project;
 
@@ -99,7 +100,7 @@ class InteractiveIssueSelector
         );
         $jira = $this->jira;
         $question->setValidator(function ($issueKey) use ($jira) {
-            $issue = $jira->retrieveIssue(strtoupper(trim($issueKey)));
+            $issue = $jira->retrieveIssue(IssueKey::fromString(strtoupper(trim($issueKey))));
 
             return $issue->key();
         });
@@ -127,12 +128,12 @@ class InteractiveIssueSelector
      */
     private function assembleOptionsForQuestionHelper(IssueCollection $issues)
     {
-        $options = array_map(
+        $options = array_values(array_map(
             function (Issue $issue) {
-                return '<info>' . $issue->issueKey() . '</info> ' . $issue->summary();
+                return '<info>' . $issue->issueKey() . '</info> ' . strtr($issue->summary(), [':' => '']);
             },
             iterator_to_array($issues)
-        );
+        ));
         $options[] = '<comment><enter manually></comment>';
 
         return $options;

@@ -38,7 +38,7 @@ class Branch extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input, $output);
-        $this->checkoutToBranch($input, $output, $this->jiraApi()->retrieveIssue((string) $issueKey));
+        $this->checkoutToBranch($input, $output, $this->jiraApi()->retrieveIssue($issueKey));
     }
 
     /**

@@ -77,7 +77,7 @@ class WorklogCollection implements Iterator, Countable
 
     public function push(Worklog $worklog)
     {
-        if (!in_array($worklog, $this->worklogs)) {
+        if (!in_array($worklog, $this->worklogs, true)) {
             $this->worklogs[] = $worklog;
             $this->maxResults+= 1;
             $this->total+= 1;
@@ -147,13 +147,13 @@ class WorklogCollection implements Iterator, Countable
     }
 
     /**
-     * @param string $user
-     * @return \Technodelight\Jira\Domain\WorklogCollection
+     * @param User $user
+     * @return WorklogCollection
      */
-    public function filterByUser($user)
+    public function filterByUser(User $user)
     {
         $iterator = new \CallbackFilterIterator($this, function(Worklog $log) use ($user) {
-            return $log->author()->key() == $user;
+            return $log->author()->id() == $user->id();
         });
         return WorklogCollection::fromIterator($iterator);
     }

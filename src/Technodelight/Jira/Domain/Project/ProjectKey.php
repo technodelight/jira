@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Domain;
+namespace Technodelight\Jira\Domain\Project;
 
 use Technodelight\Jira\Domain\Exception\MissingProjectKeyException;
 

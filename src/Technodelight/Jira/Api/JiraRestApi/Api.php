@@ -4,28 +4,31 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
+use Technodelight\Jira\Domain\Comment\CommentId;
+use Technodelight\Jira\Domain\Filter\FilterId;
+use Technodelight\Jira\Domain\IssueLink\IssueLinkId;
+use Technodelight\Jira\Domain\Worklog\WorklogId;
+use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Field;
 use Technodelight\Jira\Domain\Filter;
 use Technodelight\Jira\Domain\Issue\Changelog;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Issue\Meta;
 use Technodelight\Jira\Domain\IssueLink;
 use Technodelight\Jira\Domain\IssueLink\Type;
 use Technodelight\Jira\Domain\Priority;
 use Technodelight\Jira\Domain\Project;
+use Technodelight\Jira\Domain\Project\ProjectKey;
 use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\Transition;
 use Technodelight\Jira\Domain\UserPickerResult;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
-/**
- * @todo: as IssueKey was introduced to domain level, refactor API methods to await IssueKey arguments everywhere
- */
 class Api
 {
     const FIELDS_ALL = '*all';
@@ -43,11 +46,22 @@ class Api
     }
 
     /**
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-rest-api-3-user-get
      * @return User
      */
-    public function user()
+    public function user($accountId = null)
     {
-        return User::fromArray($this->client->get('myself'));
+        if (null === $accountId) {
+            return User::fromArray($this->client->get('myself'));
+        }
+
+        return User::fromArray(
+            $this->client->get(
+                'user' . $this->queryStringFromParams([
+                    'accountId' => $accountId,
+                ])
+            )
+        );
     }
 
     /**
@@ -94,11 +108,11 @@ class Api
     }
 
     /**
-     * @param string $projectKey
+     * @param ProjectKey $projectKey
      *
      * @return Project
      */
-    public function project($projectKey)
+    public function project(ProjectKey $projectKey)
     {
         return Project::fromArray($this->client->get(sprintf('project/%s', $projectKey)));
     }
@@ -124,10 +138,10 @@ class Api
     /**
      * Return available statuses for a project per issue type
      *
-     * @param string $projectKey
+     * @param ProjectKey $projectKey
      * @return array
      */
-    public function projectStatuses($projectKey)
+    public function projectStatuses(ProjectKey $projectKey)
     {
         $response = $this->client->get(sprintf('project/%s/statuses', $projectKey));
         foreach (array_keys($response) as $k) {
@@ -159,43 +173,37 @@ class Api
     /**
      * Log work against ticket
      *
-     * $adjustEstimate options:
-     * "new" - sets the estimate to a specific value
-     * "leave"- leaves the estimate as is
-     * "manual" - specify a specific amount to increase remaining estimate by
-     * "auto"- Default option. Will automatically adjust the value based on the new timeSpent specified on the worklog
-     *
-     * @param string $issueKey
-     * @param int $timeSpentSeconds
-     * @param string $comment
-     * @param string $adjustEstimate
-     * @param string $newEstimate if adjustEstimate is 'new' this arg should be provided
+     * @param Worklog $worklog
      * @return Worklog
      */
-    public function worklog($issueKey, $timeSpentSeconds, $comment, $started, $adjustEstimate = 'auto', $newEstimate = null)
+    public function createWorklog(Worklog $worklog)
     {
-        $params = ['adjustEstimate' => $adjustEstimate];
-        if ($newEstimate) {
-            $params['newEstimate'] = $newEstimate;
-        }
-
         $jiraRecord = $this->client->post(
-            sprintf('issue/%s/worklog', $issueKey) . $this->queryStringFromParams($params),
+            sprintf('issue/%s/worklog', $worklog->issueIdentifier()) . $this->queryStringFromParams(['adjustEstimate' => 'auto']),
             [
-                'comment' => $comment,
-                'started' => DateHelper::dateTimeToJira($started),
-                'timeSpentSeconds' => $timeSpentSeconds,
+                'comment' => $worklog->comment(),
+                'started' => DateHelper::dateTimeToJira($worklog->date()),
+                'timeSpentSeconds' => $worklog->timeSpentSeconds(),
             ]
         );
-        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $issueKey);
+        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $worklog->issueIdentifier());
     }
 
+    /**
+     * @param WorklogId[] $worklogIds
+     * @return \Generator
+     */
     public function retrieveWorklogs(array $worklogIds)
     {
         $records = $this->client->post(
             'worklog/list?expand=properties',
-            ['ids' => $worklogIds]
+            [
+                'ids' => array_map(function (WorklogId $worklogId) {
+                    return (string) $worklogId;
+                }, $worklogIds)
+            ]
         );
+
         foreach ($records as $logRecord) {
             yield Worklog::fromArray($this->normaliseDateFields($logRecord), $logRecord['issueId']);
         }
@@ -204,7 +212,7 @@ class Api
     public function updateWorklog(Worklog $worklog)
     {
         $jiraRecord = $this->client->put(
-            sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey(), $worklog->id()),
+            sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueIdentifier(), (string) $worklog->id()),
             [
                 'comment' => $worklog->comment(),
                 'started' => DateHelper::dateTimeToJira($worklog->date()),
@@ -220,11 +228,11 @@ class Api
     }
 
     /**
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      *
      * @return WorklogCollection
      */
-    public function retrieveIssueWorklogs($issueKey, $limit = null)
+    public function retrieveIssueWorklogs(IssueKey $issueKey, $limit = null)
     {
         try {
             $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
@@ -243,13 +251,13 @@ class Api
     }
 
     /**
-     * @param \Technodelight\Jira\Domain\IssueCollection $issues
-     * @param \DateTime|null $from
-     * @param \DateTime|null $to
+     * @param IssueCollection $issues
+     * @param DateTime|null $from
+     * @param DateTime|null $to
      * @param string|null $username
      * @param int|null $limit
      */
-    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, DateTime $from = null, DateTime $to = null, $username = null, $limit = null)
+    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, DateTime $from = null, DateTime $to = null, User $user = null, $limit = null)
     {
         $requests = [];
         foreach ($issues->keys() as $issueKey) {
@@ -267,8 +275,8 @@ class Api
             if ($from && $to) {
                 $worklogs = $worklogs->filterByDate($from, $to);
             }
-            if ($username) {
-                $worklogs = $worklogs->filterByUser($username);
+            if ($user) {
+                $worklogs = $worklogs->filterByUser($user);
             }
             if ($limit) {
                 $worklogs = $worklogs->filterByLimit($limit);
@@ -287,26 +295,26 @@ class Api
      *
      * @return IssueCollection
      */
-    public function findUserIssuesWithWorklogs(DateTime $from, DateTime $to, $username = null, $limit = null)
+    public function findUserIssuesWithWorklogs(DateTime $from, DateTime $to, User $user = null, $limit = null)
     {
         $query = SearchQueryBuilder::factory()
             ->worklogDate($from->format('Y-m-d'), $to->format('Y-m-d'));
-        if ($username) {
-            $query->worklogAuthor($username);
+        if ($user) {
+            $query->worklogAuthor($user);
         }
 
         $issues = $this->search($query->assemble(), null, 'issueKey');
-        $this->fetchAndAssignWorklogsToIssues($issues, $from, $to, $username, $limit);
+        $this->fetchAndAssignWorklogsToIssues($issues, $from, $to, $user, $limit);
 
         return $issues;
     }
 
     /**
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      *
      * @return Issue
      */
-    public function retrieveIssue($issueKey)
+    public function retrieveIssue(IssueKey $issueKey)
     {
         return Issue::fromArray(
             $this->normaliseIssueArray($this->client->get(sprintf('issue/%s', $issueKey)))
@@ -314,8 +322,7 @@ class Api
     }
 
     /**
-     * @param  array  $issueKeys
-     *
+     * @param IssueKey[]|string[] $issueKeys
      * @return IssueCollection
      */
     public function retrieveIssues(array $issueKeys)
@@ -355,12 +362,12 @@ class Api
      * @see Api::issueEditMeta()
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-put
      *
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @param array $data
      * @param array $params
      * @return array
      */
-    public function updateIssue($issueKey, array $data, array $params = [])
+    public function updateIssue(IssueKey $issueKey, array $data, array $params = [])
     {
         return $this->client->put(sprintf('issue/%s', $issueKey) . $this->queryStringFromParams($params), $data);
     }
@@ -378,11 +385,11 @@ class Api
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-assignee-put
      *
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @param string|int|null $usernameKey
      * @return mixed
      */
-    public function assignIssue($issueKey, $usernameKey)
+    public function assignIssue(IssueKey $issueKey, $usernameKey)
     {
         return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['name' => $usernameKey]);
     }
@@ -391,10 +398,10 @@ class Api
      * Returns the keys of all properties for the issue identified by the key or by the id.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-properties-get
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @return array
      */
-    public function issueProperties($issueKey)
+    public function issueProperties(IssueKey $issueKey)
     {
         return $this->client->get(sprintf('issue/%s/properties', $issueKey));
     }
@@ -407,12 +414,12 @@ class Api
      * fields will be returned, unless `overrideEditableFlag` is set to true.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-editmeta-get
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @param bool|null $screenSecurity overrideScreenSecurity
      * @param bool|null $editableFlag overrideEditableFlag
      * @return Meta
      */
-    public function issueEditMeta($issueKey, $screenSecurity = null, $editableFlag = null)
+    public function issueEditMeta(IssueKey $issueKey, $screenSecurity = null, $editableFlag = null)
     {
         $result = $this->client->get(
             sprintf('issue/%s/editmeta', $issueKey) . $this->queryStringFromParams([
@@ -427,12 +434,12 @@ class Api
      * Returns a paginated list of all updates of an issue, sorted by date, starting from the oldest.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-changelog-get
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @param null|int $startAt
      * @param null|int $maxResults
      * @return Changelog[]
      */
-    public function issueChangelogs($issueKey, $startAt = null, $maxResults = null)
+    public function issueChangelogs(IssueKey $issueKey, $startAt = null, $maxResults = null)
     {
         $result = $this->client->get(
             sprintf('issue/%s/changelog', $issueKey) . $this->queryStringFromParams([
@@ -463,10 +470,10 @@ class Api
      * Note, if a request is made for a transition that does not exist or cannot be performed on the issue, given its status, the response will return any empty transitions list.
      *
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/?utm_source=%2Fcloud%2Fjira%2Fplatform%2Frest%2F&utm_medium=302#api-api-3-issue-issueIdOrKey-transitions-get
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @return Transition[]
      */
-    public function retrievePossibleTransitionsForIssue($issueKey)
+    public function retrievePossibleTransitionsForIssue(IssueKey $issueKey)
     {
         $result = $this->client->get(sprintf('issue/%s/transitions', $issueKey));
         if (isset($result['transitions'])) {
@@ -486,17 +493,17 @@ class Api
      * To update the fields on the transition screen, specify the fields in the fields or update parameters in the request body. Get details about the fields by calling fields by Get transition and using the transitions.fields expand.
      *
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/?utm_source=%2Fcloud%2Fjira%2Fplatform%2Frest%2F&utm_medium=302#api-api-3-issue-issueIdOrKey-transitions-post
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @param int $transitionId returned by retrieveTransitions
      * @return array
      */
-    public function performIssueTransition($issueKey, $transitionId)
+    public function performIssueTransition(IssueKey $issueKey, Transition $transition)
     {
         return $this->client
             ->post(
                 sprintf('issue/%s/transitions', $issueKey),
                 [
-                    'transition' => ['id' => $transitionId]
+                    'transition' => ['id' => $transition->id()]
                 ]
             );
     }
@@ -575,27 +582,29 @@ class Api
     /**
      * Upload an attachment to an issue
      *
-     * @TODO change client implementation to provide arbitrary headers
-     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-attachments-post
-     * @param string $issueKey
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v2/#api-rest-api-2-issue-issueIdOrKey-attachments-post
+     * @param IssueKey $issueKey
      * @param string $attachmentFilePath
      */
-    public function addAttachment($issueKey, $attachmentFilePath)
+    public function addAttachment(IssueKey $issueKey, $attachmentFilePath)
     {
-
+        $this->client->upload(
+            sprintf('issue/%s/attachments', $issueKey),
+            $attachmentFilePath
+        );
     }
 
     /**
-     * @param string $issueKey
-     * @param string $comment
-     * @return \Technodelight\Jira\Domain\Comment
+     * @param IssueKey $issueKey
+     * @param string $commentString
+     * @return Comment
      */
-    public function addComment($issueKey, $comment)
+    public function addComment(IssueKey $issueKey, $commentString)
     {
         $response = $this->client->post(
             sprintf('issue/%s/comment', $issueKey),
             [
-                'body' => $comment
+                'body' => $commentString
             ]
         );
         return Comment::fromArray($this->normaliseDateFields($response));
@@ -604,11 +613,11 @@ class Api
     /**
      * Retrieve single comment
      *
-     * @param string $issueKey
-     * @param string $commentId
-     * @return \Technodelight\Jira\Domain\Comment
+     * @param IssueKey $issueKey
+     * @param CommentId $commentId
+     * @return Comment
      */
-    public function retrieveComment($issueKey, $commentId)
+    public function retrieveComment(IssueKey $issueKey, CommentId $commentId)
     {
         $response = $this->client->get(
             sprintf('issue/%s/comment/%s', $issueKey, $commentId)
@@ -617,12 +626,12 @@ class Api
     }
 
     /**
-     * @param string $issueKey
-     * @param string $commentId
+     * @param IssueKey $issueKey
+     * @param CommentId $commentId
      * @param string $comment
-     * @return \Technodelight\Jira\Domain\Comment
+     * @return Comment
      */
-    public function updateComment($issueKey, $commentId, $comment)
+    public function updateComment(IssueKey $issueKey, CommentId $commentId, $comment)
     {
         $response = $this->client->put(
             sprintf('issue/%s/comment/%s', $issueKey, $commentId),
@@ -634,11 +643,11 @@ class Api
     }
 
     /**
-     * @param string $issueKey
-     * @param string $commentId
+     * @param IssueKey $issueKey
+     * @param CommentId $commentId
      * @return bool
      */
-    public function deleteComment($issueKey, $commentId)
+    public function deleteComment(IssueKey $issueKey, CommentId $commentId)
     {
         $this->client->delete(sprintf('issue/%s/comment/%s', $issueKey, $commentId));
         return true;
@@ -714,18 +723,18 @@ class Api
      * specified role.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-post
-     * @param string $inwardIssueKey
-     * @param string $outwardIssueKey
+     * @param IssueKey $inwardIssueKey
+     * @param IssueKey $outwardIssueKey
      * @param string $linkName
      * @param string $comment
      * @return IssueLink
      */
-    public function linkIssue($inwardIssueKey, $outwardIssueKey, $linkName, $comment = '')
+    public function linkIssue(IssueKey $inwardIssueKey, IssueKey $outwardIssueKey, $linkName, $comment = '')
     {
         $data = [
             'type' => ['name' => $linkName],
-            'inwardIssue' => ['key' => $inwardIssueKey],
-            'outwardIssue' => ['key' => $outwardIssueKey],
+            'inwardIssue' => ['key' => (string) $inwardIssueKey],
+            'outwardIssue' => ['key' => (string) $outwardIssueKey],
             'comment' => !empty($comment) ? ['body' => $comment] : false,
         ];
 
@@ -738,10 +747,10 @@ class Api
      * Returns an issue link with the specified id.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-linkId-get
-     * @param string $linkId
-     * @return \Technodelight\Jira\Domain\IssueLink
+     * @param IssueLinkId $linkId
+     * @return IssueLink
      */
-    public function retrieveIssueLink($linkId)
+    public function retrieveIssueLink(IssueLinkId $linkId)
     {
         return IssueLink::fromArray($this->client->get(sprintf('issueLink/%s', $linkId)));
     }
@@ -753,10 +762,10 @@ class Api
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLink-linkId-delete
      *
-     * @param string $linkId
+     * @param IssueLinkId $linkId
      * @return bool
      */
-    public function removeIssueLink($linkId)
+    public function removeIssueLink(IssueLinkId $linkId)
     {
         $this->client->delete(sprintf('issueLink/%s', $linkId));
         return true;
@@ -797,10 +806,10 @@ class Api
      * Returns a filter given an id
      *
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-filter-id-get
-     * @param int $filterId
+     * @param FilterId $filterId
      * @return Filter
      */
-    public function retrieveFilter($filterId)
+    public function retrieveFilter(FilterId $filterId)
     {
         return Filter::fromArray($this->client->get(sprintf('filter/%s', $filterId)));
     }

@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\GitShell\Api;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput;
 use Technodelight\Jira\Helper\HubHelper;
