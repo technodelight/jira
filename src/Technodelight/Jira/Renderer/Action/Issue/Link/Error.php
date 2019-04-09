@@ -17,7 +17,7 @@ class Error extends BaseError
         $instance = new self;
         $instance->exception = $exception;
         $instance->issueKey = $issueKey;
-        $instance->phrase = '%s cannot be linked to';
+        $instance->phrase = '%s cannot be linked';
 
         return $instance;
     }

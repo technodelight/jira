@@ -63,29 +63,9 @@ class WorklogHandler implements WorklogHandlerInterface
 
         $collection = WorklogCollection::createEmpty();
         foreach ($worklogs as $worklog) {
-            $collection->push(
-                $this->worklogFromTempoArray($worklog)
-            );
+            $collection->push($this->worklogFromTempoArray($worklog));
         }
         return $collection;
-//        if ($limit) {
-//            $from = date(self::DATETIME_FORMAT, strtotime(sprintf('-%d days', $limit)));
-//        } else {
-//            $from = $issue->created()->format(self::DATETIME_FORMAT);
-//        }
-//        $to = date(self::DATETIME_FORMAT);
-//        $worklogs = array_filter(
-//            $this->api->find($from, $to),
-//            function (array $worklog) use ($issue) {
-//                return $worklog['issue']['key'] == (string) $issue->key();
-//            }
-//        );
-//
-//        $collection = WorklogCollection::createEmpty();
-//        foreach ($worklogs as $worklog) {
-//            $collection->push($this->worklogFromTempoArray($worklog));
-//        }
-//        return $collection;
     }
 
     /**

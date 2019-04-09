@@ -109,6 +109,9 @@ class Renderer implements ActionRenderer
             )
         );
         $output->writeln('');
+        $issue = $this->api->retrieveIssue($result->issueKey());
+        $this->headerRenderer->render($output, $issue);
+        $this->issueRelationsRenderer->render($output, $issue);
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here

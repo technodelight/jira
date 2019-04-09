@@ -20,7 +20,14 @@ class Api
 
     public function find($dateFrom, $dateTo)
     {
-        return $this->client->get('worklogs', ['from' => $dateFrom, 'to' => $dateTo])['results'];
+        $result = $this->client->get('worklogs', ['from' => $dateFrom, 'to' => $dateTo, 'limit' => 200]);
+        $worklogs = $result['results'];
+        while(!empty($result['metadata']['next'])) {
+            $result = $this->client->get($result['metadata']['next']);
+            $worklogs = array_merge($worklogs, $result['results']);
+        }
+
+        return $worklogs;
     }
 
     public function all()
@@ -35,7 +42,14 @@ class Api
 
     public function findByIssue($issueKey)
     {
-        return $this->client->get('worklogs/issue/' . $issueKey)['results'];
+        $result = $this->client->get('worklogs/issue/' . $issueKey);
+        $worklogs = $result['results'];
+        while(!empty($result['metadata']['next'])) {
+            $result = $this->client->get($result['metadata']['next']);
+            $worklogs = array_merge($worklogs, $result['results']);
+        }
+
+        return $worklogs;
     }
 
     public function create($issueKey, $authorAccountId, $startedAt, $timeSpentSeconds, $description)
