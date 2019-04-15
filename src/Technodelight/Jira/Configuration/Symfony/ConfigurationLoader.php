@@ -35,9 +35,9 @@ class ConfigurationLoader
         }
 
         $configs = array_filter($yamls);
-        if (!$configs) {
-            throw MissingConfigurationException::noConfigsFound();
-        }
+//        if (!$configs) {
+//            throw MissingConfigurationException::noConfigsFound();
+//        }
 
         return $configs;
     }

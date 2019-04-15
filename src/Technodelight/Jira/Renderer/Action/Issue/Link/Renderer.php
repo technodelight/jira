@@ -109,7 +109,7 @@ class Renderer implements ActionRenderer
             )
         );
         $output->writeln('');
-        $issue = $this->api->retrieveIssue($result->issueKey());
+        $issue = $this->api->retrieveIssue($error->issueKey());
         $this->headerRenderer->render($output, $issue);
         $this->issueRelationsRenderer->render($output, $issue);
 

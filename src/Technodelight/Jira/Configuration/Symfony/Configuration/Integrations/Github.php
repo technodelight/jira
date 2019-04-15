@@ -16,10 +16,11 @@ class Github implements Configuration
     {
         return (new TreeBuilder)->root('github')
             ->info('GitHub credentials - used to retrieve pull request data, including webhook statuses. Visit this page to generate a token: https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool')
+            ->addDefaultsIfNotSet()
             ->children()
                 ->scalarNode('apiToken')
                     ->attribute('hidden', true)
-                    ->isRequired()
+                    ->defaultNull()
                 ->end()
                 ->scalarNode('owner')
                     ->defaultNull()

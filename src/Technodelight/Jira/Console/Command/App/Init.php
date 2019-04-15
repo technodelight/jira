@@ -2,10 +2,11 @@
 
 namespace Technodelight\Jira\Console\Command\App;
 
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Yaml\Yaml;
 use Technodelight\SymfonyConfigurationInitialiser\Initialiser;
 use Technodelight\Jira\Configuration\Symfony\Configuration;
@@ -20,10 +21,10 @@ class Init extends AbstractCommand
             ->setDescription('Initialise app configuration')
             ->setAliases(['init'])
             ->addOption(
-                'global',
-                'g',
+                'local',
+                'l',
                 InputOption::VALUE_NONE,
-                'Create user-global configuration file at ~/.jira.yml'
+                'Create local configuration file at current directory'
             )
             ->addOption(
                 'sample',
@@ -56,20 +57,17 @@ class Init extends AbstractCommand
      */
     protected function interactiveInit(InputInterface $input, OutputInterface $output)
     {
-        $fileProvider = $this->filenameProvider();
+        $path = $this->configFilename($input);
         $init = new Initialiser;
         $config = $init->init(new Configuration, $input, $output);
-        if ($input->getOption('global')) {
-            $path = $fileProvider->globalFile();
-        } else {
-            $path = $fileProvider->localFile();
-        }
 
-        if (is_file($path)) {
-            throw new \ErrorException('Config file already exists: ' . $path);
+        $output->writeln(Yaml::dump($config));
+        $confirm = new ConfirmationQuestion(sprintf('Shall we save this as %s? [Yn]', $path));
+
+        if ($this->questionHelper()->ask($input, $output, $confirm)) {
+            file_put_contents($path, Yaml::dump($config));
+            chmod($path, 0600);
         }
-        file_put_contents($path, Yaml::dump($config));
-        chmod($path, 0600);
     }
 
     /**
@@ -85,9 +83,34 @@ class Init extends AbstractCommand
             $path = $this->filenameProvider()->localFile() . '.sample';
         }
 
-        $this->configurationDumper()->dump($path, $input->getOption('global'));
+        $this->configurationDumper()->dump($path, false === $input->getOption('local'));
 
         $output->writeln('Sample configuration has been written to ' . $path);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return string
+     * @throws \ErrorException
+     */
+    protected function configFilename(InputInterface $input)
+    {
+        $fileProvider = $this->filenameProvider();
+        if ($input->getOption('local')) {
+            $path = $fileProvider->localFile();
+        } else {
+            $path = $fileProvider->globalFile();
+        }
+
+        if (is_file($path)) {
+            throw new \ErrorException('Config file already exists: ' . $path);
+        }
+
+        if (is_dir($path)) {
+            throw new \ErrorException('Unexpected error: path is dir');
+        }
+
+        return $path;
     }
 
     /**
@@ -104,5 +127,13 @@ class Init extends AbstractCommand
     private function configurationDumper()
     {
         return $this->getService('technodelight.jira.configuration.symfony.configuration_dumper');
+    }
+
+    /**
+     * @return QuestionHelper
+     */
+    private function questionHelper()
+    {
+        return $this->getService('console.question_helper');
     }
 }

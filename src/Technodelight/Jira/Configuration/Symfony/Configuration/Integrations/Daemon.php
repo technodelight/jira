@@ -18,7 +18,7 @@ class Daemon implements Configuration
             ->info('Use application in server/client mode. Could speed things up a bit')
             ->addDefaultsIfNotSet()
             ->children()
-                ->booleanNode('enabled')->defaultFalse()->end()
+                ->booleanNode('enabled')->defaultValue(false)->end()
                 ->scalarNode('address')
                     ->info('IP to listen on. Defaults to 0.0.0.0')
                     ->validate()
