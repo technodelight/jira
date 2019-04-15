@@ -309,11 +309,22 @@
             <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
         </service>
 
+        <!-- user show command renderer -->
+        <service id="technodelight.jira.renderer.action.show.user"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\Show\User\Renderer">
+            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
+        </service>
+
+
         <!-- action result renderer upfront service -->
         <service id="technodelight.jira.renderer.action.renderer" class="Technodelight\Jira\Renderer\Action\ActionRenderer">
             <argument type="collection">
                 <argument type="service" id="technodelight.jira.renderer.action.issue.assign" />
                 <argument type="service" id="technodelight.jira.renderer.action.issue.link" />
+                <argument type="service" id="technodelight.jira.renderer.action.show.user" />
                 <argument type="service" id="technodelight.jira.renderer.action.general" />
             </argument>
         </service>

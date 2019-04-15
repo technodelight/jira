@@ -4,15 +4,17 @@ namespace Technodelight\Jira\Helper;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Api\ITermImage\Image as ITermImage;
+use Technodelight\Jira\Api\ITermImage\ITermVersion;
 
 class Image
 {
     /**
-     * @var \Technodelight\Jira\Helper\ImageProvider
+     * @var ImageProvider
      */
     private $imageProvider;
     /**
-     * @var string
+     * @var ITermVersion
      */
     private $itermVersion;
     /**
@@ -27,7 +29,7 @@ class Image
     public function __construct(ImageProvider $imageProvider, ITermConfiguration $config)
     {
         $this->imageProvider = $imageProvider;
-        $this->itermVersion = (string) new ITermVersion();
+        $this->itermVersion = new ITermVersion();
         $this->displayImages = $config->renderImages();
         $this->thumbnailWidth = $config->thumbnailWidth();
     }
@@ -64,10 +66,7 @@ class Image
      */
     protected function renderThumbnail(Issue $issue, $imageFilename)
     {
-        return chr(27) .
-            ']1337;File=inline=1;width=' . $this->thumbnailWidth . 'px;preserveAspectRatio=1:'
-            . base64_encode($this->getImageContents($issue, $imageFilename))
-            . chr(7);
+        return ITermImage::fromContents($this->getImageContents($issue, $imageFilename));
     }
 
     /**

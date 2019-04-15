@@ -20,4 +20,9 @@ class StyleGuide
     {
         return sprintf('<comment>%s</>', $transition);
     }
+
+    public function formatFirstLevelInfo($firstLevelInfo): string
+    {
+        return sprintf('<comment>%s</>', $firstLevelInfo);
+    }
 }

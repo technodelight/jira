@@ -85,6 +85,11 @@
             <argument type="service" id="technodelight.jira.config.transitions" />
             <tag name="command" />
         </service>
+        <service id="technodelight.jira.app.command.user" class="Technodelight\Jira\Console\Command\Show\User">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.action.renderer" />
+            <tag name="command" />
+        </service>
         <!-- show commands-->
 
         <!-- action commands -->

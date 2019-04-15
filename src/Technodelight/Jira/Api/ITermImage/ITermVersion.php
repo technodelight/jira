@@ -1,9 +1,9 @@
 <?php
 
-namespace Technodelight\Jira\Helper;
+namespace Technodelight\Jira\Api\ITermImage;
 
-use Technodelight\Jira\Api\Shell\Command;
-use Technodelight\Jira\Api\Shell\Exec;
+use Technodelight\ShellExec\Command;
+use Technodelight\ShellExec\Exec;
 
 class ITermVersion
 {
