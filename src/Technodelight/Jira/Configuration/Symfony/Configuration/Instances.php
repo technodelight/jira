@@ -20,7 +20,7 @@ class Instances implements Configuration
             ->info('Different JIRA instances to use')
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name', false)
-            ->addDefaultChildrenIfNoneSet(['name', 'domain', 'username', 'password'])
+            ->addDefaultChildrenIfNoneSet(['default'])
             ->prototype('array')
                 ->normalizeKeys(false)
                 ->children()

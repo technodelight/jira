@@ -107,17 +107,6 @@ class ApplicationConfiguration implements RegistrableConfiguration
         $configuration = new self;
         $configuration->config = $config;
 
-        if (isset($config['credentials'])) {
-            print 'Using "credentials" node in configuration is deprecated. Please use a "default" instance instead.' . PHP_EOL . PHP_EOL;
-            $config['instances'] = isset($config['instances']) ? $config['instances'] : [];
-            $config['instances']['default'] = [
-                'name' => 'default',
-                'domain' => $config['credentials']['domain'],
-                'username' => $config['credentials']['username'],
-                'password' => $config['credentials']['password'],
-            ];
-        }
-
         $configuration->instances = InstancesConfiguration::fromArray($config['instances']);
         $configuration->integrations = IntegrationsConfiguration::fromArray(isset($config['integrations']) ? $config['integrations'] : []);
         $configuration->project = ProjectConfiguration::fromArray(isset($config['project']) ? $config['project'] : []);
