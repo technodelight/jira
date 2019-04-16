@@ -50,6 +50,8 @@ class TableParser
         $noOfLines = count($lines);
         $tables = [];
 
+        //@TODO: we should collect here everything which starts with | and ends with |
+        //@TODO: then decide later if table is vertical or horizontal
         //@TODO handle multiline headers/rows, where the end delimiter can be in a separate row
         foreach ($lines as $row => $line) {
             if ($this->isTableRow($line)) {

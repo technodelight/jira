@@ -24,25 +24,13 @@ class PanelParser
      */
     private function collectPanels($body)
     {
-        $lines = explode(PHP_EOL, $body);
-        $isPanelStarted = false;
-        $panel = new Panel;
-        $panels = [];
-        foreach ($lines as $line) {
-            if (strpos($line, '{panel}') !== false && !$isPanelStarted) {
-                $isPanelStarted = true;
-                $startPos = strpos($line, '{panel}');
-                $panel->appendSource(substr($line, $startPos) . PHP_EOL);
-            } else if ($isPanelStarted && strpos($line, '{panel}') !== false) {
-                $panel->appendSource(substr($line, 0, strpos($line, '{panel}') + 7) . PHP_EOL);
-                $panels[] = $panel;
-                $panel = new Panel;
-                $isPanelStarted = false;
-            } else if ($isPanelStarted) {
-                $panel->appendSource($line . PHP_EOL);
-            }
+        $parser = new DelimiterBasedStringParser('{panel}', '{panel}');
+        $matches = $parser->parse($body);
+        foreach ($matches as $match) {
+            $panel = new Panel();
+            $panel->appendSource($match);
+            $panels[] = $panel;
         }
-
         return $panels;
     }
 

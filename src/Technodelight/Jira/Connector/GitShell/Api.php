@@ -28,7 +28,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->log($from, $to);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             yield from [];
         }
     }
@@ -59,7 +59,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->remotes($verbose);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return [];
         }
     }
@@ -73,7 +73,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->branches($pattern, $withRemotes);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return [];
         }
     }
@@ -85,7 +85,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->currentBranch();
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return null;
         }
     }
@@ -98,7 +98,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->parentBranch();
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -110,7 +110,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->topLevelDirectory();
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return null;
         }
     }
@@ -125,7 +125,7 @@ class Api implements ApiInterface
     {
         try {
             return $this->git()->diff($to);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             return [];
         }
     }

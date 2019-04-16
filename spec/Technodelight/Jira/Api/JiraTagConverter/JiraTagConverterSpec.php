@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Api\JiraTagConverter;
 
 use PhpSpec\ObjectBehavior;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\NullOutput;
@@ -41,9 +40,11 @@ something
 EOL;
         $panelParsed = <<<EOL
 
-+-----------+
-| something |
-+-----------+
+┌───────────┐
+│           │
+│ something │
+│           │
+└───────────┘
 
 EOL;
 
