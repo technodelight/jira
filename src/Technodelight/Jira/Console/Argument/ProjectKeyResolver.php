@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Domain\Exception\MissingProjectKeyException;
 use Technodelight\Jira\Domain\Project\ProjectKey;

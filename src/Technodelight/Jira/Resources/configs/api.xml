@@ -66,8 +66,11 @@
         <service public="false" id="technodelight.gitshell.shell" class="Technodelight\ShellExec\Exec">
             <argument>/usr/bin/env git</argument>
         </service>
-        <service id="technodelight.gitshell.api" class="Technodelight\GitShell\Api">
+        <service id="technodelight.gitshell.api.internal" public="false" class="Technodelight\GitShell\Api">
             <argument type="service" id="technodelight.gitshell.shell" />
+        </service>
+        <service id="technodelight.gitshell.api" class="Technodelight\Jira\Connector\GitShell\Api">
+            <argument type="service" id="technodelight.gitshell.api.internal" />
         </service>
         <!-- git -->
 

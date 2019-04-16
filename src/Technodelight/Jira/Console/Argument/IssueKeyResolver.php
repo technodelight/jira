@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 

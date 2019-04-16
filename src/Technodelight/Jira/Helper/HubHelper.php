@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Helper;
 
 use GitHub\Client as Hub;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\GitShell\Remote;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
 

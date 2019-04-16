@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Helper;
 
-use Technodelight\GitShell\Api;
+use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Domain\Issue;
 

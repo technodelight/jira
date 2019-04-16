@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\GitShell\Api;
+use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 

@@ -16,7 +16,7 @@ use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee as AssigneeInput;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\GitShell\Api as GitShell;
+use Technodelight\GitShell\ApiInterface as GitShell;
 use Technodelight\Jira\Domain\Transition as IssueTransition;
 use Technodelight\Jira\Helper\CheckoutBranch;
 use Technodelight\Jira\Helper\TemplateHelper;

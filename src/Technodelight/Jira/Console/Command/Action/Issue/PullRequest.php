@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Technodelight\GitShell\Api;
+use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;

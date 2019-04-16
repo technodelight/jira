@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Console\Input\PullRequest;
 
-use Technodelight\GitShell\Api;
+use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Api\EditApp\EditApp;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput\InputAssembler;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput\OutputParser;
