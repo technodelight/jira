@@ -2,7 +2,9 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\Worklog\WorklogId;
 
 class IssueKeyOrWorklogId
 {
@@ -14,9 +16,9 @@ class IssueKeyOrWorklogId
     {
         $instance = new self;
         if (intval($string)) {
-            $instance->worklogId = $string;
+            $instance->worklogId = WorklogId::fromString($string);
         } elseif(!empty($string)) {
-            $instance->issueKey = $string;
+            $instance->issueKey = IssueKey::fromString($string);
         }
         return $instance;
     }

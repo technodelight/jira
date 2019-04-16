@@ -3,7 +3,6 @@
 namespace spec\Technodelight\Jira\Api\JiraTagConverter;
 
 use PhpSpec\ObjectBehavior;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\NullOutput;
@@ -36,15 +35,16 @@ class JiraTagConverterSpec extends ObjectBehavior
     {
         $panelSource = <<<EOL
 {panel}
-something{panel}
+something
+{panel}
 EOL;
         $panelParsed = <<<EOL
 
-+-----------+
-|           |
-| something |
-|           |
-+-----------+
+┌───────────┐
+│           │
+│ something │
+│           │
+└───────────┘
 
 EOL;
 
@@ -83,7 +83,7 @@ EOF;
     function it_merges_definitions()
     {
         $this->convert(new NullOutput(), '*_BOLD UNDERSCORED_* *_BOLD UNDERSCORED_*')
-             ->shouldReturn('<options=bold,underscore>BOLD UNDERSCORED</> <options=bold,underscore>BOLD UNDERSCORED</>');
+             ->shouldReturn('<options=bold,underscore>BOLD UNDERSCORED BOLD UNDERSCORED</>');
         $this->convert(new NullOutput(), '*_BOLDUNDERSCORE_* _UNDERSCORE_')
              ->shouldReturn('<options=bold,underscore>BOLDUNDERSCORE</> <options=underscore>UNDERSCORE</>');
         $this->convert(new NullOutput(), '*_B_*' . PHP_EOL . '*_B_*')

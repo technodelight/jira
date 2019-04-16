@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Filter\FilterId;
+
 final class Filter
 {
     /**
@@ -21,11 +23,11 @@ final class Filter
     }
 
     /**
-     * @return int
+     * @return FilterId
      */
     public function id()
     {
-        return $this->filter['id'];
+        return FilterId::fromString($this->filter['id']);
     }
 
     /**

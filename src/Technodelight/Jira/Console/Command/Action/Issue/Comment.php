@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Argument\CommentId;
+use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Comment\Comment as CommentInput;
 use Technodelight\Jira\Renderer\Issue\Comment as CommentRenderer;
@@ -89,7 +89,7 @@ class Comment extends Command
         }
 
         if (!$input->getArgument('comment')) {
-            $issue = $this->jira->retrieveIssue((string) $issueKey);
+            $issue = $this->jira->retrieveIssue($issueKey);
 
             $this->issueRenderer->render($output, $issue);
 
@@ -110,14 +110,14 @@ class Comment extends Command
         $updateCommentId = $input->getOption('update');
 
         if ($updateCommentId) {
-            $comment = $this->jira->updateComment((string) $issueKey, (string) CommentId::fromString($updateCommentId), $comment);
+            $comment = $this->jira->updateComment($issueKey, CommentId::fromString($updateCommentId), $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
         } elseif ($deleteCommentId) {
-            $this->jira->deleteComment((string) $issueKey, CommentId::fromString($deleteCommentId));
+            $this->jira->deleteComment($issueKey, CommentId::fromString($deleteCommentId));
             $output->writeln('<info>Comment has been deleted</>');
         } else {
-            $comment = $this->jira->addComment((string) $issueKey, $comment);
+            $comment = $this->jira->addComment($issueKey, $comment);
             $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
         }

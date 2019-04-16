@@ -100,6 +100,12 @@ class CachedHttpClient implements Client
         $this->httpClient->download($url, $filename, $progressFunction);
     }
 
+    public function upload($url, $filename)
+    {
+        $this->httpClient->upload($url, $filename);
+        $this->storage->clear();
+    }
+
     private function keyify()
     {
         $components = func_get_args();

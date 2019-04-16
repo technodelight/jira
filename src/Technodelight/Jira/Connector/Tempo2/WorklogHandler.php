@@ -33,6 +33,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param DateTime $from
      * @param DateTime $to
      * @return WorklogCollection
+     * @throws \Exception
      */
     public function find(DateTime $from, DateTime $to)
     {
@@ -54,21 +55,11 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param Issue $issue
      * @param null $limit
      * @return WorklogCollection
+     * @throws \Exception
      */
     public function findByIssue(Issue $issue, $limit = null)
     {
-        if ($limit) {
-            $from = date(self::DATETIME_FORMAT, strtotime(sprintf('-%d days', $limit)));
-        } else {
-            $from = $issue->created()->format(self::DATETIME_FORMAT);
-        }
-        $to = date(self::DATETIME_FORMAT);
-        $worklogs = array_filter(
-            $this->api->find($from, $to),
-            function (array $worklog) use ($issue) {
-                return $worklog['issue']['key'] == $issue->key();
-            }
-        );
+        $worklogs = $this->api->findByIssue((string) $issue->issueKey());
 
         $collection = WorklogCollection::createEmpty();
         foreach ($worklogs as $worklog) {
@@ -80,6 +71,7 @@ class WorklogHandler implements WorklogHandlerInterface
     /**
      * @param int $worklogId
      * @return Worklog
+     * @throws \Exception
      */
     public function retrieve($worklogId)
     {
@@ -90,12 +82,13 @@ class WorklogHandler implements WorklogHandlerInterface
     /**
      * @param Worklog $worklog
      * @return Worklog
+     * @throws \Exception
      */
     public function create(Worklog $worklog)
     {
         $response = $this->api->create(
-            $worklog->issueKey(),
-            $worklog->author()->key(),
+            (string) $worklog->issueKey(),
+            $worklog->author()->id(),
             $worklog->date()->format(Api::TEMPO_DATETIME_FORMAT),
             $worklog->timeSpentSeconds(),
             $worklog->comment()
@@ -107,6 +100,7 @@ class WorklogHandler implements WorklogHandlerInterface
     /**
      * @param Worklog $worklog
      * @return Worklog
+     * @throws \Exception
      */
     public function update(Worklog $worklog)
     {
@@ -133,6 +127,7 @@ class WorklogHandler implements WorklogHandlerInterface
     /**
      * @param array $worklog
      * @return Worklog
+     * @throws \Exception
      */
     private function worklogFromTempoArray(array $worklog)
     {
@@ -161,9 +156,10 @@ class WorklogHandler implements WorklogHandlerInterface
         return Worklog::fromArray([
             'id' => $worklog['tempoWorklogId'],
             'author' => [
+                'accountId' => isset($worklog['author']['accountId']) ? $worklog['author']['accountId'] : null,
                 'key' => isset($worklog['author']['username']) ? $worklog['author']['username'] : null,
                 'name' => isset($worklog['author']['username']) ? $worklog['author']['username'] : null,
-                'displayName' => $worklog['author']['displayName'],
+                'displayName' => !empty($worklog['author']['displayName']) ? $worklog['author']['displayName'] : 'unknown',
             ],
             'comment' => isset($worklog['description']) ? $worklog['description'] : null,
             'started' => $this->convertDateFormat($worklog['startDate'], $worklog['startTime']),
@@ -175,6 +171,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param string $date
      * @param string $time
      * @return string
+     * @throws \Exception
      */
     private function convertDateFormat($date, $time)
     {

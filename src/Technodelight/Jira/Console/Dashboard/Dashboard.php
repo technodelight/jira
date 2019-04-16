@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Dashboard;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Connector\WorklogHandler;
+use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Worklog;
 
 class Dashboard
@@ -28,18 +29,22 @@ class Dashboard
         $this->worklogHandler = $worklogHandler;
     }
 
-    public function fetch($dateString, $user = null, $mode = self::MODE_DAILY)
+    public function fetch($dateString, User $user = null, $mode = self::MODE_DAILY)
     {
         $from = $this->defineDate($dateString, $mode, true);
         $to = $this->defineDate($dateString, $mode, false);
-        $logs = $this->worklogHandler->find($from, $to)->filterByUser($user ? $user : $this->jira->user()->key());
+        $logs = $this->worklogHandler->find($from, $to)->filterByUser($user ? $user : $this->jira->user());
 
         $issueKeys = $logs->issueKeys();
-        if ($issueKeys) {
+        if (!empty($issueKeys)) {
             $issues = $this->jira->retrieveIssues($issueKeys);
             foreach ($logs as $log) {
-                /** @var $log Worklog */
-                $log->assignIssue($issues->find($log->issueKey()));
+                if ($log->issueKey()) {
+                    /** @var $log Worklog */
+                    $log->assignIssue($issues->find($log->issueKey()));
+                } else if ($log->issueId) {
+                    $log->assignIssue($issues->findById($log->issueId()));
+                }
             }
         }
 

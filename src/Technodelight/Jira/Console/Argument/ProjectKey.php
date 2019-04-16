@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Technodelight\GitShell\Branch;
-use Technodelight\Jira\Console\Argument\Exception\MissingProjectKeyException;
+use Technodelight\Jira\Domain\Exception\MissingProjectKeyException;
 
 /**
  * @deprecated

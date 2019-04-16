@@ -348,15 +348,6 @@ class PrettyTable
     }
 
     /**
-     * @param bool $start
-     * @return string
-     */
-    private function renderColumnBorderSeparator($start = true)
-    {
-        return sprintf($this->style->getBorderFormat(), $start ? $this->style->getLeftRowBorderChar() : $this->style->getRightRowBorderChar());
-    }
-
-    /**
      * Renders table row.
      *
      * Example: <code>| 9971-5-0210-0 | A Tale of Two Cities  | Charles Dickens  |</code>
@@ -397,9 +388,9 @@ class PrettyTable
         }
 
         // str_pad won't work properly with multi-byte strings, we need to fix the padding
-        if (false !== $encoding = mb_detect_encoding($cell, null, true)) {
-            $width += strlen($cell) - mb_strwidth($cell, $encoding);
-        }
+//        if (false !== $encoding = mb_detect_encoding($cell, null, true)) {
+//            $width += strlen($cell) - mb_strwidth($cell, $encoding);
+//        }
 
         $style = $this->getColumnStyle($column);
 

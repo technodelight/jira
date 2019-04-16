@@ -12,7 +12,6 @@ use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Priority;
 use Technodelight\Jira\Renderer\Issue\RendererProvider;
-use Technodelight\Jira\Template\IssueRenderer;
 
 /**
  * @TODO: refactor rendering logic to include a type for renderers. So then the rendering engine can decide which "main" renderer (IssueRenderer / BoardRenderer) should be used
@@ -24,13 +23,13 @@ class Renderer
     const BLOCK_WIDTH = 30;
 
     /**
-     * @var RendererProvider
-     */
-    private $rendererProvider;
-    /**
      * @var Api
      */
     private $api;
+    /**
+     * @var RendererProvider
+     */
+    private $rendererProvider;
 
     /**
      * @param Api $api
@@ -38,8 +37,8 @@ class Renderer
      */
     public function __construct(Api $api, RendererProvider $rendererProvider)
     {
-        $this->rendererProvider = $rendererProvider;
         $this->api = $api;
+        $this->rendererProvider = $rendererProvider;
     }
 
     public function render(OutputInterface $output, IssueCollection $collection)
@@ -80,7 +79,7 @@ class Renderer
             $columns[$status] = [];
             foreach ($issues as $issue) {
                 /** @var Issue $issue */
-                $priority = $this->api->priority($issue->priority()->id());
+                $priority = $this->api->priority($issue->priority()->id()->id());
                 $columnOutput = new BufferedOutput();
                 $columnOutput->setDecorated(true);
                 foreach ($this->rendererProvider->all() as $renderer) {

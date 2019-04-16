@@ -3,19 +3,21 @@
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
-use Technodelight\Jira\Console\Argument\Exception\MissingProjectKeyException;
+use Technodelight\Jira\Domain\Exception\MissingProjectKeyException;
+use Technodelight\Jira\Domain\Project\ProjectKey;
 
 class ProjectKeyResolver
 {
     const ARGUMENT = 'projectKey';
+
     /**
-     * @var \Technodelight\GitShell\Api
+     * @var Git
      */
     private $git;
     /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration
+     * @var ApplicationConfiguration
      */
     private $configuration;
 
@@ -25,6 +27,10 @@ class ProjectKeyResolver
         $this->configuration = $configuration;
     }
 
+    /**
+     * @param InputInterface $input
+     * @return ProjectKey|null
+     */
     public function argument(InputInterface $input)
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
@@ -34,9 +40,8 @@ class ProjectKeyResolver
         if ($projectKey = $this->fromString($input->getArgument(self::ARGUMENT))) {
             return $projectKey;
         }
-        if ($projectKey = $this->fromBranch($this->git->currentBranch())) {
-            return $projectKey;
-        }
+
+        return null;
     }
 
     private function fromString($string)
@@ -44,22 +49,7 @@ class ProjectKeyResolver
         try {
             return ProjectKey::fromString($string);
         } catch (MissingProjectKeyException $e) {
-            return false;
-        }
-    }
-
-    /**
-     * @TODO refactor to the same way as issue key guesser
-     * @TODO maybe reuse the same guesser
-     * @param $branch
-     * @return bool|ProjectKey
-     */
-    private function fromBranch($branch)
-    {
-        try {
-            return ProjectKey::fromBranch($branch);
-        } catch (MissingProjectKeyException $e) {
-            return false;
+            return null;
         }
     }
 }

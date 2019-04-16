@@ -13,17 +13,13 @@ class HttpClientFactory
     {
         try {
             if ($tempoConfiguration->isEnabled() === false
-                || (empty($tempoConfiguration->apiToken()) || empty($tempoConfiguration->instanceApiToken($instanceProvider->currentInstance()->name())))) {
+                || (empty($tempoConfiguration->apiToken()) && empty($tempoConfiguration->instanceApiToken($instanceProvider->currentInstance()->name())))) {
                 return new NullClient;
             }
         } catch (\InvalidArgumentException $e) {
             return new NullClient;
         }
 
-        $apiToken = $tempoConfiguration->apiToken();
-        if (empty($tempoConfiguration->apiToken())) {
-            $apiToken = $tempoConfiguration->instanceApiToken($instanceProvider->currentInstance()->name());
-        }
-        return new HttpClient($apiToken);
+        return new HttpClient(new ApiToken($tempoConfiguration, $instanceProvider));
     }
 }

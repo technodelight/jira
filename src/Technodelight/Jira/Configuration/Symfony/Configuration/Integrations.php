@@ -23,6 +23,7 @@ class Integrations implements Configuration
 
         $root
             ->info('Third party integration configs')
+            ->addDefaultsIfNotSet()
             ->children()
                 ->append((new Github)->configurations())
                 ->append((new Git)->configurations())

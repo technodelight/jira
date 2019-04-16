@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\Api;
+use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\GitBranchCollector;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -16,7 +16,7 @@ class Branch implements IssueRenderer
      */
     private $templateHelper;
     /**
-     * @var \Technodelight\GitShell\Api
+     * @var \Technodelight\GitShell\ApiInterface
      */
     private $git;
     /**

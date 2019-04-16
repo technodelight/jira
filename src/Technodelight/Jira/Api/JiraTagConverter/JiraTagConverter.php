@@ -59,12 +59,12 @@ class JiraTagConverter
             $this->shouldDo('mentions') && $this->convertMentions($body);
             $this->shouldDo('attachments') && $this->convertAttachments($body);
             $this->shouldDo('images') && $this->convertImages($body);
-            $this->shouldDo('tables') && $this->convertTables($body);
             $this->shouldDo('lines') && $this->convertLines($body);
             $this->shouldDo('panels') && $this->convertPanels($body);
             $this->shouldDo('lists') && $this->convertLists($body);
             $this->shouldDo('headings') && $this->convertHeadings($body);
             $this->shouldDo('emojis') && $this->convertEmojis($body);
+            $this->shouldDo('tables') && $this->convertTables($body);
             $formattedBody = $this->mergeDefinitions($body);
             // try formatting the body and ignore if an error happens
             $output->getFormatter()->format($body);
@@ -173,13 +173,14 @@ class JiraTagConverter
         for ($pos = 0; $pos < strlen($body); $pos++) {
             $char = substr($body, $pos, 1);
             $prevChar = $pos > 0 ? substr($body, $pos - 1, 1) : '';
+            $nextChar = $pos > 0 ? substr($body, $pos + 1, 1) : '';
             if (($char == $replaceChar) && ($startedAt === false) && $isTerminatingChar($prevChar)) {
                 // tag started
                 $startedAt = $pos;
             } else if (($startedAt !== false) && ($char == "\n" || $char == "\r")) {
                 // tag terminated by new line, null the previous position and start searching again
                 $startedAt = false;
-            } else if (($char == $replaceChar) && ($startedAt !== false)) {
+            } else if (($char == $replaceChar) && ($startedAt !== false) && $isTerminatingChar($nextChar)) {
                 // tag closing found, add to replacements
                 $text = substr($body, $startedAt, $pos - $startedAt + 1);
                 if (trim($text, $replaceChar) == '') {
@@ -215,7 +216,7 @@ class JiraTagConverter
             for ($i = 0; $i < $numOfMatches; $i++) {
                 $body = str_replace(
                     $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                    '🔗 <fg=cyan>' . $matches[2][$i] . '</>',
+                    '🔗<fg=cyan>' . $matches[2][$i] . '</>',
                     $body
                 );
             }

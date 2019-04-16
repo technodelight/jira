@@ -170,13 +170,6 @@ class Collection implements Iterator, Countable
             self::DATE_FORMAT,
             strtotime('+1 day', strtotime($this->currentDate))
         );
-        //TODO: check why this was added as a while loop?
-//        do {
-//            $this->currentDate = date(
-//                self::DATE_FORMAT,
-//                strtotime('+1 day', strtotime($this->currentDate))
-//            );
-//        } while(!in_array(date('N', strtotime($this->currentDate)), [1,2,3,4,5,6,7]));
     }
 
     /**

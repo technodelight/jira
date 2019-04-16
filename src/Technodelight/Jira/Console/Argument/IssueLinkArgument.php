@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
+use Technodelight\Jira\Domain\Issue\IssueKey;
+
 class IssueLinkArgument
 {
     private $relation;
@@ -10,7 +12,7 @@ class IssueLinkArgument
      */
     private $issueKey;
 
-    public function __construct($relation, $issueKey)
+    private function __construct($relation, $issueKey)
     {
         $this->relation = strtr($relation, ['-' => ' ']);
         $this->issueKey = IssueKey::fromString($issueKey);

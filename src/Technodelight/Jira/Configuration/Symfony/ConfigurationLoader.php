@@ -34,12 +34,7 @@ class ConfigurationLoader
             $yamls[]= $this->loadConfigurationYaml($path, $isRequired);
         }
 
-        $configs = array_filter($yamls);
-        if (!$configs) {
-            throw MissingConfigurationException::noConfigsFound();
-        }
-
-        return $configs;
+        return array_filter($yamls);
     }
 
     /**

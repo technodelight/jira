@@ -2,15 +2,59 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Connector\WorklogHandler;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Domain\Issue as DomainIssue;
+use Technodelight\Jira\Helper\Wordwrap;
+use Technodelight\Jira\Template\IssueRenderer;
 
-class Issue extends AbstractCommand implements IssueRendererAware
+class Issue extends Command implements IssueRendererAware
 {
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+    /**
+     * @var IssueRenderer
+     */
+    private $issueRenderer;
+    /**
+     * @var WorklogHandler
+     */
+    private $worklogHandler;
+    /**
+     * @var Wordwrap
+     */
+    private $wordwrap;
+
+    public function __construct(
+        Api $api,
+        IssueKeyResolver $issueKeyResolver,
+        IssueRenderer $issueRenderer,
+        WorklogHandler $worklogHandler,
+        Wordwrap $wordwrap
+    )
+    {
+        $this->api = $api;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->issueRenderer = $issueRenderer;
+        $this->worklogHandler = $worklogHandler;
+        $this->wordwrap = $wordwrap;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -26,16 +70,12 @@ class Issue extends AbstractCommand implements IssueRendererAware
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
-        /** @var \Technodelight\Jira\Api\JiraRestApi\Api $jira */
-        $jira = $this->getService('technodelight.jira.api');
-        $issue = $jira->retrieveIssue($issueKey);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
+        $issue = $this->api->retrieveIssue($issueKey);
 
         $this->tryFetchAndAssignWorklogs($output, $issue);
 
-        /** @var \Technodelight\Jira\Template\IssueRenderer $renderer */
-        $renderer = $this->getService('technodelight.jira.issue_renderer');
-        $renderer->render($output, $issue, $input->getOptions());
+        $this->issueRenderer->render($output, $issue, $input->getOptions());
     }
 
     /**
@@ -44,34 +84,17 @@ class Issue extends AbstractCommand implements IssueRendererAware
      */
     private function tryFetchAndAssignWorklogs(OutputInterface $output, DomainIssue $issue)
     {
+        $formatterHelper = new FormatterHelper;
         try {
-            /** @var \Technodelight\Jira\Connector\WorklogHandler $worklogHandler */
-            $worklogHandler = $this->getService('technodelight.jira.worklog_handler');
-            $worklogs = $worklogHandler->findByIssue($issue);
+            $worklogs = $this->worklogHandler->findByIssue($issue);
             $issue->assignWorklogs($worklogs);
         } catch (\Exception $e) {
             $output->writeln(
-                $this->formatterHelper()->formatBlock([
+                $formatterHelper->formatBlock([
                     'Sorry, cannot display worklogs right now...',
-                    $this->wordWrap()->wrap(join(' ', explode(PHP_EOL, $e->getMessage())))]
+                    $this->wordwrap->wrap(join(' ', explode(PHP_EOL, $e->getMessage())))]
                 , 'error', true)
             );
         }
-    }
-
-    /**
-     * @return \Symfony\Component\Console\Helper\FormatterHelper
-     */
-    private function formatterHelper()
-    {
-        return $this->container->get('console.formatter_helper');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Helper\Wordwrap
-     */
-    private function wordWrap()
-    {
-        return $this->container->get('technodelight.jira.word_wrap');
     }
 }

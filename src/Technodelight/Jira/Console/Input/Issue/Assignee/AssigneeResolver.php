@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
+use Symfony\Component\Console\Input\InputInterface;
+
 class AssigneeResolver
 {
     const UNASSIGN = null;
@@ -11,6 +13,18 @@ class AssigneeResolver
         '(Unassign)' => self::UNASSIGN,
         '(Default Assignee)' => self::DEFAULT_ASSIGNEE,
     ];
+
+    public function resolve(InputInterface $input)
+    {
+        switch (true) {
+            case $input->getOption('unassign'):
+                return self::UNASSIGN;
+            case $input->getOption('default'):
+                return self::DEFAULT_ASSIGNEE;
+            default:
+                return $input->getArgument('assignee');
+        }
+    }
 
     public function defaultUsers()
     {

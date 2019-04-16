@@ -2,19 +2,43 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
+use Technodelight\Jira\Domain\Issue\IssueKey;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Argument\IssueLinkArgument;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueLink;
 use Technodelight\Jira\Domain\IssueLink\Type;
+use Technodelight\Jira\Renderer\Action\Issue\Link\Error;
+use Technodelight\Jira\Renderer\Action\Issue\Link\Renderer;
+use Technodelight\Jira\Renderer\Action\Issue\Link\Success;
 
-class Link extends AbstractCommand
+class Link extends Command
 {
+    /**
+     * @var Api
+     */
+    private $api;
+    /**
+     * @var IssueKeyResolver
+     */
+    private $issueKeyResolver;
+    /**
+     * @var AliasesConfiguration
+     */
+    private $aliasesConfiguration;
+    /**
+     * @var Renderer
+     */
+    private $renderer;
+    /**
+     * @var string[]
+     */
     private $relations = [
         'relates to',
         'blocks',
@@ -28,6 +52,22 @@ class Link extends AbstractCommand
         'replaces',
         'is replaced by',
     ];
+
+    public function __construct(
+        Api $api,
+        IssueKeyResolver $issueKeyResolver,
+        AliasesConfiguration $aliasesConfiguration,
+        Renderer $renderer
+    )
+    {
+        $this->api = $api;
+        $this->issueKeyResolver = $issueKeyResolver;
+        $this->aliasesConfiguration = $aliasesConfiguration;
+
+        parent::__construct();
+        $this->renderer = $renderer;
+    }
+
 
     protected function configure()
     {
@@ -52,71 +92,23 @@ class Link extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
-        $linkTypes = $this->jiraApi()->linkTypes();
-
-        $existingLinks = $this->jiraApi()->retrieveIssue((string) $issueKey)->links();
-        $links = IssueLinkArgument::fromOptions($this->optionsFromInput($input));
-
-        foreach ($links as $link) {
-            $this->link($issueKey, $link, $linkTypes);
-        }
-        $links = $this->jiraApi()->retrieveIssue((string) $issueKey)->links();
-        $this->showLinkInfo($output, $existingLinks, $links, $issueKey);
-    }
-
-    /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param IssueLink[] $existingLinks
-     * @param IssueLink[] $newLinks
-     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
-     */
-    private function showLinkInfo(OutputInterface $output, array $existingLinks, array $newLinks, IssueKey $issueKey)
-    {
-        $output->writeln(['<info>Done!</info>', '']);
-        $addedLinks = array_diff($newLinks, $existingLinks);
-        $removedLinks = array_diff($existingLinks, $newLinks);
-        $unchangedLinks = array_intersect($existingLinks, $newLinks);
-
-        if (!empty($addedLinks)) {
-            $output->writeln('<comment>Added:</comment>');
-            $this->writelnLinksArray($output, $issueKey, $addedLinks);
-        }
-        if (!empty($removedLinks)) {
-            $output->writeln('<comment>Removed:</comment>');
-            $this->writelnLinksArray($output, $issueKey, $removedLinks);
-        }
-        if (!empty($unchangedLinks)) {
-            $output->writeln('<comment>Unchanged:</comment>');
-            $this->writelnLinksArray($output, $issueKey, $unchangedLinks);
+        try {
+            $issueKey = $this->issueKeyResolver->argument($input, $output);
+            $linkTypes = $this->api->linkTypes();
+            $links = IssueLinkArgument::fromOptions($this->optionsFromInput($input));
+            foreach ($links as $link) {
+                $this->link($issueKey, $link, $linkTypes);
+            }
+            $this->renderer->render($output, Success::fromIssueKeys($issueKey, $links));
+        } catch (\Exception $e) {
+            $this->renderer->render($output, Error::fromExceptionAndIssueKey($e, $issueKey));
         }
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
-     * @param IssueLink[] $links
-     */
-    private function writelnLinksArray(OutputInterface $output, IssueKey $issueKey, array $links)
-    {
-        foreach ($links as $link) {
-            $output->writeln($this->renderLink($link, $issueKey));
-        }
-    }
-
-    private function renderLink(IssueLink $link, IssueKey $issueKey)
-    {
-        if ($link->isInward()) {
-            return sprintf('<info>%s</info> %s <comment>%s</comment>', $issueKey, $link->type()->outward(), $link->inwardIssue()->issueKey());
-        }
-
-        return sprintf('<info>%s</info> %s <comment>%s</comment>', $link->outwardIssue()->issueKey(), $link->type()->inward(), $issueKey);
-    }
-
-    /**
-     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
-     * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
-     * @param \Technodelight\Jira\Domain\IssueLink\Type[] $linkTypes
+     * @param IssueKey $issueKey
+     * @param IssueLinkArgument $link
+     * @param Type[] $linkTypes
      * @return void
      * @throws \InvalidArgumentException
      */
@@ -127,17 +119,17 @@ class Link extends AbstractCommand
 
         foreach ($linkTypes as $linkType) {
             if ($this->canInwardLink($link, $linkType, $existingLinks)) {
-                $this->jiraApi()->linkIssue(
-                    (string) $link->issueKey(),
-                    (string) $issueKey,
+                $this->api->linkIssue(
+                    $link->issueKey(),
+                    $issueKey,
                     $linkType->name()
                 );
                 return;
             }
             if ($this->canOutwardLink($link, $issueKey, $linkType, $linkedLinks)) {
-                $this->jiraApi()->linkIssue(
-                    (string) $issueKey,
-                    (string) $link->issueKey(),
+                $this->api->linkIssue(
+                    $issueKey,
+                    $link->issueKey(),
                     $linkType->name()
                 );
                 return;
@@ -152,7 +144,7 @@ class Link extends AbstractCommand
     private function existingLinks(IssueKey $issueKey)
     {
         $links = [];
-        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        $issue = $this->api->retrieveIssue($issueKey);
         foreach ($issue->links() as $link) {
             $links[] = sprintf(
                 '%s %s',
@@ -164,38 +156,21 @@ class Link extends AbstractCommand
     }
 
     /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
-    }
-
-    /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @return array
      */
     protected function optionsFromInput(InputInterface $input)
     {
-        $aliasesConfiguration = $this->aliasesConfig();
         $opts = [];
         foreach ($input->getOptions() as $relation => $issueKey) {
-            $opts[$relation] = $aliasesConfiguration->aliasToIssueKey($issueKey);
+            $opts[$relation] = $this->aliasesConfiguration->aliasToIssueKey($issueKey);
         }
         return $opts;
     }
 
     /**
-     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration
-     */
-    private function aliasesConfig()
-    {
-        return $this->getService('technodelight.jira.config.aliases');
-    }
-
-    /**
-     * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
-     * @param \Technodelight\Jira\Domain\IssueLink\Type $linkType
+     * @param IssueLinkArgument $link
+     * @param Type $linkType
      * @param IssueLink[] $existing
      * @return bool
      */
@@ -210,9 +185,9 @@ class Link extends AbstractCommand
     }
 
     /**
-     * @param \Technodelight\Jira\Console\Argument\IssueLinkArgument $link
-     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
-     * @param \Technodelight\Jira\Domain\IssueLink\Type $linkType
+     * @param IssueLinkArgument $link
+     * @param IssueKey $issueKey
+     * @param Type $linkType
      * @param IssueLink[] $existing
      * @return bool
      */

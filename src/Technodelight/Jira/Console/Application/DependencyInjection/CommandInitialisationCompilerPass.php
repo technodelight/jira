@@ -98,14 +98,13 @@ class CommandInitialisationCompilerPass implements CompilerPassInterface
                 $transition->transitions(),
                 $container->getDefinition('technodelight.jira.api'),
                 $container->getDefinition('technodelight.jira.console.argument.issue_key_resolver'),
-                $container->getDefinition('technodelight.jira.config'),
                 $container->getDefinition('technodelight.jira.checkout_branch'),
-                $container->getDefinition('technodelight.jira.git_branch_collector'),
                 $container->getDefinition('technodelight.gitshell.api'),
                 $container->getDefinition('technodelight.jira.template_helper'),
-                $container->getDefinition('technodelight.jira.word_wrap'),
                 $container->getDefinition('technodelight.jira.console.option.checker'),
-                $container->getDefinition('technodelight.jira.console.input.issue.assignee')
+                $container->getDefinition('technodelight.jira.console.input.issue.assignee'),
+                $container->getDefinition('console.question_helper'),
+                $container->getDefinition('technodelight.jira.renderer.action.issue.transition')
             ]
         );
 

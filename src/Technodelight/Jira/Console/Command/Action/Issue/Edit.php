@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\FieldEditor\FieldEditor;
 use Technodelight\Jira\Console\Option\Checker;
@@ -41,29 +41,15 @@ class Edit extends Command
      */
     private $editor;
 
-    public function setJiraApi(Api $jira)
+    public function __construct(Api $jira, IssueKeyResolver $issueKeyResolver, Checker $checker, QuestionHelper $questionHelper, FieldEditor $editor)
     {
         $this->jira = $jira;
-    }
-
-    public function setQuestionHelper(QuestionHelper $questionHelper)
-    {
-        $this->questionHelper = $questionHelper;
-    }
-
-    public function setIssueKeyResolver(IssueKeyResolver $issueKeyResolver)
-    {
         $this->issueKeyResolver = $issueKeyResolver;
-    }
-
-    public function setOptionChecker(Checker $checker)
-    {
         $this->checker = $checker;
-    }
-
-    public function setFieldEditor(FieldEditor $editor)
-    {
+        $this->questionHelper = $questionHelper;
         $this->editor = $editor;
+
+        parent::__construct();
     }
 
     protected function configure()

@@ -5,8 +5,8 @@ namespace Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
-use Technodelight\Jira\Console\Argument\Exception\MissingIssueKeyException;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Exception\MissingIssueKeyException;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class Guesser
 {
@@ -37,7 +37,7 @@ class Guesser
             return $key;
         }
 
-        return false;
+        return null;
     }
 
     private function fromString($string)
@@ -45,7 +45,7 @@ class Guesser
         try {
             return IssueKey::fromString($this->aliasConfig->aliasToIssueKey($string));
         } catch (MissingIssueKeyException $exception) {
-            return false;
+            return null;
         }
     }
 
@@ -58,7 +58,7 @@ class Guesser
             }
             return $this->findIssueKeyFromBranch($branch);
         } catch (MissingIssueKeyException $exception) {
-            return false;
+            return null;
         }
     }
 
@@ -93,7 +93,7 @@ class Guesser
             }
         }
 
-        return false;
+        return null;
     }
 
     private function fromUrl($guessable)
@@ -102,7 +102,7 @@ class Guesser
             try {
                 return IssueKey::fromString($matches[1]);
             } catch (MissingIssueKeyException $e) {
-                return false;
+                return null;
             }
         }
     }

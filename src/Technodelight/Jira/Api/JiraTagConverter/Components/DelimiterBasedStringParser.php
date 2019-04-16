@@ -9,7 +9,6 @@ class DelimiterBasedStringParser
 
     public function __construct($startDelimiter, $endDelimiter)
     {
-
         $this->startDelimiter = $startDelimiter;
         $this->endDelimiter = $endDelimiter;
     }

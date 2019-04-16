@@ -29,14 +29,12 @@ abstract class Base extends Command
      */
     private $renderers = [];
 
-    public function setDashboardConsole(Dashboard $dashboardConsole)
+    public function __construct(Dashboard $dashboardConsole, DateResolver $dateResolver)
     {
         $this->dashboardConsole = $dashboardConsole;
-    }
-
-    public function setDateArgumentResolver(DateResolver $dateResolver)
-    {
         $this->dateResolver = $dateResolver;
+
+        parent::__construct();
     }
 
     public function addRenderer($type, DashboardRenderer $renderer)

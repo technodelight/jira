@@ -77,6 +77,9 @@ class LogsList implements DashboardRenderer
             foreach ($rows as $issueKey => $records) {
                 /** @var Issue $issue */
                 $issue = $issues->find($issueKey);
+                if (!$issue) {
+                    continue;
+                }
 
                 // parent issue
                 $parentInfo = '';
@@ -103,7 +106,7 @@ class LogsList implements DashboardRenderer
                                 '<comment>%s</comment>: %s <fg=black>(%d)</>',
                                 $this->dateHelper->secondsToHuman($record->timeSpentSeconds()),
                                 trim($record->comment()),
-                                $record->id()
+                                (string) $record->id()
                             )
                         )
                     );

@@ -266,6 +266,69 @@
         </service>
         <service id="technodelight.jira.renderer.dashboard" alias="technodelight.jira.renderer.dashboard.list"/>
 
+        <!-- action output renderering -->
+
+        <!-- styleguide -->
+        <service id="technodelight.jira.renderer.action.styleguide" public="false" class="Technodelight\Jira\Renderer\Action\StyleGuide" />
+
+        <!-- general renderer -->
+        <service id="technodelight.jira.renderer.action.general"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\General\Renderer">
+            <argument type="service" id="console.formatter_helper" />
+        </service>
+        <!-- issue assign renderer-->
+        <service id="technodelight.jira.renderer.action.issue.assign"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\Issue\Assign\Renderer">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header"/>
+            <argument type="service" id="technodelight.jira.renderer.issue.user_details"/>
+            <argument type="service" id="console.formatter_helper"/>
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
+        </service>
+        <!-- issue link renderer-->
+        <service id="technodelight.jira.renderer.action.issue.link"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\Issue\Link\Renderer">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header"/>
+            <argument type="service" id="technodelight.jira.renderer.issue.issue_relations"/>
+            <argument type="service" id="console.formatter_helper"/>
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
+        </service>
+        <!-- issue transition renderer-->
+        <service id="technodelight.jira.renderer.action.issue.transition"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\Issue\Transition\Renderer">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header"/>
+            <argument type="service" id="technodelight.jira.renderer.issue.transitions"/>
+            <argument type="service" id="technodelight.jira.renderer.issue.github"/>
+            <argument type="service" id="console.formatter_helper"/>
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
+        </service>
+
+        <!-- user show command renderer -->
+        <service id="technodelight.jira.renderer.action.show.user"
+                 public="false"
+                 class="Technodelight\Jira\Renderer\Action\Show\User\Renderer">
+            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
+        </service>
+
+
+        <!-- action result renderer upfront service -->
+        <service id="technodelight.jira.renderer.action.renderer" class="Technodelight\Jira\Renderer\Action\ActionRenderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.action.issue.assign" />
+                <argument type="service" id="technodelight.jira.renderer.action.issue.link" />
+                <argument type="service" id="technodelight.jira.renderer.action.show.user" />
+                <argument type="service" id="technodelight.jira.renderer.action.general" />
+            </argument>
+        </service>
+
     </services>
 
 </container>

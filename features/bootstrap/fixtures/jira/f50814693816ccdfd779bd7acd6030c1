@@ -1,1 +1,181 @@
-{"expand":"transitions","transitions":[{"id":"5","name":"Resolve Issue","to":{"self":"https:\/\/inviqa.atlassian.net\/rest\/api\/2\/status\/5","description":"A resolution has been taken, and it is awaiting verification by reporter. From here issues are either reopened, or are closed.","iconUrl":"https:\/\/inviqa.atlassian.net\/images\/icons\/statuses\/resolved.png","name":"Resolved","id":"5","statusCategory":{"self":"https:\/\/inviqa.atlassian.net\/rest\/api\/2\/statuscategory\/3","id":3,"key":"done","colorName":"green","name":"Done"}},"hasScreen":true},{"id":"2","name":"Close Issue","to":{"self":"https:\/\/inviqa.atlassian.net\/rest\/api\/2\/status\/6","description":"The issue is considered finished, the resolution is correct. Issues which are closed can be reopened.","iconUrl":"https:\/\/inviqa.atlassian.net\/images\/icons\/statuses\/closed.png","name":"Closed","id":"6","statusCategory":{"self":"https:\/\/inviqa.atlassian.net\/rest\/api\/2\/statuscategory\/3","id":3,"key":"done","colorName":"green","name":"Done"}},"hasScreen":true}]}
+{
+  "expand": "transitions",
+  "transitions": [
+    {
+      "id": "951",
+      "name": "Test successful",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10027",
+        "description": "",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/generic.png",
+        "name": "Deploy for UAT",
+        "id": "10027",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "491",
+      "name": "Set on-hold",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10016",
+        "description": "On-hold status for tasks which can't be continued right now.",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/invisible.png",
+        "name": "In QA (on-hold)",
+        "id": "10016",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "331",
+      "name": "Test failed",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10012",
+        "description": "Agile pool status saying that a ticket may be developed.",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/generic.png",
+        "name": "Ready for Development",
+        "id": "10012",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": true,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "301",
+      "name": "Back to Ready for QA",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10013",
+        "description": "Agile pool status saying that a ticket may be QAed",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/generic.png",
+        "name": "Ready for QA",
+        "id": "10013",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "341",
+      "name": "Require documentation",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10000",
+        "description": "Budget is approved and the feature is currently under development",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/inprogress.png",
+        "name": "In Development",
+        "id": "10000",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": true,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "881",
+      "name": "Resolve Issue",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/10014",
+        "description": "",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/resolved.png",
+        "name": "Ready for Release",
+        "id": "10014",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": false,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "1231",
+      "name": "Open",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/1",
+        "description": "Die Aufgabe ist noch offen. ",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/open.png",
+        "name": "Open",
+        "id": "1",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "To Do"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": true,
+      "isInitial": false,
+      "isConditional": false
+    },
+    {
+      "id": "1241",
+      "name": "Closed",
+      "to": {
+        "self": "https://jira.fixture.phar/rest/api/2/status/6",
+        "description": "Die Aufgabe ist erfolgreich abgeschlossen. ",
+        "iconUrl": "https://jira.fixture.phar/images/icons/statuses/closed.png",
+        "name": "Closed",
+        "id": "6",
+        "statusCategory": {
+          "self": "https://jira.fixture.phar/rest/api/2/statuscategory/3",
+          "id": 3,
+          "key": "done",
+          "colorName": "green",
+          "name": "Done"
+        }
+      },
+      "hasScreen": false,
+      "isGlobal": true,
+      "isInitial": false,
+      "isConditional": false
+    }
+  ]
+}

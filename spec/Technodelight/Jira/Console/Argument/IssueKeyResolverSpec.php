@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\GitShell\Api as Git;
 use Technodelight\GitShell\Branch;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Console\Argument\InteractiveIssueSelector;

@@ -2,6 +2,9 @@
 
 namespace Technodelight\Jira\Api\Tempo2;
 
+use DateTime;
+use UnexpectedValueException;
+
 class Api
 {
     const TEMPO_DATETIME_FORMAT = 'Y-m-d\TH:i:s.B';
@@ -17,24 +20,43 @@ class Api
 
     public function find($dateFrom, $dateTo)
     {
-        return $this->client->get('/worklogs', ['dateFrom' => $dateFrom, 'dateTo' => $dateTo])['results'];
+        $result = $this->client->get('worklogs', ['from' => $dateFrom, 'to' => $dateTo, 'limit' => 200]);
+        $worklogs = $result['results'];
+        while(!empty($result['metadata']['next'])) {
+            $result = $this->client->get($result['metadata']['next']);
+            $worklogs = array_merge($worklogs, $result['results']);
+        }
+
+        return $worklogs;
     }
 
     public function all()
     {
-        return $this->client->get('/worklogs')['results'];
+        return $this->client->get('worklogs')['results'];
     }
 
     public function retrieve($worklogId)
     {
-        return $this->client->get('/worklogs/' . $worklogId);
+        return $this->client->get('worklogs/' . $worklogId);
     }
 
-    public function create($issueKey, $authorUsername, $startedAt, $timeSpentSeconds, $description)
+    public function findByIssue($issueKey)
     {
-        $startDate = new \DateTime($startedAt);
+        $result = $this->client->get('worklogs/issue/' . $issueKey);
+        $worklogs = $result['results'];
+        while(!empty($result['metadata']['next'])) {
+            $result = $this->client->get($result['metadata']['next']);
+            $worklogs = array_merge($worklogs, $result['results']);
+        }
+
+        return $worklogs;
+    }
+
+    public function create($issueKey, $authorAccountId, $startedAt, $timeSpentSeconds, $description)
+    {
+        $startDate = new DateTime($startedAt);
         return $this->client->post('/worklogs', [
-            'authorUsername' => $authorUsername,
+            'authorAccountId' => $authorAccountId,
             'issueKey' => $issueKey,
             'startDate' => $startDate->format('Y-m-d'),
             'startTime' => $startDate->format('H:i:s'),
@@ -46,12 +68,12 @@ class Api
     public function update($worklogId, $startedAt, $timeSpentSeconds, $description)
     {
         if (!$existingWorklog = $this->client->get('/worklogs/' . $worklogId)) {
-            throw new \UnexpectedValueException(sprintf('Worklog %d does not exists', $worklogId));
+            throw new UnexpectedValueException(sprintf('Worklog %d does not exists', $worklogId));
         }
 
-        $startDate = new \DateTime($startedAt);
+        $startDate = new DateTime($startedAt);
         $putData = [
-            'authorUsername' => $existingWorklog['author']['username'],
+            'authorAccountId' => $existingWorklog['author']['accountId'],
             'issueKey' => $existingWorklog['issue']['key'],
             'startDate' => $startDate->format('Y-m-d'),
             'startTime' => $startDate->format('H:i:s'),

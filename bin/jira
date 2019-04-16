@@ -27,6 +27,16 @@ try {
 } catch (Technodelight\Jira\Configuration\Symfony\MissingConfigurationException $exception) {
     // allow init method when configuration is missing
     if ($input->getFirstArgument() == 'init') {
+        $boot = new Bootstrap();
+        $input = new ArgvInput();
+        $output = new ConsoleOutput();
+        $app = $boot->boot(
+          '@git-version@',
+          [
+            join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs'])
+          ]
+        );
+        $app->setDaemonFilename(__FILE__);
         $app->run($input, $output);
     } else {
         $output = new ConsoleOutput;

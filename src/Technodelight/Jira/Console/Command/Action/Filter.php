@@ -57,7 +57,7 @@ class Filter extends Command
     {
         $condition = $input->getArgument('filter');
         $issueKey = $this->issueKeyResolver->argument($input, $output);
-        $issue = $this->jira->retrieveIssue((string) $issueKey);
+        $issue = $this->jira->retrieveIssue($issueKey);
 
         try {
             if ($this->exp->evaluate($condition, ['issue' => $issue])) {

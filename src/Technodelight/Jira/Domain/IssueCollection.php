@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Domain;
 
 use Iterator;
 use Countable;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class IssueCollection implements Iterator, Countable
 {
@@ -140,10 +141,14 @@ class IssueCollection implements Iterator, Countable
     public function find($issueKey)
     {
         foreach ($this as $issue) {
-            if ($issue->issueKey() == $issueKey) {
+            if ((string) $issue->issueKey() == $issueKey) {
                 return $issue;
             }
         }
+
+        throw new \RangeException(
+            sprintf('Cannot find issue by key: %s', $issueKey)
+        );
     }
 
     public function findById($id)
@@ -158,7 +163,7 @@ class IssueCollection implements Iterator, Countable
     public function findByIndex($index)
     {
         foreach ($this as $idx => $issue) {
-            if ($idx == $index) {
+            if ($idx === $index) {
                 return $issue;
             }
         }

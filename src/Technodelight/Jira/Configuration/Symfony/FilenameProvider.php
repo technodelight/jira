@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Configuration\Symfony;
 
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 
 class FilenameProvider
 {
@@ -20,7 +20,7 @@ class FilenameProvider
         try {
             return $this->git->topLevelDirectory() . DIRECTORY_SEPARATOR . self::FILENAME;
         } catch (\Exception $exc) {
-            return __DIR__;
+            return getcwd() . DIRECTORY_SEPARATOR . self::FILENAME;
         }
     }
 

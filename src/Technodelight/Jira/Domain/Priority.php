@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Priority\PriorityId;
+
 class Priority
 {
     private $id;
@@ -12,7 +14,7 @@ class Priority
     public static function fromArray(array $status)
     {
         $instance = new self;
-        $instance->id = $status['id'];
+        $instance->id = PriorityId::fromString($status['id']);
         $instance->name = $status['name'];
         $instance->description = isset($status['description']) ? $status['description'] : '';
         $instance->statusColor = isset($status['statusColor']) ? $status['statusColor'] : '';
@@ -31,6 +33,9 @@ class Priority
         return $instance;
     }
 
+    /**
+     * @return PriorityId
+     */
     public function id()
     {
         return $this->id;

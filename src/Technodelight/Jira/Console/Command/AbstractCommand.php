@@ -34,7 +34,7 @@ class AbstractCommand extends Command
     /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return \Technodelight\Jira\Console\Argument\IssueKey|string
+     * @return \Technodelight\Jira\Domain\Issue\IssueKey|string
      */
     public function issueKeyOption(InputInterface $input, OutputInterface $output)
     {
@@ -44,7 +44,7 @@ class AbstractCommand extends Command
     /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
      * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return \Technodelight\Jira\Console\Argument\IssueKey|string
+     * @return \Technodelight\Jira\Domain\Issue\IssueKey|string
      */
     public function issueKeyArgument(InputInterface $input, OutputInterface $output)
     {

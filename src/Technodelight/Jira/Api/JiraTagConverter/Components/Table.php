@@ -7,13 +7,13 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class Table
 {
-    private $header;
+    private $headers;
     private $rows = [];
     private $source = '';
 
-    public function addHeader($header)
+    public function setHeaders($headers)
     {
-        $this->header = $header;
+        $this->headers = $headers;
     }
 
     public function addRow($row, $withWrap = true)
@@ -41,17 +41,17 @@ class Table
 
     public function isEmpty()
     {
-        return empty($this->header) && empty($this->rows);
+        return empty($this->headers) && empty($this->rows);
     }
 
     public function __toString()
     {
         $bufferedOutput = new BufferedOutput();
         $tableRenderer = new PrettyTable($bufferedOutput);
-        if ($this->header) {
-            $tableRenderer->setHeaders(array_values($this->header));
+        if (!empty($this->headers)) {
+            $tableRenderer->setHeaders(array_values($this->headers));
         }
-        if ($this->rows) {
+        if (!empty($this->rows)) {
             $rows = [];
             foreach ($this->rows as $k => $row) {
                 $rows[] = $row;

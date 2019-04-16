@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Domain;
 
+use Technodelight\Jira\Domain\Project\ProjectId;
 use Technodelight\Jira\Domain\Project\Version;
 
 class Project
@@ -23,7 +24,7 @@ class Project
     public static function fromArray(array $project)
     {
         $instance = new self;
-        $instance->id = $project['id'];
+        $instance->id = ProjectId::fromString($project['id']);
         $instance->key = $project['key'];
         $instance->name = $project['name'];
         $instance->projectTypeKey = isset($project['projectTypeKey']) ? $project['projectTypeKey'] : null;

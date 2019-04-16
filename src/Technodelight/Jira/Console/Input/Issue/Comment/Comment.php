@@ -12,10 +12,9 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Connector\HoaConsole\IssueAttachmentAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\IssueAutocomplete;
-use Technodelight\Jira\Connector\HoaConsole\IssueMetaAutocompleter;
 use Technodelight\Jira\Connector\HoaConsole\UsernameAutocomplete;
-use Technodelight\Jira\Console\Argument\CommentId;
-use Technodelight\Jira\Console\Argument\IssueKey;
+use Technodelight\Jira\Domain\Comment\CommentId;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 
@@ -42,7 +41,7 @@ class Comment
 
         return $this->editor->edit(
             sprintf('Edit comment #%d on %s', $commentId, $issueKey),
-            $this->jira->retrieveComment((string) $issueKey, (string) $commentId)->body()
+            $this->jira->retrieveComment($issueKey, $commentId)->body()
         );
     }
 

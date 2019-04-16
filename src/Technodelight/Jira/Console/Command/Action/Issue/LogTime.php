@@ -2,21 +2,110 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use DateTime;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Connector\WorklogHandler;
+use Technodelight\Jira\Console\Argument\DateResolver;
+use Technodelight\Jira\Console\Argument\InteractiveIssueSelector;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Console\Argument\LogTimeArgsOptsParser;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Input\Worklog\Comment as CommentInput;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Helper\DateHelper;
+use Technodelight\Jira\Renderer\DashboardRenderer;
+use Technodelight\Jira\Renderer\Issue\Header as HeaderRenderer;
+use Technodelight\Jira\Renderer\Issue\Worklog as WorklogRenderer;
 
-class LogTime extends AbstractCommand
+class LogTime extends Command
 {
+    /**
+     * @var Api
+     */
+    private $jira;
+    /**
+     * @var IssueKeyOrWorklogIdResolver
+     */
+    private $issueKeyOrWorklogIdResolver;
+    /**
+     * @var InteractiveIssueSelector
+     */
+    private $issueSelector;
+    /**
+     * @var CommentInput
+     */
+    private $commentInput;
+    /**
+     * @var DateResolver
+     */
+    private $dateResolver;
+    /**
+     * @var QuestionHelper
+     */
+    private $questionHelper;
+    /**
+     * @var WorklogHandler
+     */
+    private $worklogHandler;
+    /**
+     * @var DateHelper
+     */
+    private $dateHelper;
+    /**
+     * @var WorklogRenderer
+     */
+    private $worklogRenderer;
+    /**
+     * @var HeaderRenderer
+     */
+    private $headerRenderer;
+    /**
+     * @var DashboardRenderer
+     */
+    private $dashboardRenderer;
+    /**
+     * @var Dashboard
+     */
+    private $dashboardDataProvider;
+
+    public function __construct(
+        Api $jira,
+        IssueKeyOrWorklogIdResolver $issueKeyOrWorklogIdResolver,
+        InteractiveIssueSelector $issueSelector,
+        CommentInput $commentInput,
+        DateResolver $dateResolver,
+        QuestionHelper $questionHelper,
+        WorklogHandler $worklogHandler,
+        DateHelper $dateHelper,
+        WorklogRenderer $worklogRenderer,
+        HeaderRenderer $headerRenderer,
+        DashboardRenderer $dashboardRenderer,
+        Dashboard $dashboardDataProvider
+    )
+    {
+        parent::__construct();
+        $this->jira = $jira;
+        $this->issueKeyOrWorklogIdResolver = $issueKeyOrWorklogIdResolver;
+        $this->issueSelector = $issueSelector;
+        $this->commentInput = $commentInput;
+        $this->dateResolver = $dateResolver;
+        $this->questionHelper = $questionHelper;
+        $this->worklogHandler = $worklogHandler;
+        $this->dateHelper = $dateHelper;
+        $this->worklogRenderer = $worklogRenderer;
+        $this->headerRenderer = $headerRenderer;
+        $this->dashboardRenderer = $dashboardRenderer;
+        $this->dashboardDataProvider = $dashboardDataProvider;
+    }
+
     protected function configure()
     {
         $this
@@ -85,7 +174,7 @@ class LogTime extends AbstractCommand
         }
 
         /** @var \Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId $issueKeyOrWorklogId */
-        $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
+        $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
 
         // fix when no arguments but you want to log your time to current issue specified by branch
         if (!$input->getArgument('issueKeyOrWorklogId') && $issueKeyOrWorklogId->isEmpty()) {
@@ -99,9 +188,9 @@ class LogTime extends AbstractCommand
 
         // show issue header
         if ($issueKeyOrWorklogId->isIssueKey()) {
-            $this->issueHeaderRenderer()->render(
+            $this->headerRenderer->render(
                 $output,
-                $this->jiraApi()->retrieveIssue($issueKeyOrWorklogId->issueKey())
+                $this->jira->retrieveIssue($issueKeyOrWorklogId->issueKey())
             );
         }
 
@@ -111,14 +200,14 @@ class LogTime extends AbstractCommand
 
         if (!$input->getArgument('comment')) {
             if ($issueKeyOrWorklogId->isWorklogId()) {
-                $worklog = $this->worklogHandler()->retrieve($issueKeyOrWorklogId->worklogId());
-                $issue = $this->jiraApi()->retrieveIssue($worklog->issueKey());
+                $worklog = $this->worklogHandler->retrieve($issueKeyOrWorklogId->worklogId());
+                $issue = $this->jira->retrieveIssue($worklog->issueKey());
             } else {
-                $issue = $this->jiraApi()->retrieveIssue($issueKeyOrWorklogId->issueKey());
+                $issue = $this->jira->retrieveIssue($issueKeyOrWorklogId->issueKey());
                 $worklog = null;
             }
 
-            $input->setArgument('comment', $this->commentInput()->read($output, $issue, $worklog, $input->getOption('keep-default-comment')));
+            $input->setArgument('comment', $this->commentInput->read($output, $issue, $worklog, $input->getOption('keep-default-comment')));
         }
     }
 
@@ -133,10 +222,10 @@ class LogTime extends AbstractCommand
 
     private function doWorklog(InputInterface $input, OutputInterface $output)
     {
-        $issueKeyOrWorklogId = $this->resolveIssueKeyOrWorklogId($input);
+        $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
-        $worklogDate = $input->getOption('move') ? $this->dateOption($input, 'move') : null;
+        $worklogDate = $input->getOption('move') ? $this->dateResolver->option($input, 'move') : null;
 
         if ($issueKeyOrWorklogId->isWorklogId()) {
             return $this->processExistingWorklog($input, $output, $issueKeyOrWorklogId, $timeSpent, $comment, $worklogDate);
@@ -173,8 +262,10 @@ class LogTime extends AbstractCommand
             } else {
                 $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
                 $output->writeln(
-                    sprintf('<comment>Worklog <info>%d</info> has been updated</comment>', $issueKeyOrWorklogId->worklog()
-                        ->id())
+                    sprintf(
+                        '<comment>Worklog <info>%d</info> has been updated</comment>',
+                        (string) $issueKeyOrWorklogId->worklog()->id()
+                    )
                 );
             }
 
@@ -219,7 +310,7 @@ class LogTime extends AbstractCommand
             $issueKeyOrWorklogId->issueKey(),
             $timeSpent,
             $comment ?: 'Worked on issue ' . $issueKeyOrWorklogId->issueKey(),
-            $this->dateArgument($input)
+            $this->dateResolver->argument($input)
         );
         $this->showSuccessMessages($output, $worklog);
 
@@ -228,24 +319,24 @@ class LogTime extends AbstractCommand
 
     private function interactiveTimelog(InputInterface $input, OutputInterface $output)
     {
-        $worklogs = $this->worklogHandler()->find(new \DateTime, new \DateTime)->filterByUser($this->jiraApi()->user()->key());
-        $timeLeft = $this->dateHelper()->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
+        $worklogs = $this->worklogHandler->find(new DateTime, new DateTime)->filterByUser($this->jira->user());
+        $timeLeft = $this->dateHelper->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
         if ($timeLeft <= 0) {
             $output->writeln(
                 sprintf(
                     '<info>You already filled in your timesheets for %s</info>',
-                    (string) $this->dateArgument($input) == 'now' ? 'today' : $this->dateArgument($input)
+                    (string) $this->dateResolver->argument($input) == 'now' ? 'today' : $this->dateResolver->argument($input)
                 )
             );
             return 1;
         }
 
         while ($timeLeft > 0) {
-            $output->writeln(sprintf('<comment>%s</comment> time left to log.', $this->dateHelper()->secondsToHuman($timeLeft)));
+            $output->writeln(sprintf('<comment>%s</comment> time left to log.', $this->dateHelper->secondsToHuman($timeLeft)));
             $issue = $this->askIssueToChooseFrom($input, $output);
             $time = $this->askForTimeToLog($input, $output, $issue->key());
-            $comment = $this->commentInput()->read($output, $issue);
-            $worklog = $this->logNewWork($issue->key(), $time, $comment ?: 'Worked on issue ' . $issue->key(), $this->dateArgument($input));
+            $comment = $this->commentInput->read($output, $issue);
+            $worklog = $this->logNewWork($issue->key(), $time, $comment ?: 'Worked on issue ' . $issue->key(), $this->dateResolver->argument($input));
             $this->showSuccessMessages($output, $worklog);
             $timeLeft = $timeLeft - $worklog->timeSpentSeconds();
         }
@@ -259,7 +350,7 @@ class LogTime extends AbstractCommand
 
     private function deleteWorklog(Worklog $worklog)
     {
-        $this->worklogHandler()->delete($worklog);
+        $this->worklogHandler->delete($worklog);
         return true;
     }
 
@@ -268,17 +359,17 @@ class LogTime extends AbstractCommand
         $updatedWorklog = clone $worklog;
 
         if ($timeSpent) {
-            $updatedWorklog->timeSpentSeconds($this->dateHelper()->humanToSeconds($timeSpent));
+            $updatedWorklog->timeSpentSeconds($this->dateHelper->humanToSeconds($timeSpent));
         }
         if ($comment) {
             $updatedWorklog->comment($comment);
         }
         if ($startDay) {
-            $updatedWorklog->date($this->dateHelper()->stringToFormattedDate($startDay, DateHelper::FORMAT_FROM_JIRA));
+            $updatedWorklog->date($this->dateHelper->stringToFormattedDate($startDay, DateHelper::FORMAT_FROM_JIRA));
         }
 
         if (!$worklog->isSame($updatedWorklog)) {
-            $this->worklogHandler()->update($updatedWorklog);
+            $this->worklogHandler->update($updatedWorklog);
             return true;
         }
 
@@ -287,21 +378,21 @@ class LogTime extends AbstractCommand
 
     private function logNewWork($issueKey, $timeSpent, $comment, $startDay)
     {
-        $user = $this->jiraApi()->user();
+        $user = $this->jira->user();
 
-        $worklog = $this->worklogHandler()->create(
+        $worklog = $this->worklogHandler->create(
             Worklog::fromArray([
                 'id' => null,
                 'author' => $user,
                 'comment' => $comment,
                 'started' => date(DateHelper::FORMAT_FROM_JIRA, strtotime($startDay)),
-                'timeSpentSeconds' => $this->dateHelper()->humanToSeconds($timeSpent)
+                'timeSpentSeconds' => $this->dateHelper->humanToSeconds($timeSpent)
             ], $issueKey)
         );
         // load issue
-        $issue = $this->jiraApi()->retrieveIssue($issueKey);
+        $issue = $this->jira->retrieveIssue($issueKey);
         $worklog->assignIssue($issue);
-        $worklogs = $this->worklogHandler()->findByIssue($issue, 20);
+        $worklogs = $this->worklogHandler->findByIssue($issue, 20);
         $issue->assignWorklogs($worklogs);
         return $worklog;
     }
@@ -316,7 +407,7 @@ class LogTime extends AbstractCommand
         if ($worklog) {
             $confirm = sprintf(
                 "You logged '%s' previously. Leave the time empty to keep this value.",
-                $this->dateHelper()->secondsToHuman($worklog->timeSpentSeconds())
+                $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds())
             );
         } else {
             $confirm = '';
@@ -329,17 +420,17 @@ class LogTime extends AbstractCommand
     private function showSuccessMessages(OutputInterface $output, Worklog $worklog)
     {
         $output->writeln(
-            "You have successfully logged <comment>{$this->dateHelper()->secondsToHuman($worklog->timeSpentSeconds())}</comment>"
+            "You have successfully logged <comment>{$this->dateHelper->secondsToHuman($worklog->timeSpentSeconds())}</comment>"
             ." to issue <info>{$worklog->issueKey()} on {$worklog->date()->format('Y-m-d H:i:s')}</info> ({$worklog->id()})"
         );
         $output->writeln('');
         $output->writeln(
-            "Time spent: <comment>{$this->dateHelper()->secondsToHuman($worklog->issue()->timeSpent())}</comment>, "
-            . "Remaining estimate: <comment>{$this->dateHelper()->secondsToHuman($worklog->issue()->remainingEstimate())}</comment>"
+            "Time spent: <comment>{$this->dateHelper->secondsToHuman($worklog->issue()->timeSpent())}</comment>, "
+            . "Remaining estimate: <comment>{$this->dateHelper->secondsToHuman($worklog->issue()->remainingEstimate())}</comment>"
         );
         $output->writeln('');
         $output->writeln('Logged work so far:');
-        $this->worklogRenderer()->renderWorklogs($output, $worklog->issue()->worklogs());
+        $this->worklogRenderer->renderWorklogs($output, $worklog->issue()->worklogs());
     }
 
     /**
@@ -349,7 +440,7 @@ class LogTime extends AbstractCommand
      */
     private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output)
     {
-        return $this->issueSelector()->chooseIssue($input, $output);
+        return $this->issueSelector->chooseIssue($input, $output);
     }
 
     /**
@@ -362,11 +453,11 @@ class LogTime extends AbstractCommand
     protected function askForTimeToLog(InputInterface $input, OutputInterface $output, $issueKey, Worklog $worklog = null)
     {
         $question = new Question(
-            $this->loggedTimeDialogText($issueKey, $worklog), $worklog ? $this->dateHelper()->secondsToHuman($worklog->timeSpentSeconds()) : '1d');
+            $this->loggedTimeDialogText($issueKey, $worklog), $worklog ? $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d');
         $question->setValidator(function ($answer) {
             return preg_replace('~[^0-9hmds. ]+~', '', $answer);
         });
-        return $this->questionHelper()->ask(
+        return $this->questionHelper->ask(
             $input,
             $output,
             $question
@@ -379,104 +470,11 @@ class LogTime extends AbstractCommand
      */
     private function renderDashboard(InputInterface $input, OutputInterface $output)
     {
-        $this->dashboardRenderer()->render(
+        $this->dashboardRenderer->render(
             $output,
-            $this->dashboardDataProvider()->fetch(
-                date('Y-m-d', strtotime($this->dateArgument($input)))
+            $this->dashboardDataProvider->fetch(
+                date('Y-m-d', strtotime($this->dateResolver->argument($input)))
             )
         );
-    }
-
-    private function resolveIssueKeyOrWorklogId(InputInterface $input)
-    {
-        return $this->issueKeyOrWorklogIdResolver()->argument($input);
-    }
-
-    /**
-     * @return IssueKeyOrWorklogIdResolver
-     */
-    private function issueKeyOrWorklogIdResolver()
-    {
-        return $this->getService('technodelight.jira.console.argument.issue_key_or_worklog_id_resolver');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Console\Argument\InteractiveIssueSelector
-     */
-    private function issueSelector()
-    {
-        return $this->getService('technodelight.jira.console.interactive_issue_selector');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Console\Input\Worklog\Comment
-     */
-    private function commentInput()
-    {
-        return $this->getService('technodelight.jira.console.input.worklog.comment');
-    }
-
-    /**
-     * @return \Symfony\Component\Console\Helper\QuestionHelper
-     */
-    private function questionHelper()
-    {
-        return $this->getHelper('question');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Connector\WorklogHandler
-     */
-    private function worklogHandler()
-    {
-        return $this->getService('technodelight.jira.worklog_handler');
-    }
-
-    /**
-     * @return DateHelper
-     */
-    private function dateHelper()
-    {
-        return $this->getService('technodelight.jira.date_helper');
-    }
-
-    /**
-     * @return Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\Issue\Worklog
-     */
-    private function worklogRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.issue.worklog');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\Issue\Header
-     */
-    private function issueHeaderRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.issue.header');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Renderer\DashboardRenderer
-     */
-    private function dashboardRenderer()
-    {
-        return $this->getService('technodelight.jira.renderer.dashboard');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Console\Dashboard\Dashboard
-     */
-    private function dashboardDataProvider()
-    {
-        return $this->getService('technodelight.jira.console.dashboard.dashboard');
     }
 }

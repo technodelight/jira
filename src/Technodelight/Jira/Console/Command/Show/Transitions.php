@@ -10,6 +10,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Transition;
 
 class Transitions extends Command
@@ -27,19 +28,13 @@ class Transitions extends Command
      */
     private $transitionsConfiguration;
 
-    public function setJiraApi(Api $jira)
+    public function __construct(Api $jira, IssueKeyResolver $issueKeyResolver, TransitionsConfiguration $transitionsConfiguration)
     {
         $this->jira = $jira;
-    }
-
-    public function setIssueKeyResolver(IssueKeyResolver $issueKeyResolver)
-    {
         $this->issueKeyResolver = $issueKeyResolver;
-    }
-
-    public function setTransitionsConfig(TransitionsConfiguration $transitionsConfiguration)
-    {
         $this->transitionsConfiguration = $transitionsConfiguration;
+
+        parent::__construct();
     }
 
     protected function configure()
@@ -78,7 +73,7 @@ class Transitions extends Command
         }
     }
 
-    private function renderTableOutput($issueKey, OutputInterface $output)
+    private function renderTableOutput(IssueKey $issueKey, OutputInterface $output)
     {
         $renderer = new PrettyTable($output);
         $renderer->setHeaders(['Transition', 'Command']);
@@ -100,10 +95,10 @@ class Transitions extends Command
     }
 
     /**
-     * @param string $issueKey
+     * @param IssueKey $issueKey
      * @return array
      */
-    private function collectTableRows($issueKey)
+    private function collectTableRows(IssueKey $issueKey)
     {
         $transitions = $this->jira->retrievePossibleTransitionsForIssue($issueKey);
         $rows = [];

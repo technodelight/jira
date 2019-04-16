@@ -7,7 +7,7 @@ use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\GitShell\Branch;
 use Technodelight\GitShell\LogEntry;
 use Technodelight\GitShell\LogMessage;

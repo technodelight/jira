@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\Api as GitShell;
+use Technodelight\GitShell\ApiInterface as GitShell;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Issue;
@@ -38,7 +38,7 @@ class Branch extends AbstractCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $issueKey = $this->issueKeyArgument($input, $output);
-        $this->checkoutToBranch($input, $output, $this->jiraApi()->retrieveIssue((string) $issueKey));
+        $this->checkoutToBranch($input, $output, $this->jiraApi()->retrieveIssue($issueKey));
     }
 
     /**

@@ -40,15 +40,28 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.statuses" class="Technodelight\Jira\Console\Command\Show\Statuses">
-            <argument type="service" id="service_container"/>
+            <!-- @TODO: this service does not have a separate rendering layer -->
+            <argument type="service" id="technodelight.jira.console.argument.project_key_resolver" />
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.config.transitions" />
+            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.color_extractor" />
+            <argument type="service" id="technodelight.jira.template_helper" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.project" class="Technodelight\Jira\Console\Command\Show\Project">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.console.argument.project_key_resolver" />
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.project"/>
+            <argument type="service" id="technodelight.jira.renderer.project.full" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.issue" class="Technodelight\Jira\Console\Command\Show\Issue">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.issue_renderer" />
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.browse" class="Technodelight\Jira\Console\Command\Show\Browse">
@@ -67,22 +80,33 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.transitions" class="Technodelight\Jira\Console\Command\Show\Transitions">
-            <call method="setJiraApi">
-                <argument type="service" id="technodelight.jira.api" />
-            </call>
-            <call method="setIssueKeyResolver">
-                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
-            </call>
-            <call method="setTransitionsConfig">
-                <argument type="service" id="technodelight.jira.config.transitions" />
-            </call>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.config.transitions" />
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.user" class="Technodelight\Jira\Console\Command\Show\User">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.action.renderer" />
             <tag name="command" />
         </service>
         <!-- show commands-->
 
         <!-- action commands -->
         <service id="technodelight.jira.app.command.logtime" class="Technodelight\Jira\Console\Command\Action\Issue\LogTime">
-            <argument type="service" id="service_container"/>
+            <!-- @TODO: this service does not have a separate rendering layer -->
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_or_worklog_id_resolver" />
+            <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
+            <argument type="service" id="technodelight.jira.console.input.worklog.comment" />
+            <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
+            <argument type="service" id="console.question_helper" />
+            <argument type="service" id="technodelight.jira.worklog_handler" />
+            <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.renderer.issue.worklog" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header" />
+            <argument type="service" id="technodelight.jira.renderer.dashboard" />
+            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.comment" class="Technodelight\Jira\Console\Command\Action\Issue\Comment">
@@ -94,27 +118,38 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.assign" class="Technodelight\Jira\Console\Command\Action\Issue\Assign">
-            <call method="setAssigneeInput">
-                <argument type="service" id="technodelight.jira.console.input.issue.assignee" />
-            </call>
-            <call method="setJiraApi">
-                <argument type="service" id="technodelight.jira.api" />
-            </call>
-            <call method="setIssueKeyResolver">
-                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
-            </call>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.input.issue.assignee" />
+            <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.renderer.action.renderer" />
+
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.link" class="Technodelight\Jira\Console\Command\Action\Issue\Link">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.config.aliases" />
+            <argument type="service" id="technodelight.jira.renderer.action.issue.link" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.unlink" class="Technodelight\Jira\Console\Command\Action\Issue\Unlink">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.attachment" class="Technodelight\Jira\Console\Command\Action\Issue\Attachment">
-            <argument type="service" id="service_container"/>
+        <service id="technodelight.jira.app.command.attachment.download" class="Technodelight\Jira\Console\Command\Action\Issue\Attachment\Download">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.console.input.issue.attachment.downloadable_attachment" />
+            <argument type="service" id="technodelight.jira.console.input.issue.attachment.target_path" />
+
+            <tag name="command" />
+        </service>
+        <service id="technodelight.jira.app.command.attachment.upload" class="Technodelight\Jira\Console\Command\Action\Issue\Attachment\Upload">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.console.input.issue.attachment.uploadable_attachment" />
+
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.branch" class="Technodelight\Jira\Console\Command\Action\Issue\Branch">
@@ -122,21 +157,11 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.edit" class="Technodelight\Jira\Console\Command\Action\Issue\Edit">
-            <call method="setJiraApi">
-                <argument type="service" id="technodelight.jira.api" />
-            </call>
-            <call method="setIssueKeyResolver">
-                <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
-            </call>
-            <call method="setQuestionHelper">
-                <argument type="service" id="console.question_helper" />
-            </call>
-            <call method="setOptionChecker">
-                <argument type="service" id="technodelight.jira.console.option.checker" />
-            </call>
-            <call method="setFieldEditor">
-                <argument type="service" id="technodelight.jira.console.field_editor" />
-            </call>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.console.option.checker" />
+            <argument type="service" id="console.question_helper" />
+            <argument type="service" id="technodelight.jira.console.field_editor" />
             <tag name="command" />
         </service>
 
@@ -153,6 +178,7 @@
         <service id="technodelight.jira.app.command.batch" class="Technodelight\Jira\Console\Command\Action\Batch">
             <argument type="service" id="technodelight.jira.app" />
             <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.config.renderers" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.filter" class="Technodelight\Jira\Console\Command\Action\Filter">
@@ -165,6 +191,8 @@
 
         <!-- progress commands -->
         <service id="technodelight.jira.app.command.progress.today" class="Technodelight\Jira\Console\Command\Show\Progress\Day">
+            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />
@@ -176,16 +204,12 @@
             <call method="addRenderer">
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
-            </call>
-            <call method="setDashboardConsole">
-                <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
-            </call>
-            <call method="setDateArgumentResolver">
-                <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             </call>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.week" class="Technodelight\Jira\Console\Command\Show\Progress\Week">
+            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />
@@ -197,16 +221,12 @@
             <call method="addRenderer">
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
-            </call>
-            <call method="setDashboardConsole">
-                <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
-            </call>
-            <call method="setDateArgumentResolver">
-                <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             </call>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.month" class="Technodelight\Jira\Console\Command\Show\Progress\Month">
+            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />
@@ -218,12 +238,6 @@
             <call method="addRenderer">
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
-            </call>
-            <call method="setDashboardConsole">
-                <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
-            </call>
-            <call method="setDateArgumentResolver">
-                <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
             </call>
             <tag name="command" />
         </service>

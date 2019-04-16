@@ -4,8 +4,9 @@ namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\Api as Git;
+use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class IssueKeyResolver
 {
@@ -32,7 +33,12 @@ class IssueKeyResolver
         $this->issueSelector = $issueSelector;
     }
 
-    public function argument(InputInterface $input, OutputInterface $output)
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return IssueKey
+     */
+    public function argument(InputInterface $input, OutputInterface $output, $strict = true)
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
             return null;
@@ -42,7 +48,8 @@ class IssueKeyResolver
         if (!empty($issueKey)) {
             $shift = false;
             foreach ($input->getArguments() as $argument => $value) {
-                if ($argument == self::ARGUMENT && $this->isArgValueAnIssueKey($value, $issueKey)) {
+                //@TODO: something stopped working here
+                if ($argument == self::ARGUMENT && !$this->isArgValueAnIssueKey($value, $issueKey)) {
                     $shift = true;
                     $previousArgumentValue = $input->getArgument(self::ARGUMENT);
                     $input->setArgument($argument, (string) $issueKey);
@@ -52,6 +59,13 @@ class IssueKeyResolver
                 }
             }
         }
+
+        if (null === $issueKey && $strict === true) {
+            throw new \UnexpectedValueException(
+                ':\'( Cannot figure out issueKey argument, please specify explicitly'
+            );
+        }
+
         return $issueKey;
     }
 
@@ -76,7 +90,7 @@ class IssueKeyResolver
 
     private function isArgValueAnIssueKey($value, $issueKey)
     {
-        return ($value != $issueKey)
-            && ($value != $this->guesser->guessIssueKey($issueKey));
+        return $value == (string) $issueKey
+            && ($value == (string) $this->guesser->guessIssueKey($issueKey));
     }
 }
