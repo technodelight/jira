@@ -26,6 +26,7 @@ class PanelParser
     {
         $parser = new DelimiterBasedStringParser('{panel}', '{panel}');
         $matches = $parser->parse($body);
+        $panels = [];
         foreach ($matches as $match) {
             $panel = new Panel();
             $panel->appendSource($match);
