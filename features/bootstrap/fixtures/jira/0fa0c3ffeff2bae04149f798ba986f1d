@@ -1,1 +1,252 @@
-{"expand":"names,schema","startAt":"0","maxResults":"50","total":"1","issues":[{"expand":"operations,versionedRepresentations,editmeta,changelog,renderedFields","id":"135294","self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issue\/135294","key":"GEN-359","fields":{"parent":{"id":"135292","key":"GEN-357","self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issue\/135292","fields":{"summary":"Worked, Non-Billable - Do not log time to this ticket - use sub-tasks","status":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/status\/1","description":"The issue is open and ready for the assignee to start work on it.","iconUrl":"https:\/\/fixtures.jira.phar\/images\/icons\/statuses\/open.png","name":"user4","id":"1","statusCategory":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/statuscategory\/2","id":"2","key":"new","colorName":"blue-gray","name":"user7"}},"issuetype":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issuetype\/19","id":"19","description":"","iconUrl":"https:\/\/fixtures.jira.phar\/images\/icons\/issuetypes\/blank.png","name":"user5","subtask":""}}},"customfield_15000":"{}","customfield_15001":null,"customfield_13100":null,"customfield_15002":null,"customfield_12800":null,"customfield_10500":null,"customfield_11710":null,"customfield_12801":null,"lastViewed":"2017-02-15T09:44:55.561+0000","customfield_16203":null,"customfield_14302":null,"customfield_14303":null,"customfield_13723":null,"customfield_15505":null,"customfield_11702":null,"aggregatetimeoriginalestimate":"0","timeestimate":"0","customfield_11703":null,"customfield_11706":null,"customfield_11705":null,"customfield_11708":null,"customfield_11707":null,"customfield_11709":null,"assignee":null,"status":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/status\/1","description":"The issue is open and ready for the assignee to start work on it.","iconUrl":"https:\/\/fixtures.jira.phar\/images\/icons\/statuses\/open.png","name":"user4","id":"1","statusCategory":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/statuscategory\/2","id":"2","key":"new","colorName":"blue-gray","name":"user7"}},"components":[{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/component\/26501","id":"26501","name":"user2"}],"customfield_15500":null,"customfield_13201":[],"customfield_13200":null,"customfield_13203":null,"customfield_15503":null,"customfield_13202":null,"customfield_15504":null,"customfield_15501":null,"customfield_15502":null,"customfield_13721":null,"customfield_13713":null,"customfield_13712":null,"customfield_13715":null,"customfield_13714":null,"customfield_13717":null,"aggregatetimeestimate":"0","customfield_13716":null,"customfield_13718":null,"creator":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/user?username=user8","name":"user8","key":"user9","emailAddress":"user8@fixtures.jira.phar","avatarUrls":{"48x48":"https:\/\/fixtures.jira.phar\/secure\/useravatar?ownerId=user9&avatarId=10404","24x24":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=small&ownerId=user9&avatarId=10404","16x16":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=xsmall&ownerId=user9&avatarId=10404","32x32":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=medium&ownerId=user9&avatarId=10404"},"displayName":"Jira User 0","active":"1","timeZone":"Europe\/London"},"customfield_14000":null,"subtasks":[],"customfield_14400":null,"reporter":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/user?username=user8","name":"user8","key":"user9","emailAddress":"user8@fixtures.jira.phar","avatarUrls":{"48x48":"https:\/\/fixtures.jira.phar\/secure\/useravatar?ownerId=user9&avatarId=10404","24x24":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=small&ownerId=user9&avatarId=10404","16x16":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=xsmall&ownerId=user9&avatarId=10404","32x32":"https:\/\/fixtures.jira.phar\/secure\/useravatar?size=medium&ownerId=user9&avatarId=10404"},"displayName":"Jira User 0","active":"1","timeZone":"Europe\/London"},"customfield_12101":null,"customfield_12100":null,"aggregateprogress":{"progress":"4923084","total":"4923084","percent":"100"},"customfield_12501":null,"customfield_13711":null,"customfield_12500":null,"customfield_13710":null,"customfield_13702":null,"customfield_13701":null,"customfield_13704":null,"customfield_11801":null,"customfield_13703":null,"customfield_13706":null,"customfield_13705":null,"customfield_13708":null,"customfield_13707":null,"customfield_13709":null,"progress":{"progress":"4923084","total":"4923084","percent":"100"},"votes":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issue\/GEN-359\/votes","votes":"0","hasVoted":""},"issuetype":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issuetype\/20","id":"20","description":"user5 Task","iconUrl":"https:\/\/fixtures.jira.phar\/secure\/viewavatar?size=xsmall&avatarId=15316&avatarType=issuetype","name":"user5 Sub-Task","subtask":"1","avatarId":"15316"},"timespent":"4923084","project":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/project\/10401","id":"10401","key":"GEN","name":"user1","avatarUrls":{"48x48":"https:\/\/fixtures.jira.phar\/secure\/projectavatar?pid=10401&avatarId=25600","24x24":"https:\/\/fixtures.jira.phar\/secure\/projectavatar?size=small&pid=10401&avatarId=25600","16x16":"https:\/\/fixtures.jira.phar\/secure\/projectavatar?size=xsmall&pid=10401&avatarId=25600","32x32":"https:\/\/fixtures.jira.phar\/secure\/projectavatar?size=medium&pid=10401&avatarId=25600"},"projectCategory":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/projectCategory\/10300","id":"10300","description":"Company Group Projects (non Billable)","name":"user3"}},"customfield_15200":null,"customfield_15602":null,"aggregatetimespent":"4923084","customfield_15601":null,"customfield_14900":null,"customfield_10700":null,"customfield_10701":"Not started","resolutiondate":null,"workratio":"9223372036854775807","watches":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/issue\/GEN-359\/watchers","watchCount":"0","isWatching":""},"created":"2017-01-10T15:28:30.000+0000","customfield_12200":null,"customfield_16400":null,"customfield_14107":null,"customfield_14104":null,"customfield_14500":null,"customfield_13800":null,"customfield_11900":"0|i0glf1:","customfield_13802":null,"updated":"2017-02-28T13:49:54.000+0000","timeoriginalestimate":"0","description":null,"customfield_15300":null,"customfield_13004":null,"customfield_15702":null,"customfield_14209":null,"customfield_14207":null,"security":{"self":"https:\/\/fixtures.jira.phar\/rest\/api\/2\/securitylevel\/10702","id":"10702","description":"","name":"user0"},"customfield_10800":null,"customfield_14208":null,"summary":"Training\/Self Study","customfield_14201":null,"customfield_14202":null,"customfield_14200":null,"customfield_12301":null,"customfield_14205":null,"customfield_12300":null,"customfield_14206":null,"customfield_14203":null,"customfield_14600":null,"customfield_14204":null,"customfield_13902":null}}]}
+{
+  "expand": "names,schema",
+  "startAt": "0",
+  "maxResults": "50",
+  "total": "1",
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "135294",
+      "self": "https://fixtures.jira.phar/rest/api/2/issue/135294",
+      "key": "GEN-359",
+      "fields": {
+        "parent": {
+          "id": "135292",
+          "key": "GEN-1",
+          "self": "https://fixtures.jira.phar/rest/api/2/issue/135292",
+          "fields": {
+            "summary": "Worked, Non-Billable - Do not log time to this ticket - use sub-tasks",
+            "status": {
+              "self": "https://fixtures.jira.phar/rest/api/2/status/1",
+              "description": "The issue is open and ready for the assignee to start work on it.",
+              "iconUrl": "https://fixtures.jira.phar/images/icons/statuses/open.png",
+              "name": "user4",
+              "id": "1",
+              "statusCategory": {
+                "self": "https://fixtures.jira.phar/rest/api/2/statuscategory/2",
+                "id": "2",
+                "key": "zgal",
+                "accountId": 7
+              }
+            },
+            "issuetype": {
+              "self": "https://fixtures.jira.phar/rest/api/2/issuetype/19",
+              "id": "19",
+              "description": "",
+              "iconUrl": "https://fixtures.jira.phar/images/icons/issuetypes/blank.png",
+              "name": "user5",
+              "subtask": ""
+            }
+          }
+        },
+        "customfield_15000": "{}",
+        "customfield_15001": null,
+        "customfield_13100": null,
+        "customfield_15002": null,
+        "customfield_12800": null,
+        "customfield_10500": null,
+        "customfield_11710": null,
+        "customfield_12801": null,
+        "lastViewed": "2017-02-15T09:44:55.561+0000",
+        "customfield_16203": null,
+        "customfield_14302": null,
+        "customfield_14303": null,
+        "customfield_13723": null,
+        "customfield_15505": null,
+        "customfield_11702": null,
+        "aggregatetimeoriginalestimate": "0",
+        "timeestimate": "0",
+        "customfield_11703": null,
+        "customfield_11706": null,
+        "customfield_11705": null,
+        "customfield_11708": null,
+        "customfield_11707": null,
+        "customfield_11709": null,
+        "assignee": null,
+        "status": {
+          "self": "https://fixtures.jira.phar/rest/api/2/status/1",
+          "description": "The issue is open and ready for the assignee to start work on it.",
+          "iconUrl": "https://fixtures.jira.phar/images/icons/statuses/open.png",
+          "name": "user4",
+          "id": "1",
+          "statusCategory": {
+            "self": "https://fixtures.jira.phar/rest/api/2/statuscategory/2",
+            "id": "2",
+            "key": "zgal",
+            "accountId": 7
+          }
+        },
+        "components": [
+          {
+            "self": "https://fixtures.jira.phar/rest/api/2/component/26501",
+            "id": "26501",
+            "name": "user2"
+          }
+        ],
+        "customfield_15500": null,
+        "customfield_13201": [],
+        "customfield_13200": null,
+        "customfield_13203": null,
+        "customfield_15503": null,
+        "customfield_13202": null,
+        "customfield_15504": null,
+        "customfield_15501": null,
+        "customfield_15502": null,
+        "customfield_13721": null,
+        "customfield_13713": null,
+        "customfield_13712": null,
+        "customfield_13715": null,
+        "customfield_13714": null,
+        "customfield_13717": null,
+        "aggregatetimeestimate": "0",
+        "customfield_13716": null,
+        "customfield_13718": null,
+        "creator": {
+          "self": "https://fixtures.jira.phar/rest/api/2/user?username=user8",
+          "name": "user8",
+          "key": "user8",
+          "accountId": 8,
+          "emailAddress": "user8@fixtures.jira.phar",
+          "avatarUrls": {
+            "48x48": "https://fixtures.jira.phar/secure/useravatar?ownerId=user9&avatarId=10404",
+            "24x24": "https://fixtures.jira.phar/secure/useravatar?size=small&ownerId=user9&avatarId=10404",
+            "16x16": "https://fixtures.jira.phar/secure/useravatar?size=xsmall&ownerId=user9&avatarId=10404",
+            "32x32": "https://fixtures.jira.phar/secure/useravatar?size=medium&ownerId=user9&avatarId=10404"
+          },
+          "displayName": "Jira User 0",
+          "active": "1",
+          "timeZone": "Europe/London"
+        },
+        "customfield_14000": null,
+        "subtasks": [],
+        "customfield_14400": null,
+        "reporter": {
+          "self": "https://fixtures.jira.phar/rest/api/2/user?username=user8",
+          "name": "user8",
+          "key": "user8",
+          "accountId": 8,
+          "emailAddress": "user8@fixtures.jira.phar",
+          "avatarUrls": {
+            "48x48": "https://fixtures.jira.phar/secure/useravatar?ownerId=user9&avatarId=10404",
+            "24x24": "https://fixtures.jira.phar/secure/useravatar?size=small&ownerId=user9&avatarId=10404",
+            "16x16": "https://fixtures.jira.phar/secure/useravatar?size=xsmall&ownerId=user9&avatarId=10404",
+            "32x32": "https://fixtures.jira.phar/secure/useravatar?size=medium&ownerId=user9&avatarId=10404"
+          },
+          "displayName": "Jira User 0",
+          "active": "1",
+          "timeZone": "Europe/London"
+        },
+        "customfield_12101": null,
+        "customfield_12100": null,
+        "aggregateprogress": {
+          "progress": "4923084",
+          "total": "4923084",
+          "percent": "100"
+        },
+        "customfield_12501": null,
+        "customfield_13711": null,
+        "customfield_12500": null,
+        "customfield_13710": null,
+        "customfield_13702": null,
+        "customfield_13701": null,
+        "customfield_13704": null,
+        "customfield_11801": null,
+        "customfield_13703": null,
+        "customfield_13706": null,
+        "customfield_13705": null,
+        "customfield_13708": null,
+        "customfield_13707": null,
+        "customfield_13709": null,
+        "progress": {
+          "progress": "4923084",
+          "total": "4923084",
+          "percent": "100"
+        },
+        "votes": {
+          "self": "https://fixtures.jira.phar/rest/api/2/issue/GEN-359/votes",
+          "votes": "0",
+          "hasVoted": ""
+        },
+        "issuetype": {
+          "self": "https://fixtures.jira.phar/rest/api/2/issuetype/20",
+          "id": "20",
+          "description": "user5 Task",
+          "iconUrl": "https://fixtures.jira.phar/secure/viewavatar?size=xsmall&avatarId=15316&avatarType=issuetype",
+          "name": "user5 Sub-Task",
+          "subtask": "1",
+          "avatarId": "15316"
+        },
+        "timespent": "4923084",
+        "project": {
+          "self": "https://fixtures.jira.phar/rest/api/2/project/10401",
+          "id": "10401",
+          "key": "GEN",
+          "accountId": 1,
+          "avatarUrls": {
+            "48x48": "https://fixtures.jira.phar/secure/projectavatar?pid=10401&avatarId=25600",
+            "24x24": "https://fixtures.jira.phar/secure/projectavatar?size=small&pid=10401&avatarId=25600",
+            "16x16": "https://fixtures.jira.phar/secure/projectavatar?size=xsmall&pid=10401&avatarId=25600",
+            "32x32": "https://fixtures.jira.phar/secure/projectavatar?size=medium&pid=10401&avatarId=25600"
+          },
+          "projectCategory": {
+            "self": "https://fixtures.jira.phar/rest/api/2/projectCategory/10300",
+            "id": "10300",
+            "description": "Company Group Projects (non Billable)",
+            "name": "user3"
+          }
+        },
+        "customfield_15200": null,
+        "customfield_15602": null,
+        "aggregatetimespent": "4923084",
+        "customfield_15601": null,
+        "customfield_14900": null,
+        "customfield_10700": null,
+        "customfield_10701": "Not started",
+        "resolutiondate": null,
+        "workratio": "9223372036854775807",
+        "watches": {
+          "self": "https://fixtures.jira.phar/rest/api/2/issue/GEN-359/watchers",
+          "watchCount": "0",
+          "isWatching": ""
+        },
+        "created": "2017-01-10T15:28:30.000+0000",
+        "customfield_12200": null,
+        "customfield_16400": null,
+        "customfield_14107": null,
+        "customfield_14104": null,
+        "customfield_14500": null,
+        "customfield_13800": null,
+        "customfield_11900": "0|i0glf1:",
+        "customfield_13802": null,
+        "updated": "2017-02-28T13:49:54.000+0000",
+        "timeoriginalestimate": "0",
+        "description": null,
+        "customfield_15300": null,
+        "customfield_13004": null,
+        "customfield_15702": null,
+        "customfield_14209": null,
+        "customfield_14207": null,
+        "security": {
+          "self": "https://fixtures.jira.phar/rest/api/2/securitylevel/10702",
+          "id": "10702",
+          "description": "",
+          "name": "user0"
+        },
+        "customfield_10800": null,
+        "customfield_14208": null,
+        "summary": "Training/Self Study",
+        "customfield_14201": null,
+        "customfield_14202": null,
+        "customfield_14200": null,
+        "customfield_12301": null,
+        "customfield_14205": null,
+        "customfield_12300": null,
+        "customfield_14206": null,
+        "customfield_14203": null,
+        "customfield_14600": null,
+        "customfield_14204": null,
+        "customfield_13902": null
+      }
+    }
+  ]
+}

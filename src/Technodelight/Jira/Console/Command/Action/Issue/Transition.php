@@ -166,7 +166,6 @@ class Transition extends Command
         try {
             $issueKey = $this->issueKeyResolver->argument($input, $output);
             $issue = $this->jira->retrieveIssue($issueKey);
-
             $assignee = null;
             $transitions = $this->jira->retrievePossibleTransitionsForIssue($issueKey);
             $transition = $this->findTransitionByName($transitions, $this->transitions);
@@ -193,7 +192,7 @@ class Transition extends Command
                 $this->checkoutToBranch($input, $output, $issue);
             }
         } finally {
-            return $returnCode;
+            return isset($returnCode) ? $returnCode : 1;
         }
     }
 

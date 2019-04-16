@@ -1,5 +1,19 @@
 Feature: Perform issue transitions
 
+  Background:
+    Given Git command "branch -a | grep '* '" returns:
+    """
+    """
+    And Git command "remote -v 2> /dev/null" returns:
+    """
+      origin  git@github.com:technodelight/jira.git (fetch)
+      origin  git@github.com:technodelight/jira.git (push)
+    """
+    And Git command "diff --name-status" returns:
+    """
+    """
+    And GitHub returns "issues" fixture for "get" path "/repos/technodelight/jira/issues"
+
   Scenario: An issue transition could not be performed
     Given the application configuration "transitions" is configured with:
     """
@@ -15,19 +29,8 @@ Feature: Perform issue transitions
     """
     {"resolve":["Resolve Issue"]}
     """
-    And Git command "diff --name-status" returns:
-    """
-    """
-    And Git command "remote -v" returns:
-    """
-      origin  git@github.com:technodelight/jira.git (fetch)
-      origin  git@github.com:technodelight/jira.git (push)
-    """
-    And Git command "branch -a | grep 'GEN-359'" returns:
-    """
-      feature/GEN-359-something
-    """
     When I run the application with the following input:
-      | command  | resolve |
-      | issueKey | GEN-359 |
+      | command  | workflow:resolve |
+      | issueKey | GEN-359          |
+    Then the output should contain "moved to"
     Then the exit code should be "0"

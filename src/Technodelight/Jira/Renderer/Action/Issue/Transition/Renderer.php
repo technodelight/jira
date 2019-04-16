@@ -118,11 +118,17 @@ class Renderer implements ActionRenderer
         );
         $output->writeln('');
 
-        $issue = $this->api->retrieveIssue($error->issueKey());
-        $this->headerRenderer->render($output, $issue);
-        $this->transitions->render($output, $issue);
+        try {
+            $issue = $this->api->retrieveIssue($error->issueKey());
+            $this->headerRenderer->render($output, $issue);
+            $this->transitions->render($output, $issue);
+        } catch (\Exception $e) {
+
+        }
 
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+            $output->writeln($error->exception()->getMessage()); //@TODO: a nice formatting would be good here
+            $output->writeln(''); //@TODO: a nice formatting would be good here
             $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here
         }
 
