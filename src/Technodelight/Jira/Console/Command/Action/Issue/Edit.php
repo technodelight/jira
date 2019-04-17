@@ -156,7 +156,7 @@ class Edit extends Command
 
     private function renderChange(Field $field, Issue $before, Issue $after, OutputInterface $output)
     {
-        if ($field->schemaType() == 'string') {
+        if ($field->schemaType() == 'string' || $field->schemaType() == 'number') {
             $differ = new Differ;
             $before = $before->findField($field->key()) ?: '';
             $after = $after->findField($field->key()) ?: '';
@@ -223,7 +223,7 @@ class Edit extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param Field $field
-     * @param \Technodelight\Jira\Console\Argument\IssueKey $issueKey
+     * @param IssueKey $issueKey
      * @param string $option
      * @return string
      * @throws \Technodelight\Jira\Console\FieldEditor\EditorException
@@ -278,6 +278,9 @@ class Edit extends Command
     {
         if ($field->schemaItemType() == 'string' || $field->schemaType() == 'string') {
             return $value;
+        }
+        if ($field->schemaItemType() == 'number' || $field->schemaType() == 'number') {
+            return (int) $value;
         }
 
         return ['name' => $value];
