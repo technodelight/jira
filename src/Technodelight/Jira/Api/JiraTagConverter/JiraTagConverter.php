@@ -153,6 +153,21 @@ class JiraTagConverter
 
     private function convertBoldUnderscore(&$body)
     {
+        $parser = new DelimiterBasedStringParser('*_', '_*');
+        $matches = $parser->parse($body);
+        foreach ($matches as $match) {
+            $body = str_replace(
+                $match, '<options=bold,underscore>' . substr($match, 2, -2) . '</>', $body
+            );
+        }
+        $parser = new DelimiterBasedStringParser('_*', '*_');
+        $matches = $parser->parse($body);
+        foreach ($matches as $match) {
+            $body = str_replace(
+                $match, '<options=underscore,bold>' . substr($match, 2, -2) . '</>', $body
+            );
+        }
+
         $this->parseAndReplaceWith($body, '*', '<options=bold>');
         $this->parseAndReplaceWith($body, '_', '<options=underscore>');
     }
