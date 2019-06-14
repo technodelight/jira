@@ -25,7 +25,6 @@
         "technodelight/php-git": "^1.0",
         "technodelight/symfony-configuration-cli-initialiser": "^1.0",
         "symfony/expression-language": "^3.4",
-        "shaneharter/php-daemon": "^2.0",
         "kriswallsmith/buzz": "^0.17.2",
         "knplabs/github-api": "^2.10"
     },

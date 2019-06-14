@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "07e7432a3b50623cf09358b076de0602",
+    "content-hash": "9dbfd46491da0a3763aa74298483a0e4",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -1875,41 +1875,6 @@
                 "diff"
             ],
             "time": "2017-08-03T08:09:46+00:00"
-        },
-        {
-            "name": "shaneharter/php-daemon",
-            "version": "v2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/shaneharter/PHP-Daemon.git",
-                "reference": "a609d60ac9ff7db031ab05e4134e06dbf5a569fe"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/shaneharter/PHP-Daemon/zipball/a609d60ac9ff7db031ab05e4134e06dbf5a569fe",
-                "reference": "a609d60ac9ff7db031ab05e4134e06dbf5a569fe",
-                "shasum": ""
-            },
-            "require": {
-                "ext-pcntl": "*",
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Core": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Create solid, long-running PHP daemon processes",
-            "keywords": [
-                "daemon",
-                "php"
-            ],
-            "time": "2013-06-26T18:01:40+00:00"
         },
         {
             "name": "sirprize/queried",

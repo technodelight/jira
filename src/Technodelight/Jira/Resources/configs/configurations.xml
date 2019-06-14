@@ -49,9 +49,6 @@
         <service id="technodelight.jira.config.integrations.editor" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration" lazy="true">
             <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
         </service>
-        <service id="technodelight.jira.config.integrations.daemon" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\DaemonConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
-        </service>
         <service id="technodelight.jira.config.project" class="Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration" lazy="true">
             <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
         </service>

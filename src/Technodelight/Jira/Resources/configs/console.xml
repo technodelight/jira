@@ -188,20 +188,6 @@
         </service>
         <!-- argument resolvers -->
 
-        <!-- daemon client -->
-        <service id="technodelight.jira.console.daemon.client.runtime_configuration"
-                 class="Technodelight\Jira\Console\Application\Daemon\Client\RuntimeConfiguration" />
-
-        <service public="false"
-                 id="technodelight.jira.console.daemon.client.factory"
-                 class="Technodelight\Jira\Console\Application\Daemon\Client\Factory">
-            <argument type="service" id="technodelight.jira.config.integrations.daemon" />
-            <argument type="service" id="technodelight.jira.console.daemon.client.runtime_configuration" />
-        </service>
-        <service id="technodelight.jira.console.daemon.client" class="Technodelight\Jira\Console\Application\Daemon\Client">
-            <factory service="technodelight.jira.console.daemon.client.factory" method="create" />
-        </service>
-
         <!-- option checker -->
         <service id="technodelight.jira.console.option.checker"
                  class="Technodelight\Jira\Console\Option\Checker" />
