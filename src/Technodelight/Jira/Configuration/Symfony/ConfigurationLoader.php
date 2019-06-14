@@ -19,19 +19,26 @@ class ConfigurationLoader
         return (new Processor)->processConfiguration(
             new Configuration,
             $this->loadValidConfigurationYamls(
-                [
-                    $this->filenameProvider->localFile() => false,
-                    $this->filenameProvider->globalFile() => false,
-                ]
+                array_merge(
+                    [
+                        $this->filenameProvider->projectFile(),
+                        $this->filenameProvider->userFile(),
+                    ],
+                    $this->filenameProvider->moduleFiles()
+                )
             )
         );
     }
 
+    /**
+     * @param string[] $filePaths
+     * @return string[]
+     */
     private function loadValidConfigurationYamls(array $filePaths)
     {
         $yamls = [];
-        foreach ($filePaths as $path => $isRequired) {
-            $yamls[]= $this->loadConfigurationYaml($path, $isRequired);
+        foreach ($filePaths as $path) {
+            $yamls[]= $this->loadConfigurationYaml($path);
         }
 
         return array_filter($yamls);
@@ -42,15 +49,8 @@ class ConfigurationLoader
      * @param bool $isRequired
      * @return mixed|null
      */
-    private function loadConfigurationYaml($path, $isRequired = false)
+    private function loadConfigurationYaml($path)
     {
-        if (!is_file($path)) {
-            if ($isRequired) {
-                throw MissingConfigurationException::fromPath($path);
-            }
-            return null;
-        }
-
         if (!is_readable($path)) {
             throw FilePriviledgeErrorException::fromUnreadablePath($path);
         }

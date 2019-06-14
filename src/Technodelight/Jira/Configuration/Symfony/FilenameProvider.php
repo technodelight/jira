@@ -7,6 +7,7 @@ use Technodelight\GitShell\ApiInterface as Git;
 class FilenameProvider
 {
     const FILENAME = '.jira.yml';
+    const MODULE_PATH = '.jira/container/*/modules/*';
 
     private $git;
 
@@ -15,7 +16,7 @@ class FilenameProvider
         $this->git = $git;
     }
 
-    public function localFile()
+    public function projectFile()
     {
         try {
             return $this->git->topLevelDirectory() . DIRECTORY_SEPARATOR . self::FILENAME;
@@ -24,7 +25,22 @@ class FilenameProvider
         }
     }
 
-    public function globalFile() {
+    public function userFile() {
         return getenv('HOME') . DIRECTORY_SEPARATOR . self::FILENAME;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function moduleFiles()
+    {
+        $files = [];
+        foreach (glob(self::MODULE_PATH, GLOB_ONLYDIR) as $moduleDirectory) {
+            if (is_file($moduleDirectory . DIRECTORY_SEPARATOR . self::FILENAME)) {
+                $files[] = $moduleDirectory . DIRECTORY_SEPARATOR . self::FILENAME;
+            }
+        }
+
+        return $files;
     }
 }

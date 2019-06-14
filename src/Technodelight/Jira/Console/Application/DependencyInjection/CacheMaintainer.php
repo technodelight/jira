@@ -8,8 +8,8 @@ use Technodelight\Jira\Configuration\Symfony\FilenameProvider;
 
 class CacheMaintainer
 {
-    const CACHE_PATH = '.jira.container_cache/container.php';
-    const HASH_PATH = '.jira.container_cache/container.md5';
+    const CACHE_PATH = '.jira/container/cache.php';
+    const HASH_PATH = '.jira/container/cache.md5';
 
     /**
      * @var FilenameProvider
@@ -94,7 +94,7 @@ class CacheMaintainer
 
     private function configHash()
     {
-        $files = [$this->filenameProvider->globalFile(), $this->filenameProvider->localFile()];
+        $files = [$this->filenameProvider->userFile(), $this->filenameProvider->projectFile()];
         $mds = [];
         foreach ($files as $file) {
             if (is_readable($file)) {
