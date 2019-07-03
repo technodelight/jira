@@ -52,8 +52,14 @@
             <argument type="service" id="console.question_helper" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
         </service>
-        <service id="technodelight.jira.console.open" class="Technodelight\Jira\Api\OpenApp\OpenApp">
-            <factory class="Technodelight\Jira\Api\OpenApp\OsAdaptingFactory" method="create" />
+        <service id="technodelight.jira.console.open" class="Technodelight\CliOpen\CliOpen">
+            <factory class="Technodelight\CliOpen\OsAdaptingFactory" method="create" />
+        </service>
+        <service id="technodelight.jira.console.application.batch_assistant"
+                 class="Technodelight\Jira\Console\Application\BatchAssistant">
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="technodelight.jira.config.renderers" />
         </service>
         <!-- magic stuff -->
 
@@ -63,7 +69,7 @@
                  class="Technodelight\Jira\Connector\EditApp\Factory">
             <argument type="service" id="technodelight.jira.config.integrations.editor" />
         </service>
-        <service id="technodelight.jira.console.edit" class="Technodelight\Jira\Api\EditApp\EditApp">
+        <service id="technodelight.jira.console.edit" class="Technodelight\CliEditorInput\CliEditorInput">
             <factory service="technodelight.jira.connector.edit_app.factory" method="build" />
         </service>
         <!-- magic editing stuff -->

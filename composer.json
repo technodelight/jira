@@ -26,7 +26,11 @@
         "technodelight/symfony-configuration-cli-initialiser": "^1.0",
         "symfony/expression-language": "^3.4",
         "kriswallsmith/buzz": "^0.17.2",
-        "knplabs/github-api": "^2.10"
+        "knplabs/github-api": "^2.10",
+        "technodelight/php-cli-cross-platform-open": "^1.0",
+        "technodelight/php-cli-editor-input": "^1.0",
+        "technodelight/php-cli-iterm-image-renderer": "^1.0",
+        "technodelight/php-jira-tempo-plugin-api": "^1.1"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9dbfd46491da0a3763aa74298483a0e4",
+    "content-hash": "006fe462efbaf16cf48800978ae4d441",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2711,6 +2711,114 @@
             "time": "2018-06-20T14:40:20+00:00"
         },
         {
+            "name": "technodelight/php-cli-cross-platform-open",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-cli-cross-platform-open.git",
+                "reference": "be3b54b16909d5d1113413314628a619cc5b105c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-cli-cross-platform-open/zipball/be3b54b16909d5d1113413314628a619cc5b105c",
+                "reference": "be3b54b16909d5d1113413314628a619cc5b105c",
+                "shasum": ""
+            },
+            "require": {
+                "technodelight/shell-exec": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\CliOpen\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Opens a file or URL in the user's preferred application in CLI (cross platform)",
+            "time": "2019-07-03T12:40:18+00:00"
+        },
+        {
+            "name": "technodelight/php-cli-editor-input",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-cli-editor-input.git",
+                "reference": "e6507cf7f7d0fcedcf376fca25cd3e6e84109d1c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-cli-editor-input/zipball/e6507cf7f7d0fcedcf376fca25cd3e6e84109d1c",
+                "reference": "e6507cf7f7d0fcedcf376fca25cd3e6e84109d1c",
+                "shasum": ""
+            },
+            "require": {
+                "technodelight/shell-exec": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\CliEditorInput\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Small and simple intermediate layer between console editors (like vim) and your PHP console application",
+            "time": "2019-07-03T11:58:32+00:00"
+        },
+        {
+            "name": "technodelight/php-cli-iterm-image-renderer",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-cli-iterm-image-renderer.git",
+                "reference": "90ff718cfd733f205d9e821183f3daa1065bc830"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-cli-iterm-image-renderer/zipball/90ff718cfd733f205d9e821183f3daa1065bc830",
+                "reference": "90ff718cfd733f205d9e821183f3daa1065bc830",
+                "shasum": ""
+            },
+            "require": {
+                "technodelight/shell-exec": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\ITermImage\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zsolt.gal@sessiondigital.com"
+                }
+            ],
+            "description": "Render images with PHP in your iterm2 console",
+            "time": "2019-07-03T12:27:20+00:00"
+        },
+        {
             "name": "technodelight/php-git",
             "version": "1.0.5",
             "source": {
@@ -2749,6 +2857,42 @@
             ],
             "description": "Small library to execute git commands through shell",
             "time": "2019-04-16T13:04:02+00:00"
+        },
+        {
+            "name": "technodelight/php-jira-tempo-plugin-api",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-jira-tempo-plugin-api.git",
+                "reference": "e5ffedad75e701de26b75ef965e91c687c546ab2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-jira-tempo-plugin-api/zipball/e5ffedad75e701de26b75ef965e91c687c546ab2",
+                "reference": "e5ffedad75e701de26b75ef965e91c687c546ab2",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\Tempo2\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zsolt Gál",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "PHP API layer for Tempo TimeSheets",
+            "time": "2019-07-03T13:10:29+00:00"
         },
         {
             "name": "technodelight/php-time-ago",

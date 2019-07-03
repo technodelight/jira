@@ -7,7 +7,7 @@ use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Hoa\Console\Readline\Autocompleter\Word;
 use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\EditApp\EditApp;
+use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Connector\HoaConsole\IssueAttachmentAutocomplete;

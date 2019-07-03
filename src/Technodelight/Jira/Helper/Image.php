@@ -4,8 +4,8 @@ namespace Technodelight\Jira\Helper;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Api\ITermImage\Image as ITermImage;
-use Technodelight\Jira\Api\ITermImage\ITermVersion;
+use Technodelight\ITermImage\Image as ITermImage;
+use Technodelight\ITermImage\ITermVersion;
 
 class Image
 {

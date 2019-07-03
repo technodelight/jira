@@ -32,28 +32,13 @@
         </service>
         <!-- jira -->
 
-        <!-- tempo -->
-        <service id="technodelight.jira.api.tempo.client" class="Technodelight\Jira\Api\Tempo\Client" lazy="true">
-            <factory class="Technodelight\Jira\Connector\Tempo\HttpClientFactory" method="build" />
-            <argument type="service" id="technodelight.jira.config.integrations.tempo" />
-            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
-        </service>
-        <service id="technodelight.jira.api.tempo.api" class="Technodelight\Jira\Api\Tempo\Api">
-            <argument type="service" id="technodelight.jira.api.tempo.client" />
-        </service>
-        <service id="technodelight.jira.connector.tempo_worklog_handler" class="Technodelight\Jira\Connector\Tempo\WorklogHandler">
-            <argument type="service" id="technodelight.jira.api.tempo.api" />
-            <argument type="service" id="technodelight.jira.api_cache_storage" />
-        </service>
-        <!-- tempo -->
-
         <!-- tempo2 -->
-        <service id="technodelight.jira.api.tempo2.client" class="Technodelight\Jira\Api\Tempo2\Client">
+        <service id="technodelight.jira.api.tempo2.client" class="Technodelight\Tempo2\Client">
             <factory class="Technodelight\Jira\Connector\Tempo2\HttpClientFactory" method="build" />
             <argument type="service" id="technodelight.jira.config.integrations.tempo" />
             <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
         </service>
-        <service id="technodelight.jira.api.tempo2.api" class="Technodelight\Jira\Api\Tempo2\Api">
+        <service id="technodelight.jira.api.tempo2.api" class="Technodelight\Tempo2\Api">
             <argument type="service" id="technodelight.jira.api.tempo2.client" />
         </service>
         <service id="technodelight.jira.connector.tempo2_worklog_handler" class="Technodelight\Jira\Connector\Tempo2\WorklogHandler">
@@ -87,7 +72,6 @@
         <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
             <argument type="service" id="technodelight.jira.config.instances.current_instance_provider"/>
             <argument type="service" id="technodelight.jira.config.integrations.tempo"/>
-            <argument type="service" id="technodelight.jira.connector.tempo_worklog_handler"/>
             <argument type="service" id="technodelight.jira.connector.tempo2_worklog_handler"/>
             <argument type="service" id="technodelight.jira.connector.jira_worklog_handler"/>
         </service>

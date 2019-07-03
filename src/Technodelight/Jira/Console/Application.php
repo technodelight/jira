@@ -51,9 +51,21 @@ class Application extends BaseApp
             $output->writeLn(sprintf('%1.4f s, mem %s', $end, $this->formatBytes($endMem - $startMem)));
 
             return $result;
-        } else {
-            return parent::doRun($input, $output);
+        } elseif ($input->isInteractive() === false) {
+            $batchAssistant = $this->container->get('technodelight.jira.console.application.batch_assistant');
+            if ($issueKeys = $batchAssistant->issueKeysFromPipe()) {
+                $this->setAutoExit(false);
+                foreach ($issueKeys as $issueKey) {
+                    $inputs = $batchAssistant->prepareInput($issueKey);
+                    foreach ($inputs as $input) {
+                        parent::doRun($input, $output);
+                    }
+                }
+                $this->setAutoExit(true);
+            }
         }
+
+        return parent::doRun($input, $output);
     }
 
     public function getDefaultHelperSet()

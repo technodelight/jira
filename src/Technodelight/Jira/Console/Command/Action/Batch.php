@@ -11,6 +11,9 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfigura
 use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Console\Command\Show\Issue;
 
+/**
+ * @deprecated will be removed in next release as replaced by (automatic) batch assistant
+ */
 class Batch extends Command
 {
     /**

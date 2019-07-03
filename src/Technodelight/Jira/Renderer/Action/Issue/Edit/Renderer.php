@@ -74,23 +74,24 @@ class Renderer implements ActionRenderer
      */
     protected function renderSuccess(OutputInterface $output, Success $result): int
     {
+        $output->writeln(
+            $this->styleGuide->success(
+                vsprintf(
+                    $result->phrase(),
+                    array_filter(
+                        [
+                            $this->styleGuide->formatIssueKey($result->issueKey()),
+                            $this->styleGuide->formatTransition($result->data()[0]),
+                            !empty($result->data()[1]) ? $this->styleGuide->formatUsername($result->data()[1]) : null,
+                        ]
+                    )
+                )
+            )
+        );
+
         $issue = $this->api->retrieveIssue($result->issueKey());
         $this->headerRenderer->render($output, $issue);
         $this->issueRelationsRenderer->render($output, $issue);
-
-        $output->writeln([
-            '',
-            vsprintf(
-                $result->phrase(),
-                array_filter(
-                    [
-                        $this->styleGuide->formatIssueKey($result->issueKey()),
-                        $this->styleGuide->formatTransition($result->data()[0]),
-                        !empty($result->data()[1]) ? $this->styleGuide->formatUsername($result->data()[1]) : null,
-                    ]
-                )
-            )
-        ]);
 
         return 0;
     }
@@ -102,13 +103,11 @@ class Renderer implements ActionRenderer
         }
 
         $output->writeln(
-            $this->formatterHelper->formatBlock(
-                vsprintf($error->phrase(), array_filter(array_merge([$error->issueKey()], $error->data()))),
-                'error',
-                true
+            $this->styleGuide->error(
+                vsprintf($error->phrase(), array_filter(array_merge([$error->issueKey()], $error->data())))
             )
         );
-        $output->writeln('');
+
         $issue = $this->api->retrieveIssue($error->issueKey());
         $this->headerRenderer->render($output, $issue);
         $this->issueRelationsRenderer->render($output, $issue);

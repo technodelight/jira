@@ -2,7 +2,8 @@
 
 namespace Technodelight\Jira\Connector\EditApp;
 
-use Technodelight\Jira\Api\EditApp\AdaptableFactoryWithPreference;
+use Technodelight\CliEditorInput\AdaptableFactoryWithPreference;
+use Technodelight\CliEditorInput\CliEditorInput;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
 
 class Factory
@@ -18,7 +19,7 @@ class Factory
     }
 
     /**
-     * @return \Technodelight\Jira\Api\EditApp\EditApp
+     * @return CliEditorInput
      */
     public function build()
     {
