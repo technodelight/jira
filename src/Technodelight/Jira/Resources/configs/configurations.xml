@@ -6,22 +6,42 @@
 
     <services>
 
-        <service id="technodelight.jira.configuration.symfony.filename_provider" class="Technodelight\Jira\Configuration\Symfony\FilenameProvider">
+        <!-- console configuration -->
+        <service public="false"
+                 id="technodelight.jira.console.configuration.directory_provider"
+                 class="Technodelight\Jira\Console\Configuration\DirectoryProvider">
             <argument type="service" id="technodelight.gitshell.api" />
         </service>
-        <service id="technodelight.jira.configuration.symfony.configuration_loader" class="Technodelight\Jira\Configuration\Symfony\ConfigurationLoader">
-            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+        <service public="false"
+                 id="technodelight.jira.console.configuration.loader"
+                 class="Technodelight\Jira\Console\Configuration\Loader" />
+
+        <service public="false"
+                 id="technodelight.jira.console.configuration.tree_builder"
+                 class="Symfony\Component\Config\Definition\Builder\TreeBuilder">
+            <factory class="Technodelight\Jira\Configuration\Configuration\TreeBuilderFactory" method="build" />
         </service>
-        <service id="technodelight.jira.configuration.symfony.configuration_dumper" class="Technodelight\Jira\Configuration\Symfony\ConfigurationDumper">
-            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+
+        <service id="technodelight.jira.console.configuration.provider"
+                 class="Technodelight\Jira\Console\Configuration\Provider">
+            <argument type="service" id="technodelight.jira.console.configuration.directory_provider" />
+            <argument type="service" id="technodelight.jira.console.configuration.loader" />
         </service>
+
+        <service id="technodelight.jira.console.configuration.configuration"
+                 class="Technodelight\Jira\Configuration\Configuration">
+            <argument type="service" id="technodelight.jira.console.configuration.tree_builder" />
+        </service>
+        <!-- console configuration -->
+
         <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration" lazy="true">
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
             <factory class="Technodelight\Jira\Configuration\ApplicationConfiguration" method="fromSymfonyConfigArray" />
             <argument type="collection" />
         </service>
 
         <service id="technodelight.jira.config.instances" class="Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
 
         <service id="technodelight.jira.config.instances.current_instance_provider" class="Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider" lazy="true">
@@ -29,40 +49,40 @@
             <argument type="service" id="technodelight.jira.app" />
         </service>
         <service id="technodelight.jira.config.integrations" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.github" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.git" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.git.branch_name_generator" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.tempo" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.iterm" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.editor" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.project" class="Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.transitions" class="Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.aliases" class="Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.filters" class="Technodelight\Jira\Configuration\ApplicationConfiguration\FiltersConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.renderers" class="Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\Application\DependencyInjection\ApplicationConfigurationCompilerPass -->
+            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
 
     </services>

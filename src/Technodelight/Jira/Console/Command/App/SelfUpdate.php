@@ -7,7 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Application\DependencyInjection\CacheMaintainer;
+use Technodelight\Jira\Console\DependencyInjection\CacheMaintainer;
 use Technodelight\Jira\Helper\Downloader;
 
 class SelfUpdate extends Command

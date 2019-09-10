@@ -114,7 +114,7 @@ class Init extends AbstractCommand
     }
 
     /**
-     * @return \Technodelight\Jira\Configuration\Symfony\FilenameProvider
+     * @return \Technodelight\Jira\Configuration\Symfony\DeprecatedFilenameProvider
      */
     private function filenameProvider()
     {

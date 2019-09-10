@@ -89,7 +89,7 @@ class Renderer implements ActionRenderer
 
         $output->writeln(
             $this->styleGuide->error(
-                vsprintf($error->phrase(), array_filter(array_merge([$error->issueKey()], $error->data())))
+                vsprintf($error->phrase(), array_filter($error->data()))
             )
         );
 

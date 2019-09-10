@@ -52,7 +52,7 @@ class Application extends BaseApp
 
             return $result;
         } elseif ($input->isInteractive() === false) {
-            $batchAssistant = $this->container->get('technodelight.jira.console.application.batch_assistant');
+            $batchAssistant = $this->container->get('technodelight.jira.console.batch_assistant');
             if ($issueKeys = $batchAssistant->issueKeysFromPipe()) {
                 $this->setAutoExit(false);
                 foreach ($issueKeys as $issueKey) {

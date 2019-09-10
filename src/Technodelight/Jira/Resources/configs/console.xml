@@ -10,6 +10,14 @@
 
     <services>
 
+        <!-- extension loader -->
+        <service id="technodelight.jira.extension.configurator"
+                 class="Technodelight\Jira\Extension\Configurator">
+            <!-- @see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\Extensions -->
+            <argument type="collection" />
+        </service>
+        <!-- extension loader -->
+
         <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
             <argument type="string">%technodelight.jira.app.name%</argument>
             <argument type="string">%technodelight.jira.app.version%</argument>
@@ -40,8 +48,8 @@
         </service>
 
         <!-- container caching, etc -->
-        <service id="technodelight.jira.console.di.cache_maintainer" class="Technodelight\Jira\Console\Application\DependencyInjection\CacheMaintainer">
-            <argument type="service" id="technodelight.jira.configuration.symfony.filename_provider" />
+        <service id="technodelight.jira.console.di.cache_maintainer" class="Technodelight\Jira\Console\DependencyInjection\CacheMaintainer">
+            <argument type="service" id="technodelight.jira.console.configuration.directory_provider" />
         </service>
 
         <!-- magic stuff -->
@@ -55,8 +63,8 @@
         <service id="technodelight.jira.console.open" class="Technodelight\CliOpen\CliOpen">
             <factory class="Technodelight\CliOpen\OsAdaptingFactory" method="create" />
         </service>
-        <service id="technodelight.jira.console.application.batch_assistant"
-                 class="Technodelight\Jira\Console\Application\BatchAssistant">
+        <service id="technodelight.jira.console.batch_assistant"
+                 class="Technodelight\Jira\Console\BatchAssistant">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.app" />
             <argument type="service" id="technodelight.jira.config.renderers" />
