@@ -2,8 +2,8 @@
 
 namespace Technodelight\Jira\Connector\Tempo2;
 
-use Technodelight\Jira\Api\Tempo2\HttpClient;
-use Technodelight\Jira\Api\Tempo2\NullClient;
+use Technodelight\Tempo2\HttpClient;
+use Technodelight\Tempo2\NullClient;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
 

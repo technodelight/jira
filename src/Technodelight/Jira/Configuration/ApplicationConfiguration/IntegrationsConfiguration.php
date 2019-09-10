@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\DaemonConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
@@ -33,10 +32,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
      */
     private $editor;
     /**
-     * @var DaemonConfiguration
-     */
-    private $daemon;
-    /**
      * @var array
      */
     private $config;
@@ -50,7 +45,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         $instance->tempo = TempoConfiguration::fromArray($config['tempo']);
         $instance->iterm = ITermConfiguration::fromArray($config['iterm']);
         $instance->editor = EditorConfiguration::fromArray($config['editor']);
-        $instance->daemon = DaemonConfiguration::fromArray($config['daemon']);
 
         return $instance;
     }
@@ -78,11 +72,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
     public function editor()
     {
         return $this->editor;
-    }
-
-    public function daemon()
-    {
-        return $this->daemon;
     }
 
     public function servicePrefix()

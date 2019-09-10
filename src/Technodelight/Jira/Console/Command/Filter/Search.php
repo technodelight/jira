@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\OpenApp\OpenApp;
+use Technodelight\CliOpen\CliOpen as OpenApp;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\Symfony\Configuration;
 use Technodelight\Jira\Console\Command\IssueRendererAware;

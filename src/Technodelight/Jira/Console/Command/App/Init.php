@@ -78,9 +78,9 @@ class Init extends AbstractCommand
     protected function dumpSample(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('global')) {
-            $path = $this->filenameProvider()->globalFile() . '.sample';
+            $path = $this->filenameProvider()->userFile() . '.sample';
         } else {
-            $path = $this->filenameProvider()->localFile() . '.sample';
+            $path = $this->filenameProvider()->projectFile() . '.sample';
         }
 
         $this->configurationDumper()->dump($path, false === $input->getOption('local'));
@@ -97,9 +97,9 @@ class Init extends AbstractCommand
     {
         $fileProvider = $this->filenameProvider();
         if ($input->getOption('local')) {
-            $path = $fileProvider->localFile();
+            $path = $fileProvider->projectFile();
         } else {
-            $path = $fileProvider->globalFile();
+            $path = $fileProvider->userFile();
         }
 
         if (is_file($path)) {
@@ -114,7 +114,7 @@ class Init extends AbstractCommand
     }
 
     /**
-     * @return \Technodelight\Jira\Configuration\Symfony\FilenameProvider
+     * @return \Technodelight\Jira\Configuration\Symfony\DeprecatedFilenameProvider
      */
     private function filenameProvider()
     {

@@ -9,6 +9,9 @@ use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Renderer\Board\Renderer as BoardRenderer;
 
+/**
+ * @TODO: wrong namespace, refactor me
+ */
 class IssueRenderer
 {
     /**

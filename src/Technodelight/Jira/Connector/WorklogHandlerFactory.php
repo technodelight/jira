@@ -4,7 +4,6 @@ namespace Technodelight\Jira\Connector;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
-use Technodelight\Jira\Connector\Tempo\WorklogHandler as TempoHandler;
 use Technodelight\Jira\Connector\Tempo2\WorklogHandler as Tempo2Handler;
 use Technodelight\Jira\Connector\Jira\WorklogHandler as JiraHandler;
 
@@ -19,10 +18,6 @@ class WorklogHandlerFactory
      */
     private $tempoConfiguration;
     /**
-     * @var TempoHandler
-     */
-    private $tempoHandler;
-    /**
      * @var Tempo2Handler
      */
     private $tempo2Handler;
@@ -34,13 +29,11 @@ class WorklogHandlerFactory
     public function __construct(
         CurrentInstanceProvider $instanceProvider,
         TempoConfiguration $tempoConfiguration,
-        TempoHandler $tempoHandler,
         Tempo2Handler $tempo2Handler,
         JiraHandler $jiraHandler
     )
     {
         $this->instanceProvider = $instanceProvider;
-        $this->tempoHandler = $tempoHandler;
         $this->tempo2Handler = $tempo2Handler;
         $this->jiraHandler = $jiraHandler;
         $this->tempoConfiguration = $tempoConfiguration;
@@ -52,10 +45,7 @@ class WorklogHandlerFactory
     public function build()
     {
         if ($this->isTempoUsed()) {
-            if ($this->tempoConfiguration->version() == '2') {
-                return $this->tempo2Handler;
-            }
-            return $this->tempoHandler;
+            return $this->tempo2Handler;
         }
 
         return $this->jiraHandler;

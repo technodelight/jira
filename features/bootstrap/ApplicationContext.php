@@ -5,7 +5,7 @@ use Behat\Gherkin\Node\TableNode;
 use Fixture\ApplicationConfiguration;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Technodelight\Jira\Console\Application\Bootstrap;
+use Technodelight\Jira\Console\Application\DeprecatedBootstrap;
 
 class ApplicationContext implements Context
 {

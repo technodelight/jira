@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Connector\Tempo2;
 
 use DateTime;
 use ICanBoogie\Storage\Storage;
-use Technodelight\Jira\Api\Tempo2\Api;
+use Technodelight\Tempo2\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;

@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Console\FieldEditor\Editor;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\EditApp\EditApp;
+use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\FieldEditor\Editor;

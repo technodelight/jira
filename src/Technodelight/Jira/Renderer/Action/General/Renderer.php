@@ -7,18 +7,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Renderer\Action\Error;
 use Technodelight\Jira\Renderer\Action\Renderer as ActionRenderer;
 use Technodelight\Jira\Renderer\Action\Result;
+use Technodelight\Jira\Renderer\Action\StyleGuide;
 use Technodelight\Jira\Renderer\Action\Success;
 
 class Renderer implements ActionRenderer
 {
     /**
-     * @var FormatterHelper
+     * @var StyleGuide
      */
-    private $formatterHelper;
+    private $styleGuide;
 
-    public function __construct(FormatterHelper $formatterHelper)
+    public function __construct(StyleGuide $styleGuide)
     {
-        $this->formatterHelper = $formatterHelper;
+        $this->styleGuide = $styleGuide;
     }
 
     public function canProcess(Result $result): bool
@@ -44,7 +45,7 @@ class Renderer implements ActionRenderer
         }
 
         $output->writeln(
-            sprintf('<fg=green>%s</>', vsprintf($success->phrase(), $success->data()))
+            $this->styleGuide->success(vsprintf($success->phrase(), $success->data()))
         );
 
         return 0;
@@ -57,13 +58,10 @@ class Renderer implements ActionRenderer
         }
 
         $output->writeln(
-            $this->formatterHelper->formatBlock(
-                vsprintf($error->phrase(), array_filter($error->data())),
-                'error',
-                true
+            $this->styleGuide->error(
+                vsprintf($error->phrase(), array_filter($error->data()))
             )
         );
-        $output->writeln('');
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here

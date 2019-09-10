@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Renderer\Action\Show\User;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Helper\TemplateHelper;
-use Technodelight\Jira\Api\ITermImage\Image;
+use Technodelight\ITermImage\Image;
 use Technodelight\Jira\Renderer\Action\Renderer as ActionRenderer;
 use Technodelight\Jira\Renderer\Action\Result;
 use Technodelight\Jira\Renderer\Action\StyleGuide;
@@ -88,10 +88,8 @@ class Renderer implements ActionRenderer
         }
 
         $output->writeln(
-            $this->formatterHelper->formatBlock(
-                vsprintf($error->phrase(), array_filter(array_merge([$error->issueKey()], $error->data()))),
-                'error',
-                true
+            $this->styleGuide->error(
+                vsprintf($error->phrase(), array_filter($error->data()))
             )
         );
 

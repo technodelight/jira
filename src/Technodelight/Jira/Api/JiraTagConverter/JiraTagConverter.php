@@ -181,7 +181,7 @@ class JiraTagConverter
     private function parseAndReplaceWith(&$body, $replaceChar, $wrapper)
     {
         $isTerminatingChar = function($char) {
-            return preg_match('~[>}\s]~', $char) || empty($char);
+            return preg_match('~[>}\s,.!?]~', $char) || empty($char);
         };
         $replacePairs = [];
         $startedAt = false;

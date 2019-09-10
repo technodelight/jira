@@ -269,13 +269,15 @@
         <!-- action output renderering -->
 
         <!-- styleguide -->
-        <service id="technodelight.jira.renderer.action.styleguide" public="false" class="Technodelight\Jira\Renderer\Action\StyleGuide" />
+        <service id="technodelight.jira.renderer.action.styleguide" public="false" class="Technodelight\Jira\Renderer\Action\StyleGuide">
+            <argument type="service" id="console.formatter_helper" />
+        </service>
 
         <!-- general renderer -->
         <service id="technodelight.jira.renderer.action.general"
                  public="false"
                  class="Technodelight\Jira\Renderer\Action\General\Renderer">
-            <argument type="service" id="console.formatter_helper" />
+            <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
         </service>
         <!-- issue assign renderer-->
         <service id="technodelight.jira.renderer.action.issue.assign"

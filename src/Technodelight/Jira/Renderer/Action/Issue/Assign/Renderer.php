@@ -68,22 +68,24 @@ class Renderer implements ActionRenderer
      */
     protected function renderSuccess(OutputInterface $output, Success $result): int
     {
+        $output->writeln(
+            $this->styleGuide->success(
+                vsprintf(
+                    $result->phrase(),
+                    array_filter(
+                        [
+                            $this->styleGuide->formatIssueKey($result->issueKey()),
+                            $result->data() ? $this->styleGuide->formatUsername($result->data()[0]) : null,
+                        ]
+                    )
+                )
+            )
+        );
+
         $issue = $this->api->retrieveIssue($result->issueKey());
         $this->headerRenderer->render($output, $issue);
         $this->userDetailsRenderer->render($output, $issue);
 
-        $output->writeln([
-            '',
-            vsprintf(
-                $result->phrase(),
-                array_filter(
-                    [
-                        $this->styleGuide->formatIssueKey($result->issueKey()),
-                        $result->data() ? $this->styleGuide->formatUsername($result->data()[0]) : null,
-                    ]
-                )
-            )
-        ]);
 
         return 0;
     }
@@ -94,15 +96,11 @@ class Renderer implements ActionRenderer
             return $error->exception()->getCode() ?: 1;
         }
 
-        var_dump($error->exception()->getMessage(), $error->phrase(), $error->issueKey(), $error->data());
         $output->writeln(
-            $this->formatterHelper->formatBlock(
-                vsprintf($error->phrase(), $error->data()),
-                'error',
-                true
+            $this->styleGuide->error(
+                vsprintf($error->phrase(), $error->data())
             )
         );
-        $output->writeln('');
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here
