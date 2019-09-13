@@ -36,6 +36,7 @@ class Application extends BaseApp
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
         $this->handleRuntimeVariables($input);
+        $this->setCatchExceptions(true);
 
         return parent::run($input, $output);
     }
@@ -54,14 +55,17 @@ class Application extends BaseApp
         } elseif ($input->isInteractive() === false) {
             $batchAssistant = $this->container->get('technodelight.jira.console.batch_assistant');
             if ($issueKeys = $batchAssistant->issueKeysFromPipe()) {
+                $exitCode = 0;
                 $this->setAutoExit(false);
                 foreach ($issueKeys as $issueKey) {
                     $inputs = $batchAssistant->prepareInput($issueKey);
                     foreach ($inputs as $input) {
-                        parent::doRun($input, $output);
+                        $lastExitCode = parent::doRun($input, $output); // make sure to exit with non-zero code
+                        $exitCode = max($exitCode, $lastExitCode);      // if any sub command failed
                     }
                 }
                 $this->setAutoExit(true);
+                return $exitCode;
             }
         }
 

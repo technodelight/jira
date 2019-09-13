@@ -249,7 +249,8 @@
             <argument type="service" id="technodelight.jira.issue_renderer" />
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.console.open" />
-            <argument type="service" id="technodelight.jira.config" />
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
+            <argument type="service" id="technodelight.jira.console.configuration.configuration" />
             <tag name="command" />
         </service>
         <!-- filter commands -->

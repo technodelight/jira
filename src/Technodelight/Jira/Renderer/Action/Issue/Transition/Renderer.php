@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Renderer\Action\Issue\Transition;
 
+use Exception;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
@@ -120,7 +121,7 @@ class Renderer implements ActionRenderer
             $issue = $this->api->retrieveIssue($error->issueKey());
             $this->headerRenderer->render($output, $issue);
             $this->transitions->render($output, $issue);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
         }
 
