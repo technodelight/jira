@@ -31,7 +31,8 @@ class BatchAssistant
 
     public function issueKeysFromPipe(): array
     {
-        if ($issueKeys = file('php://stdin', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)) {
+        $issueKeys = $this->fetchIssueKeysFromStdIn();
+        if (!empty($issueKeys)) {
             $this->prefetchIssuesByKey($issueKeys);
 
             return $issueKeys;
@@ -120,5 +121,26 @@ class BatchAssistant
         }
 
         return $appendDefaultListOpt ? ['--' . $this->configuration->preferredListRenderer()] : [];
+    }
+
+    /**
+     * @return array
+     */
+    private function fetchIssueKeysFromStdIn()
+    {
+        if (function_exists('posix_isatty')) {
+            if (posix_isatty(STDIN) == true) {
+                return [];
+            }
+        }
+        if (function_exists('stream_isatty')) {
+            if (stream_isatty(STDIN) == true) {
+                return [];
+            }
+        }
+
+        $issueKeys = file('php://stdin', FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+
+        return array_unique(array_filter(array_map('trim', $issueKeys)));
     }
 }

@@ -5,31 +5,17 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 define('APPLICATION_ROOT_DIR', __DIR__ . DIRECTORY_SEPARATOR . '..');
-define('SKIP_CACHE_CONTAINER', 1);
+//define('SKIP_CACHE_CONTAINER', 1); // for debugging purposes
 
 require APPLICATION_ROOT_DIR . '/vendor/autoload.php';
 
-use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Console\Bootstrap\Bootstrap;
 
-try {
-    $boot = new Bootstrap;
-    $input = new ArgvInput;
-    $output = new ConsoleOutput;
-    $app = $boot->boot('@git-version@');
-    $exitCode = $app->run($input, $output);
-} catch (Exception $exception) {
-    // @TODO: should be handled differently?
-    $output = new ConsoleOutput;
-    $output->setVerbosity(ConsoleOutput::VERBOSITY_VERBOSE);
-    $errorApp = isset($app) ? $app : new Application;
-    $errorApp->renderException($exception, $output);
-    if (is_numeric($exception->getCode())) {
-        exit($exception->getCode());
-    }
-    $exitCode = 128;
-} finally {
-    exit(isset($exitCode) ? $exitCode : 255);
-}
+$boot = new Bootstrap;
+$input = new ArgvInput;
+$output = new ConsoleOutput;
+$app = $boot->boot('@git-version@');
+$exitCode = $app->run($input, $output);
+exit($exitCode);

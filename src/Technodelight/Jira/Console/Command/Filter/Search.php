@@ -2,6 +2,8 @@
 
 namespace Technodelight\Jira\Console\Command\Filter;
 
+use Symfony\Component\Config\Definition\ArrayNode;
+use Symfony\Component\Config\Definition\NodeInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,8 +13,8 @@ use Symfony\Component\Yaml\Yaml;
 
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\CliOpen\CliOpen as OpenApp;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
-use Technodelight\Jira\Configuration\Symfony\Configuration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
+use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Template\IssueRenderer;
@@ -36,16 +38,28 @@ class Search extends Command implements IssueRendererAware
      */
     private $openApp;
     /**
-     * @var ApplicationConfiguration
+     * @var Configuration
      */
     private $configuration;
+    /**
+     * @var CurrentInstanceProvider
+     */
+    private $currentInstanceProvider;
 
-    public function __construct(Api $api, IssueRenderer $renderer, TemplateHelper $templateHelper, OpenApp $openApp, ApplicationConfiguration $configuration)
+    public function __construct(
+        Api $api,
+        IssueRenderer $renderer,
+        TemplateHelper $templateHelper,
+        OpenApp $openApp,
+        CurrentInstanceProvider $currentInstanceProvider,
+        Configuration $configuration
+    )
     {
         $this->api = $api;
         $this->renderer = $renderer;
         $this->templateHelper = $templateHelper;
         $this->openApp = $openApp;
+        $this->currentInstanceProvider = $currentInstanceProvider;
         $this->configuration = $configuration;
 
         parent::__construct();
@@ -91,14 +105,11 @@ class Search extends Command implements IssueRendererAware
             $this->openApp->open(
                 sprintf(
                     'https://%s/issues/?jql=%s',
-                    $this->configuration->instances()->findByName('default')->domain(),
+                    $this->currentInstanceProvider->currentInstance()->domain(),
                     urlencode($input->getArgument('jql'))
                 )
             );
             return;
-        }
-        if (!$input->isInteractive()) {
-            $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
 
         // render query results in console
@@ -123,12 +134,11 @@ class Search extends Command implements IssueRendererAware
         $output->writeln('You can add the following filter to your configuration yaml file:');
         $output->writeln('');
 
-        $configuration = new Configuration;
-        /** @var \Symfony\Component\Config\Definition\ArrayNode $config */
-        $config = $configuration->getConfigTreeBuilder()->buildTree();
+        /** @var ArrayNode $config */
+        $config = $this->configuration->getConfigTreeBuilder()->buildTree();
 
         foreach ($config->getChildren() as $child) {
-            /** @var $child \Symfony\Component\Config\Definition\NodeInterface */
+            /** @var $child NodeInterface */
             if ($child->getName() == 'filters') {
                 $value = $child->normalize([['command' => $filterName, 'jql' => $jql]]);
                 $output->writeln([

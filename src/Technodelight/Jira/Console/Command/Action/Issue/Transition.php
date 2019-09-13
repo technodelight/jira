@@ -187,7 +187,7 @@ class Transition extends Command
             $returnCode = $this->renderer->render($output, Success::fromIssueKeyAndAssignee($issueKey, $transition, $assignee));
             $this->checkoutToBranch($input, $output, $issue);
         } catch (Exception $exception) {
-            $returnCode = $this->renderer->render($output, Error::fromExceptionIssueKeyTransitions($exception, $issueKey, $this->transitions));
+            $returnCode = $this->renderer->render($output, Error::fromExceptionIssueKeyTransitions($exception, isset($issueKey) ? $issueKey : 'nada', $this->transitions));
             if (isset($issue)) {
                 $this->checkoutToBranch($input, $output, $issue);
             }

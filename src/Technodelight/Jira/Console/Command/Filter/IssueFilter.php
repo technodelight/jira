@@ -42,10 +42,11 @@ class IssueFilter extends Command implements IssueRendererAware
         if (empty($jql)) {
             throw new \InvalidArgumentException('JQL is empty');
         }
-        $this->name = $name;
-        $this->jql = $jql;
 
-        parent::__construct($this->prepareCommandName($name));
+        $this->jql = $jql;
+        $this->name = $this->prepareCommandName($name);
+
+        parent::__construct($this->prepareCommandName($this->name));
     }
 
     public function setJiraApi(Api $api)
@@ -84,9 +85,11 @@ class IssueFilter extends Command implements IssueRendererAware
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
             $output->writeln(sprintf('<fg=black>%s</>', $this->jql));
-            return 0;
+            return 1;
         }
+
         $this->issueRenderer->renderIssues($output, $issues, $input->getOptions());
+        return 0;
     }
 
     private function descriptionFromJql()
