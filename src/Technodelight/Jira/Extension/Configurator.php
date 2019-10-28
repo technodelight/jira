@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Extension;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class Configurator
@@ -12,15 +12,15 @@ class Configurator
      */
     private $extensions;
 
-    public function __construct(array $extensions = [])
+    public function __construct(Loader $loader, array $classMap = [])
     {
-        $this->extensions = $extensions;
+        $this->extensions = $loader->load($classMap);
     }
 
-    public function configure(TreeBuilder $builder)
+    public function configure(ArrayNodeDefinition $rootNode)
     {
         foreach ($this->extensions as $extension) {
-            $extension->configure($builder);
+            $extension->configure($rootNode);
         }
     }
 

@@ -59,15 +59,6 @@
         </service>
         <!-- git -->
 
-        <!-- hub -->
-        <service public="false" id="technodelight.github.api_builder" class="Technodelight\Jira\Connector\GitHub\ApiBuilder">
-            <argument type="service" id="technodelight.jira.config.integrations.github" />
-        </service>
-        <service id="technodelight.github.api" class="GitHub\Client">
-            <factory method="build" service="technodelight.github.api_builder" />
-        </service>
-        <!-- hub -->
-
         <!-- worklog handler -->
         <service id="technodelight.jira.connector.worklog_handler_factory" class="Technodelight\Jira\Connector\WorklogHandlerFactory">
             <argument type="service" id="technodelight.jira.config.instances.current_instance_provider"/>

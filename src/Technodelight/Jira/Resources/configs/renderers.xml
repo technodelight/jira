@@ -89,11 +89,11 @@
             <argument type="service" id="technodelight.jira.git_branch_collector"/>
             <tag name="issue_renderer" key="branches" />
         </service>
-        <service id="technodelight.jira.renderer.issue.github" class="Technodelight\Jira\Renderer\Issue\GitHub">
-            <argument type="service" id="technodelight.jira.template_helper"/>
-            <argument type="service" id="technodelight.jira.hub_helper"/>
-            <tag name="issue_renderer" key="github" />
-        </service>
+<!--        <service id="technodelight.jira.renderer.issue.github" class="Technodelight\Jira\Renderer\Issue\GitHub">-->
+<!--            <argument type="service" id="technodelight.jira.template_helper"/>-->
+<!--            <argument type="service" id="technodelight.jira.hub_helper"/>-->
+<!--            <tag name="issue_renderer" key="github" />-->
+<!--        </service>-->
         <service id="technodelight.jira.renderer.issue.worklog" class="Technodelight\Jira\Renderer\Issue\Worklog">
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="seconds_to_none" />
@@ -306,7 +306,6 @@
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.renderer.issue.header"/>
             <argument type="service" id="technodelight.jira.renderer.issue.transitions"/>
-            <argument type="service" id="technodelight.jira.renderer.issue.github"/>
             <argument type="service" id="console.formatter_helper"/>
             <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
         </service>

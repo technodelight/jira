@@ -17,10 +17,8 @@
                  class="Technodelight\Jira\Console\Configuration\Loader" />
 
         <service public="false"
-                 id="technodelight.jira.console.configuration.tree_builder"
-                 class="Symfony\Component\Config\Definition\Builder\TreeBuilder">
-            <factory class="Technodelight\Jira\Configuration\Configuration\TreeBuilderFactory" method="build" />
-        </service>
+                 id="technodelight.jira.console.configuration.tree_builder_factory"
+                 class="Technodelight\Jira\Configuration\Configuration\TreeBuilderFactory" />
 
         <service id="technodelight.jira.console.configuration.provider"
                  class="Technodelight\Jira\Console\Configuration\Provider">
@@ -30,7 +28,7 @@
 
         <service id="technodelight.jira.console.configuration.configuration"
                  class="Technodelight\Jira\Configuration\Configuration">
-            <argument type="service" id="technodelight.jira.console.configuration.tree_builder" />
+            <argument type="service" id="technodelight.jira.console.configuration.tree_builder_factory" />
         </service>
         <!-- console configuration -->
 
@@ -49,9 +47,6 @@
             <argument type="service" id="technodelight.jira.app" />
         </service>
         <service id="technodelight.jira.config.integrations" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
-        </service>
-        <service id="technodelight.jira.config.integrations.github" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration" lazy="true">
             <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
         <service id="technodelight.jira.config.integrations.git" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration" lazy="true">

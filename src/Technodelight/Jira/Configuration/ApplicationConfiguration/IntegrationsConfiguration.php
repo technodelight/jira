@@ -12,10 +12,6 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\Registrabl
 class IntegrationsConfiguration implements RegistrableConfiguration
 {
     /**
-     * @var GitHubConfiguration
-     */
-    private $github;
-    /**
      * @var GitConfiguration
      */
     private $git;
@@ -40,18 +36,12 @@ class IntegrationsConfiguration implements RegistrableConfiguration
     {
         $instance = new self;
         $instance->config = $config;
-        $instance->github = GitHubConfiguration::fromArray($config['github']);
         $instance->git = GitConfiguration::fromArray($config['git']);
         $instance->tempo = TempoConfiguration::fromArray($config['tempo']);
         $instance->iterm = ITermConfiguration::fromArray($config['iterm']);
         $instance->editor = EditorConfiguration::fromArray($config['editor']);
 
         return $instance;
-    }
-
-    public function github()
-    {
-        return $this->github;
     }
 
     public function git()

@@ -1,13 +1,13 @@
 <?php
 
-namespace Technodelight\Jira\Console\Input\PullRequest;
+namespace Technodelight\JiraGitHubExtension\Console\Input\PullRequest;
 
 use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput\InputAssembler;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput\OutputParser;
 use Technodelight\Jira\Console\Input\PullRequest\EditorInput\PullRequest;
-use Technodelight\Jira\Helper\HubHelper;
+use Technodelight\JiraGitHubExtension\Helper\HubHelper;
 
 class EditorInput
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Technodelight\Jira\Helper;
+namespace Technodelight\JiraGitHubExtension\Helper;
 
 use GitHub\Client as Hub;
 use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\GitShell\Remote;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
+use Technodelight\JiraGitHubExtension\Configuration\GitHubConfiguration;
 
 class HubHelper
 {
@@ -81,6 +81,7 @@ class HubHelper
      * @param string|null $milestone
      * @param array|null $labels
      * @throws \Github\Exception\MissingArgumentException
+     * @return array
      */
     public function createPr($title, $body, $base, $branch, $milestone = null, array $labels = null)
     {
