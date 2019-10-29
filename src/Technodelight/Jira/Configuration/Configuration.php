@@ -43,6 +43,8 @@ class Configuration implements ConfigurationInterface
 
     private function build()
     {
-        list ($this->treeBuilder, $this->rootNode) = $this->builder->build();
+        if (!isset($this->treeBuilder) || !isset($this->rootNode)) {
+            list ($this->treeBuilder, $this->rootNode) = $this->builder->build();
+        }
     }
 }

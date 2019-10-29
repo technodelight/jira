@@ -20,7 +20,7 @@ class Configurator
     public function configure(ArrayNodeDefinition $rootNode)
     {
         foreach ($this->extensions as $extension) {
-            $extension->configure($rootNode);
+            $rootNode->append($extension->configure());
         }
     }
 

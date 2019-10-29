@@ -9,5 +9,5 @@ interface ExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container);
 
-    public function configure(ArrayNodeDefinition $rootNode);
+    public function configure(): ArrayNodeDefinition;
 }

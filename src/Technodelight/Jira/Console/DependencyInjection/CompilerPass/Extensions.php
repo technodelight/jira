@@ -6,6 +6,7 @@ use Exception;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Technodelight\Jira\Console\Configuration\Provider;
 use Technodelight\Jira\Extension\ConfigurationPreProcessor;
 use Technodelight\Jira\Extension\Locator as ExtensionLocator;
 
@@ -60,13 +61,16 @@ class Extensions implements CompilerPassInterface
      */
     private function loadExtensions(ContainerBuilder $container)
     {
-        $configs = (new Processor)->process(
-            $container->get('technodelight.jira.console.configuration.configuration')->getConfigTreeBuilder()->buildTree(),
-            $container->get('technodelight.jira.console.configuration.provider')->get()
+        /** @var Provider $provider */
+        $provider = $container->get('technodelight.jira.console.configuration.provider');
+        $configuration = $container->get('technodelight.jira.console.configuration.configuration');
+
+        $config = (new Processor)->process(
+            $configuration->getConfigTreeBuilder()->buildTree(), $provider->get()
         );
 
         $container->get('technodelight.jira.extension.configurator')->load(
-            $configs,
+            $config,
             $container
         );
     }

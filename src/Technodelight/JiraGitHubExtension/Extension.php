@@ -3,6 +3,7 @@
 namespace Technodelight\JiraGitHubExtension;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -28,34 +29,30 @@ class Extension implements ExtensionInterface
         $def->setArguments($args);
     }
 
-    public function configure(ArrayNodeDefinition $rootNode)
+    public function configure(): ArrayNodeDefinition
     {
-        //@TODO: this needs to be checked again to see why we don't receive the configs when we should have those
-        $rootNode
+        $builder = new TreeBuilder;
+        $node = $builder->root('github');
+
+        $node
+            ->info('GitHub credentials - used to retrieve pull request data, including webhook '
+                . 'statuses. Visit this page to generate a token: '
+                . 'https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool')
+            ->addDefaultsIfNotSet()
             ->children()
-                ->arrayNode('integrations')
-                    ->children()
-                        ->arrayNode('github')
-                            ->info('GitHub credentials - used to retrieve pull request data, including webhook '
-                                . 'statuses. Visit this page to generate a token: '
-                                . 'https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool')
-                            ->addDefaultsIfNotSet()
-                            ->children()
-                                ->scalarNode('apiToken')
-                                    ->attribute('hidden', true)
-                                    ->defaultNull()
-                                ->end()
-                                ->scalarNode('owner')
-                                    ->defaultNull()
-                                ->end()
-                                ->scalarNode('repo')
-                                    ->defaultNull()
-                                ->end()
-                            ->end()
-                        ->end()
-                    ->end()
+                ->scalarNode('apiToken')
+                    ->attribute('hidden', true)
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('owner')
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('repo')
+                    ->defaultNull()
                 ->end()
             ->end()
         ;
+
+        return $node;
     }
 }
