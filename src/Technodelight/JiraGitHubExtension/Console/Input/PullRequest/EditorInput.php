@@ -4,9 +4,9 @@ namespace Technodelight\JiraGitHubExtension\Console\Input\PullRequest;
 
 use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\CliEditorInput\CliEditorInput as EditApp;
-use Technodelight\Jira\Console\Input\PullRequest\EditorInput\InputAssembler;
-use Technodelight\Jira\Console\Input\PullRequest\EditorInput\OutputParser;
-use Technodelight\Jira\Console\Input\PullRequest\EditorInput\PullRequest;
+use Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput\InputAssembler;
+use Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput\OutputParser;
+use Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput\PullRequest;
 use Technodelight\JiraGitHubExtension\Helper\HubHelper;
 
 class EditorInput
