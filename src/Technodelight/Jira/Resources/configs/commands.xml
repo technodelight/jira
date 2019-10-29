@@ -12,7 +12,7 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.selfupdate" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
-            <argument type="service" id="technodelight.github.api" />
+            <argument type="service" id="technodelight.self_update.github.api" />
             <argument type="service" id="technodelight.jira.console.di.cache_maintainer" />
             <argument type="service" id="console.dialog_helper" />
             <tag name="command" />
