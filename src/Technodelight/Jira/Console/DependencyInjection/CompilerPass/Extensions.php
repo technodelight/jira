@@ -2,16 +2,19 @@
 
 namespace Technodelight\Jira\Console\DependencyInjection\CompilerPass;
 
+use Exception;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Technodelight\Jira\Extension\ConfigProcessor;
-use Technodelight\Jira\Extension\Loader as ExtensionLoader;
+use Technodelight\Jira\Console\Configuration\Provider;
+use Technodelight\Jira\Extension\ConfigurationPreProcessor;
+use Technodelight\Jira\Extension\Locator as ExtensionLocator;
 
 class Extensions implements CompilerPassInterface
 {
     /**
      * @param ContainerBuilder $container
-     * @throws \Exception
+     * @throws Exception
      */
     public function process(ContainerBuilder $container)
     {
@@ -22,39 +25,52 @@ class Extensions implements CompilerPassInterface
 
     /**
      * @param ContainerBuilder $container
-     * @throws \Exception
+     * @throws Exception
      */
-    private function updateDef(ContainerBuilder $container): void
+    private function updateDef(ContainerBuilder $container)
     {
         $provider = $container->get('technodelight.jira.console.configuration.provider');
-        $extensionLoader = new ExtensionLoader;
-        $extensionConfigProcessor = new ConfigProcessor;
+        $extensionLocator = new ExtensionLocator;
 
-        $extensions = $extensionLoader->loadExtensions($extensionConfigProcessor->process($provider->get()));
+        $preProcessedConfig = (new ConfigurationPreProcessor)->preProcess($provider->get());
+        $extensions = $extensionLocator->locate(
+            isset($preProcessedConfig['extensions']) ? $preProcessedConfig['extensions'] : []
+        );
 
         $def = $container->getDefinition('technodelight.jira.extension.configurator');
-        $def->setArguments([$extensions]);
+        $def->setArguments([
+            $def->getArgument(0),
+            $extensions
+        ]);
     }
 
     /**
      * @param ContainerBuilder $container
-     * @throws \Exception
+     * @throws Exception
      */
     private function processConfig(ContainerBuilder $container)
     {
         $container->get('technodelight.jira.extension.configurator')->configure(
-            $container->get('technodelight.jira.console.configuration.configuration')->getConfigTreeBuilder()
+            $container->get('technodelight.jira.console.configuration.configuration')->getRootNode()
         );
     }
 
     /**
      * @param ContainerBuilder $container
-     * @throws \Exception
+     * @throws Exception
      */
     private function loadExtensions(ContainerBuilder $container)
     {
+        /** @var Provider $provider */
+        $provider = $container->get('technodelight.jira.console.configuration.provider');
+        $configuration = $container->get('technodelight.jira.console.configuration.configuration');
+
+        $config = (new Processor)->process(
+            $configuration->getConfigTreeBuilder()->buildTree(), $provider->get()
+        );
+
         $container->get('technodelight.jira.extension.configurator')->load(
-            $container->get('technodelight.jira.console.configuration.provider')->get(),
+            $config,
             $container
         );
     }

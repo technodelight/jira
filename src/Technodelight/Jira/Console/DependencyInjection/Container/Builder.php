@@ -29,12 +29,12 @@ class Builder
         );
         $loader->load('services.xml');
         // add compiler passes
+        $container->addCompilerPass(new Extensions);
         $container->addCompilerPass(new ApplicationConfiguration);
         $container->addCompilerPass(new RendererProvider);
         $container->addCompilerPass(new CommandInitialisation);
         $container->addCompilerPass(new IssueRendererOptions);
         $container->addCompilerPass(new CommandRegistration);
-        $container->addCompilerPass(new Extensions);
 
         return $container;
     }

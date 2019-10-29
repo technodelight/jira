@@ -7,7 +7,6 @@ use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Editor;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Git;
-use Technodelight\Jira\Configuration\Configuration\Integrations\Github;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Iterm;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Tempo;
 
@@ -23,8 +22,8 @@ class Integrations implements Configuration
         $root
             ->info('Third party integration configs')
             ->addDefaultsIfNotSet()
+            ->ignoreExtraKeys(false)
             ->children()
-                ->append((new Github)->configurations())
                 ->append((new Git)->configurations())
                 ->append((new Tempo)->configurations())
                 ->append((new Iterm)->configurations())

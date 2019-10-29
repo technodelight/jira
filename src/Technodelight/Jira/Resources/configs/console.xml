@@ -11,9 +11,14 @@
     <services>
 
         <!-- extension loader -->
+        <service id="technodelight.jira.extension.loader"
+                 public="false"
+                 class="Technodelight\Jira\Extension\Loader" />
+
         <service id="technodelight.jira.extension.configurator"
                  class="Technodelight\Jira\Extension\Configurator">
             <!-- @see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\Extensions -->
+            <argument type="service" id="technodelight.jira.extension.loader" />
             <argument type="collection" />
         </service>
         <!-- extension loader -->
@@ -146,14 +151,6 @@
         <!-- issue attachment target path resolver -->
         <service id="technodelight.jira.console.input.issue.attachment.target_path"
                  class="Technodelight\Jira\Console\Input\Issue\Attachment\TargetPath" />
-
-        <!-- pull request input -->
-        <service id="technodelight.jira.console.input.pull_request.editor_input"
-                 class="Technodelight\Jira\Console\Input\PullRequest\EditorInput">
-            <argument type="service" id="technodelight.jira.console.edit" />
-            <argument type="service" id="technodelight.gitshell.api" />
-            <argument type="service" id="technodelight.jira.hub_helper" />
-        </service>
 
         <!-- stats collector -->
         <service public="false" id="technodelight.jira.console.issue_stats.storage" class="ICanBoogie\Storage\Storage">

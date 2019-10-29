@@ -6,10 +6,12 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class TreeBuilderFactory
 {
-    public static function build()
+    public function build(): array
     {
         $treeBuilder = new TreeBuilder;
-        $treeBuilder->root('')
+        $rootNode = $treeBuilder->root('');
+
+        $rootNode
             ->children()
                 ->append((new Credentials)->configurations())
                 ->append((new Instances)->configurations())
@@ -23,6 +25,6 @@ class TreeBuilderFactory
             ->end()
         ->end();
 
-        return $treeBuilder;
+        return [$treeBuilder, $rootNode];
     }
 }

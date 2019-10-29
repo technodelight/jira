@@ -9,9 +9,9 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Renderer\Action\Renderer as ActionRenderer;
 use Technodelight\Jira\Renderer\Action\Result;
 use Technodelight\Jira\Renderer\Action\StyleGuide;
-use Technodelight\Jira\Renderer\Issue\GitHub;
 use Technodelight\Jira\Renderer\Issue\Header;
 use Technodelight\Jira\Renderer\Issue\Transitions;
+use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Renderer implements ActionRenderer
 {
@@ -28,7 +28,7 @@ class Renderer implements ActionRenderer
      */
     private $transitions;
     /**
-     * @var GitHub
+     * @var IssueRenderer
      */
     private $gitHub;
     /**
@@ -41,20 +41,15 @@ class Renderer implements ActionRenderer
     private $styleGuide;
 
     public function __construct(
-        Api $api,
-        Header $headerRenderer,
-        Transitions $transitions,
-        GitHub $gitHub,
-        FormatterHelper $formatterHelper,
-        StyleGuide $styleGuide
+        Api $api, Header $headerRenderer, Transitions $transitions, FormatterHelper $formatterHelper, StyleGuide $styleGuide, IssueRenderer $gitHub = null
     )
     {
         $this->api = $api;
         $this->headerRenderer = $headerRenderer;
         $this->transitions = $transitions;
-        $this->gitHub = $gitHub;
         $this->formatterHelper = $formatterHelper;
         $this->styleGuide = $styleGuide;
+        $this->gitHub = $gitHub;
     }
 
     public function canProcess(Result $result): bool
@@ -100,7 +95,9 @@ class Renderer implements ActionRenderer
         $issue = $this->api->retrieveIssue($result->issueKey());
         $this->headerRenderer->render($output, $issue);
         $this->transitions->render($output, $issue);
-        $this->gitHub->render($output, $issue);
+        if ($this->gitHub) {
+            $this->gitHub->render($output, $issue);
+        }
 
         return 0;
     }

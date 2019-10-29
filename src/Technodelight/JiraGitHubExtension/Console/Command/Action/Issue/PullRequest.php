@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Console\Command\Action\Issue;
+namespace Technodelight\JiraGitHubExtension\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,9 +11,9 @@ use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
-use Technodelight\Jira\Console\Input\PullRequest\EditorInput;
-use Technodelight\Jira\Helper\HubHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput;
+use Technodelight\JiraGitHubExtension\Helper\HubHelper;
 
 class PullRequest extends Command
 {
