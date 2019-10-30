@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "006fe462efbaf16cf48800978ae4d441",
+    "content-hash": "2630b5bedcf1e4377cb66129da2ee561",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2857,6 +2857,39 @@
             ],
             "description": "Small library to execute git commands through shell",
             "time": "2019-04-16T13:04:02+00:00"
+        },
+        {
+            "name": "technodelight/php-jira-domain-models",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-jira-domain-models.git",
+                "reference": "1107179ddd575388126308c215f1054bdf8c498c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/1107179ddd575388126308c215f1054bdf8c498c",
+                "reference": "1107179ddd575388126308c215f1054bdf8c498c",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\Jira\\Domain\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Zenc",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Domain models for Jira entities",
+            "time": "2019-10-30T15:21:33+00:00"
         },
         {
             "name": "technodelight/php-jira-tempo-plugin-api",

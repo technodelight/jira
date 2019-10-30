@@ -3,22 +3,22 @@
 namespace Technodelight\Jira\Renderer\Dashboard;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Console\Dashboard\Collection;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class LogsList implements DashboardRenderer
 {
     /**
-     * @var \Technodelight\Jira\Helper\DateHelper
+     * @var DateHelper
      */
     private $dateHelper;
     /**
-     * @var \Technodelight\Jira\Helper\TemplateHelper
+     * @var TemplateHelper
      */
     private $templateHelper;
 

@@ -8,7 +8,6 @@ use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Domain\Filter\FilterId;
 use Technodelight\Jira\Domain\IssueLink\IssueLinkId;
 use Technodelight\Jira\Domain\Worklog\WorklogId;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Field;
 use Technodelight\Jira\Domain\Filter;

@@ -3,8 +3,8 @@
 namespace Technodelight\Jira\Renderer\Dashboard;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Console\Dashboard\Collection;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class Stats implements DashboardRenderer

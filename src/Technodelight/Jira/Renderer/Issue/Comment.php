@@ -3,9 +3,9 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;

@@ -1,7 +1,7 @@
 {
     "name": "technodelight/jira",
     "description": "JIRA PHP console application for day-to-day development",
-    "license": "MIT",
+    "license": "GPL-3.0-or-later",
     "require": {
         "php": ">= 7.0",
         "ext-json": "*",
@@ -30,7 +30,8 @@
         "technodelight/php-cli-cross-platform-open": "^1.0",
         "technodelight/php-cli-editor-input": "^1.0",
         "technodelight/php-cli-iterm-image-renderer": "^1.0",
-        "technodelight/php-jira-tempo-plugin-api": "^1.1"
+        "technodelight/php-jira-tempo-plugin-api": "^1.1",
+        "technodelight/php-jira-domain-models": "^1.1"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.4",

@@ -4,22 +4,23 @@ namespace Technodelight\JiraTempoExtension\Connector\Tempo2;
 
 use DateTime;
 use ICanBoogie\Storage\Storage;
+use Technodelight\Jira\Domain\DateFormat;
 use Technodelight\Tempo2\Api;
 use Technodelight\Jira\Connector\WorklogHandler as WorklogHandlerInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
-use Technodelight\Jira\Helper\DateHelper;
 
 class WorklogHandler implements WorklogHandlerInterface
 {
     const DATETIME_FORMAT = 'Y-m-d';
+    const JIRA_FORMAT = DateFormat::FORMAT;
     /**
      * @var Api
      */
     private $api;
     /**
-     * @var \ICanBoogie\Storage\Storage
+     * @var Storage
      */
     private $storage;
 
@@ -175,6 +176,6 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     private function convertDateFormat($date, $time)
     {
-        return (new DateTime($date . ' ' . $time))->format(DateHelper::FORMAT_FROM_JIRA);
+        return (new DateTime($date . ' ' . $time))->format(self::JIRA_FORMAT);
     }
 }
