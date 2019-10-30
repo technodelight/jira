@@ -10,7 +10,7 @@ class InstanceConfiguration implements RegistrableConfiguration
     private $domain;
     private $username;
     private $password;
-    private $isTempoEnabled;
+    private $worklogHandler;
     /**
      * @var array
      */
@@ -24,7 +24,7 @@ class InstanceConfiguration implements RegistrableConfiguration
         $instance->domain = $config['domain'];
         $instance->username = $config['username'];
         $instance->password = $config['password'];
-        $instance->isTempoEnabled = $config['tempo'];
+        $instance->worklogHandler = $config['worklogHandler'];
 
         return $instance;
     }
@@ -49,12 +49,9 @@ class InstanceConfiguration implements RegistrableConfiguration
         return $this->password;
     }
 
-    /**
-     * @return bool|null
-     */
-    public function isTempoEnabled()
+    public function worklogHandler()
     {
-        return $this->isTempoEnabled;
+        return $this->worklogHandler;
     }
 
     private function __construct()

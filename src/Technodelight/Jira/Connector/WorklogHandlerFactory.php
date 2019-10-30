@@ -3,9 +3,6 @@
 namespace Technodelight\Jira\Connector;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
-use Technodelight\Jira\Connector\Tempo2\WorklogHandler as Tempo2Handler;
-use Technodelight\Jira\Connector\Jira\WorklogHandler as JiraHandler;
 
 class WorklogHandlerFactory
 {
@@ -14,29 +11,17 @@ class WorklogHandlerFactory
      */
     private $instanceProvider;
     /**
-     * @var TempoConfiguration
+     * @var WorklogHandler[]
      */
-    private $tempoConfiguration;
-    /**
-     * @var Tempo2Handler
-     */
-    private $tempo2Handler;
-    /**
-     * @var JiraHandler
-     */
-    private $jiraHandler;
+    private $worklogHandlers;
 
     public function __construct(
         CurrentInstanceProvider $instanceProvider,
-        TempoConfiguration $tempoConfiguration,
-        Tempo2Handler $tempo2Handler,
-        JiraHandler $jiraHandler
+        array $worklogHandlers = []
     )
     {
         $this->instanceProvider = $instanceProvider;
-        $this->tempo2Handler = $tempo2Handler;
-        $this->jiraHandler = $jiraHandler;
-        $this->tempoConfiguration = $tempoConfiguration;
+        $this->worklogHandlers = $worklogHandlers;
     }
 
     /**
@@ -44,45 +29,6 @@ class WorklogHandlerFactory
      */
     public function build()
     {
-        if ($this->isTempoUsed()) {
-            return $this->tempo2Handler;
-        }
-
-        return $this->jiraHandler;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isTempoUsed()
-    {
-        return $this->isTempoSelectivelyEnabledForInstance()
-            || $this->isTempoEnabledForEveryInstance()
-            || $this->isTempoEnabledForSpecificInstances();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isTempoSelectivelyEnabledForInstance()
-    {
-        return $this->instanceProvider->currentInstance()->isTempoEnabled() === true;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isTempoEnabledForEveryInstance()
-    {
-        return $this->tempoConfiguration->isEnabled() && empty($this->tempoConfiguration->instances());
-    }
-
-    /**
-     * @return bool
-     */
-    private function isTempoEnabledForSpecificInstances()
-    {
-        return $this->tempoConfiguration->isEnabled()
-            || $this->tempoConfiguration->instanceIsEnabled($this->instanceProvider->currentInstance()->name());
+        return $this->worklogHandlers[$this->instanceProvider->currentInstance()->worklogHandler()];
     }
 }

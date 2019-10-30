@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- tempo2 -->
+        <service id="technodelight.jira.api.tempo2.client" class="Technodelight\Tempo2\Client">
+            <factory class="Technodelight\JiraTempoExtension\Connector\Tempo2\HttpClientFactory" method="build" />
+            <argument type="service" id="technodelight.jira.config.integrations.tempo" />
+            <argument type="service" id="technodelight.jira.config.instances.current_instance_provider" />
+        </service>
+        <service id="technodelight.jira.api.tempo2.api" class="Technodelight\Tempo2\Api">
+            <argument type="service" id="technodelight.jira.api.tempo2.client" />
+        </service>
+        <service id="technodelight.jira.connector.tempo2_worklog_handler" class="Technodelight\JiraTempoExtension\Connector\Tempo2\WorklogHandler">
+            <argument type="service" id="technodelight.jira.api.tempo2.api" />
+            <argument type="service" id="technodelight.jira.api_cache_storage" />
+            <tag name="worklog_handler" key="tempo" />
+        </service>
+        <!-- tempo2 -->
+    </services>
+
+</container>
