@@ -1,9 +1,9 @@
 <?php
 
-namespace spec\Technodelight\Jira\Console\Input\PullRequest\EditorInput;
+namespace spec\Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput;
 
 use PhpSpec\ObjectBehavior;
-use Technodelight\Jira\Console\Input\PullRequest\EditorInput\InputAssembler;
+use Technodelight\JiraGitHubExtension\Console\Input\PullRequest\EditorInput\InputAssembler;
 use Technodelight\GitShell\LogEntry;
 
 class OutputParserSpec extends ObjectBehavior
