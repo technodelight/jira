@@ -19,7 +19,7 @@ class Extension implements ExtensionInterface
 
         $def = $container->getDefinition('technodelight.jira.config.integrations.github');
         $def->setArguments(
-            [isset($configs['integrations']['github']) ? $configs['integrations']['github'] : []]
+            [isset($configs['github']) ? $configs['github'] : []]
         );
 
         // add extra renderer to issue transition

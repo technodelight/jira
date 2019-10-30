@@ -4,9 +4,7 @@ namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitHubConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
 class IntegrationsConfiguration implements RegistrableConfiguration
@@ -15,10 +13,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
      * @var GitConfiguration
      */
     private $git;
-    /**
-     * @var TempoConfiguration
-     */
-    private $tempo;
     /**
      * @var ITermConfiguration
      */
@@ -37,7 +31,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         $instance = new self;
         $instance->config = $config;
         $instance->git = GitConfiguration::fromArray($config['git']);
-        $instance->tempo = TempoConfiguration::fromArray($config['tempo']);
         $instance->iterm = ITermConfiguration::fromArray($config['iterm']);
         $instance->editor = EditorConfiguration::fromArray($config['editor']);
 
@@ -47,11 +40,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
     public function git()
     {
         return $this->git;
-    }
-
-    public function tempo()
-    {
-        return $this->tempo;
     }
 
     public function iterm()

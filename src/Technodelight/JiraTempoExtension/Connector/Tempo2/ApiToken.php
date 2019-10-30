@@ -1,10 +1,14 @@
 <?php
 
-namespace Technodelight\Jira\Connector\Tempo;
+namespace Technodelight\JiraTempoExtension\Connector\Tempo2;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
-use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration;
+use Technodelight\JiraTempoExtension\Configuration\TempoConfiguration;
 
+/**
+ * This class exists because the token can be resolved in runtime only, while we have to build the client during the
+ * container build.
+ */
 class ApiToken
 {
     /**
@@ -24,10 +28,6 @@ class ApiToken
 
     public function __toString()
     {
-        if (empty($this->config->apiToken())) {
-            return $this->config->instanceApiToken($this->instanceProvider->currentInstance()->name());
-        }
-
-        return $this->config->apiToken();
+        return $this->config->instanceApiToken($this->instanceProvider->currentInstance()->name());
     }
 }

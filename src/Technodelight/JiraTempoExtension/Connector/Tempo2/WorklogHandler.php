@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Connector\Tempo2;
+namespace Technodelight\JiraTempoExtension\Connector\Tempo2;
 
 use DateTime;
 use ICanBoogie\Storage\Storage;

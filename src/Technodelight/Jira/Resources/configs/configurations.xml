@@ -55,9 +55,6 @@
         <service id="technodelight.jira.config.integrations.git.branch_name_generator" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration" lazy="true">
             <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>
-        <service id="technodelight.jira.config.integrations.tempo" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\TempoConfiguration" lazy="true">
-            <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
-        </service>
         <service id="technodelight.jira.config.integrations.iterm" class="Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration" lazy="true">
             <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
         </service>

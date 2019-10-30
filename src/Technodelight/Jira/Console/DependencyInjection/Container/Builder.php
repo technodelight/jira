@@ -12,6 +12,7 @@ use Technodelight\Jira\Console\DependencyInjection\CompilerPass\CommandRegistrat
 use Technodelight\Jira\Console\DependencyInjection\CompilerPass\Extensions;
 use Technodelight\Jira\Console\DependencyInjection\CompilerPass\IssueRendererOptions;
 use Technodelight\Jira\Console\DependencyInjection\CompilerPass\RendererProvider;
+use Technodelight\Jira\Console\DependencyInjection\CompilerPass\WorklogHandler;
 
 class Builder
 {
@@ -31,6 +32,7 @@ class Builder
         // add compiler passes
         $container->addCompilerPass(new Extensions);
         $container->addCompilerPass(new ApplicationConfiguration);
+        $container->addCompilerPass(new WorklogHandler);
         $container->addCompilerPass(new RendererProvider);
         $container->addCompilerPass(new CommandInitialisation);
         $container->addCompilerPass(new IssueRendererOptions);

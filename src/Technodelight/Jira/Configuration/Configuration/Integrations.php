@@ -8,7 +8,6 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Editor;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Git;
 use Technodelight\Jira\Configuration\Configuration\Integrations\Iterm;
-use Technodelight\Jira\Configuration\Configuration\Integrations\Tempo;
 
 class Integrations implements Configuration
 {
@@ -25,7 +24,6 @@ class Integrations implements Configuration
             ->ignoreExtraKeys(false)
             ->children()
                 ->append((new Git)->configurations())
-                ->append((new Tempo)->configurations())
                 ->append((new Iterm)->configurations())
                 ->append((new Editor)->configurations())
             ->end();
