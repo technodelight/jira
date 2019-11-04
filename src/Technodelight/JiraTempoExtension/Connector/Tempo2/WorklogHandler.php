@@ -14,7 +14,7 @@ use Technodelight\Jira\Domain\WorklogCollection;
 class WorklogHandler implements WorklogHandlerInterface
 {
     const DATETIME_FORMAT = 'Y-m-d';
-    const JIRA_FORMAT = DateFormat::FORMAT;
+    const JIRA_FORMAT = DateFormat::DEFAULT_FORMAT;
     /**
      * @var Api
      */
@@ -41,7 +41,7 @@ class WorklogHandler implements WorklogHandlerInterface
         $worklogs = $this->api->find(
             $from->format(self::DATETIME_FORMAT),
             $to->format(self::DATETIME_FORMAT)
-        );
+        );//@TODO: throw exception on auth failure
 
         $collection = WorklogCollection::createEmpty();
         foreach ($worklogs as $worklog) {
