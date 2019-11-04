@@ -47,6 +47,18 @@
     "config": {
       "bin-dir": "bin"
     },
+    "scripts": {
+        "test": [
+            "@test-unit",
+            "@test-acceptance"
+        ],
+        "test-unit": [
+            "bin/phpspec --ansi run -fpretty"
+        ],
+        "test-acceptance": [
+            "bin/behat --colors"
+        ]
+    },
     "autoload-dev": {"psr-0": {"": "features/bootstrap"}},
     "bin": ["bin/jira"]
 }
