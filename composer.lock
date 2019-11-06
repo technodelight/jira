@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2bc24eeb352bed2a1fe53a49d50d47a3",
+    "content-hash": "e64768caa5e230c8c3486b431b7f73e0",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2863,6 +2863,46 @@
             ],
             "description": "Small library to execute git commands through shell",
             "time": "2019-04-16T13:04:02+00:00"
+        },
+        {
+            "name": "technodelight/php-jira-cli-interfaces",
+            "version": "1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-jira-cli-interfaces.git",
+                "reference": "2f28901413f584b117385b55de2e72a01b35b139"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-interfaces/zipball/2f28901413f584b117385b55de2e72a01b35b139",
+                "reference": "2f28901413f584b117385b55de2e72a01b35b139",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 7.0",
+                "symfony/config": "^3.2",
+                "symfony/console": "^2.8",
+                "symfony/dependency-injection": "^2.8",
+                "technodelight/php-jira-domain-models": "^1.0"
+            },
+            "type": "jira-cli-extension",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\Jira\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Zenc",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "description": "Interfaces to be used for extending of the JIRA CLI tool",
+            "time": "2019-11-05T16:28:31+00:00"
         },
         {
             "name": "technodelight/php-jira-domain-models",
