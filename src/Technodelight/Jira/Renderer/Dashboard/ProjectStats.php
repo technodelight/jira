@@ -3,19 +3,19 @@
 namespace Technodelight\Jira\Renderer\Dashboard;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\Jira\Console\Dashboard\Collection;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class ProjectStats implements DashboardRenderer
 {
     /**
-     * @var \Technodelight\Jira\Helper\DateHelper
+     * @var DateHelper
      */
     private $dateHelper;
     /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration
+     * @var AliasesConfiguration
      */
     private $aliasesConfiguration;
 

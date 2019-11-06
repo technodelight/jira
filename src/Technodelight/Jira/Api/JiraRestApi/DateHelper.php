@@ -1,6 +1,6 @@
 <?php
 
-namespace Technodelight\Jira\Helper;
+namespace Technodelight\Jira\Api\JiraRestApi;
 
 use DateTime;
 use DateTimeZone;
@@ -55,6 +55,9 @@ class DateHelper
 
     private function getSTN()
     {
+        if (!class_exists('Technodelight\SecondsToNone')) {
+            throw new \RuntimeException('Technodelight\SecondsToNone class cannot be found!');
+        }
         return new SecondsToNone($this->config);
     }
 }

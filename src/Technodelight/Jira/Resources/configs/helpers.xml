@@ -15,7 +15,7 @@
             <argument type="service" id="seconds_to_none.configuration"/>
         </service>
 
-        <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Helper\DateHelper">
+        <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Api\JiraRestApi\DateHelper">
             <argument type="service" id="seconds_to_none.configuration" />
         </service>
 

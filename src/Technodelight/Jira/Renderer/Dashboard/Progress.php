@@ -4,19 +4,19 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Console\Dashboard\Collection;
-use Technodelight\Jira\Helper\DateHelper;
 use Technodelight\Jira\Helper\PluralizeHelper;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class Progress implements DashboardRenderer
 {
     /**
-     * @var \Technodelight\Jira\Helper\DateHelper
+     * @var DateHelper
      */
     private $dateHelper;
     /**
-     * @var \Technodelight\Jira\Helper\PluralizeHelper
+     * @var PluralizeHelper
      */
     private $pluralizeHelper;
 

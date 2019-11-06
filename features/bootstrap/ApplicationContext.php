@@ -5,7 +5,7 @@ use Behat\Gherkin\Node\TableNode;
 use Fixture\ApplicationConfiguration;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Technodelight\Jira\Console\Application\DeprecatedBootstrap;
+use Technodelight\Jira\Console\Bootstrap\Bootstrap;
 
 class ApplicationContext implements Context
 {
@@ -65,10 +65,7 @@ class ApplicationContext implements Context
                 define('ENVIRONMENT', 'test');
             }
             $boot = new Bootstrap();
-            $this->app = $boot->boot('behat', [
-                 join(DIRECTORY_SEPARATOR, ['src', 'Technodelight', 'Jira', 'Resources', 'configs']),
-                 join(DIRECTORY_SEPARATOR, ['features', 'bootstrap', 'configs']),
-            ]);
+            $this->app = $boot->boot('behat');
             $this->app->setAutoExit(false);
         }
 
