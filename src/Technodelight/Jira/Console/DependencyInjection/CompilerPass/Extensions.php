@@ -19,8 +19,8 @@ class Extensions implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         $this->updateDef($container);
-        $this->processConfig($container);
-        $this->loadExtensions($container);
+        $this->processConfig($container); //@TODO: configuring and loading must be part of application boot process
+        $this->loadExtensions($container); //@TODO: so the extensions are used in runtime
     }
 
     /**
