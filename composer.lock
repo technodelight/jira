@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e64768caa5e230c8c3486b431b7f73e0",
+    "content-hash": "3d0c5e969456506b987975c856103935",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2906,16 +2906,16 @@
         },
         {
             "name": "technodelight/php-jira-domain-models",
-            "version": "1.2.1",
+            "version": "1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "20f83ae7ee951ff5bf94e8eb34745a47682b357e"
+                "reference": "431419fc47062c381df27974b03b5317914bd096"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/20f83ae7ee951ff5bf94e8eb34745a47682b357e",
-                "reference": "20f83ae7ee951ff5bf94e8eb34745a47682b357e",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/431419fc47062c381df27974b03b5317914bd096",
+                "reference": "431419fc47062c381df27974b03b5317914bd096",
                 "shasum": ""
             },
             "require-dev": {
@@ -2938,7 +2938,7 @@
                 }
             ],
             "description": "Domain models for Jira entities",
-            "time": "2019-11-04T16:32:11+00:00"
+            "time": "2019-11-13T15:55:01+00:00"
         },
         {
             "name": "technodelight/php-jira-tempo-plugin-api",

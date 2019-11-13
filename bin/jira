@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 define('APPLICATION_ROOT_DIR', __DIR__ . DIRECTORY_SEPARATOR . '..');
-//define('SKIP_CACHE_CONTAINER', 1); // for debugging purposes
+define('SKIP_CACHE_CONTAINER', 1); // for debugging purposes
 
 require APPLICATION_ROOT_DIR . '/vendor/autoload.php';
 

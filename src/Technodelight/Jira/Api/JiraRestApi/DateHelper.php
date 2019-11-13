@@ -31,7 +31,7 @@ class DateHelper
 
     public static function dateTimeToJira($datetime)
     {
-        $date = ($datetime instanceof \DateTime) ? $datetime : new DateTime($datetime);
+        $date = ($datetime instanceof DateTime) ? $datetime : new DateTime($datetime);
         if ($date->format('H:i:s') == '00:00:00') {
             $date->setTime(12, 0, 0);
         }
