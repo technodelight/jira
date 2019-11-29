@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Extension;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class Configurator
 {
@@ -24,7 +24,7 @@ class Configurator
         }
     }
 
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerInterface $container)
     {
         foreach ($this->extensions as $extension) {
             $extension->load($configs, $container);

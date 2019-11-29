@@ -10,7 +10,7 @@
 
     <services>
 
-        <!-- extension loader -->
+        <!-- extensions -->
         <service id="technodelight.jira.extension.loader"
                  public="false"
                  class="Technodelight\Jira\Extension\Loader" />
@@ -21,7 +21,16 @@
             <argument type="service" id="technodelight.jira.extension.loader" />
             <argument type="collection" />
         </service>
-        <!-- extension loader -->
+
+        <service id="technodelight.jira.extension.configuration_proxy"
+                 class="Technodelight\Jira\Extension\ConfigurationProxy"
+                 decorates="technodelight.jira.console.configuration.configuration">
+            <argument type="service" id="technodelight.jira.extension.configuration_proxy.inner" />
+            <argument type="service" id="technodelight.jira.extension.configurator" />
+            <argument type="service" id="technodelight.jira.console.configuration.provider" />
+            <argument type="service" id="service_container" />
+        </service>
+        <!-- extensions -->
 
         <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
             <argument type="string">%technodelight.jira.app.name%</argument>
