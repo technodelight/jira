@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d0c5e969456506b987975c856103935",
+    "content-hash": "ab60d16cfa4ce0e6407b4f24067c7965",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2903,6 +2903,48 @@
             ],
             "description": "Interfaces to be used for extending of the JIRA CLI tool",
             "time": "2019-11-05T16:28:31+00:00"
+        },
+        {
+            "name": "technodelight/php-jira-cli-tag-converter",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-jira-cli-tag-converter.git",
+                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
+                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 7.0",
+                "ssnepenthe/color-utils": "*",
+                "symfony/console": "^2.7"
+            },
+            "require-dev": {
+                "behat/behat": "*",
+                "phpspec/phpspec": "*",
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\JiraTagConverter\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Zenc",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "time": "2019-11-29T13:23:47+00:00"
         },
         {
             "name": "technodelight/php-jira-domain-models",

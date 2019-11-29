@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Renderer\Issue\CustomField;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Field;
-use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
+use Technodelight\JiraTagConverter\JiraTagConverter;
 
 class DefaultFormatter implements Formatter
 {

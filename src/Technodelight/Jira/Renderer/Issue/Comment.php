@@ -7,7 +7,7 @@ use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\Image;
-use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
+use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\Wordwrap;
 use Technodelight\Jira\Renderer\IssueRenderer;

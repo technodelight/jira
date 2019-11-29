@@ -8,7 +8,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Issue\Changelog as DomainChangelog;
 use Technodelight\Jira\Domain\Issue\Changelog\Item;
-use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
+use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\IssueRenderer;
 use Technodelight\TimeAgo;
