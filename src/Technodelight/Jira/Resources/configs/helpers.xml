@@ -71,7 +71,7 @@
                  class="Technodelight\Jira\Connector\JiraTagConverter\Factory">
             <argument type="service" id="technodelight.jira.app" />
         </service>
-        <service id="technodelight.jira.jira_tag_converter" class="Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter">
+        <service id="technodelight.jira.jira_tag_converter" class="Technodelight\JiraTagConverter\JiraTagConverter">
             <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
             <argument type="collection" />
             <argument type="constant">TRUE</argument>
