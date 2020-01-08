@@ -1,23 +1,36 @@
 <?php
 
-namespace Technodelight\SkeletonExtension;
+namespace {
+    spl_autoload_register(function ($className) {
+        if (strpos($className, 'Technodelight\\SkeletonExtension') === false) {
+            return;
+        }
+        $path = str_replace('\\', DIRECTORY_SEPARATOR, str_replace('Technodelight\\SkeletonExtension\\', '', $className));
+        if (is_file('./' . $path . '.php')) {
+            require_once './' . $path . '.php';
+        }
+    });
+}
 
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Technodelight\Jira\Extension\ExtensionInterface;
-
-class Extension implements ExtensionInterface
+namespace Technodelight\SkeletonExtension
 {
-    public function load(array $configs, ContainerBuilder $container)
-    {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
-        $loader->load('services.xml');
-    }
+    use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+    use Symfony\Component\Config\FileLocator;
+    use Symfony\Component\DependencyInjection\ContainerBuilder;
+    use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+    use Technodelight\Jira\Extension\ExtensionInterface;
 
-    public function configure(): ArrayNodeDefinition
+    class Extension implements ExtensionInterface
     {
-        // TODO: Implement configure() method.
+        public function load(array $configs, ContainerBuilder $container)
+        {
+            $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
+            $loader->load('services.xml');
+        }
+
+        public function configure(): ArrayNodeDefinition
+        {
+            // TODO: Implement configure() method.
+        }
     }
 }

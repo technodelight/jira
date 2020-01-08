@@ -5,7 +5,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <imports>
-        <import resource="console.xml" />
+        <import resource="configurations.xml" />
         <import resource="api.xml" />
     </imports>
 </container>

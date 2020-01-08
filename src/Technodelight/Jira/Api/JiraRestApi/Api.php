@@ -223,7 +223,7 @@ class Api
 
     public function deleteWorklog(Worklog $worklog)
     {
-        $this->client->delete(sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey(), $worklog->id()));
+        $this->client->delete(sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey() ?: $worklog->issueId(), (string) $worklog->id()));
     }
 
     /**

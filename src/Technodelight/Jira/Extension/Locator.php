@@ -26,29 +26,42 @@ class Locator
             $nameSpacePath = join('/', $nameSpace);
 
             foreach ($extensionPaths as $extensionPath) {
-                $locator = new FileLocator([
-                    "$extensionPath/",
-                    "$extensionPath/src",
-                    "$extensionPath/lib",
-                    "$extensionPath/$nameSpacePath",
-                    "$extensionPath/src/$nameSpacePath",
-                    "$extensionPath/lib/$nameSpacePath",
-                    "~/.composer/vendor/*/*/src",
-                    "~/.composer/vendor/*/*/lib",
-                    "~/.composer/vendor/*/*/$nameSpacePath",
-                    "~/.composer/vendor/*/*/src/$nameSpacePath",
-                    "~/.composer/vendor/*/*/lib/$nameSpacePath",
-                ]);
+                $locator = new FileLocator($this->assemblePaths($extensionPath, $nameSpacePath));
 
                 try {
                     $paths = (array) $locator->locate($className);
                     $classMap[$extensionClass] = array_shift($paths);
                 } catch (FileLocatorFileNotFoundException $e) {
-                    // nothing to do here?
+                    // @TODO: nothing to do here?
                 }
             }
         }
 
         return $classMap;
+    }
+
+    private function assemblePaths(string $extensionPath, string $nameSpacePath): array
+    {
+        $paths = [
+            "$extensionPath/",
+            "$extensionPath/src",
+            "$extensionPath/lib",
+            "$extensionPath/$nameSpacePath",
+            "$extensionPath/src/$nameSpacePath",
+            "$extensionPath/lib/$nameSpacePath",
+        ];
+        //@TODO add project directory too!
+        $globPaths = [
+            getenv('HOME') . "/.composer/vendor/*/*/src",
+            getenv('HOME') . "/.composer/vendor/*/*/lib",
+            getenv('HOME') . "/.composer/vendor/*/*/$nameSpacePath",
+            getenv('HOME') . "/.composer/vendor/*/*/src/$nameSpacePath",
+            getenv('HOME') . "/.composer/vendor/*/*/lib/$nameSpacePath",
+        ];
+        foreach ($globPaths as $globPattern) {
+            $paths = array_merge($paths, glob($globPattern));
+        }
+
+        return $paths;
     }
 }

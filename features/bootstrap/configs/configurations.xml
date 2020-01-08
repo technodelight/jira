@@ -4,9 +4,9 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <imports>
-        <import resource="di/configurations.xml"/>
-        <import resource="di/api.xml"/>
-    </imports>
+    <services>
 
+        <service id="fixture.configuration.loader" class="Fixture\Configuration\Loader" decorates="technodelight.jira.console.configuration.loader" />
+
+    </services>
 </container>

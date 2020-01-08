@@ -29,6 +29,7 @@ class Builder
             new FileLocator(sprintf('%s/src/Technodelight/Jira/Resources/configs', APPLICATION_ROOT_DIR))
         );
         $loader->load('services.xml');
+
         // add compiler passes
         $container->addCompilerPass(new Extensions);
         $container->addCompilerPass(new ApplicationConfiguration);

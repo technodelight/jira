@@ -8,7 +8,10 @@ class Loader
     {
         $extensions = [];
         foreach ($classMap as $className => $path) {
-            require_once $path;
+            if (!class_exists($className, true)) {
+                require_once $path;
+            }
+
             $extension = new $className;
             if ($extension instanceof ExtensionInterface) {
                 $extensions[] = $extension;

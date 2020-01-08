@@ -25,12 +25,12 @@ class Provider
 
     public function get(): array
     {
-        if (!$this->configs) {
+//        if (!$this->configs) {
             $this->configs = $this->loader->load([
                 $this->directoryProvider->project(),
                 $this->directoryProvider->user(),
             ]);
-        }
+//        }
 
         return $this->configs;
     }

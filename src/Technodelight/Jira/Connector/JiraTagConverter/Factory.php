@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Connector\JiraTagConverter;
 
 use Technodelight\Jira\Console\Application;
-use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
+use Technodelight\JiraTagConverter\JiraTagConverter;
 
 class Factory
 {

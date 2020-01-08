@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e64768caa5e230c8c3486b431b7f73e0",
+    "content-hash": "ab60d16cfa4ce0e6407b4f24067c7965",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2826,16 +2826,16 @@
         },
         {
             "name": "technodelight/php-git",
-            "version": "1.0.5",
+            "version": "1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-git.git",
-                "reference": "6b43de6bbd03575388692efc3c945ff21c8f878c"
+                "reference": "04570b4878b59fe5a63064d96751156ce4536e89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-git/zipball/6b43de6bbd03575388692efc3c945ff21c8f878c",
-                "reference": "6b43de6bbd03575388692efc3c945ff21c8f878c",
+                "url": "https://api.github.com/repos/technodelight/php-git/zipball/04570b4878b59fe5a63064d96751156ce4536e89",
+                "reference": "04570b4878b59fe5a63064d96751156ce4536e89",
                 "shasum": ""
             },
             "require": {
@@ -2862,7 +2862,7 @@
                 }
             ],
             "description": "Small library to execute git commands through shell",
-            "time": "2019-04-16T13:04:02+00:00"
+            "time": "2020-01-06T13:32:45+00:00"
         },
         {
             "name": "technodelight/php-jira-cli-interfaces",
@@ -2905,17 +2905,59 @@
             "time": "2019-11-05T16:28:31+00:00"
         },
         {
-            "name": "technodelight/php-jira-domain-models",
-            "version": "1.2.1",
+            "name": "technodelight/php-jira-cli-tag-converter",
+            "version": "1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "20f83ae7ee951ff5bf94e8eb34745a47682b357e"
+                "url": "https://github.com/technodelight/php-jira-cli-tag-converter.git",
+                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/20f83ae7ee951ff5bf94e8eb34745a47682b357e",
-                "reference": "20f83ae7ee951ff5bf94e8eb34745a47682b357e",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
+                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 7.0",
+                "ssnepenthe/color-utils": "*",
+                "symfony/console": "^2.7"
+            },
+            "require-dev": {
+                "behat/behat": "*",
+                "phpspec/phpspec": "*",
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Technodelight\\JiraTagConverter\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Zenc",
+                    "email": "zenc@zenc.hu"
+                }
+            ],
+            "time": "2019-11-29T13:23:47+00:00"
+        },
+        {
+            "name": "technodelight/php-jira-domain-models",
+            "version": "1.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/technodelight/php-jira-domain-models.git",
+                "reference": "431419fc47062c381df27974b03b5317914bd096"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/431419fc47062c381df27974b03b5317914bd096",
+                "reference": "431419fc47062c381df27974b03b5317914bd096",
                 "shasum": ""
             },
             "require-dev": {
@@ -2938,7 +2980,7 @@
                 }
             ],
             "description": "Domain models for Jira entities",
-            "time": "2019-11-04T16:32:11+00:00"
+            "time": "2019-11-13T15:55:01+00:00"
         },
         {
             "name": "technodelight/php-jira-tempo-plugin-api",
@@ -3358,6 +3400,7 @@
             ],
             "description": "Promoting the interoperability of container objects (DIC, SL, etc.)",
             "homepage": "https://github.com/container-interop/container-interop",
+            "abandoned": "psr/container",
             "time": "2017-02-14T19:40:03+00:00"
         },
         {

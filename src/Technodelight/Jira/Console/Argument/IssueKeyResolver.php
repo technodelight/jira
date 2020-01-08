@@ -56,6 +56,7 @@ class IssueKeyResolver
                 } else if ($shift && isset($previousArgumentValue)) {
                     $input->setArgument($argument, $previousArgumentValue);
                     $previousArgumentValue = $value;
+                    $shift = false;
                 }
             }
         }
@@ -91,6 +92,6 @@ class IssueKeyResolver
     private function isArgValueAnIssueKey($value, $issueKey)
     {
         return $value == (string) $issueKey
-            && ($value == (string) $this->guesser->guessIssueKey($issueKey));
+            || (null !== $this->guesser->guessIssueKey($issueKey));
     }
 }

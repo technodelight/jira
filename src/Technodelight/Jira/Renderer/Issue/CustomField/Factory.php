@@ -3,7 +3,7 @@
 namespace Technodelight\Jira\Renderer\Issue\CustomField;
 
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter;
+use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\Issue\CustomField;
 

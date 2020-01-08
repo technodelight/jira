@@ -6,7 +6,6 @@ use ICanBoogie\Storage\Codec\JSONCodec;
 use ICanBoogie\Storage\FileStorage;
 use ICanBoogie\Storage\RunTimeStorage;
 use ICanBoogie\Storage\StorageCollection;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class StorageBuilder
 {
@@ -14,7 +13,7 @@ class StorageBuilder
     {
         return new StorageCollection([
             new RunTimeStorage(),
-            new FileStorage(getenv('HOME') . DIRECTORY_SEPARATOR . '.jira.stats', new JSONCodec)
+            new FileStorage(getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/stats', new JSONCodec)
         ]);
     }
 }

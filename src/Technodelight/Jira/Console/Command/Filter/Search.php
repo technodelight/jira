@@ -14,7 +14,7 @@ use Symfony\Component\Yaml\Yaml;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\CliOpen\CliOpen as OpenApp;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstanceProvider;
-use Technodelight\Jira\Configuration\Configuration;
+use Symfony\Component\Config\Definition\ConfigurationInterface as Configuration;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Template\IssueRenderer;

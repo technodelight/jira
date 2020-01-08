@@ -96,9 +96,12 @@ class Renderer implements ActionRenderer
             return $error->exception()->getCode() ?: 1;
         }
 
+        $errorTexts = $error->data();
+        array_unshift($errorTexts, $error->issueKey());
+
         $output->writeln(
             $this->styleGuide->error(
-                vsprintf($error->phrase(), $error->data())
+                vsprintf($error->phrase(), $errorTexts)
             )
         );
 

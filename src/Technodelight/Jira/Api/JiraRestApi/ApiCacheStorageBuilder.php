@@ -13,7 +13,7 @@ class ApiCacheStorageBuilder
     {
         return new StorageCollection([
             new RunTimeStorage(),
-            new FileStorage(getenv('HOME') . DIRECTORY_SEPARATOR . '.jira.api_cache', new JSONCodec)
+            new FileStorage(getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/cache', new JSONCodec)
         ]);
     }
 }

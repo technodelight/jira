@@ -9,6 +9,10 @@ define('APPLICATION_ROOT_DIR', __DIR__ . DIRECTORY_SEPARATOR . '..');
 
 require APPLICATION_ROOT_DIR . '/vendor/autoload.php';
 
+if (is_file(getenv('HOME') . '/.jira/extensions.php')) {
+    require_once getenv('HOME') . '/.jira/extensions.php';
+}
+
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Console\Bootstrap\Bootstrap;

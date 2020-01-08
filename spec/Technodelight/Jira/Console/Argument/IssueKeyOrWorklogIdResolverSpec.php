@@ -21,7 +21,7 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
     private $worklog = [
         'id' => self::WORKLOG_ID,
         'author' => ['accountId' => 321321,'key' => 'zenc', 'name' => 'zenc', 'displayName' => 'Zenc'],
-        'started' => '2017-10-02 12:34:56',
+        'started' => '2017-10-02T12:34:56+0000',
         'timeSpentSeconds' => 12345,
     ];
 
