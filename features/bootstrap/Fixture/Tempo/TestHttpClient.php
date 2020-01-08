@@ -2,7 +2,7 @@
 
 namespace Fixture\Tempo;
 
-use Technodelight\Jira\Api\Tempo\Client;
+use Technodelight\Tempo2\Client;
 
 class TestHttpClient implements Client
 {

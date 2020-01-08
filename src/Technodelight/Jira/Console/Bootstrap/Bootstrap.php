@@ -12,9 +12,9 @@ class Bootstrap
      */
     private $containerProvider;
 
-    public function __construct()
+    public function __construct(Provider $provider = null)
     {
-        $this->containerProvider = new Provider;
+        $this->containerProvider = $provider ?: new Provider;
     }
 
     /**

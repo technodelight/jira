@@ -2,6 +2,7 @@
   {
     "id": "description",
     "name": "Description",
+    "key": "description",
     "custom": false,
     "orderable": true,
     "navigable": true,

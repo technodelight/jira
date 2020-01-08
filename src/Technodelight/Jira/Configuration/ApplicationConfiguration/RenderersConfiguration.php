@@ -66,8 +66,8 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'versions'],
                     ['name' => 'attachments'],
                     ['name' => 'branches'],
-                    ['name' => 'github'],
-                    ['name' => 'taskwarrior'],
+//                    ['name' => 'github'], //@TODO: refactor renderers configuration so extensions can alter defaults if needed
+//                    ['name' => 'taskwarrior'],
                     ['name' => 'worklogs'],
                     ['name' => 'comments'],
                 ],

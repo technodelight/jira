@@ -2826,16 +2826,16 @@
         },
         {
             "name": "technodelight/php-git",
-            "version": "1.0.5",
+            "version": "1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-git.git",
-                "reference": "6b43de6bbd03575388692efc3c945ff21c8f878c"
+                "reference": "04570b4878b59fe5a63064d96751156ce4536e89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-git/zipball/6b43de6bbd03575388692efc3c945ff21c8f878c",
-                "reference": "6b43de6bbd03575388692efc3c945ff21c8f878c",
+                "url": "https://api.github.com/repos/technodelight/php-git/zipball/04570b4878b59fe5a63064d96751156ce4536e89",
+                "reference": "04570b4878b59fe5a63064d96751156ce4536e89",
                 "shasum": ""
             },
             "require": {
@@ -2862,7 +2862,7 @@
                 }
             ],
             "description": "Small library to execute git commands through shell",
-            "time": "2019-04-16T13:04:02+00:00"
+            "time": "2020-01-06T13:32:45+00:00"
         },
         {
             "name": "technodelight/php-jira-cli-interfaces",
@@ -3400,6 +3400,7 @@
             ],
             "description": "Promoting the interoperability of container objects (DIC, SL, etc.)",
             "homepage": "https://github.com/container-interop/container-interop",
+            "abandoned": "psr/container",
             "time": "2017-02-14T19:40:03+00:00"
         },
         {

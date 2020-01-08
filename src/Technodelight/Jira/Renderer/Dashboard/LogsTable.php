@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
-use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
+use Technodelight\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Console\Dashboard\Collection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 

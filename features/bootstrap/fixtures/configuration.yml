@@ -1,0 +1,28 @@
+instances:
+  - name: default
+    domain: fixtures.jira.phar
+    username: zenc@zenc.hu
+    password: topSecretPassword
+    worklogHandler: tempo
+
+# Project specific settings
+project:
+
+  # Using 'yesterday' means last workday on monday
+  yesterdayAsWeekday:   true
+
+  # Default worklog timestamp to use if date is omitted
+  defaultWorklogTimestamp: now
+
+tempo:
+  instances:
+    - { instance: default, apiToken: topSecretToken }
+
+# GitHub credentials - used to retrieve pull request data, including webhook statuses
+github:
+  apiToken: topSecretToken # Required
+
+extensions:
+  class:
+    - Technodelight\JiraGitHubExtension\Extension
+    - Technodelight\JiraTempoExtension\Extension

@@ -9,6 +9,3 @@ default:
                 - GithubContext
                 - JiraContext
                 - TempoContext
-
-            filters:
-              tags: '@cli'

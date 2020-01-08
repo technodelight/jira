@@ -1,5 +1,6 @@
 Feature: The dashboard could be rendered
 
+  @cli
   Scenario: I have worked today
     Given Git command "remote -v" returns:
     """

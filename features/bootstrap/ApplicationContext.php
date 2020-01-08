@@ -2,7 +2,8 @@
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
-use Fixture\ApplicationConfiguration;
+use Fixture\Configuration\Loader;
+use Fixture\DependencyInjection\Provider;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Technodelight\Jira\Console\Bootstrap\Bootstrap;
@@ -21,7 +22,7 @@ class ApplicationContext implements Context
      */
     public function theApplicationIsConfiguredWith($property, $jsonString)
     {
-        ApplicationConfiguration::$$property = json_decode($jsonString, true);
+        Loader::$configs[$property] = json_decode($jsonString, true);
     }
 
     /**
@@ -29,7 +30,7 @@ class ApplicationContext implements Context
      */
     public function iRunTheApplicationWithTheFollowingInput(TableNode $table)
     {
-        $input = new ArrayInput($table->getRowsHash() + ['-vvv']);
+        $input = new ArrayInput($table->getRowsHash() + ['-vvv' => '']);
         $output = new BufferedOutput;
         $this->exitCode = $this->app()->run($input, $output);
         $this->output = $output->fetch();
@@ -58,17 +59,16 @@ class ApplicationContext implements Context
 
     public function app()
     {
-        if (!isset($this->app)) {
-            if (!defined('APPLICATION_ROOT_DIR')) {
-                define('APPLICATION_ROOT_DIR', realpath(__DIR__ . '/../..'));
-                define('SKIP_CACHE_CONTAINER', true);
-                define('ENVIRONMENT', 'test');
-            }
-            $boot = new Bootstrap();
-            $this->app = $boot->boot('behat');
-            $this->app->setAutoExit(false);
+        if (!defined('APPLICATION_ROOT_DIR')) {
+            define('APPLICATION_ROOT_DIR', realpath(__DIR__ . '/../..'));
+            define('SKIP_CACHE_CONTAINER', true);
+            define('ENVIRONMENT', 'test');
         }
 
-        return $this->app;
+        $boot = new Bootstrap(new Provider);
+        $app = $boot->boot('behat');
+        $app->setAutoExit(false);
+
+        return $app;
     }
 }

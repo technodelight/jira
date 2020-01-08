@@ -32,7 +32,7 @@ class Locator
                     $paths = (array) $locator->locate($className);
                     $classMap[$extensionClass] = array_shift($paths);
                 } catch (FileLocatorFileNotFoundException $e) {
-                    // nothing to do here?
+                    // @TODO: nothing to do here?
                 }
             }
         }

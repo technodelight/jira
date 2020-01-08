@@ -15,7 +15,7 @@ use Technodelight\Jira\Console\Dashboard\Collection as Collection;
 
 class DashboardSpec extends ObjectBehavior
 {
-    const DATE = '2018-01-14 22:05:23';
+    const DATE = '2018-01-14T22:05:23+0000';
     const ISSUEKEY = 'TEST-001';
 
     private $logRecord = [
