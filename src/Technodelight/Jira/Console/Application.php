@@ -28,6 +28,11 @@ class Application extends BaseApp
         }
     }
 
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
     public function currentInstanceName()
     {
         return $this->currentInstanceName;

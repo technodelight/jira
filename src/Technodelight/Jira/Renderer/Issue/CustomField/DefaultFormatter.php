@@ -26,7 +26,10 @@ class DefaultFormatter implements Formatter
         if ($field->schemaType() == 'array' || $field->schemaType() == 'any' && is_array($value)) {
             $value = array_map(
                 function($value) {
-                    return sprintf('<bg=yellow;fg=black> %s </>', $value);
+                    return sprintf(
+                        '<bg=yellow;fg=black> %s </>',
+                        is_array($value) && isset($value['name']) ? $value['name'] : $value
+                        );
                 },
                 $value
             );
