@@ -110,20 +110,22 @@ class InteractiveIssueSelector
     }
 
     /**
-     * @return \Technodelight\Jira\Domain\IssueCollection
+     * @return IssueCollection
      */
-    private function retrieveIssuesToChooseFrom()
+    public function retrieveIssuesToChooseFrom(?string $searchString = null): IssueCollection
     {
         $issuesToChooseFrom = IssueCollection::createEmpty();
         $this->collectIssuesFromHistory($issuesToChooseFrom);
-        $this->collectIssuesFromStat($issuesToChooseFrom);
-        $this->collectIssuesFromLocalBranches($issuesToChooseFrom);
+        $this->collectRecentlyUpdatedIssues($issuesToChooseFrom);
+        $this->collectIssuesWithSearchString($searchString, $issuesToChooseFrom);
+//        $this->collectIssuesFromStat($issuesToChooseFrom); // @TODO: buggy
+        $this->collectIssuesFromLocalBranches($issuesToChooseFrom, $searchString);
 
         return $issuesToChooseFrom;
     }
 
     /**
-     * @param \Technodelight\Jira\Domain\IssueCollection $issues
+     * @param IssueCollection $issues
      * @return array
      */
     private function assembleOptionsForQuestionHelper(IssueCollection $issues)
@@ -193,8 +195,9 @@ class InteractiveIssueSelector
 
     /**
      * @param IssueCollection $issuesToChooseFrom
+     * @param string|null $searchString
      */
-    private function collectIssuesFromLocalBranches(IssueCollection $issuesToChooseFrom)
+    private function collectIssuesFromLocalBranches(IssueCollection $issuesToChooseFrom, ?string $searchString = null)
     {
         if ($localBranches = $this->git->branches('feature/', false)) {
             $issueKeys = [];
@@ -204,7 +207,7 @@ class InteractiveIssueSelector
                 }
 
                 try {
-                    $issueKey = $this->guesser->guessIssueKey(null, $branch);
+                    $issueKey = $this->guesser->guessIssueKey($searchString, $branch);
                     if ($issueKey && !$issuesToChooseFrom->has($issueKey)) {
                         $issueKeys[] = $issueKey;
                     }
@@ -223,4 +226,29 @@ class InteractiveIssueSelector
         }
     }
 
+    private function collectRecentlyUpdatedIssues(IssueCollection $issuesToChooseFrom)
+    {
+        $issuesToChooseFrom->merge(
+            $this->jira->search(
+                SearchQueryBuilder::factory()
+                    ->updated('startOfWeek()', 'endOfDay()')
+                    ->assigneeWas('currentUser()')
+                    ->assemble()
+            )
+        );
+    }
+
+    private function collectIssuesWithSearchString(string $searchString, IssueCollection $issuesToChooseFrom)
+    {
+        $searchString = trim($searchString);
+        if (!empty($searchString)) {
+            try {
+                $issuesToChooseFrom->merge(
+                    $this->jira->search(sprintf('summary ~ "%s"', $searchString))
+                );
+            } catch (\Exception $e) {
+                //@TODO ignore for now
+            }
+        }
+    }
 }

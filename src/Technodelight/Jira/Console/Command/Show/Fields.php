@@ -2,13 +2,12 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Console\Command\AbstractCommand;
 use Technodelight\Jira\Domain\Field;
+use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Fields extends AbstractCommand
 {

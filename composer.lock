@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab60d16cfa4ce0e6407b4f24067c7965",
+    "content-hash": "0063529f99ebe9f6311fb20d98323478",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -2948,16 +2948,16 @@
         },
         {
             "name": "technodelight/php-jira-domain-models",
-            "version": "1.3",
+            "version": "1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "431419fc47062c381df27974b03b5317914bd096"
+                "reference": "b2b777dd28698bb6c0937c536eb7ea191e3b2eaf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/431419fc47062c381df27974b03b5317914bd096",
-                "reference": "431419fc47062c381df27974b03b5317914bd096",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/b2b777dd28698bb6c0937c536eb7ea191e3b2eaf",
+                "reference": "b2b777dd28698bb6c0937c536eb7ea191e3b2eaf",
                 "shasum": ""
             },
             "require-dev": {
@@ -2980,43 +2980,7 @@
                 }
             ],
             "description": "Domain models for Jira entities",
-            "time": "2019-11-13T15:55:01+00:00"
-        },
-        {
-            "name": "technodelight/php-jira-tempo-plugin-api",
-            "version": "1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/technodelight/php-jira-tempo-plugin-api.git",
-                "reference": "e5ffedad75e701de26b75ef965e91c687c546ab2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-tempo-plugin-api/zipball/e5ffedad75e701de26b75ef965e91c687c546ab2",
-                "reference": "e5ffedad75e701de26b75ef965e91c687c546ab2",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^6.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Technodelight\\Tempo2\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Zsolt Gál",
-                    "email": "zenc@zenc.hu"
-                }
-            ],
-            "description": "PHP API layer for Tempo TimeSheets",
-            "time": "2019-07-03T13:10:29+00:00"
+            "time": "2020-02-19T08:55:55+00:00"
         },
         {
             "name": "technodelight/php-time-ago",

@@ -18,6 +18,11 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.shellfeatures" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
+            <argument type="string">shell</argument>
+            <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
+            <argument type="service" id="technodelight.jira.config.aliases" />
+            <argument type="service" id="seconds_to_none" />
+            <argument type="service" id="technodelight.jira.config.instances" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.usagestats" class="Technodelight\Jira\Console\Command\Internal\UsageStats">
