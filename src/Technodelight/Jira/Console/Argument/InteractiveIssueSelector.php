@@ -238,7 +238,7 @@ class InteractiveIssueSelector
         );
     }
 
-    private function collectIssuesWithSearchString(string $searchString, IssueCollection $issuesToChooseFrom)
+    private function collectIssuesWithSearchString(?string $searchString, IssueCollection $issuesToChooseFrom)
     {
         $searchString = trim($searchString);
         if (!empty($searchString)) {

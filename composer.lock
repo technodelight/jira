@@ -2948,16 +2948,16 @@
         },
         {
             "name": "technodelight/php-jira-domain-models",
-            "version": "1.4",
+            "version": "1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "b2b777dd28698bb6c0937c536eb7ea191e3b2eaf"
+                "reference": "b114adfa288228fefa396dcd4cae073f4d408e73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/b2b777dd28698bb6c0937c536eb7ea191e3b2eaf",
-                "reference": "b2b777dd28698bb6c0937c536eb7ea191e3b2eaf",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/b114adfa288228fefa396dcd4cae073f4d408e73",
+                "reference": "b114adfa288228fefa396dcd4cae073f4d408e73",
                 "shasum": ""
             },
             "require-dev": {
@@ -2980,7 +2980,7 @@
                 }
             ],
             "description": "Domain models for Jira entities",
-            "time": "2020-02-19T08:55:55+00:00"
+            "time": "2020-03-27T08:45:35+00:00"
         },
         {
             "name": "technodelight/php-time-ago",

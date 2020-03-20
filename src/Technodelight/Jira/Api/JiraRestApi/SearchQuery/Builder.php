@@ -133,7 +133,7 @@ class Builder
     /** @TODO: check if this still works */
     public function worklogAuthor(User $worklogAuthor)
     {
-        $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => $worklogAuthor->key()]);
+        $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => (string) $worklogAuthor->id()]);
         return $this;
     }
 
