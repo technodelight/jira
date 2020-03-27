@@ -82,7 +82,7 @@ class Guesser
             if (preg_match('~' . $regex . '~', $branch->name(), $matches)) {
                 foreach ($matches as $match) {
                     try {
-                        if (!preg_match('~[A-Z]+-[0-9]+~', $match, $subMatches)) {
+                        if (!preg_match('~' . IssueKey::PATTERN . '~', $match, $subMatches)) {
                             continue;
                         }
                         return IssueKey::fromString($subMatches[0]);
@@ -98,7 +98,7 @@ class Guesser
 
     private function fromUrl($guessable)
     {
-        if (preg_match('~https?://.*/([A-Z]+-[0-9]+).*~', $guessable, $matches)) {
+        if (preg_match('~https?://.*/(' . IssueKey::PATTERN . ').*~', $guessable, $matches)) {
             try {
                 return IssueKey::fromString($matches[1]);
             } catch (MissingIssueKeyException $e) {

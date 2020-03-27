@@ -289,7 +289,7 @@ class Api
      *
      * @param DateTime $from
      * @param DateTime $to
-     * @param string|null $username username or currentUser() by default. Must be a username given.
+     * @param User|null $user
      * @param int|null $limit
      *
      * @return IssueCollection
@@ -323,6 +323,7 @@ class Api
     /**
      * @param IssueKey[]|string[] $issueKeys
      * @return IssueCollection
+     * @throws \Sirprize\Queried\QueryException
      */
     public function retrieveIssues(array $issueKeys)
     {
