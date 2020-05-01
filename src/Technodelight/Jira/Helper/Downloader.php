@@ -9,7 +9,7 @@ class Downloader
 {
     /**
      * @param OutputInterface $output
-     * @return [ProgressBar, callable]
+     * @return array [ProgressBar, Closure]
      */
     public function progressBarWithProgressFunction(OutputInterface $output)
     {
@@ -41,6 +41,7 @@ class Downloader
     {
         list($progress, $callback) = $this->progressBarWithProgressFunction($output);
         /** @var ProgressBar $progress */
+        /** @var \Closure $callback */
 
         $f = fopen($targetFile, 'w');
         $ch = $this->initCurl($downloadUrl, $f, $callback);

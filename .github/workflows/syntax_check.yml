@@ -1,0 +1,18 @@
+name: Syntax Check
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: No syntax error present
+      run: bash -c 'find src -type f -name "*.php" -exec php -l {} \;'

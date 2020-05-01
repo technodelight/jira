@@ -4,6 +4,13 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <!-- configuration dumper -->
+        <service id="technodelight.jira.connector.symfony_configuration_dumper"
+                 class="Technodelight\Jira\Connector\SymfonyConfig\ConfigurationDumper"
+                 public="false">
+            <argument type="service" id="technodelight.jira.console.configuration.tree_builder_factory" />
+        </service>
+
         <!-- issue renderer upfront service -->
         <service id="technodelight.jira.issue_renderer" class="Technodelight\Jira\Template\IssueRenderer">
             <argument type="collection" />

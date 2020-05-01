@@ -20,6 +20,7 @@ use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Console\Argument\LogTimeArgsOptsParser;
 use Technodelight\Jira\Console\Dashboard\Dashboard;
 use Technodelight\Jira\Console\Input\Worklog\Comment as CommentInput;
+use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 use Technodelight\Jira\Renderer\Issue\Header as HeaderRenderer;
@@ -431,12 +432,14 @@ class LogTime extends Command
         $output->writeln('');
         $output->writeln('Logged work so far:');
         $this->worklogRenderer->renderWorklogs($output, $worklog->issue()->worklogs());
+        $output->writeln('');
+        $this->dashboardRenderer->render($output, $this->dashboardDataProvider->fetch($worklog->date()->format('Y-m-d')));
     }
 
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return \Technodelight\Jira\Domain\Issue
+     * @return Issue
      */
     private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output)
     {

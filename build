@@ -1,6 +1,9 @@
 #!/usr/bin/env php
 <?php
 
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 require __DIR__ . '/vendor/autoload.php';
@@ -13,9 +16,9 @@ require __DIR__ . '/vendor/autoload.php';
 function formatBytes($size, $precision = 4)
 {
     $base = log($size, 1024);
-    $suffixes = array('', 'K', 'M', 'G', 'T');
+    $suffixes = ['', 'K', 'M', 'G', 'T'];
 
-    return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[(int) floor($base)];
+    return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[(int)floor($base)];
 }
 
 /**
@@ -76,6 +79,7 @@ function checkToolsInstalled(ConsoleOutput $output)
         'box' => [
             'version' => '3.0',
             'url' => 'https://github.com/humbug/box/blob/master/doc/installation.md#installation',
+            'alter_path' => '/home/runner/work/jira/jira/box',
             'legend' => 'box is a tool used for building PHAR files',
         ],
         'composer' => [
@@ -85,9 +89,10 @@ function checkToolsInstalled(ConsoleOutput $output)
     ];
 
     foreach ($tools as $tool => $hints) {
-        if (!trim(`which $tool`)) {
+        if (isset($hints['alter_path']) && is_file($hints['alter_path']) && !is_executable($hints['alter_path'])) {
+            passthru($hints['alter_path'] . ' --version');
             $output->getErrorOutput()->writeln(
-                "<error>Please install $tool and make available in \$PATH to continue</error>"
+                "<error>Please install $tool and make executable in {$hints['alter_path']} to continue</error>"
             );
             if (isset($hints['legend'])) {
                 $output->writeln(sprintf('<info>hint:</info> %s', $hints['legend']));
@@ -96,12 +101,26 @@ function checkToolsInstalled(ConsoleOutput $output)
                 $output->writeln(sprintf('Please visit %s for more info', $hints['url']));
             }
             exit(1);
+        } else {
+            if (!isset($hints['alter_path']) && !trim(`which $tool`)) {
+                $output->getErrorOutput()->writeln(
+                    "<error>Please install $tool and make available in \$PATH to continue</error>"
+                );
+                if (isset($hints['legend'])) {
+                    $output->writeln(sprintf('<info>hint:</info> %s', $hints['legend']));
+                }
+                if (isset($hints['url'])) {
+                    $output->writeln(sprintf('Please visit %s for more info', $hints['url']));
+                }
+                exit(1);
+            }
         }
-        list(,,$version) = explode(' ', `$tool --version`);
+        $command = isset($hints['alter_path']) && is_executable($hints['alter_path']) ? $hints['alter_path'] : $tool;
+        list(, , $version) = explode(' ', `$command --version`);
         if (!version_compare($version, $hints['version'], '>=')) {
             $output->getErrorOutput()->writeln(
                 sprintf(
-                  "<error>Please make sure %s is at least version %s (current version is %s)</error>",
+                    "<error>Please make sure %s is at least version %s (current version is %s)</error>",
                     $tool,
                     $hints['version'],
                     $version
@@ -118,13 +137,23 @@ function checkToolsInstalled(ConsoleOutput $output)
     }
 }
 
+function box($commands, &$returnVar = null)
+{
+    static $box = null;
+    if (is_null($box)) {
+        $box = is_executable('/home/runner/work/jira/jira/box') ? '/home/runner/work/jira/jira/box' : 'box';
+    }
+
+    passthru("$box $commands", $returnVar);
+}
+
 /**
  * @param ConsoleOutput $output
  * @return string
  */
 function createBuildDirectory(ConsoleOutput $output)
 {
-    $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME .'-' . BUILD_COMMIT . '-' . uniqid();
+    $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . uniqid();
     $output->writeln('<info>Creating build directory</info>');
     $output->writeln($buildDir);
     mkdir($buildDir, 0733, true);
@@ -191,11 +220,11 @@ function generateBoxJson(ConsoleOutput $output, $buildDir)
             [
                 'name' => '*.*',
                 'exclude' => ['tests', 'spec', 'features', 'example', 'doc', 'docs', '*.md', '*.rst', '*.txt'],
-                'in' => 'vendor'
-            ]
+                'in' => 'vendor',
+            ],
         ],
         'compactors' => [
-            'KevinGH\Box\Compactor\Php'
+            'KevinGH\Box\Compactor\Php',
         ],
         'git-version' => 'git-version',
     ];
@@ -215,8 +244,8 @@ function buildPhar(ConsoleOutput $output, $buildDir)
     $buildfile = $buildDir . DIRECTORY_SEPARATOR . PHAR_NAME . '.phar';
     $output->writeln('<info>Building phar...</info>');
 
-    passthru('box validate');
-    passthru('box compile', $compileResult);
+    box('validate');
+    box('compile', $compileResult);
 
     if (!is_file($buildfile) || $compileResult !== 0) {
         $output->getErrorOutput()->writeln('<error>Error while building phar!</error>');
@@ -230,20 +259,25 @@ function buildPhar(ConsoleOutput $output, $buildDir)
 
 /**
  * @param ConsoleOutput $output
- * @param string $buildfile
+ * @param string $buildFile
  * @return string
  */
-function copyPharToDestinations(ConsoleOutput $output, $buildfile)
+function copyPharToDestinations(ConsoleOutput $output, $buildFile)
 {
     $output->writeln('<info>Copying files</info>');
 
     $releaseFile = __DIR__
         . DIRECTORY_SEPARATOR . 'builds'
-        . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . md5_file($buildfile) . '.phar';
+        . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . md5_file($buildFile) . '.phar';
     $localBuildFile = __DIR__
         . DIRECTORY_SEPARATOR . PHAR_NAME . '.phar';
 
-    if (cp($output, $buildfile, $releaseFile, 0755) !== true || cp($output, $buildfile, $localBuildFile, 0755) !== true) {
+    if (cp($output, $buildFile, $releaseFile, 0755) !== true || cp(
+            $output,
+            $buildFile,
+            $localBuildFile,
+            0755
+        ) !== true) {
         $output->getErrorOutput()->writeln(
             "<error>Unable to copy files into destination</error>"
         );
@@ -262,10 +296,10 @@ function testPhar(ConsoleOutput $output, $pharFile)
     $output->writeln('<info>Testing phar...</info>');
     chdir(dirname($pharFile));
 
-    passthru(sprintf('box verify %s', $pharFile), $verifyResult);
+    box(sprintf('verify %s', $pharFile), $verifyResult);
     if ($verifyResult !== 0) {
-      $output->getErrorOutput()->writeln('<error>Box verify failed!!</error>');
-      exit(6);
+        $output->getErrorOutput()->writeln('<error>Box verify failed!!</error>');
+        exit(6);
     }
 
     $output->writeln('<info>Checking if phar version works</info>');
@@ -279,30 +313,63 @@ function testPhar(ConsoleOutput $output, $pharFile)
 /**
  * @return void
  */
-function main() {
+function main()
+{
+    $input = new ArgvInput(
+        null,
+        new InputDefinition(
+            [
+                new InputOption('workflow', 'w', InputOption::VALUE_NONE, 'run in github workflow mode'),
+                new InputOption('help', 'h', InputOption::VALUE_NONE, 'show help'),
+            ]
+        )
+    );
     $output = new ConsoleOutput;
+
+    if ($input->getOption('help')) {
+        $output->writeln(
+            [
+                'Usage:',
+                __FILE__ . ' [options]',
+                '',
+                'Options:',
+                '--workflow|-w: run in github workflow mode',
+                '--help|-h: show this help'
+            ]
+        );
+        exit(0);
+    }
 
     init($output);
     checkToolsInstalled($output);
-    $buildDir = createBuildDirectory($output);
-    cloneSingleCommitIntoBuildDir($output, $buildDir);
-    composerInstall($output, $buildDir);
-    generateBoxJson($output, $buildDir);
-    $buildFile = buildPhar($output, $buildDir);
-    testPhar($output, $buildFile);
-    $releaseFile = copyPharToDestinations($output, $buildFile);
+    if ($input->getOption('workflow')) {
+        $buildDir = getcwd();
+        generateBoxJson($output, $buildDir);
+        $buildFile = buildPhar($output, $buildDir);
+        testPhar($output, $buildFile);
+    } else {
+        $buildDir = createBuildDirectory($output);
+        cloneSingleCommitIntoBuildDir($output, $buildDir);
+        composerInstall($output, $buildDir);
+        generateBoxJson($output, $buildDir);
+        $buildFile = buildPhar($output, $buildDir);
+        testPhar($output, $buildFile);
+        $releaseFile = copyPharToDestinations($output, $buildFile);
+    }
 
-    $output->writeln([
-        "<info>🍺  Build done</info>",
-        '',
-        sprintf(
-            'Built %s (size %s) in %.4f seconds, consumed %s memory',
-            $releaseFile,
-            formatBytes(filesize($releaseFile), 2),
-            microtime(true) - BUILD_START_TIME,
-            formatBytes(memory_get_peak_usage(true), 2)
-        )
-    ]);
+    $output->writeln(
+        [
+            "<info>🍺  Build done</info>",
+            '',
+            sprintf(
+                'Built %s (size %s) in %.4f seconds, consumed %s memory',
+                $releaseFile,
+                formatBytes(filesize($releaseFile), 2),
+                microtime(true) - BUILD_START_TIME,
+                formatBytes(memory_get_peak_usage(true), 2)
+            ),
+        ]
+    );
     exit(0);
 }
 

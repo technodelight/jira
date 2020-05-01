@@ -1,20 +1,31 @@
 <?php
 
-
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
-
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\GitShell\ApiInterface as GitShell;
+use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
-use Technodelight\Jira\Console\Command\AbstractCommand;
-use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\CheckoutBranch;
 
-class Branch extends AbstractCommand
+class Branch extends Command
 {
+    private $api;
+    private $checkoutBranch;
+    private $issueKeyResolver;
+
+    public function __construct(Api $api, CheckoutBranch $checkoutBranch, IssueKeyResolver $issueKeyResolver)
+    {
+        $this->api = $api;
+        $this->checkoutBranch = $checkoutBranch;
+        $this->issueKeyResolver = $issueKeyResolver;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -31,40 +42,12 @@ class Branch extends AbstractCommand
                 'l',
                 InputOption::VALUE_NONE,
                 'Choose an existing branch automagically'
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $issueKey = $this->issueKeyArgument($input, $output);
-        $this->checkoutToBranch($input, $output, $this->jiraApi()->retrieveIssue($issueKey));
-    }
-
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     */
-    private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
-    {
-        $this->checkoutBranch()->checkoutToBranch($input, $output, $issue);
-    }
-
-    /**
-     * @return \Technodelight\Jira\Helper\CheckoutBranch
-     */
-    private function checkoutBranch()
-    {
-        /** @var GitShell $git */
-        return $this->getService('technodelight.jira.checkout_branch');
-    }
-
-    /**
-     * @return \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private function jiraApi()
-    {
-        return $this->getService('technodelight.jira.api');
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
+        $this->checkoutBranch->checkoutToBranch($input, $output, $this->api->retrieveIssue($issueKey));
     }
 }
