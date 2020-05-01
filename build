@@ -347,6 +347,7 @@ function main()
         generateBoxJson($output, $buildDir);
         $buildFile = buildPhar($output, $buildDir);
         testPhar($output, $buildFile);
+        $releaseFile = $buildFile;
     } else {
         $buildDir = createBuildDirectory($output);
         cloneSingleCommitIntoBuildDir($output, $buildDir);
