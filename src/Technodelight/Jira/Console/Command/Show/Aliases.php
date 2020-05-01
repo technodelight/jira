@@ -2,13 +2,23 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
 use Technodelight\JiraTagConverter\Components\PrettyTable;
-use Technodelight\Jira\Console\Command\AbstractCommand;
 
-class Aliases extends AbstractCommand
+class Aliases extends Command
 {
+    private $aliasesConfiguration;
+
+    public function __construct(AliasesConfiguration $aliasesConfiguration)
+    {
+        $this->aliasesConfiguration = $aliasesConfiguration;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -40,10 +50,8 @@ class Aliases extends AbstractCommand
      */
     private function issueAliases()
     {
-        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration $config */
-        $config = $this->getService('technodelight.jira.config.aliases');
         $rows = [];
-        foreach ($config->items() as $aliasConfiguration) {
+        foreach ($this->aliasesConfiguration->items() as $aliasConfiguration) {
             $rows[] = [$aliasConfiguration->alias(), $aliasConfiguration->issueKey()];
         }
 

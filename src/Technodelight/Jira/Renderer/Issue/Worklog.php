@@ -49,7 +49,7 @@ class Worklog implements IssueRenderer
         if ($output->getVerbosity() > OutputInterface::VERBOSITY_NORMAL) {
             $count = $worklogs->count();
         } else {
-            $count = 20;
+            $count = 10;
             $worklogs->orderByCreatedDateDesc();
         }
         $displayed = 0;

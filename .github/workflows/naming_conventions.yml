@@ -1,0 +1,21 @@
+name: Naming Conventions
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Interface/Abstract suffix does not exist
+      run: bash -c '! find src -type f -name "*.php" | egrep "(Interface|Abstract)"'
+
+    - name: Feature file uses the new sytax
+      run: bash -c '! find features/bootstrap -type f -name "*.php" | xargs egrep -i "@(Given|When|Then|And) /\^.*\$"'

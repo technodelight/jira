@@ -44,20 +44,27 @@
             "email": "zenc@zenc.hu"
         }
     ],
-    "autoload": {"psr-0": {"Technodelight\\": "src"}},
+    "autoload": {
+        "psr-0": {
+            "Technodelight\\Jira\\": "src",
+            "Technodelight\\JiraGitHubExtension\\": "src"
+        }
+    },
     "config": {
       "bin-dir": "bin"
     },
     "scripts": {
         "test": [
-            "@test-unit",
-            "@test-acceptance"
+            "@test-unit"
         ],
         "test-unit": [
             "bin/phpspec --ansi run -fpretty"
         ],
         "test-acceptance": [
             "bin/behat --colors"
+        ],
+        "build": [
+            "./build"
         ]
     },
     "autoload-dev": {"psr-0": {"": "features/bootstrap"}},

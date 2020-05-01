@@ -24,17 +24,17 @@ class Header implements DashboardRenderer
     }
 
     /**
-     * @param \DateTime $from
+     * @param DateTime $from
      * @return string
      */
     protected function onDay(DateTime $from)
     {
-        return sprintf('on <info>%s</info>', $from->format('Y-m-d l'));
+        return sprintf('on <info>%s</info>:', $from->format('Y-m-d, l'));
     }
 
     /**
-     * @param \DateTime $from
-     * @param \DateTime $to
+     * @param DateTime $from
+     * @param DateTime $to
      * @return string
      */
     protected function inTheseDays(DateTime $from, DateTime $to)

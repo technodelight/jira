@@ -2,15 +2,23 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
-use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration;
-use Technodelight\Jira\Console\Command\AbstractCommand;
+use Technodelight\JiraTagConverter\Components\PrettyTable;
 
-class Instances extends AbstractCommand
+class Instances extends Command
 {
+    private $instancesConfiguration;
+
+    public function __construct(InstancesConfiguration $instancesConfiguration)
+    {
+        $this->instancesConfiguration = $instancesConfiguration;
+
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -20,21 +28,18 @@ class Instances extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var \Technodelight\Jira\Configuration\ApplicationConfiguration\InstancesConfiguration $config */
-        $config = $this->container->get('technodelight.jira.config.instances');
-        if (empty($config->items())) {
-//            $this->renderTable($output, $this->addGlobalInstanceRow($config, [], false));
+        if (empty($this->instancesConfiguration->items())) {
             $output->writeln('No instances configured.');
             return;
         }
 
-        $rows = $this->addInstanceRows($config, []);
+        $rows = $this->addInstanceRows($this->instancesConfiguration, []);
 
         $this->renderTable($output, $rows);
     }
 
     /**
-     * @param ApplicationConfiguration $config
+     * @param InstancesConfiguration $config
      * @param array $rows
      * @return array
      */
@@ -48,10 +53,10 @@ class Instances extends AbstractCommand
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param $rows
+     * @param OutputInterface $output
+     * @param array $rows
      */
-    protected function renderTable(OutputInterface $output, $rows)
+    protected function renderTable(OutputInterface $output, array $rows)
     {
         $table = new PrettyTable($output);
         $table

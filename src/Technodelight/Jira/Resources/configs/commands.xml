@@ -8,16 +8,19 @@
 
         <!-- internal commands -->
         <service id="technodelight.jira.app.command.init" class="Technodelight\Jira\Console\Command\App\Init">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.connector.symfony_configuration_dumper" />
+            <argument type="service" id="technodelight.gitshell.api.internal" />
+            <argument type="service" id="technodelight.jira.console.configuration.tree_builder_factory" />
+            <argument type="service" id="console.question_helper" />
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.selfupdate" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
+        <service id="technodelight.jira.app.command.self_update" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
             <argument type="service" id="technodelight.self_update.github.api" />
             <argument type="service" id="technodelight.jira.console.di.cache_maintainer" />
             <argument type="service" id="console.dialog_helper" />
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.shellfeatures" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
+        <service id="technodelight.jira.app.command.shell_features" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
             <argument type="string">shell</argument>
             <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
             <argument type="service" id="technodelight.jira.config.aliases" />
@@ -25,23 +28,21 @@
             <argument type="service" id="technodelight.jira.config.instances" />
             <tag name="command" />
         </service>
-        <service id="technodelight.jira.app.command.usagestats" class="Technodelight\Jira\Console\Command\Internal\UsageStats">
-            <argument type="service" id="service_container"/>
-            <tag name="command" />
-        </service>
         <!-- internal commands -->
 
         <!-- show commands -->
         <service id="technodelight.jira.app.command.instances" class="Technodelight\Jira\Console\Command\Show\Instances">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.config.instances" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.aliases" class="Technodelight\Jira\Console\Command\Show\Aliases">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.config.aliases" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.fields" class="Technodelight\Jira\Console\Command\Show\Fields">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.console.option.checker" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.statuses" class="Technodelight\Jira\Console\Command\Show\Statuses">
@@ -70,7 +71,10 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.browse" class="Technodelight\Jira\Console\Command\Show\Browse">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.console.open" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header" />
             <tag name="command" />
         </service>
         <service id="techondelight.jira.app.command.renderers" class="Technodelight\Jira\Console\Command\Show\Renderers">
@@ -158,7 +162,9 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.branch" class="Technodelight\Jira\Console\Command\Action\Issue\Branch">
-            <argument type="service" id="service_container"/>
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.checkout_branch" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.edit" class="Technodelight\Jira\Console\Command\Action\Issue\Edit">
