@@ -13,25 +13,24 @@ class Downloader
      */
     public function progressBarWithProgressFunction(OutputInterface $output)
     {
+        /** @var ProgressBar $progress */
         $progress = $this->createProgressBar($output);
-        $progressFunction = function() use ($progress) {
-            $args = func_get_args();
+        $progressFunction = function($resource, $downloadTotal, $downloadedBytes, $upload_size, $uploaded) use ($progress) {
+            static $total = null;
 
-            if (count($args) == 3) {
-                $downloadTotal = $args[1];
-                $downloadedBytes = $args[2];
-            } else {
-                $downloadTotal = $args[0];
-                $downloadedBytes = $args[1];
+            try {
+                if ($total !== $downloadTotal) {
+                    $progress->clear();
+                    $progress->start($downloadTotal);
+                    $progress->setFormat('%bar% %percent%% %remaining%');
+                    $progress->setProgress($downloadedBytes);
+                    $total = $downloadTotal;
+                } else if ($progress->getStartTime() && $downloadedBytes > 0) {
+                    $progress->setProgress($downloadedBytes);
+                }
+            } catch (\Exception $e) {
+                
             }
-
-            if ($progress->getMaxSteps() == 0 && ($downloadTotal > 0)) {
-                $progress->start($downloadTotal);
-            } else {
-                $progress->setFormat('%bar% %percent%% %remaining%');
-            }
-
-            $progress->setProgress($downloadedBytes);
         };
 
         return [$progress, $progressFunction];
