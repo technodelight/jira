@@ -77,7 +77,7 @@ class CommandInitialisation implements CompilerPassInterface
         $serviceId = sprintf(
             'technodelight.jira.app.command.%s.%s',
             $type,
-            strtr($command, ['-' => '_'])
+            strtr($command, ['-' => '_', ':' => '_'])
         );
         $container->setDefinition($serviceId, $definition);
         $container->getDefinition($serviceId)->addTag('command');

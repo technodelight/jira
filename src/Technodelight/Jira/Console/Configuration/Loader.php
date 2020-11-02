@@ -39,13 +39,29 @@ class Loader
             throw FilePrivilegeErrorException::fromUnreadablePath($splFileInfo->getPathname());
         }
 
-        $perms = substr(sprintf('%o', $splFileInfo->getPerms()), -4);
+        $perms = substr(sprintf('%04o', $splFileInfo->getPerms() & 07777), -4);
         if ($perms !== '0600') {
             throw FilePrivilegeErrorException::fromInvalidPermAndPath(
                 $splFileInfo->getPerms(), $splFileInfo->getPathname()
             );
         }
 
-        return Yaml::parse(file_get_contents($splFileInfo->getRealPath()));
+        return $this->handleImports(Yaml::parse(file_get_contents($splFileInfo->getRealPath())), $splFileInfo->getRealPath());
+    }
+
+    private function handleImports(array $rawConfig, string $parentPath): array
+    {
+        if (!empty($rawConfig['imports'])) {
+            $imports = $rawConfig['imports'];
+            foreach ($imports as $importDef) {
+                $iterator = new GlobIterator(dirname($parentPath) . DIRECTORY_SEPARATOR . $importDef['resource'], FilesystemIterator::CURRENT_AS_FILEINFO);
+                foreach ($iterator as $fileInfo) {
+                    $rawConfig = array_merge($rawConfig, $this->loadConfigurationYaml($fileInfo));
+                }
+            }
+            unset($rawConfig['imports']);
+        }
+
+        return $rawConfig;
     }
 }
