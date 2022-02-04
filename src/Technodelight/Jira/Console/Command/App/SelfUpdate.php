@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Console\Command\App;
 
 use Github\Client;
+use Phar;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -52,7 +53,7 @@ class SelfUpdate extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $runningFile = \Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
+        $runningFile = Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
         $release = $this->github->repo()->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
@@ -91,12 +92,14 @@ class SelfUpdate extends Command
      * @param string $newReleaseUrl
      * @throws \ErrorException
      */
-    private function update(OutputInterface $output, $runningFile, $newReleaseUrl)
+    private function update(OutputInterface $output, $runningFile, $newReleaseUrl): bool
     {
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
             chmod($runningFile, 0755);
             $this->cacheMaintainer->clear();
+
+            return true;
         } else {
             throw new \ErrorException(
                 'Cannot update to the latest release :('
