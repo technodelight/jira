@@ -2159,6 +2159,9 @@
                 "caching",
                 "psr6"
             ],
+            "support": {
+                "source": "https://github.com/symfony/cache/tree/4.1"
+            },
             "time": "2019-04-16T09:37:00+00:00"
         },
         {
@@ -4487,5 +4490,6 @@
         "ext-json": "*",
         "ext-curl": "*"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.1.0"
 }
