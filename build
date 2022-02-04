@@ -267,12 +267,14 @@ function buildPhar(ConsoleOutput $output, $buildDir)
 function copyPharToDestinations(ConsoleOutput $output, $buildFile)
 {
     $output->writeln('<info>Copying files</info>');
-
     $releaseFile = __DIR__
         . DIRECTORY_SEPARATOR . 'builds'
         . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . md5_file($buildFile) . '.phar';
     $localBuildFile = __DIR__
         . DIRECTORY_SEPARATOR . PHAR_NAME . '.phar';
+    if (!mkdir(dirname($releaseFile), 0733, true) && !is_dir(dirname($releaseFile))) {
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', dirname($releaseFile)));
+    }
 
     if (cp($output, $buildFile, $releaseFile, 0755) !== true || cp(
             $output,
