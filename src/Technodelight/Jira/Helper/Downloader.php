@@ -17,10 +17,12 @@ class Downloader
         $f = fopen($targetFile, 'w');
         $ch = $this->initCurl($downloadUrl, $f, $callback);
 
+        $old = umask(0);
         curl_exec($ch);
         $err = curl_errno($ch);
         curl_close($ch);
         fclose($f);
+        umask($old);
 
         $progress->finish();
         $output->writeln('');
