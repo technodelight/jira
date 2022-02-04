@@ -4,43 +4,15 @@ namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 class Downloader
 {
-    /**
-     * @param OutputInterface $output
-     * @return array [ProgressBar, Closure]
-     */
-    public function progressBarWithProgressFunction(OutputInterface $output)
-    {
-        /** @var ProgressBar $progress */
-        $progress = $this->createProgressBar($output);
-        $progressFunction = function($resource, $downloadTotal, $downloadedBytes, $upload_size, $uploaded) use ($progress) {
-            static $total = null;
-
-            try {
-                if ($total !== $downloadTotal) {
-                    $progress->clear();
-                    $progress->start($downloadTotal);
-                    $progress->setFormat('%bar% %percent%% %remaining%');
-                    $progress->setProgress($downloadedBytes);
-                    $total = $downloadTotal;
-                } else if ($progress->getStartTime() && $downloadedBytes > 0) {
-                    $progress->setProgress($downloadedBytes);
-                }
-            } catch (\Exception $e) {
-
-            }
-        };
-
-        return [$progress, $progressFunction];
-    }
-
-    public function downloadWithCurl(OutputInterface $output, $downloadUrl, $targetFile)
+    public function downloadWithCurl(OutputInterface $output, $downloadUrl, $targetFile): bool
     {
         list($progress, $callback) = $this->progressBarWithProgressFunction($output);
         /** @var ProgressBar $progress */
-        /** @var \Closure $callback */
+        /** @var callable $callback */
 
         $f = fopen($targetFile, 'w');
         $ch = $this->initCurl($downloadUrl, $f, $callback);
@@ -53,10 +25,38 @@ class Downloader
         $progress->finish();
         $output->writeln('');
 
-        return $err == 0;
+        return $err === 0;
     }
 
-    private function createProgressBar(OutputInterface $output)
+    /**
+     * @param OutputInterface $output
+     * @return array [ProgressBar, Closure]
+     */
+    public function progressBarWithProgressFunction(OutputInterface $output)
+    {
+        $progress = $this->createProgressBar($output);
+        $progressFunction = static function($resource, $downloadTotal, $downloadedBytes, $upload_size, $uploaded) use ($progress) {
+            static $total = null;
+
+            try {
+                if (null === $total) {
+                    $progress->clear();
+                    $progress->start($downloadTotal);
+                    $progress->setFormat('%bar% %percent%% %remaining%');
+                    $progress->setProgress($downloadedBytes);
+                    $total = $downloadTotal;
+                } else if ($progress->getStartTime() && $downloadedBytes > 0) {
+                    $progress->setProgress($downloadedBytes);
+                }
+            } catch (Throwable $e) {
+                $progress->advance(500);
+            }
+        };
+
+        return [$progress, $progressFunction];
+    }
+
+    private function createProgressBar(OutputInterface $output): ProgressBar
     {
         $progress = new ProgressBar($output);
         $progress->setFormat('%bar% %percent%%');
@@ -75,7 +75,7 @@ class Downloader
      * @param callable $callback
      * @return resource
      */
-    private function initCurl($downloadUrl, $f, callable $callback)
+    private function initCurl(string $downloadUrl, $f, callable $callback)
     {
         $ch = curl_init($downloadUrl);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
