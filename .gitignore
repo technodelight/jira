@@ -3,3 +3,5 @@ jira.phar
 jira*.phar
 .jira.yml
 /builds/*
+/bin/behat
+/bin/phpspec
