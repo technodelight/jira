@@ -156,7 +156,9 @@ function createBuildDirectory(ConsoleOutput $output)
     $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . uniqid();
     $output->writeln('<info>Creating build directory</info>');
     $output->writeln($buildDir);
-    mkdir($buildDir, 0733, true);
+    if (!mkdir($buildDir, 0733, true) && !is_dir($buildDir)) {
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $buildDir));
+    }
     if (!is_dir($buildDir)) {
         $output->getErrorOutput()->writeln('<error>Cannot create build directory!</error>');
         exit(2);
@@ -316,7 +318,7 @@ function testPhar(ConsoleOutput $output, $pharFile)
 function main()
 {
     $input = new ArgvInput(
-        null,
+        [],
         new InputDefinition(
             [
                 new InputOption('workflow', 'w', InputOption::VALUE_NONE, 'run in github workflow mode'),
