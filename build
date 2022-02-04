@@ -2,6 +2,7 @@
 <?php
 
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -320,9 +321,10 @@ function testPhar(ConsoleOutput $output, $pharFile)
 function main()
 {
     $input = new ArgvInput(
-        [],
+        null,
         new InputDefinition(
             [
+                new InputArgument('version', InputArgument::OPTIONAL, 'git tag to build'),
                 new InputOption('workflow', 'w', InputOption::VALUE_NONE, 'run in github workflow mode'),
                 new InputOption('help', 'h', InputOption::VALUE_NONE, 'show help'),
             ]
