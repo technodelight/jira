@@ -10,7 +10,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Field;
-use Technodelight\JiraTagConverter\Components\PrettyTable;
+use Technodelight\JiraTagConverter\Components\Table;
 
 class Fields extends Command
 {
@@ -50,11 +50,11 @@ class Fields extends Command
         } else {
             $table = $this->createFieldsTable($this->api->fields());
         }
-        $renderer = new PrettyTable($output);
-        $renderer
+        $table = new Table();
+        $table
             ->setHeaders(array_shift($table))
             ->setRows(array_values($table));
-        $renderer->render();
+        $output->writeln((string)$table);
     }
 
     /**

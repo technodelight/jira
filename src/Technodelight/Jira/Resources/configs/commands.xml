@@ -94,6 +94,12 @@
             <argument type="service" id="technodelight.jira.config.transitions" />
             <tag name="command" />
         </service>
+        <service id="technodelight.jira.app.command.modes" class="Technodelight\Jira\Console\Command\Show\Modes">
+            <argument type="service" id="technodelight.jira.config.renderers" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
+            <argument type="service" id="technodelight.jira.helper.terminal_dimension_provider" />
+            <tag name="command" />
+        </service>
         <service id="technodelight.jira.app.command.user" class="Technodelight\Jira\Console\Command\Show\User">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.renderer.action.renderer" />

@@ -2,7 +2,7 @@
 
 namespace Technodelight\Jira\Renderer\Issue;
 
-class RendererProvider
+class RendererContainer
 {
     /**
      * @var Renderer[]

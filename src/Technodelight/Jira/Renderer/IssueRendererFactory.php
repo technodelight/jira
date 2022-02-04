@@ -6,7 +6,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\Factory;
 use Technodelight\Jira\Renderer\Issue\Renderer;
-use Technodelight\Jira\Renderer\Issue\RendererProvider;
+use Technodelight\Jira\Renderer\Issue\RendererContainer;
 
 class IssueRendererFactory
 {
@@ -19,11 +19,11 @@ class IssueRendererFactory
      */
     private $factory;
     /**
-     * @var \Technodelight\Jira\Renderer\Issue\RendererProvider
+     * @var \Technodelight\Jira\Renderer\Issue\RendererContainer
      */
     private $rendererProvider;
 
-    public function __construct(ApplicationConfiguration $config, Factory $factory, RendererProvider $rendererProvider)
+    public function __construct(ApplicationConfiguration $config, Factory $factory, RendererContainer $rendererProvider)
     {
         $this->config = $config;
         $this->factory = $factory;

@@ -5,21 +5,21 @@ namespace Technodelight\Jira\Console\Command\Show;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
-use Technodelight\Jira\Renderer\Issue\RendererProvider;
+use Technodelight\Jira\Renderer\Issue\RendererContainer;
+use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Renderers extends Command
 {
     /**
-     * @var RendererProvider
+     * @var RendererContainer
      */
     private $standardProvider;
     /**
-     * @var RendererProvider
+     * @var RendererContainer
      */
     private $boardProvider;
 
-    public function __construct(RendererProvider $standardProvider, RendererProvider $boardProvider)
+    public function __construct(RendererContainer $standardProvider, RendererContainer $boardProvider)
     {
         $this->standardProvider = $standardProvider;
         $this->boardProvider = $boardProvider;

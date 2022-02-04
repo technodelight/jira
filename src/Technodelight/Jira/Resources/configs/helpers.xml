@@ -85,7 +85,11 @@
         </service>
 
         <service id="technodelight.jira.word_wrap" class="Technodelight\Jira\Helper\Wordwrap">
-            <argument type="service" id="technodelight.jira.app"/>
+            <argument type="service" id="technodelight.jira.helper.terminal_dimension_provider"/>
+        </service>
+
+        <service id="technodelight.jira.helper.terminal_dimension_provider" class="Technodelight\Jira\Helper\TerminalDimensionProvider">
+            <argument type="service" id="technodelight.jira.app" />
         </service>
 
         <service id="technodelight.jira.image_provider" class="Technodelight\Jira\Helper\ImageProvider">

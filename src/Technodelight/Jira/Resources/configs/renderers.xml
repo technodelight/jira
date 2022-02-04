@@ -190,12 +190,12 @@
             <argument type="service" id="technodelight.jira.renderer.issue.board.renderer_provider" />
         </service>
 
-        <service id="technodelight.jira.renderer.issue.standard.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererProvider">
+        <service id="technodelight.jira.renderer.issue.standard.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererContainer">
             <argument type="collection"/>
             <!-- see RendererProviderCompilerPass -->
         </service>
 
-        <service id="technodelight.jira.renderer.issue.board.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererProvider">
+        <service id="technodelight.jira.renderer.issue.board.renderer_provider" class="Technodelight\Jira\Renderer\Issue\RendererContainer">
             <argument type="collection"/>
             <!-- see RendererProviderCompilerPass -->
         </service>

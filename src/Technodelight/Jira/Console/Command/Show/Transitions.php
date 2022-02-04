@@ -7,11 +7,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Api\JiraTagConverter\Components\PrettyTable;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Transition;
+use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Transitions extends Command
 {

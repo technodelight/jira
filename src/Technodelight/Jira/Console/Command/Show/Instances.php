@@ -52,11 +52,7 @@ class Instances extends Command
         return $rows;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param array $rows
-     */
-    protected function renderTable(OutputInterface $output, array $rows)
+    private function renderTable(OutputInterface $output, array $rows)
     {
         $table = new PrettyTable($output);
         $table

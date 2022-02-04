@@ -11,7 +11,7 @@ use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Priority;
-use Technodelight\Jira\Renderer\Issue\RendererProvider;
+use Technodelight\Jira\Renderer\Issue\RendererContainer;
 
 /**
  * @TODO: refactor rendering logic to include a type for renderers. So then the rendering engine can decide which "main" renderer (IssueRenderer / BoardRenderer) should be used
@@ -27,15 +27,15 @@ class Renderer
      */
     private $api;
     /**
-     * @var RendererProvider
+     * @var RendererContainer
      */
     private $rendererProvider;
 
     /**
      * @param Api $api
-     * @param RendererProvider $rendererProvider
+     * @param RendererContainer $rendererProvider
      */
-    public function __construct(Api $api, RendererProvider $rendererProvider)
+    public function __construct(Api $api, RendererContainer $rendererProvider)
     {
         $this->api = $api;
         $this->rendererProvider = $rendererProvider;

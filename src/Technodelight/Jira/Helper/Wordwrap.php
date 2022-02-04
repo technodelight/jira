@@ -2,24 +2,23 @@
 
 namespace Technodelight\Jira\Helper;
 
-use Technodelight\Jira\Console\Application;
-
 class Wordwrap
 {
     /**
-     * @var \Technodelight\Jira\Console\Application
+     * @var TerminalDimensionProvider
      */
-    private $application;
+    private $terminalDimensionProvider;
 
-    public function __construct(Application $application)
+    public function __construct(TerminalDimensionProvider $terminalDimensionProvider)
     {
-        $this->application = $application;
+        $this->terminalDimensionProvider = $terminalDimensionProvider;
     }
 
-    public function wrap($text)
+    public function wrap($text, $width = null)
     {
-        $termWidth = $this->application->getTerminalDimensions()[0] ?: 80;
+        $termWidth = $width ?? ($this->terminalDimensionProvider->width() ?: 80);
         $padding = ceil($termWidth * 0.1);
+
         return wordwrap($text, $termWidth - $padding);
     }
 
