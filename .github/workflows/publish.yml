@@ -34,10 +34,9 @@ jobs:
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
+      id: upload_artifact
       with:
-        # Artifact name
-        name: Phar build # optional
-        # A file, directory or wildcard pattern that describes what to upload
+        name: build
         path: jira.phar
 
   create-release:
@@ -45,14 +44,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          exclude_types: other,doc,chore
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.changes }}
           draft: true
           prerelease: false
       - name: Upload release asset
@@ -61,7 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./jira.phar
+          asset_path: jira.phar
           asset_name: jira.phar
           asset_content_type: application/php
       - name: Publish release
