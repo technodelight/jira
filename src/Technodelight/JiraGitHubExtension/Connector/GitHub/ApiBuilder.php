@@ -21,7 +21,8 @@ class ApiBuilder
         $client = new Client(
             new Builder(new MultiCurl())
         );
-        $client->authenticate($this->configuration->token(), null, Client::AUTH_URL_TOKEN);
+        $client->authenticate($this->configuration->token(), null, Client::AUTH_HTTP_TOKEN);
+
         return $client;
     }
 }
