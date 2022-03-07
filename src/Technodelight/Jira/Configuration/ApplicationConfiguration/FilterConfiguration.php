@@ -1,25 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class FilterConfiguration
 {
-    /**
-     * @var string
-     */
-    private $command;
-    /**
-     * @var string
-     */
-    private $jql;
-    /**
-     * @var int
-     */
-    private $filterId;
-    /**
-     * @var string
-     */
-    private $instance;
+    private string $command;
+    private string $jql;
+    private ?int $filterId;
+    private ?string $instance;
 
     public static function fromArray(array $config)
     {
@@ -32,22 +22,22 @@ class FilterConfiguration
         return $instance;
     }
 
-    public function command()
+    public function command(): string
     {
         return $this->command;
     }
 
-    public function jql()
+    public function jql(): string
     {
         return $this->jql;
     }
 
-    public function filterId()
+    public function filterId(): ?int
     {
         return $this->filterId;
     }
 
-    public function instance()
+    public function instance(): ?string
     {
         return $this->instance;
     }

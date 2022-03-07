@@ -128,7 +128,7 @@ class Search extends Command implements IssueRendererAware
      * @param string $filterName
      * @param string $jql
      */
-    protected function dumpFilterConfiguration(OutputInterface $output, $filterName, $jql)
+    protected function dumpFilterConfiguration(OutputInterface $output, string $filterName, string $jql): void
     {
         // perform saving of that filter!
         $output->writeln('You can add the following filter to your configuration yaml file:');

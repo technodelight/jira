@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Filter;
 
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -37,10 +38,10 @@ class IssueFilter extends Command implements IssueRendererAware
      *
      * @throws \LogicException When the command name is empty
      */
-    public function __construct($name, $jql)
+    public function __construct(string $name, string $jql)
     {
         if (empty($jql)) {
-            throw new \InvalidArgumentException('JQL is empty');
+            throw new InvalidArgumentException('JQL is empty');
         }
 
         $this->jql = $jql;
@@ -49,22 +50,22 @@ class IssueFilter extends Command implements IssueRendererAware
         parent::__construct($this->prepareCommandName($this->name));
     }
 
-    public function setJiraApi(Api $api)
+    public function setJiraApi(Api $api): void
     {
         $this->api = $api;
     }
 
-    public function setIssueRenderer(IssueRenderer $issueRenderer)
+    public function setIssueRenderer(IssueRenderer $issueRenderer): void
     {
         $this->issueRenderer = $issueRenderer;
     }
 
-    private function prepareCommandName($name)
+    private function prepareCommandName($name): string
     {
-        return sprintf('search:%s', $name);
+        return sprintf('search:%s', str_replace('search:', '', $name));
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription($this->descriptionFromJql())
@@ -79,7 +80,7 @@ class IssueFilter extends Command implements IssueRendererAware
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issues = $this->api->search($this->jql, $this->page($input), [Api::FIELDS_ALL, 'comment']);
         if (!$issues->count()) {
@@ -89,6 +90,7 @@ class IssueFilter extends Command implements IssueRendererAware
         }
 
         $this->issueRenderer->renderIssues($output, $issues, $input->getOptions());
+
         return 0;
     }
 
@@ -104,6 +106,7 @@ class IssueFilter extends Command implements IssueRendererAware
         if (is_numeric($input->getOption('page'))) {
             return ($input->getOption('page') - 1) * 50;
         }
+
         return null;
     }
 }
