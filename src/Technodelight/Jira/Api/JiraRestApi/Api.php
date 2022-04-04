@@ -922,7 +922,7 @@ class Api
                         }
                         $value = str_replace(
                             $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                            '<fg=cyan>' . $username . '</>',
+                            '[~' . $username . ']',
                             $value
                         );
                     }
