@@ -30,9 +30,8 @@ use Technodelight\Jira\Domain\WorklogCollection;
 
 class Api
 {
-    const FIELDS_ALL = '*all';
-    const CURRENT_USER = 'currentUser()';
-    const SPRINT_OPEN_SPRINTS = 'openSprints()';
+    public const FIELDS_ALL = '*all';
+    private const SEARCH_HELP_LINK = 'https://support.atlassian.com/jira-work-management/docs/use-advanced-search-with-jira-query-language-jql/';
 
     /**
      * @var Client
@@ -60,6 +59,28 @@ class Api
                     'accountId' => $accountId,
                 ])
             )
+        );
+    }
+
+    /**
+     * Returns a paginated list of the users specified by one or more account IDs.
+     *
+     *
+     * @see https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-bulk-get
+     * @param array $accountIds
+     * @return User[]
+     */
+    public function users(array $accountIds)
+    {
+        return array_map(
+            static function($user) {
+                return User::fromArray($user);
+            },
+            $this->client->get(
+                'user/bulk' . $this->queryStringFromParams([
+                    'accountId' => implode(',', $accountIds),
+                ])
+            )['values']
         );
     }
 
@@ -547,7 +568,7 @@ class Api
         } catch (\Exception $e) {
             throw new \BadMethodCallException(
                 $e->getMessage() . PHP_EOL
-                . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html' . PHP_EOL
+                . sprintf('See advanced search help at %s', self::SEARCH_HELP_LINK) . PHP_EOL
                 . 'Query was "' . $jql . '"',
                 $e->getCode(),
                 $e
@@ -822,24 +843,28 @@ class Api
     {
         $attachments = isset($jiraIssue['fields']['attachment']) ? $jiraIssue['fields']['attachment'] : [];
         foreach ($attachments as $k => $attachment) {
+            $this->replaceAccountIds($parent);
             $attachments[$k] = $this->normaliseDateFields($attachment);
         }
         $jiraIssue['fields']['attachment'] = $attachments;
         $parent = !empty($jiraIssue['parent']) ? $jiraIssue['parent'] : null;
         if ($parent) {
+            $this->replaceAccountIds($parent);
             $jiraIssue['fields']['parent'] = $this->normaliseDateFields($parent);
         }
         $comments = isset($jiraIssue['fields']['comment']) ? $jiraIssue['fields']['comment'] : [];
         if ($comments) {
             foreach ($comments['comments'] as $k => $comment) {
+                $this->replaceAccountIds($comment);
                 $comments['comments'][$k] = $this->normaliseDateFields($comment);
             }
         }
         $jiraIssue['fields']['comment'] = $comments;
         $worklog = isset($jiraIssue['fields']['worklog']) ? $jiraIssue['fields']['worklog'] : [];
         if ($worklog) {
-            foreach ($worklog['worklogs'] as $k => $comment) {
-                $worklog['worklogs'][$k] = $this->normaliseDateFields($comment);
+            foreach ($worklog['worklogs'] as $k => $worklog) {
+                $this->replaceAccountIds($worklog);
+                $worklog['worklogs'][$k] = $this->normaliseDateFields($worklog);
             }
         }
         $jiraIssue['fields']['worklog'] = $worklog;
@@ -857,6 +882,54 @@ class Api
             }
         }
         return $jiraItem;
+    }
+
+    private function collectAccountIds(array $jiraItem)
+    {
+        $fields = ['body', 'comment', 'value'];
+        $accountIds = [];
+        foreach ($jiraItem as $field => $value) {
+            if (in_array($field, $fields, true)) {
+                if ($numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches)) {
+                    for ($i = 0; $i < $numOfMatches; $i++) {
+                        $accountIds[] = $matches[3][$i];
+                    }
+                }
+            }
+        }
+
+        return array_filter(array_unique($accountIds));
+    }
+
+    private function replaceAccountIds(array &$jiraItem)
+    {
+        $fields = ['body', 'comment'];
+        $accountIds = $this->collectAccountIds($jiraItem);
+        if (empty($accountIds)) {
+            return;
+        }
+
+        $users = $this->users($accountIds);
+        foreach ($jiraItem as $field => $value) {
+            if (in_array($field, $fields, true)) {
+                if ($numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $value, $matches)) {
+                    for ($i = 0; $i < $numOfMatches; $i++) {
+                        $username = $matches[2][$i];
+                        foreach ($users as $user) {
+                            if ('accountid:' . $user->id() === $matches[2][$i]) {
+                                $username = $user->displayName();
+                            }
+                        }
+                        $value = str_replace(
+                            $matches[1][$i].$matches[2][$i].$matches[3][$i],
+                            '<fg=cyan>' . $username . '</>',
+                            $value
+                        );
+                    }
+                    $jiraItem[$field] = $value;
+                }
+            }
+        }
     }
 
     /**
