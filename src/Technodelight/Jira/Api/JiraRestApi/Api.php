@@ -843,7 +843,7 @@ class Api
     {
         $attachments = isset($jiraIssue['fields']['attachment']) ? $jiraIssue['fields']['attachment'] : [];
         foreach ($attachments as $k => $attachment) {
-            $this->replaceAccountIds($parent);
+            $this->replaceAccountIds($attachment);
             $attachments[$k] = $this->normaliseDateFields($attachment);
         }
         $jiraIssue['fields']['attachment'] = $attachments;
