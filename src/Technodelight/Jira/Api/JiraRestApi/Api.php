@@ -72,16 +72,20 @@ class Api
      */
     public function users(array $accountIds)
     {
-        return array_map(
-            static function($user) {
-                return User::fromArray($user);
+        if (empty($accountIds)) {
+            return [];
+        }
+
+        return array_filter(array_map(
+            static function (?array $user): ?User {
+                return $user ? User::fromArray($user) : null;
             },
             $this->client->get(
                 'user/bulk' . $this->queryStringFromParams([
                     'accountId' => implode(',', $accountIds),
                 ])
-            )['values']
-        );
+            )['values'] ?? []
+        ));
     }
 
     /**
