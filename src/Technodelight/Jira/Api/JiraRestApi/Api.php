@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Api\JiraRestApi;
 
+use BadMethodCallException;
 use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment\CommentId;
@@ -569,13 +570,11 @@ class Api
             }
 
             return IssueCollection::fromSearchArray($results);
-        } catch (\Exception $e) {
-            throw new \BadMethodCallException(
+        } catch (ClientException $e) {
+            throw new BadMethodCallException(
                 $e->getMessage() . PHP_EOL
                 . sprintf('See advanced search help at %s', self::SEARCH_HELP_LINK) . PHP_EOL
-                . 'Query was "' . $jql . '"',
-                $e->getCode(),
-                $e
+                . 'Query was: ' . PHP_EOL . $jql
             );
         }
     }

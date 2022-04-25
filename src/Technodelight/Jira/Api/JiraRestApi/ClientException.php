@@ -19,7 +19,7 @@ class ClientException extends \RuntimeException
 
     private static function fromErrorResponse(array $errorResponse, GuzzleClientException $previousException = null)
     {
-        if (isset($errorResponse['errors']) && isset($errorResponse['errorMessages'])) {
+        if (isset($errorResponse['errors']) || isset($errorResponse['errorMessages'])) {
             return self::fromStandardError($errorResponse, $previousException);
         } else if (isset($errorResponse['message'])) {
             return self::fromRemoteException($errorResponse, $previousException);
@@ -31,7 +31,7 @@ class ClientException extends \RuntimeException
     private static function fromStandardError(array $errorResponse, GuzzleClientException $previousException = null)
     {
         return new self(
-            join(PHP_EOL, array_merge($errorResponse['errors'], $errorResponse['errorMessages'])),
+            implode(PHP_EOL, array_merge($errorResponse['errors'] ?? [], $errorResponse['errorMessages'] ?? [])),
             $previousException ? $previousException->getCode() : null,
             $previousException
         );
@@ -62,7 +62,7 @@ class ClientException extends \RuntimeException
     private static function decodeResponse(GuzzleClientException $exception)
     {
         if (null !== $exception->getResponse()) {
-            return json_decode($exception->getResponse()->getBody(), true);
+            return json_decode($exception->getResponse()->getBody()->getContents(), true);
         }
 
         return [];
