@@ -2,30 +2,28 @@
 
 namespace Technodelight\Jira\Console\DependencyInjection;
 
+use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
 use Technodelight\Jira\Console\Configuration\DirectoryProvider;
 
 class CacheMaintainer
 {
-    const CACHE_PATH = '.jira/container/cache.php';
-    const HASH_PATH = '.jira/container/cache.md5';
+    private const CACHE_PATH = '.jira/container/cache.php';
+    private const HASH_PATH = '.jira/container/cache.md5';
 
-    /**
-     * @var DirectoryProvider
-     */
-    private $directoryProvider;
+    private DirectoryProvider $directoryProvider;
     /**
      * @var string[]
      */
-    private static $directoriesCache = [];
+    private static array $directoriesCache = [];
 
     public function __construct(DirectoryProvider $directoryProvider)
     {
         $this->directoryProvider = $directoryProvider;
     }
 
-    public static function containerCachePath()
+    public static function containerCachePath(): string
     {
         $file = getenv('HOME') . DIRECTORY_SEPARATOR . self::CACHE_PATH;
         self::ensureDirectoryForFile($file);
@@ -33,7 +31,7 @@ class CacheMaintainer
         return $file;
     }
 
-    public function checkAndInvalidate()
+    public function checkAndInvalidate(): bool
     {
         $containerHash = $this->containerHash();
         $configHash = $this->configHash();
@@ -42,7 +40,7 @@ class CacheMaintainer
             return false;
         }
 
-        if ($containerHash != $configHash) {
+        if ($containerHash !== $configHash) {
             $this->clear();
             return true;
         }
@@ -50,7 +48,7 @@ class CacheMaintainer
         return false;
     }
 
-    public function dump(ContainerBuilder $builder)
+    public function dump(ContainerBuilder $builder): void
     {
         $dumper = new PhpDumper($builder);
 
@@ -58,7 +56,7 @@ class CacheMaintainer
         file_put_contents($this->hashFilePath(), $this->configHash());
     }
 
-    public function clear()
+    public function clear(): void
     {
         $cache = self::containerCachePath();
 
@@ -73,7 +71,7 @@ class CacheMaintainer
         }
     }
 
-    private function hashFilePath()
+    private function hashFilePath(): string
     {
         $file = getenv('HOME') . DIRECTORY_SEPARATOR . self::HASH_PATH;
         self::ensureDirectoryForFile($file);
@@ -81,7 +79,7 @@ class CacheMaintainer
         return $file;
     }
 
-    private function containerHash()
+    private function containerHash(): ?string
     {
         $hash = $this->hashFilePath();
         if (is_file($hash)) {
@@ -91,7 +89,7 @@ class CacheMaintainer
         return null;
     }
 
-    private function configHash()
+    private function configHash(): ?string
     {
         $files = [
             $this->directoryProvider->user() . DIRECTORY_SEPARATOR . '.jira.yml',
@@ -105,18 +103,18 @@ class CacheMaintainer
         }
 
         if (count($mds) > 0) {
-            return md5(join('', $mds));
+            return md5(implode('', $mds));
         }
 
         return null;
     }
 
-    private static function ensureDirectoryForFile($file)
+    private static function ensureDirectoryForFile($file): void
     {
         $dir = dirname($file);
         if (!in_array($dir, self::$directoriesCache)) {
-            if (!is_dir($dir)) {
-                mkdir($dir, 0744, true);
+            if (!is_dir($dir) && !mkdir($dir, 0744, true) && !is_dir($dir)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
             }
             self::$directoriesCache[] = $dir;
         }

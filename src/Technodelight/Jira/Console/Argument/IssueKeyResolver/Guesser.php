@@ -25,7 +25,7 @@ class Guesser
         $this->branchConfig = $branchConfig;
     }
 
-    public function guessIssueKey($guessable, Branch $currentBranch = null)
+    public function guessIssueKey($guessable, Branch $currentBranch = null): ?IssueKey
     {
         if ($key = $this->fromString($guessable)) {
             return $key;
@@ -40,7 +40,7 @@ class Guesser
         return null;
     }
 
-    private function fromString($string)
+    private function fromString($string): ?IssueKey
     {
         try {
             return IssueKey::fromString($this->aliasConfig->aliasToIssueKey($string));
@@ -49,11 +49,11 @@ class Guesser
         }
     }
 
-    private function fromBranch(Branch $branch)
+    private function fromBranch(Branch $branch): ?IssueKey
     {
         try {
             $issueKey = $this->aliasConfig->aliasToIssueKey($branch->name());
-            if ($issueKey != $branch->name()) { // has an alias for complete branch name
+            if ($issueKey !== $branch->name()) { // has an alias for complete branch name
                 return IssueKey::fromString($issueKey);
             }
             return $this->findIssueKeyFromBranch($branch);
@@ -62,7 +62,7 @@ class Guesser
         }
     }
 
-    private function findIssueKeyFromBranch(Branch $branch)
+    private function findIssueKeyFromBranch(Branch $branch): ?IssueKey
     {
         $regexes = [];
         foreach ($this->branchConfig->patterns() as $pattern) {
@@ -96,7 +96,7 @@ class Guesser
         return null;
     }
 
-    private function fromUrl($guessable)
+    private function fromUrl($guessable): ?IssueKey
     {
         if (preg_match('~https?://.*/(' . IssueKey::PATTERN . ').*~', $guessable, $matches)) {
             try {
@@ -105,5 +105,7 @@ class Guesser
                 return null;
             }
         }
+
+        return null;
     }
 }

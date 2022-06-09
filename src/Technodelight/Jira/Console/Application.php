@@ -104,7 +104,7 @@ BANNER;
         return sprintf('<fg=cyan>%s</>', $banner)
             . PHP_EOL . PHP_EOL
             . parent::getLongVersion() . PHP_EOL . PHP_EOL
-            . 'GNU GPLv3, Copyright (c) 2015-2019 Zsolt Gál' . PHP_EOL
+            . 'GNU GPLv3, Copyright (c) 2015-'.date('Y').', Zsolt Gál' . PHP_EOL
             . 'See https://github.com/technodelight/jira/blob/master/LICENSE.';
     }
 
@@ -121,9 +121,8 @@ BANNER;
     private function formatBytes($size, $precision = 4)
     {
         $base = log($size, 1024);
-        $suffixes = ['', 'K', 'M', 'G', 'T'];
 
-        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[(int) floor($base)];
+        return round(1024 ** ($base - floor($base)), $precision) . ' ' . ['', 'K', 'M', 'G', 'T'][(int) floor($base)];
     }
 
     /**
@@ -135,8 +134,7 @@ BANNER;
         $this->currentInstanceName = $input->getParameterOption(['--instance', '-i']) ?: 'default';
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
-            /** @var \ICanBoogie\Storage\Storage $cache */
-            $cache = $this->container->get('technodelight.jira.api_cache_storage');
+            $cache = $this->container->get('technodelight.jira.api_cache.clearer');
             $cache->clear();
             $containerCache = $this->container->get('technodelight.jira.console.di.cache_maintainer');
             $containerCache->clear();

@@ -38,7 +38,7 @@ class IssueKeyResolverSpec extends ObjectBehavior
 
     function it_resolves_issue_key_argument_from_input(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $guesser->guessIssueKey('PROJ-123', null)->willReturn('PROJ-123');
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn(IssueKey::fromString('PROJ-123'));
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('PROJ-123');
         $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'PROJ-123']);
 
@@ -62,15 +62,15 @@ class IssueKeyResolverSpec extends ObjectBehavior
 
     function it_can_resolve_options(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $guesser->guessIssueKey('PROJ-123', null)->willReturn('PROJ-123');
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn(IssueKey::fromString('PROJ-123'));
         $input->getOption(IssueKeyResolver::OPTION)->willReturn('PROJ-123');
         $this->option($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));
     }
 
     function it_can_resolve_aliases_from_configuration(Guesser $guesser, InputInterface $input, OutputInterface $output)
     {
-        $guesser->guessIssueKey('something', null)->willReturn('PROJ-123');
-        $guesser->guessIssueKey('PROJ-123', null)->willReturn('something');
+        $guesser->guessIssueKey('something', null)->willReturn(IssueKey::fromString('PROJ-123'));
+        $guesser->guessIssueKey('PROJ-123', null)->willReturn(IssueKey::fromString('PROJ-123'));
         $input->getArguments()->willReturn([IssueKeyResolver::ARGUMENT => 'something']);
         $input->getArgument(IssueKeyResolver::ARGUMENT)->willReturn('something');
         $this->argument($input, $output)->shouldBeLike(IssueKey::fromString('PROJ-123'));

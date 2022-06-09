@@ -8,24 +8,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 use Technodelight\Jira\Domain\Issue\IssueKey;
+use UnexpectedValueException;
 
 class IssueKeyResolver
 {
-    const ARGUMENT = 'issueKey';
-    const OPTION = 'issueKey';
+    public const ARGUMENT = 'issueKey';
+    public const OPTION = 'issueKey';
 
-    /**
-     * @var Git
-     */
-    private $git;
-    /**
-     * @var Guesser
-     */
-    private $guesser;
-    /**
-     * @var InteractiveIssueSelector
-     */
-    private $issueSelector;
+    private Git $git;
+    private Guesser $guesser;
+    private InteractiveIssueSelector  $issueSelector;
 
     public function __construct(Git $git, Guesser $guesser, InteractiveIssueSelector $issueSelector)
     {
@@ -34,11 +26,6 @@ class IssueKeyResolver
         $this->issueSelector = $issueSelector;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return IssueKey
-     */
     public function argument(InputInterface $input, OutputInterface $output, $strict = true): IssueKey
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
@@ -50,7 +37,7 @@ class IssueKeyResolver
             $shift = false;
             foreach ($input->getArguments() as $argument => $value) {
                 //@TODO: something stopped working here
-                if ($argument == self::ARGUMENT && !$this->isArgValueAnIssueKey($value, $issueKey)) {
+                if ($argument === self::ARGUMENT && !$this->isArgValueAnIssueKey($value, $issueKey)) {
                     $shift = true;
                     $previousArgumentValue = $input->getArgument(self::ARGUMENT);
                     $input->setArgument($argument, (string) $issueKey);
@@ -63,7 +50,7 @@ class IssueKeyResolver
         }
 
         if (null === $issueKey && $strict === true) {
-            throw new \UnexpectedValueException(
+            throw new UnexpectedValueException(
                 ':\'( Cannot figure out issueKey argument, please specify explicitly'
             );
         }
@@ -92,7 +79,7 @@ class IssueKeyResolver
 
     private function isArgValueAnIssueKey($value, $issueKey)
     {
-        return $value == (string) $issueKey
-            || (null !== $this->guesser->guessIssueKey($issueKey));
+        return $value === (string) $issueKey
+            || (null !== $this->guesser->guessIssueKey((string)$issueKey));
     }
 }
