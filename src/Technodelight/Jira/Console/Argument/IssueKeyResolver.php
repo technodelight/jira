@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
+use BadMethodCallException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\GitShell\ApiInterface as Git;
@@ -38,10 +39,10 @@ class IssueKeyResolver
      * @param OutputInterface $output
      * @return IssueKey
      */
-    public function argument(InputInterface $input, OutputInterface $output, $strict = true)
+    public function argument(InputInterface $input, OutputInterface $output, $strict = true): IssueKey
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
-            return null;
+            throw new BadMethodCallException('There\'s no issueKey argument specified in the input definition');
         }
         $issueKey = $this->resolve($input->getArgument(self::ARGUMENT), $input, $output);
 

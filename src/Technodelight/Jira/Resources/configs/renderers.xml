@@ -127,14 +127,14 @@
         <service id="technodelight.jira.renderer.issue.changelog" class="Technodelight\Jira\Renderer\Issue\Changelog">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.template_helper" />
-            <argument type="service" id="technodelight.jira.jira_tag_converter.no_color" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument>-2 weeks</argument>
             <tag name="issue_renderer" key="changelogs" />
         </service>
         <service id="technodelight.jira.renderer.issue.changelog.nano" class="Technodelight\Jira\Renderer\Issue\Changelog">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.template_helper" />
-            <argument type="service" id="technodelight.jira.jira_tag_converter.no_color" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument>today 00:00</argument>
             <argument>10</argument>
             <tag name="issue_renderer" key="changelogs.nano" />
@@ -142,13 +142,17 @@
         <service id="technodelight.jira.renderer.issue.changelog.verbose" class="Technodelight\Jira\Renderer\Issue\Changelog">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.template_helper" />
-            <argument type="service" id="technodelight.jira.jira_tag_converter.no_color" />
+            <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <tag name="issue_renderer" key="changelogs.verbose" />
         </service>
-        <service id="technodelight.jira.renderer.issue.tasks" class="Technodelight\Jira\Renderer\Issue\TaskWarrior">
+<!--        <service id="technodelight.jira.renderer.issue.tasks" class="Technodelight\Jira\Renderer\Issue\TaskWarrior">-->
+<!--            <argument type="service" id="technodelight.jira.template_helper" />-->
+<!--            <argument type="service" id="technodelight.task.api" />-->
+<!--            <tag name="issue_renderer" key="taskwarrior" />-->
+<!--        </service>-->
+        <service id="technodelight.jira.renderer.issue.minimal_issue_relations" class="Technodelight\Jira\Renderer\Issue\MinimalIssueRelations">
             <argument type="service" id="technodelight.jira.template_helper" />
-            <argument type="service" id="technodelight.task.api" />
-            <tag name="issue_renderer" key="taskwarrior" />
+            <tag name="issue_renderer" key="minimal_issue_relations" />
         </service>
         <!-- new issue field renderers -->
 

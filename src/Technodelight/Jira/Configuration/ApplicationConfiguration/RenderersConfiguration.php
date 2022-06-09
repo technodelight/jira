@@ -1,6 +1,7 @@
 <?php
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
+use InvalidArgumentException;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\DefaultFormatter;
 
@@ -38,6 +39,14 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'minimal_header']
                 ]
             ],
+            'relations' => [
+                'name' => 'relations',
+                'inherit' => false,
+                'fields' => [
+                    ['name' => 'minimal_header'],
+                    ['name' => 'minimal_issue_relations'],
+                ]
+            ],
             'short' => [
                 'name' => 'short',
                 'inherit' => true,
@@ -66,8 +75,6 @@ class RenderersConfiguration implements RegistrableConfiguration
                     ['name' => 'versions'],
                     ['name' => 'attachments'],
                     ['name' => 'branches'],
-//                    ['name' => 'github'], //@TODO: refactor renderers configuration so extensions can alter defaults if needed
-//                    ['name' => 'taskwarrior'],
                     ['name' => 'worklogs'],
                     ['name' => 'comments'],
                 ],
@@ -108,7 +115,7 @@ class RenderersConfiguration implements RegistrableConfiguration
         $instance->preference = isset($config['preference']) ? $config['preference'] : ['list' => 'short', 'view' => 'full'];
         foreach ($instance->preference as $type => $renderer) {
             if (!isset($instance->modes[$renderer])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf('Preferred renderer "%s" for "%s" does not exists!', $renderer, $type)
                 );
             }
@@ -137,7 +144,7 @@ class RenderersConfiguration implements RegistrableConfiguration
             return $this->modes[$mode];
         }
 
-        throw new \InvalidArgumentException('No such mode: ' . $mode);
+        throw new InvalidArgumentException('No such mode: ' . $mode);
     }
 
     /**
@@ -149,7 +156,7 @@ class RenderersConfiguration implements RegistrableConfiguration
         try {
             $this->mode($mode);
             return true;
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return false;
         }
     }

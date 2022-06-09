@@ -192,6 +192,7 @@
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
             <argument type="service" id="symfony.expression.language" />
+            <argument type="service" id="technodelight.jira.word_wrap" />
             <tag name="command" />
         </service>
         <!-- action commands -->
