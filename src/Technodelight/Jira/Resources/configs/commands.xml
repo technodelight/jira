@@ -179,6 +179,8 @@
             <argument type="service" id="technodelight.jira.console.option.checker" />
             <argument type="service" id="console.question_helper" />
             <argument type="service" id="technodelight.jira.console.field_editor" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.renderer.issue.minimal_header" />
             <tag name="command" />
         </service>
 

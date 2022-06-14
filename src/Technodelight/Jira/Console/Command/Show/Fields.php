@@ -42,19 +42,22 @@ class Fields extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($this->optionChecker->hasOptionWithoutValue($input, 'issueKey')) {
             $issueKey = $this->issueKeyResolver->option($input, $output);
-            $table = $this->createFieldsTable($this->api->issueEditMeta($issueKey)->fields());
+            $tableData = $this->createFieldsTable($this->api->issueEditMeta($issueKey)->fields());
         } else {
-            $table = $this->createFieldsTable($this->api->fields());
+            $tableData = $this->createFieldsTable($this->api->fields());
         }
         $table = new Table();
-        $table
-            ->setHeaders(array_shift($table))
-            ->setRows(array_values($table));
+        $table->setHeaders(array_shift($tableData));
+        foreach ($tableData as $tableRow) {
+            $table->addRow($tableRow);
+        }
         $output->writeln((string)$table);
+
+        return 0;
     }
 
     /**

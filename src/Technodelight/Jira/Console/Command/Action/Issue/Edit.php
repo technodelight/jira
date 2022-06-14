@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use InvalidArgumentException;
 use SebastianBergmann\Diff\Differ;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -11,43 +12,42 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\FieldEditor\EditorException;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\FieldEditor\FieldEditor;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue\Meta\Field;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\TemplateHelper;
+use Technodelight\Jira\Renderer\Issue\MinimalHeader;
 
 class Edit extends Command
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var QuestionHelper
-     */
-    private $questionHelper;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var Checker
-     */
-    private $checker;
-    /**
-     * @var FieldEditor
-     */
-    private $editor;
+    private Api $jira;
+    private QuestionHelper $questionHelper;
+    private IssueKeyResolver $issueKeyResolver;
+    private Checker $checker;
+    private FieldEditor $editor;
+    private TemplateHelper $templateHelper;
+    private MinimalHeader $minimalHeaderRenderer;
 
-    public function __construct(Api $jira, IssueKeyResolver $issueKeyResolver, Checker $checker, QuestionHelper $questionHelper, FieldEditor $editor)
-    {
+    public function __construct(
+        Api $jira,
+        IssueKeyResolver $issueKeyResolver,
+        Checker $checker,
+        QuestionHelper $questionHelper,
+        FieldEditor $editor,
+        TemplateHelper $templateHelper,
+        MinimalHeader $minimalHeaderRenderer
+    ) {
         $this->jira = $jira;
         $this->issueKeyResolver = $issueKeyResolver;
         $this->checker = $checker;
         $this->questionHelper = $questionHelper;
         $this->editor = $editor;
+        $this->templateHelper = $templateHelper;
+        $this->minimalHeaderRenderer = $minimalHeaderRenderer;
 
         parent::__construct();
     }
@@ -95,15 +95,18 @@ class Edit extends Command
                 InputOption::VALUE_NONE,
                 'Skip notifying watchers about the change'
             )
-        ;
+            ->addOption(
+                'list',
+                '',
+                InputOption::VALUE_NONE,
+                'List available values, if it is a set of choices'
+            );
     }
 
     /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @throws \Technodelight\Jira\Console\FieldEditor\EditorException
+     * @throws EditorException
      */
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $fieldKey = $input->getArgument('fieldKey');
@@ -112,12 +115,9 @@ class Edit extends Command
             $fields = $this->jira->issueEditMeta($issueKey)->fields();
             $idx = $this->questionHelper->ask($input, $output, new ChoiceQuestion(
                 'Select a field to edit',
-                array_map(
-                    function (Field $field) {
-                        return $field->name();
-                    },
-                    $fields
-                )
+                array_map(static function (Field $field) {
+                    return $field->name();
+                }, $fields)
             ));
             $selectedField = $fields[$idx];
             $input->setArgument('fieldKey', $selectedField->key());
@@ -132,16 +132,20 @@ class Edit extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $fieldKey = $input->getArgument('fieldKey');
 
-        if (empty((string) $issueKey) || empty($fieldKey)) {
-            throw new \InvalidArgumentException('Nothing to do');
+        if (empty((string)$issueKey) || (empty($fieldKey) && !$input->getOption('list'))) {
+            throw new InvalidArgumentException('Nothing to do');
         }
 
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
+        if ($input->getOption('list')) {
+            $output->writeln($field->allowedValues());
+            return 0;
+        }
 
         $beforeUpdate = $this->jira->retrieveIssue($issueKey);
         $this->jira->updateIssue(
@@ -151,22 +155,25 @@ class Edit extends Command
         );
         $afterUpdate = $this->jira->retrieveIssue($issueKey);
 
+        $this->minimalHeaderRenderer->render($output, $this->jira->retrieveIssue($issueKey));
         $this->renderChange($field, $beforeUpdate, $afterUpdate, $output);
+
+        return 0;
     }
 
-    private function renderChange(Field $field, Issue $before, Issue $after, OutputInterface $output)
+    private function renderChange(Field $field, Issue $before, Issue $after, OutputInterface $output): void
     {
-        if ($field->schemaType() == 'string' || $field->schemaType() == 'number') {
+        if ($field->schemaType() === 'string' || $field->schemaType() === 'number') {
             $differ = new Differ;
-            $before = $before->findField($field->key()) ?: '';
-            $after = $after->findField($field->key()) ?: '';
+            $beforeValue = ($before = $before->findField($field->key())) ? $before : '';
+            $afterValue = ($after = $after->findField($field->key())) ? $after : '';
 
             $output->writeln(
                 sprintf(
                     '<comment>%s</comment> was changed: ' . PHP_EOL . '%s',
                     $field->name(),
                     $this->formatDiff(
-                        $differ->diff($before, $after)
+                        $differ->diff($beforeValue, $afterValue)
                     )
                 )
             );
@@ -181,42 +188,44 @@ class Edit extends Command
 
         if (!empty($added)) {
             $output->writeln(
-                $this->renderChangeset('Added', $field->name(), $added)
+                $this->renderChangeSet('Added', $field->name(), $added)
             );
         }
         if (!empty($removed)) {
             $output->writeln(
-                $this->renderChangeset('Removed', $field->name(), $removed)
+                $this->renderChangeSet('Removed', $field->name(), $removed)
             );
         }
         if (!empty($unchanged)) {
             $output->writeln(
-                $this->renderChangeset('Unchanged', $field->name(), $unchanged)
+                $this->renderChangeSet('Unchanged', $field->name(), $unchanged)
             );
         }
     }
 
-    private function formatDiff($diff)
+    private function formatDiff($diff): string
     {
         $lines = explode(PHP_EOL, $diff);
         foreach ($lines as $idx => $line) {
-            if (substr($line, 0, 1) == '-') {
+            if (substr($line, 0, 1) === '-') {
                 $lines[$idx] = '<fg=red>' . $line . '</>';
-            } else if (substr($line, 0, 1) == '+') {
-                $lines[$idx] = '<fg=green>' . $line . '</>';
+            } else {
+                if (substr($line, 0, 1) === '+') {
+                    $lines[$idx] = '<fg=green>' . $line . '</>';
+                }
             }
         }
-        return join(PHP_EOL, $lines);
+        return implode(PHP_EOL, $lines);
     }
 
-    private function renderChangeset($text, $field, array $changes)
+    private function renderChangeSet($text, $field, array $changes): string
     {
-        return sprintf(
+        return $this->templateHelper->tabulate(sprintf(
             '<comment>%s %s for %s</comment>',
             $text,
-            '<info>' . join(', ', $changes) . '</info>',
+            '<info>' . implode(', ', $changes) . '</info>',
             $field
-        );
+        ));
     }
 
     /**
@@ -226,10 +235,15 @@ class Edit extends Command
      * @param IssueKey $issueKey
      * @param string $option
      * @return string
-     * @throws \Technodelight\Jira\Console\FieldEditor\EditorException
+     * @throws EditorException
      */
-    private function editField(InputInterface $input, OutputInterface $output, Field $field, IssueKey $issueKey, $option)
-    {
+    private function editField(
+        InputInterface $input,
+        OutputInterface $output,
+        Field $field,
+        IssueKey $issueKey,
+        string $option
+    ): string {
         return $this->editor->edit(
             $input,
             $output,
@@ -239,7 +253,7 @@ class Edit extends Command
         );
     }
 
-    private function prepareUpdateData(Field $field, InputInterface $input)
+    private function prepareUpdateData(Field $field, InputInterface $input): array
     {
         $changeSet = [];
         $operations = [
@@ -261,7 +275,7 @@ class Edit extends Command
         }
 
         if (empty($changeSet)) {
-            throw new \InvalidArgumentException('Nothing to do');
+            throw new InvalidArgumentException('Nothing to do');
         }
 
         return [$field->key() => $changeSet];
@@ -276,24 +290,21 @@ class Edit extends Command
      */
     public function remapValue(Field $field, $value)
     {
-        if ($field->schemaItemType() == 'string' || $field->schemaType() == 'string') {
+        if ($field->schemaItemType() === 'string' || $field->schemaType() === 'string') {
             return $value;
         }
-        if ($field->schemaItemType() == 'number' || $field->schemaType() == 'number') {
-            return (int) $value;
+        if ($field->schemaItemType() === 'number' || $field->schemaType() === 'number') {
+            return (int)$value;
         }
 
         return ['name' => $value];
     }
 
-    private function arrayOfNamesFromField(array $valueArray)
+    private function arrayOfNamesFromField(array $valueArray): array
     {
         return array_map(
-            function ($value) {
-                if (is_array($value)) {
-                    return $value['name'];
-                }
-                return $value;
+            static function ($value) {
+                return is_array($value) ? $value['name'] : $value;
             },
             $valueArray
         );
