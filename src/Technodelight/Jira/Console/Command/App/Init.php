@@ -18,11 +18,11 @@ use Technodelight\SymfonyConfigurationInitialiser\Initialiser;
 
 class Init extends Command
 {
-    const CONFIG_FILENAME = '.jira.yml';
-    private $configurationDumper;
-    private $git;
-    private $treeBuilderFactory;
-    private $questionHelper;
+    private const CONFIG_FILENAME = '.jira.yml';
+    private ConfigurationDumper $configurationDumper;
+    private Api $git;
+    private TreeBuilderFactory $treeBuilderFactory;
+    private QuestionHelper $questionHelper;
 
     public function __construct(ConfigurationDumper $configurationDumper, Api $git, TreeBuilderFactory $treeBuilderFactory, QuestionHelper $questionHelper)
     {
@@ -55,28 +55,16 @@ class Init extends Command
         ;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|null|void
-     * @throws ErrorException
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('sample')) {
-            $this->dumpSample($input, $output);
-        } else {
-            $this->interactiveInit($input, $output);
+            return $this->dumpSample($input, $output);
         }
+
+        return $this->interactiveInit($input, $output);
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @throws ErrorException
-     * @return int
-     */
-    private function interactiveInit(InputInterface $input, OutputInterface $output)
+    private function interactiveInit(InputInterface $input, OutputInterface $output): int
     {
         $path = $this->configFilePath((bool) $input->getOption('local'));
 
@@ -100,25 +88,17 @@ class Init extends Command
         return 1;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @throws ErrorException
-     */
-    private function dumpSample(InputInterface $input, OutputInterface $output)
+    private function dumpSample(InputInterface $input, OutputInterface $output): int
     {
         $path = $this->configFilePath((bool) $input->getOption('local')) . '.sample';
         $this->configurationDumper->dump($path, false === $input->getOption('local'));
 
         $output->writeln('Sample configuration has been written to ' . $path);
+
+        return 0;
     }
 
-    /**
-     * @param InputInterface $input
-     * @return string
-     * @throws ErrorException
-     */
-    protected function configFilename(InputInterface $input)
+    private function configFilename(InputInterface $input): string
     {
         $fileProvider = $this->filenameProvider();
         if ($input->getOption('local')) {

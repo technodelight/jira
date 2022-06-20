@@ -475,6 +475,7 @@ class Api
         );
         $self = $this;
         return array_map(function(array $changelog) use ($self, $issueKey) {
+            $this->replaceAccountIds($changelog);
             return Changelog::fromArray($self->normaliseDateFields($changelog), $issueKey);
         }, $result['values']);
     }

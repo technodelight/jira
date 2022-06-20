@@ -44,7 +44,7 @@ class Instances implements Configuration
                     ->end()
                     ->scalarNode('password')
                         ->attribute('hidden', true)
-                        ->info('Instance JIRA password')
+                        ->info('Instance API token, can be obtained from https://id.atlassian.com/manage-profile/security/api-tokens')
                         ->defaultValue('supersecretpassword')
                         ->isRequired()
                         ->cannotBeEmpty()

@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Renderer\Issue;
 
+use DateTime;
 use SebastianBergmann\Diff\Differ;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
@@ -150,7 +151,7 @@ class Changelog implements IssueRenderer
         );
     }
 
-    private function ago(\DateTime $date)
+    private function ago(DateTime $date)
     {
         return TimeAgo::fromDateTime($date)->inWords();
     }
@@ -170,13 +171,14 @@ class Changelog implements IssueRenderer
                 $lines[$idx] = '<fg=green>' . $line . '</>';
             }
         }
-        return join(PHP_EOL, $lines);
+        return implode(PHP_EOL, $lines);
     }
 
     /**
      * @param DomainChangelog[] $changelogs
+     * @throws \Exception
      */
-    private function filterChangelogs($changelogs)
+    private function filterChangelogs(array $changelogs): array
     {
         if ($this->timeLimit === false) {
             return $changelogs;
@@ -185,13 +187,12 @@ class Changelog implements IssueRenderer
         $timeLimit = $this->timeLimit;
         $max = $this->limit;
         $counter = 0;
-        return array_filter($changelogs, function(DomainChangelog $changelog) use ($timeLimit, $counter, $max) {
+        return array_filter($changelogs, static function(DomainChangelog $changelog) use ($timeLimit, $counter, $max) {
             $counter++;
-            if ($max === false) {
-                return $changelog->created() >= new \DateTime($timeLimit);
-            }
 
-            return $changelog->created() >= new \DateTime($timeLimit) && $counter <= $max;
+            return $max === false
+                ? $changelog->created() >= new DateTime($timeLimit)
+                : $changelog->created() >= new DateTime($timeLimit) && $counter <= $max;
         });
     }
 }

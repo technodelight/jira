@@ -4,14 +4,14 @@ namespace Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConf
 
 class FieldConfiguration
 {
-    private $name;
-    private $formatter;
-    private $inline;
-    private $before;
-    private $after;
-    private $remove;
+    private string $name;
+    private ?string $formatter;
+    private ?bool $inline;
+    private ?string $before;
+    private ?string $after;
+    private ?bool $remove;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): self
     {
         $instance = new self;
         $instance->name = $instance->withDefaults($config, 'name');
@@ -24,58 +24,37 @@ class FieldConfiguration
         return $instance;
     }
 
-    /**
-     * @return string
-     */
-    public function name()
+    public function name(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function formatter()
+    public function formatter(): ?string
     {
         return $this->formatter;
     }
 
-    /**
-     * @return bool
-     */
-    public function inline()
+    public function inline(): bool
     {
         return $this->inline;
     }
 
-    /**
-     * @return string|null
-     */
-    public function before()
+    public function before(): ?string
     {
         return $this->before;
     }
 
-    /**
-     * @return string|null
-     */
-    public function after()
+    public function after(): ?string
     {
         return $this->after;
     }
 
-    /**
-     * @return bool
-     */
-    public function shouldBeMoved()
+    public function shouldBeMoved(): bool
     {
         return !empty($this->before) || !empty($this->after);
     }
 
-    /**
-     * @return bool|null
-     */
-    public function remove()
+    public function remove(): ?bool
     {
         return $this->remove;
     }
@@ -84,8 +63,8 @@ class FieldConfiguration
     {
     }
 
-    private function withDefaults(array $config, $key, $default = '')
+    private function withDefaults(array $config, $key)
     {
-        return isset($config[$key]) ? $config[$key] : $default;
+        return $config[$key] ?? null;
     }
 }
