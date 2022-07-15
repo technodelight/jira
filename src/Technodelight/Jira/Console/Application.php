@@ -64,7 +64,7 @@ class Application extends BaseApp
                 $this->setAutoExit(false);
                 foreach ($issueKeys as $issueKey) {
                     $inputs = $batchAssistant->prepareInput($issueKey);
-                    array_map(function($input, $output) use (&$exitCode) {
+                    array_map(function($input) use (&$exitCode, $output) {
                         $lastExitCode = parent::doRun($input, $output); // make sure to exit with non-zero code
                         $exitCode = max($exitCode, $lastExitCode);      // if any sub command failed
                     }, $inputs);
