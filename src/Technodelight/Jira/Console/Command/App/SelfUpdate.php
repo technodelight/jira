@@ -65,8 +65,8 @@ class SelfUpdate extends Command
             $output->writeln("Release date is {$release['published_at']}");
             $consent = $this->dialogHelper->askConfirmation(
                 $output,
-                PHP_EOL . "<comment>Do you want to perform an update now?</comment> [y/N]",
-                false
+                PHP_EOL . "<comment>Do you want to perform an update now?</comment> [Y/n]",
+                true
             );
             if (!is_writable($runningFile)) {
                 $output->writeln("<error>Can't write file {$runningFile}.</error>");
