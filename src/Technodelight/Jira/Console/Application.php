@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console;
 
+use Exception;
 use Symfony\Component\Console\Application as BaseApp;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,14 +13,8 @@ use Technodelight\Jira\Helper\PluralizeHelper;
 
 class Application extends BaseApp
 {
-    /**
-     * @var ContainerBuilder
-     */
-    private $container;
-    /**
-     * @var string
-     */
-    private $currentInstanceName = 'default';
+    private ContainerInterface $container;
+    private string $currentInstanceName = 'default';
 
     public function setContainer(ContainerInterface $container)
     {
@@ -40,7 +35,7 @@ class Application extends BaseApp
 
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $this->handleRuntimeVariables($input);
+        $this->handleCacheClearFlagAndInstanceSelector($input);
         $this->setCatchExceptions(true);
 
         return parent::run($input, $output);
@@ -48,32 +43,38 @@ class Application extends BaseApp
 
     public function doRun(InputInterface $input, OutputInterface $output)
     {
+        // handle performance debugging flag
         if (true === $input->hasParameterOption(['--debug', '-d'])) {
             $start = microtime(true);
             $startMem = memory_get_usage(true);
+            $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
             $result = parent::doRun($input, $output);
             $end = microtime(true) - $start;
             $endMem = memory_get_peak_usage(true);
             $output->writeLn(sprintf('%1.4f s, mem %s', $end, $this->formatBytes($endMem - $startMem)));
 
             return $result;
-        } elseif ($input->isInteractive() === false) {
+        }
+
+        // handle batch processing
+        if ($input->isInteractive() === false) {
             $batchAssistant = $this->container->get('technodelight.jira.console.batch_assistant');
             if ($issueKeys = $batchAssistant->issueKeysFromPipe()) {
                 $exitCode = 0;
                 $this->setAutoExit(false);
                 foreach ($issueKeys as $issueKey) {
                     $inputs = $batchAssistant->prepareInput($issueKey);
-                    foreach ($inputs as $input) {
+                    array_map(function($input, $output) use (&$exitCode) {
                         $lastExitCode = parent::doRun($input, $output); // make sure to exit with non-zero code
                         $exitCode = max($exitCode, $lastExitCode);      // if any sub command failed
-                    }
+                    }, $inputs);
                 }
                 $this->setAutoExit(true);
                 return $exitCode;
             }
         }
 
+        // normal, interactive behaviour
         return parent::doRun($input, $output);
     }
 
@@ -118,19 +119,20 @@ BANNER;
         return $input;
     }
 
-    private function formatBytes($size, $precision = 4)
+    private function formatBytes($size, $precision = 4): string
     {
         $base = log($size, 1024);
 
         return round(1024 ** ($base - floor($base)), $precision) . ' ' . ['', 'K', 'M', 'G', 'T'][(int) floor($base)];
     }
 
-    /**
-     * @param InputInterface $input
-     * @throws \Exception
-     */
-    private function handleRuntimeVariables(InputInterface $input)
+    /** @throws Exception */
+    private function handleCacheClearFlagAndInstanceSelector(?InputInterface $input): void
     {
+        if (null === $input) {
+            return;
+        }
+
         $this->currentInstanceName = $input->getParameterOption(['--instance', '-i']) ?: 'default';
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {

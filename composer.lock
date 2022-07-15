@@ -3710,27 +3710,28 @@
         },
         {
             "name": "technodelight/php-jira-cli-tag-converter",
-            "version": "1.0",
+            "version": "1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-cli-tag-converter.git",
-                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b"
+                "reference": "124fd77e3fa24519f4e81453fa46d226c19e1461"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
-                "reference": "ae0fbcf4499e44cb74cbdfb34b64006ce96c639b",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/124fd77e3fa24519f4e81453fa46d226c19e1461",
+                "reference": "124fd77e3fa24519f4e81453fa46d226c19e1461",
                 "shasum": ""
             },
             "require": {
-                "php": ">= 7.0",
+                "php": ">= 7.4",
                 "ssnepenthe/color-utils": "*",
                 "symfony/console": "^2.7"
             },
             "require-dev": {
                 "behat/behat": "*",
                 "phpspec/phpspec": "*",
-                "phpunit/phpunit": "*"
+                "phpunit/phpunit": "*",
+                "roave/security-advisories": "dev-latest"
             },
             "type": "library",
             "autoload": {
@@ -3750,9 +3751,9 @@
             ],
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-cli-tag-converter/issues",
-                "source": "https://github.com/technodelight/php-jira-cli-tag-converter/tree/1.0"
+                "source": "https://github.com/technodelight/php-jira-cli-tag-converter/tree/1.1"
             },
-            "time": "2019-11-29T13:23:47+00:00"
+            "time": "2022-07-15T07:46:35+00:00"
         },
         {
             "name": "technodelight/php-jira-domain-models",
@@ -5171,5 +5172,5 @@
         "ext-curl": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.1.0"
 }

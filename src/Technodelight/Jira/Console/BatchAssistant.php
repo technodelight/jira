@@ -9,18 +9,9 @@ use Technodelight\Jira\Console\Command\Show\Issue;
 
 class BatchAssistant
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var Application
-     */
-    private $app;
-    /**
-     * @var RenderersConfiguration
-     */
-    private $configuration;
+    private Api $jira;
+    private Application $app;
+    private RenderersConfiguration $configuration;
 
     public function __construct(Api $jira, Application $app, RenderersConfiguration $configuration)
     {
