@@ -121,6 +121,7 @@ class Edit extends Command
             ));
             $selectedField = $fields[$idx];
             $input->setArgument('fieldKey', $selectedField->key());
+            $fieldKey = $selectedField->key();
         }
 
         $options = ['add', 'set', 'remove'];
@@ -138,7 +139,7 @@ class Edit extends Command
         $fieldKey = $input->getArgument('fieldKey');
 
         if (empty((string)$issueKey) || (empty($fieldKey) && !$input->getOption('list'))) {
-            throw new InvalidArgumentException('Nothing to do');
+            throw new InvalidArgumentException('Nothing to do, please select option --add, --set or --remove');
         }
 
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
