@@ -24,6 +24,7 @@ use Technodelight\Jira\Renderer\Issue\MinimalHeader;
 
 class Edit extends Command
 {
+    const ACTION_OPTS = ['add', 'set', 'remove'];
     private Api $jira;
     private QuestionHelper $questionHelper;
     private IssueKeyResolver $issueKeyResolver;
@@ -124,9 +125,18 @@ class Edit extends Command
             $fieldKey = $selectedField->key();
         }
 
-        $options = ['add', 'set', 'remove'];
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
-        foreach ($options as $option) {
+        $hasAction = false;
+        foreach (self::ACTION_OPTS as $option) {
+            if ($input->getOption($option)) {
+                $hasAction = true;
+            }
+        }
+        if ($hasAction === false) {
+            $this->interactivelySelectAction($input, $output);
+        }
+
+        foreach (self::ACTION_OPTS as $option) {
             if ($this->checker->hasOptionWithoutValue($input, $option)) {
                 $input->setOption($option, $this->editField($input, $output, $field, $issueKey, $option));
             }
@@ -138,8 +148,8 @@ class Edit extends Command
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $fieldKey = $input->getArgument('fieldKey');
 
-        if (empty((string)$issueKey) || (empty($fieldKey) && !$input->getOption('list'))) {
-            throw new InvalidArgumentException('Nothing to do, please select option --add, --set or --remove');
+        if (empty((string)$issueKey)) {
+            throw new InvalidArgumentException('Nothing to do, please select an issue first');
         }
 
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
@@ -299,6 +309,17 @@ class Edit extends Command
         }
 
         return ['name' => $value];
+    }
+
+    private function interactivelySelectAction(InputInterface $input, OutputInterface $output): void
+    {
+        $option = $this->questionHelper->ask($input, $output, new ChoiceQuestion(
+            sprintf('Choose an action to do with the "%s" field', $input->getArgument('fieldKey')),
+                self::ACTION_OPTS
+            )
+        );
+        $input->setOption($option, '');
+        $_SERVER['argv'][] = '--' . $option;
     }
 
     private function arrayOfNamesFromField(array $valueArray): array
