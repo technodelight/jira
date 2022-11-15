@@ -101,7 +101,6 @@
                  id="technodelight.jira.console.field_editor.editor.autocompleted_editor"
                  class="Technodelight\Jira\Console\FieldEditor\Editor\AutocompletedEditor">
             <argument type="service" id="technodelight.jira.api" />
-            <argument type="service" id="console.question_helper" />
         </service>
         <service public="false"
                  id="technodelight.jira.console.field_editor.editor.user_edtor"

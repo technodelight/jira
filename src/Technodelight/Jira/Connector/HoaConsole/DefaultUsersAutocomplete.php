@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Connector\HoaConsole;
 
-use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
 
 class DefaultUsersAutocomplete implements Autocompleter
@@ -22,9 +21,9 @@ class DefaultUsersAutocomplete implements Autocompleter
      * Returns null for no word, a full-word or an array of full-words.
      *
      * @param   string &$prefix Prefix to autocomplete.
-     * @return  mixed
+     * @return  array|null
      */
-    public function complete(&$prefix)
+    public function complete($prefix): ?array
     {
         if (!empty($prefix)) {
             $users = array_filter(

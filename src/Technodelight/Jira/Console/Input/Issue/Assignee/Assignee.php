@@ -2,8 +2,6 @@
 
 namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
-use Hoa\Console\Readline\Autocompleter\Aggregate;
-use Hoa\Console\Readline\Readline;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
@@ -32,6 +30,8 @@ class Assignee
         if (!$input->isInteractive()) {
             throw new \RuntimeException('Input is not interactive, cannot select assigne interactively');
         }
+
+        throw new \ErrorException('Hoa\\Console deprecated');
 
         $readline = new Readline;
         $readline->setAutocompleter(

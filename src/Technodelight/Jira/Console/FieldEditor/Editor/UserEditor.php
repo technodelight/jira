@@ -2,10 +2,12 @@
 
 namespace Technodelight\Jira\Console\FieldEditor\Editor;
 
-use Hoa\Console\Readline\Readline;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Connector\HoaConsole\Aggregate;
 use Technodelight\Jira\Connector\HoaConsole\UserPickerAutocomplete;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Console\FieldEditor\Editor;
@@ -33,20 +35,23 @@ class UserEditor implements Editor
      */
     public function edit(InputInterface $input, OutputInterface $output, IssueKey $issueKey, Field $field, $optionName)
     {
-        $readline = new Readline;
-        $readline->setAutocompleter(
-            new UserPickerAutocomplete($this->api)
+        $q = new QuestionHelper();
+        $question = new Question(sprintf('<comment>Please provide a username for %s:</comment> ', $field->name()));
+        $question->setAutocompleterCallback(
+            new Aggregate([
+                new UserPickerAutocomplete($this->api)
+            ])
         );
-        $output->write(sprintf('<comment>Please provide a username for %s:</comment> ', $field->name()));
-        return $readline->readLine();
+
+        return $q->ask($input, $output, $question);
     }
 
     /**
      * @param Field $field
      * @return bool
      */
-    public function canEditField(Field $field)
+    public function canEditField(Field $field): bool
     {
-        return $field->schemaType() == 'user';
+        return $field->schemaType() === 'user';
     }
 }

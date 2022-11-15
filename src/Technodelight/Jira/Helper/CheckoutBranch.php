@@ -154,9 +154,9 @@ class CheckoutBranch
         return $this->branchnameGenerator->fromIssue($issue);
     }
 
-    private function generateBranchNameWithAutocomplete(Issue $issue)
+    private function generateBranchNameWithAutocomplete(Issue $issue, InputInterface $input, OutputInterface $output)
     {
-        return $this->branchnameGenerator->fromIssueWithAutocomplete($issue);
+        return $this->branchnameGenerator->fromIssueWithAutocomplete($issue, $input, $output);
     }
 
     /**
@@ -190,7 +190,7 @@ class CheckoutBranch
         $selectedBranch = $this->generateBranchName($issue);
         if ((strlen($selectedBranch) > $this->config->maxBranchNameLength())
             && $this->isShorteningBranchNameConfirmed($input, $output, $selectedBranch)) {
-            $selectedBranch = $this->generateBranchNameWithAutocomplete($issue);
+            $selectedBranch = $this->generateBranchNameWithAutocomplete($issue, $input, $output);
         }
 
         return $selectedBranch;

@@ -97,7 +97,7 @@ class Comment extends Command
                 $commentId = CommentId::fromString($input->getOption('update'));
                 $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
             } catch (\InvalidArgumentException $e) {
-                $input->setArgument('comment', $this->commentInput->createComment($issue, $output));
+                $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
             }
         }
     }

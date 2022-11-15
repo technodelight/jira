@@ -2,24 +2,16 @@
 
 namespace Technodelight\Jira\Connector\HoaConsole;
 
-use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\UserPickerResult;
 
 class UsernameAutocomplete implements Autocompleter
 {
-    /**
-     * @var \Technodelight\Jira\Domain\Issue
-     */
-    private $issue;
+    private Issue $issue;
+    private Api $api;
 
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private $api;
-
-    private $usernames;
+    private array $usernamesCache;
 
     public function __construct(Issue $issue, Api $api)
     {
@@ -27,51 +19,30 @@ class UsernameAutocomplete implements Autocompleter
         $this->api = $api;
     }
 
-    /**
-     * Complete a word.
-     * Returns null for no word, a full-word or an array of full-words.
-     *
-     * @param   string &$prefix Prefix to autocomplete.
-     * @return  mixed
-     */
-    public function complete(&$prefix)
+    public function complete(string $prefix): ?array
     {
-        $matches = $this->getMatchesForPrefix($this->issue, $prefix);
-        $autocompletedValues = $this->getAutocompletedValues($matches);
-        if (count($autocompletedValues) == 1) {
-            return end($autocompletedValues);
-        } elseif (count($autocompletedValues) > 1) {
-            return $autocompletedValues;
-        }
-
-        return null;
+        return $this->getAutocompletedValues($this->getMatchesForPrefix($this->issue, $prefix));
     }
 
-    /**
-     * Get definition of a word.
-     * Example: \b\w+\b. PCRE delimiters and options must not be provided.
-     *
-     * @return  string
-     */
-    public function getWordDefinition()
+    public function getWordDefinition(): string
     {
         return '\[~[^]]+|@[^]]+';
     }
 
-    private function getMatchesForPrefix(Issue $issue, $prefix)
+    private function getMatchesForPrefix(Issue $issue, $prefix): array
     {
         $userPrefix = ltrim($prefix, '[~@]');
         $issueUsers = array_filter(
             $this->getUsersFromIssue($issue),
-            function($username) use ($userPrefix) {
+            static function ($username) use ($userPrefix) {
                 if (empty($userPrefix)) {
                     return true;
                 }
-                return strpos($username, $userPrefix) !== false;
+                return str_contains($username, $userPrefix);
             }
         );
         $userPickerUsers = array_map(
-            function(UserPickerResult $user) {
+            static function (UserPickerResult $user) {
                 return $user->name();
             },
             $this->api->userPicker($userPrefix)
@@ -79,23 +50,23 @@ class UsernameAutocomplete implements Autocompleter
         return array_unique(array_merge($issueUsers, $userPickerUsers));
     }
 
-    private function getUsersFromIssue(Issue $issue)
+    private function getUsersFromIssue(Issue $issue): array
     {
-        if (!isset($this->usernames)) {
-            $this->usernames = [$issue->creatorUser()->key(), $issue->assigneeUser()->key()];
+        if (!isset($this->usernamesCache)) {
+            $this->usernamesCache = [$issue->creatorUser()?->key(), $issue->assigneeUser()?->key()];
             foreach ($issue->comments() as $comment) {
-                $this->usernames[] = $comment->author()->key();
+                $this->usernamesCache[] = $comment->author()->key();
             }
-            $this->usernames = array_unique($this->usernames);
+            $this->usernamesCache = array_unique($this->usernamesCache);
         }
 
-        return $this->usernames;
+        return $this->usernamesCache;
     }
 
-    private function getAutocompletedValues(array $matches)
+    private function getAutocompletedValues(array $matches): array
     {
         return array_map(
-            function($username) {
+            static function ($username) {
                 return sprintf('[~%s]', $username);
             },
             $matches

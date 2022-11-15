@@ -2,7 +2,6 @@
 
 namespace Technodelight\Jira\Connector\HoaConsole;
 
-use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\UserPickerResult;
 
@@ -18,14 +17,7 @@ class UserPickerAutocomplete implements Autocompleter
         $this->jira = $jira;
     }
 
-    /**
-     * Complete a word.
-     * Returns null for no word, a full-word or an array of full-words.
-     *
-     * @param   string &$prefix Prefix to autocomplete.
-     * @return  mixed
-     */
-    public function complete(&$prefix)
+    public function complete($prefix): ?array
     {
         if (!empty($prefix)) {
             $users = array_map(
@@ -37,15 +29,11 @@ class UserPickerAutocomplete implements Autocompleter
 
             return !empty($users) ? $users : null;
         }
+
+        return null;
     }
 
-    /**
-     * Get definition of a word.
-     * Example: \b\w+\b. PCRE delimiters and options must not be provided.
-     *
-     * @return  string
-     */
-    public function getWordDefinition()
+    public function getWordDefinition(): string
     {
         return '[a-zA-Z0-9. -]+';
     }

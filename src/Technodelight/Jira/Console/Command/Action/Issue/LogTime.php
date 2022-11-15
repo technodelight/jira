@@ -208,7 +208,7 @@ class LogTime extends Command
                 $worklog = null;
             }
 
-            $input->setArgument('comment', $this->commentInput->read($output, $issue, $worklog, $input->getOption('keep-default-comment')));
+            $input->setArgument('comment', $this->commentInput->read($input, $output, $issue, $worklog, $input->getOption('keep-default-comment')));
         }
     }
 
@@ -336,7 +336,7 @@ class LogTime extends Command
             $output->writeln(sprintf('<comment>%s</comment> time left to log.', $this->dateHelper->secondsToHuman($timeLeft)));
             $issue = $this->askIssueToChooseFrom($input, $output);
             $time = $this->askForTimeToLog($input, $output, $issue->key());
-            $comment = $this->commentInput->read($output, $issue);
+            $comment = $this->commentInput->read($input, $output, $issue);
             $worklog = $this->logNewWork($issue->key(), $time, $comment ?: 'Worked on issue ' . $issue->key(), $this->dateResolver->argument($input));
             $this->showSuccessMessages($output, $worklog);
             $timeLeft = $timeLeft - $worklog->timeSpentSeconds();

@@ -5,3 +5,4 @@ jira*.phar
 /builds/*
 /bin/behat
 /bin/phpspec
+/bin/yaml-lint

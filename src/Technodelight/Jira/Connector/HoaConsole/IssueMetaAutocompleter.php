@@ -3,21 +3,14 @@
 namespace Technodelight\Jira\Connector\HoaConsole;
 
 use Fuse\Fuse;
-use Hoa\Console\Readline\Autocompleter\Autocompleter;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Issue\IssueKey;
+use Technodelight\Jira\Domain\Issue\Meta\Field;
 
 class IssueMetaAutocompleter implements Autocompleter
 {
-    /**
-     * @var \Technodelight\Jira\Domain\Issue\Meta\Field
-     */
-    private $field;
-
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private $api;
+    private Field $field;
+    private Api $api;
 
     public function __construct(Api $api, IssueKey $issueKey, $fieldName)
     {
@@ -26,14 +19,7 @@ class IssueMetaAutocompleter implements Autocompleter
         $this->api = $api;
     }
 
-    /**
-     * Complete a word.
-     * Returns null for no word, a full-word or an array of full-words.
-     *
-     * @param   string &$prefix Prefix to autocomplete.
-     * @return  mixed
-     */
-    public function complete(&$prefix)
+    public function complete($prefix): ?array
     {
         $values = $this->field->allowedValues();
         if (!empty($values)) {
@@ -81,7 +67,7 @@ class IssueMetaAutocompleter implements Autocompleter
      *
      * @return  string
      */
-    public function getWordDefinition()
+    public function getWordDefinition(): string
     {
         return '.+';
     }

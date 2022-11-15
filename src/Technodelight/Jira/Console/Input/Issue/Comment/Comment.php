@@ -2,14 +2,14 @@
 
 namespace Technodelight\Jira\Console\Input\Issue\Comment;
 
-use Hoa\Console\Readline\Autocompleter\Aggregate;
-use Hoa\Console\Readline\Autocompleter\Autocompleter;
-use Hoa\Console\Readline\Autocompleter\Word;
-use Hoa\Console\Readline\Readline;
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
+use Technodelight\Jira\Connector\HoaConsole\Aggregate;
 use Technodelight\Jira\Connector\HoaConsole\IssueAttachmentAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\IssueAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\UsernameAutocomplete;
@@ -20,14 +20,8 @@ use Technodelight\Jira\Domain\IssueCollection;
 
 class Comment
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var EditApp
-     */
-    private $editor;
+    private Api $jira;
+    private EditApp $editor;
 
     public function __construct(Api $jira, EditApp $editor)
     {
@@ -35,7 +29,7 @@ class Comment
         $this->editor = $editor;
     }
 
-    public function updateComment(IssueKey $issueKey, CommentId $commentId, OutputInterface $output)
+    public function updateComment(IssueKey $issueKey, CommentId $commentId, OutputInterface $output): string
     {
         $output->write('</>');
 
@@ -45,21 +39,17 @@ class Comment
         );
     }
 
-    public function createComment(Issue $issue, OutputInterface $output)
+    public function createComment(Issue $issue, InputInterface $input,  OutputInterface $output)
     {
-        $autocompleter = $this->buildAutocompleter($issue, $this->fetchPossibleIssuesCollection(), $this->fetchWordsList($issue));
-        $reader = $this->buildReadline($autocompleter);
+        $autocompleter = $this->buildAutocompleters($issue, $this->fetchPossibleIssuesCollection(), $this->fetchWordsList($issue));
+        $q = new QuestionHelper();
+        $question = new Question('<info>Comment:</> ' . PHP_EOL);
+        $question->setAutocompleterCallback($autocompleter);
 
-        $output->writeln([
-            '',
-            '<info>Comment:</> ' . $this->autocompleterHints()
-        ]);
-        $output->write('</>');
-
-        return $reader->readLine();
+        return $q->ask($input, $output, $question);
     }
 
-    private function buildAutocompleter(Issue $issue, IssueCollection $issues = null, array $words = [])
+    private function buildAutocompleters(Issue $issue, IssueCollection $issues = null, array $words = []): Aggregate
     {
         $autocompleters = [
             $words ? new Word(array_unique($words)) : null,
@@ -71,15 +61,7 @@ class Comment
         return new Aggregate(array_filter($autocompleters));
     }
 
-    private function buildReadline(Autocompleter $autocompleter)
-    {
-        $reader = new Readline;
-        $reader->setAutocompleter($autocompleter);
-
-        return $reader;
-    }
-
-    private function fetchPossibleIssuesCollection()
+    private function fetchPossibleIssuesCollection(): IssueCollection
     {
         return $this->jira->search(
             Builder::factory()
@@ -88,7 +70,7 @@ class Comment
         );
     }
 
-    private function fetchWordsList(Issue $issue)
+    private function fetchWordsList(Issue $issue): array
     {
         $list = $issue->comments();
         $list[] = $issue->description();
@@ -97,33 +79,30 @@ class Comment
         return $this->collectWords($list);
     }
 
-    private function collectWords(array $texts)
+    private function collectWords(array $texts): array
     {
         $words = [];
         foreach ($texts as $text) {
-            $words = array_merge($words, $this->collectAutocompleteableWords($text));
+            foreach ($this->collectAutocompleteableWords($text) as $word) {
+                $words[] = $word;
+            }
         }
 
         return array_unique($words);
     }
 
-    private function collectAutocompleteableWords($text)
+    private function collectAutocompleteableWords(string $text): array
     {
-        $text = preg_replace('~(\[\^)([^]]+)(\])~smu', '', $text);
+        $text = preg_replace('~(\[\^)([^]]+)(\])~mu', '', $text);
         $text = preg_replace('~!([^|!]+)(\|thumbnail)?!~', '', $text);
         $text = preg_replace('~[^a-zA-Z0-9\s\']+~', '', $text);
 
-        $words = array_map(function($word) {
-            return trim(strtolower($word));
+        $words = array_map(static function(string $word) {
+            return strtolower(trim($word));
         }, preg_split('~\s+~', $text));
 
-        return array_filter($words, function($word) {
+        return array_filter($words, static function(string $word) {
             return mb_strlen($word) > 2;
         });
-    }
-
-    private function autocompleterHints()
-    {
-        return '(Ctrl-A: beginning of the line, Ctrl-E: end of the line, Ctrl-B: backward one word, Ctrl-F: forward one word, Ctrl-W: delete first backward word)';
     }
 }
