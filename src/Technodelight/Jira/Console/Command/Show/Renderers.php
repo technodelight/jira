@@ -10,32 +10,21 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Renderers extends Command
 {
-    /**
-     * @var RendererContainer
-     */
-    private $standardProvider;
-    /**
-     * @var RendererContainer
-     */
-    private $boardProvider;
-
-    public function __construct(RendererContainer $standardProvider, RendererContainer $boardProvider)
-    {
-        $this->standardProvider = $standardProvider;
-        $this->boardProvider = $boardProvider;
-
+    public function __construct(
+        private readonly RendererContainer $standardProvider,
+        private readonly RendererContainer $boardProvider
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:renderers')
-            ->setDescription('Show available renderers for for rendering issues')
-        ;
+            ->setDescription('Show available renderers for for rendering issues');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new PrettyTable($output);
         $table->setHeaders(['Name', 'Class', 'Type']);
@@ -46,5 +35,7 @@ class Renderers extends Command
             $table->addRow([$name, get_class($renderer), 'Board']);
         }
         $table->render();
+
+        return self::SUCCESS;
     }
 }

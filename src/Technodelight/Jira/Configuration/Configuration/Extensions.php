@@ -13,7 +13,7 @@ class Extensions implements Configuration
      */
     public function configurations()
     {
-        $root = (new TreeBuilder)->root('extensions');
+        $root = (new TreeBuilder('extensions'))->getRootNode();
 
         $root
             ->info('JIRA CLI tool extensions')

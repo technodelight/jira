@@ -8,12 +8,10 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Credentials implements Configuration
 {
-    /**
-     * @return ArrayNodeDefinition|NodeDefinition
-     */
     public function configurations()
     {
-        return (new TreeBuilder)->root('credentials')
+        $builder = new TreeBuilder('credentials');
+        $builder->getRootNode()
             ->info('JIRA connection credentials')
             ->attribute('deprecated', true)
             ->children()
@@ -34,5 +32,7 @@ class Credentials implements Configuration
                     ->cannotBeEmpty()
                 ->end()
             ->end();
+
+        return $builder->getRootNode();
     }
 }

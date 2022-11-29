@@ -13,24 +13,12 @@ use Technodelight\Jira\Renderer\Action\Show\User\Success;
 
 class User extends Command
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var Renderer
-     */
-    private $renderer;
-
-    public function __construct(Api $api, Renderer $renderer)
+    public function __construct(private readonly Api $api, private readonly Renderer $renderer)
     {
-        $this->api = $api;
-        $this->renderer = $renderer;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:user')
@@ -38,7 +26,7 @@ class User extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $user = $this->api->user($input->getArgument('accountId'));
@@ -47,6 +35,8 @@ class User extends Command
             $result = Error::fromExceptionAndAccountId($e, $input->getArgument('accountId'));
         } finally {
             $this->renderer->render($output, $result);
+
+            return self::SUCCESS;
         }
     }
 }

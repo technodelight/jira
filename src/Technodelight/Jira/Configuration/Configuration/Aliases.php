@@ -14,7 +14,7 @@ class Aliases implements Configuration
      */
     public function configurations()
     {
-        return (new TreeBuilder)->root('aliases')
+        return (new TreeBuilder('aliases'))->getRootNode()
             ->info('Use named issues instead of numbers. Can be used anywhere where issueKey is a command\'s input')
             ->prototype('array')
                 ->children()

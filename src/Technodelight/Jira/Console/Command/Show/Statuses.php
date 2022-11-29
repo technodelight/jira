@@ -17,51 +17,18 @@ use Technodelight\Jira\Helper\TemplateHelper;
 
 class Statuses extends Command
 {
-    /**
-     * @var ProjectKeyResolver
-     */
-    private $projectKeyResolver;
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var TransitionsConfiguration
-     */
-    private $transitionsConfiguration;
-    /**
-     * @var FormatterHelper
-     */
-    private $formatterHelper;
-    /**
-     * @var ColorExtractor
-     */
-    private $colorExtractor;
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-
     public function __construct(
-        ProjectKeyResolver $projectKeyResolver,
-        Api $api,
-        TransitionsConfiguration $transitionsConfiguration,
-        FormatterHelper $formatterHelper,
-        ColorExtractor $colorExtractor,
-        TemplateHelper $templateHelper
-    )
-    {
-        $this->projectKeyResolver = $projectKeyResolver;
-        $this->api = $api;
-        $this->transitionsConfiguration = $transitionsConfiguration;
-        $this->formatterHelper = $formatterHelper;
-        $this->colorExtractor = $colorExtractor;
-        $this->templateHelper = $templateHelper;
-
+        private readonly ProjectKeyResolver $projectKeyResolver,
+        private readonly Api $api,
+        private readonly TransitionsConfiguration $transitionsConfiguration,
+        private readonly FormatterHelper $formatterHelper,
+        private readonly ColorExtractor $colorExtractor,
+        private readonly TemplateHelper $templateHelper
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:statuses')
@@ -74,24 +41,23 @@ class Statuses extends Command
     }
 
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($projectKey = $this->projectKeyResolver->argument($input)) {
             $this->projectStatuses($output, $projectKey);
         } else {
             $this->genericStatuses($output);
         }
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
-    private function genericStatuses(OutputInterface $output)
+    private function genericStatuses(OutputInterface $output): void
     {
         $output->writeln($this->displayStatusesGroupedByType($this->api->status()));
     }
 
-    private function projectStatuses(OutputInterface $output, ProjectKey $projectKey)
+    private function projectStatuses(OutputInterface $output, ProjectKey $projectKey): void
     {
         $byIssueType = $this->api->projectStatuses($projectKey);
         foreach ($byIssueType as $issueTyped) {
@@ -100,18 +66,14 @@ class Statuses extends Command
         }
     }
 
-    /**
-     * @param Status[] $statuses
-     * @return array
-     */
-    private function displayStatusesGroupedByType(array $statuses)
+    private function displayStatusesGroupedByType(array $statuses): array
     {
         $groupedStatuses = $this->groupStatusesByType($statuses);
         $out = [];
-        foreach ($groupedStatuses as $statuses) {
-            foreach ($statuses as $idx => $status) {
+        foreach ($groupedStatuses as $groupedStatus) {
+            foreach ($groupedStatus as $idx => $status) {
                 /** @var $status Status */
-                if ($idx == 0) {
+                if ($idx === 0) {
                     $out[] = sprintf(
                         '<fg=%s>  </> <comment>%s</>',
                         $this->colorExtractor->extractColor($status->statusCategoryColor()) ?: 'black',
@@ -134,7 +96,7 @@ class Statuses extends Command
         return $out;
     }
 
-    private function groupStatusesByType(array $statuses)
+    private function groupStatusesByType(array $statuses): array
     {
         $groupedStatuses = [];
         foreach ($statuses as $status) {
@@ -148,7 +110,7 @@ class Statuses extends Command
         return $groupedStatuses;
     }
 
-    private function getCommandForStatus(Status $status)
+    private function getCommandForStatus(Status $status): string
     {
         try {
             return sprintf('jira %s', $this->transitionsConfiguration->commandForTransition($status->name()));
@@ -157,7 +119,7 @@ class Statuses extends Command
         }
     }
 
-    private function tab($string)
+    private function tab($string): string
     {
         return $this->templateHelper->tabulate($string);
     }

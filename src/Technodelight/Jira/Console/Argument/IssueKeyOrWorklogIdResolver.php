@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Argument;
 
+use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Technodelight\GitShell\ApiInterface as Api;
 use Technodelight\Jira\Connector\WorklogHandler;
@@ -36,6 +37,8 @@ class IssueKeyOrWorklogIdResolver
         if ($input->hasArgument(self::NAME)) {
             return $this->resolve($input->getArgument(self::NAME));
         }
+
+        throw new RuntimeException('Input does not have issue argument specified');
     }
 
     private function resolve($value)

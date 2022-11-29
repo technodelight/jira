@@ -10,40 +10,33 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Instances extends Command
 {
-    private $instancesConfiguration;
-
-    public function __construct(InstancesConfiguration $instancesConfiguration)
+    public function __construct(private readonly InstancesConfiguration $instancesConfiguration)
     {
-        $this->instancesConfiguration = $instancesConfiguration;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:instances')
             ->setDescription('List configured instances');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (empty($this->instancesConfiguration->items())) {
             $output->writeln('No instances configured.');
-            return;
+            return self::FAILURE;
         }
 
-        $rows = $this->addInstanceRows($this->instancesConfiguration, []);
+        $rows = $this->addInstanceRows($this->instancesConfiguration);
 
         $this->renderTable($output, $rows);
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param InstancesConfiguration $config
-     * @param array $rows
-     * @return array
-     */
-    protected function addInstanceRows(InstancesConfiguration $config, array $rows)
+    private function addInstanceRows(InstancesConfiguration $config, array $rows = []): array
     {
         foreach ($config->items() as $instance) {
             $rows[] = [$instance->name(), $instance->domain(), $instance->password()];
@@ -52,7 +45,7 @@ class Instances extends Command
         return $rows;
     }
 
-    private function renderTable(OutputInterface $output, array $rows)
+    private function renderTable(OutputInterface $output, array $rows): void
     {
         $table = new PrettyTable($output);
         $table

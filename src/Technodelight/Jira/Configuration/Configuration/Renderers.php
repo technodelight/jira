@@ -13,9 +13,7 @@ class Renderers implements Configuration
      */
     public function configurations()
     {
-        $root = (new TreeBuilder)->root('renderers');
-
-        $root
+        return (new TreeBuilder('renderers'))->getRootNode()
             ->info('Rendering setup')
             ->addDefaultsIfNotSet()
             ->children()
@@ -72,7 +70,5 @@ class Renderers implements Configuration
                     ->end()
                 ->end()
             ->end();
-
-        return $root;
     }
 }

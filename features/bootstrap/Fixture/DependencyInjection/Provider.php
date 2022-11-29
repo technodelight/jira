@@ -3,13 +3,15 @@
 namespace Fixture\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Technodelight\Jira\Console\DependencyInjection\Container\Builder;
 use Technodelight\Jira\Console\DependencyInjection\Container\Provider as BaseProvider;
 
 class Provider extends BaseProvider
 {
-    public function build($version)
+    public function build($version): ContainerBuilder|Builder|Container
     {
         $containerBuilder = (new Builder())->build();
         $containerBuilder->setParameter('technodelight.jira.app.version', $version);
@@ -19,9 +21,7 @@ class Provider extends BaseProvider
             new FileLocator(sprintf('%s/features/bootstrap/configs', APPLICATION_ROOT_DIR))
         );
         $loader->load('services.xml');
-
         $containerBuilder->compile();
-
         return $containerBuilder;
     }
 }

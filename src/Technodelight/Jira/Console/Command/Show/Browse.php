@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,18 +15,12 @@ use Technodelight\Jira\Renderer\Issue\Header;
 
 class Browse extends Command
 {
-    private $openApp;
-    private $issueKeyResolver;
-    private $jira;
-    private $headerRenderer;
-
-    public function __construct(OpenApp $openApp, IssueKeyResolver $issueKeyResolver, Api $jira, Header $headerRenderer)
-    {
-        $this->openApp = $openApp;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->jira = $jira;
-        $this->headerRenderer = $headerRenderer;
-
+    public function __construct(
+        private readonly OpenApp $openApp,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly Api $jira,
+        private readonly Header $headerRenderer
+    ) {
         parent::__construct();
     }
 
@@ -43,13 +38,15 @@ class Browse extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $issueKey = $this->issueKeyResolver->argument($input);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
         try {
             $issue = $this->jira->retrieveIssue($issueKey);
             $this->openIssueLink($output, $issue);
-        } catch (\Exception $exception) {
+
+            return self::SUCCESS;
+        } catch (Exception $exception) {
             $output->writeln(
                 sprintf(
                     'Cannot open <info>%s</info> in browser, reason: %s',
@@ -57,6 +54,8 @@ class Browse extends Command
                     sprintf("(%s) %s", get_class($exception), $exception->getMessage())
                 )
             );
+
+            return self::FAILURE;
         }
     }
 

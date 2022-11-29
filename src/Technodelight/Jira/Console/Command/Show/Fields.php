@@ -14,20 +14,15 @@ use Technodelight\JiraTagConverter\Components\Table;
 
 class Fields extends Command
 {
-    private $api;
-    private $issueKeyResolver;
-    private $optionChecker;
-
-    public function __construct(Api $api, IssueKeyResolver $issueKeyResolver, Checker $optionChecker)
-    {
-        $this->api = $api;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->optionChecker = $optionChecker;
-
+    public function __construct(
+        private readonly Api $api,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly Checker $optionChecker
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:fields')
@@ -57,18 +52,20 @@ class Fields extends Command
         }
         $output->writeln((string)$table);
 
-        return 0;
+        return self::SUCCESS;
     }
 
-    /**
-     * @param Field[]|\Technodelight\Jira\Domain\Issue\Meta\Field[] $fields
-     * @return array
-     */
-    protected function createFieldsTable($fields)
+    private function createFieldsTable(array $fields): array
     {
         $table = [['Name', 'Key', 'Is custom?', 'Schema', 'Item Type']];
         foreach ($fields as $field) {
-            $table[] = ['<comment>'.$field->name() . '</comment>', $field->key(), $field->isCustom() ? 'Yes' : 'No', $field->schemaType(), $field->schemaItemType()];
+            $table[] = [
+                '<comment>' . $field->name() . '</comment>',
+                $field->key(),
+                $field->isCustom() ? 'Yes' : 'No',
+                $field->schemaType(),
+                $field->schemaItemType()
+            ];
         }
         return $table;
     }

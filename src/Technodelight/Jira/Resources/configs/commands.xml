@@ -17,15 +17,6 @@
         <service id="technodelight.jira.app.command.self_update" class="Technodelight\Jira\Console\Command\App\SelfUpdate">
             <argument type="service" id="technodelight.self_update.github.api" />
             <argument type="service" id="technodelight.jira.console.di.cache_maintainer" />
-            <argument type="service" id="console.dialog_helper" />
-            <tag name="command" />
-        </service>
-        <service id="technodelight.jira.app.command.shell_features" class="Technodelight\Jira\Console\Command\Internal\ShellFeatures">
-            <argument type="string">shell</argument>
-            <argument type="service" id="technodelight.jira.console.interactive_issue_selector" />
-            <argument type="service" id="technodelight.jira.config.aliases" />
-            <argument type="service" id="seconds_to_none" />
-            <argument type="service" id="technodelight.jira.config.instances" />
             <tag name="command" />
         </service>
         <!-- internal commands -->
@@ -184,12 +175,6 @@
             <tag name="command" />
         </service>
 
-        <service id="technodelight.jira.app.command.batch" class="Technodelight\Jira\Console\Command\Action\Batch">
-            <argument type="service" id="technodelight.jira.app" />
-            <argument type="service" id="technodelight.jira.api" />
-            <argument type="service" id="technodelight.jira.config.renderers" />
-            <tag name="command" />
-        </service>
         <service id="technodelight.jira.app.command.filter" class="Technodelight\Jira\Console\Command\Action\Filter">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />

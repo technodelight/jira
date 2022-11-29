@@ -2,8 +2,8 @@
 
 namespace Fixture\GitHub;
 
+use GuzzleHttp\Psr7\Response;
 use Http\Client\HttpClient;
-use Nyholm\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -46,37 +46,37 @@ class TestHttpClient implements HttpClient
 
     public function get($path, array $parameters = array(), array $headers = array())
     {
-        $this->requests['get'][] = $path;
-        if (isset(self::$fixtures['get'][$path])) {
-            return new Response(200, ['content-type' => 'application/json'], self::$fixtures['get'][$path]);
-        }
-
-        return new Response(400, [], sprintf('%s: no fixture has been found for %s', __CLASS__, $path));
+        return $this->request($path, '', 'get');
     }
 
     public function post($path, $body = null, array $headers = array())
     {
-        $this->requests['post'][] = $path;
+        return $this->request($path, $body, 'post');
     }
 
     public function patch($path, $body = null, array $headers = array())
     {
-        $this->requests['patch'][] = $path;
+        return $this->request($path, '', 'patch');
     }
 
     public function put($path, $body = null, array $headers = array())
     {
-        $this->requests['put'][] = $path;
+        return $this->request($path, '', 'put');
     }
 
     public function delete($path, $body = null, array $headers = array())
     {
-        $this->requests['delete'][] = $path;
+        return $this->request($path, '', 'delete');
     }
 
-    public function request($path, $body, $httpMethod = 'GET', array $headers = array())
+    public function request(string $path, string $body, string $httpMethod = 'get', array $headers = array())
     {
         $this->requests[$httpMethod][] = $path;
+        if (isset(self::$fixtures[$httpMethod][$path])) {
+            return new Response(200, ['content-type' => 'application/json'], self::$fixtures[$httpMethod][$path]);
+        }
+
+        return new Response(200);
     }
 
     /**
@@ -86,22 +86,16 @@ class TestHttpClient implements HttpClient
      *
      * @return ResponseInterface
      *
-     * @throws \Http\Client\Exception If an error happens during processing the request.
      * @throws \Exception             If processing the request is impossible (eg. bad configuration).
      */
-    public function sendRequest(RequestInterface $request)
+    public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        switch ($request->getMethod()) {
-            case 'GET':
-                return $this->get($request->getUri()->getPath());
-            case 'POST':
-                return $this->post($request->getUri()->getPath());
-            case 'PUT':
-                return $this->put($request->getUri()->getPath());
-            case 'DELETE':
-                return $this->delete($request->getUri()->getPath());
-            default:
-                return new Response(400);
-        }
+        return match ($request->getMethod()) {
+            'GET' => $this->get($request->getUri()->getPath()),
+            'POST' => $this->post($request->getUri()->getPath()),
+            'PUT' => $this->put($request->getUri()->getPath()),
+            'DELETE' => $this->delete($request->getUri()->getPath()),
+            default => new Response(400),
+        };
     }
 }

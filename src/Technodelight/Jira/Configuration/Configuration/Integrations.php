@@ -16,18 +16,15 @@ class Integrations implements Configuration
      */
     public function configurations()
     {
-        $root = (new TreeBuilder)->root('integrations');
-
-        $root
-            ->info('Third party integration configs')
-            ->addDefaultsIfNotSet()
-            ->ignoreExtraKeys(false)
-            ->children()
-                ->append((new Git)->configurations())
-                ->append((new Iterm)->configurations())
-                ->append((new Editor)->configurations())
-            ->end();
-
-        return $root;
+        return (new TreeBuilder('integrations'))
+            ->getRootNode()
+                ->info('Third party integration configs')
+                ->addDefaultsIfNotSet()
+                ->ignoreExtraKeys(false)
+                ->children()
+                    ->append((new Git)->configurations())
+                    ->append((new Iterm)->configurations())
+                    ->append((new Editor)->configurations())
+                ->end();
     }
 }

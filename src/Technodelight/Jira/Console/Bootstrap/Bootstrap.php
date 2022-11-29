@@ -7,10 +7,7 @@ use Technodelight\Jira\Console\DependencyInjection\Container\Provider;
 
 class Bootstrap
 {
-    /**
-     * @var Provider
-     */
-    private $containerProvider;
+    private Provider $containerProvider;
 
     public function __construct(Provider $provider = null)
     {
@@ -24,8 +21,6 @@ class Bootstrap
      */
     public function boot($version): Application
     {
-        $container = $this->containerProvider->build($version);
-
-        return $container->get('technodelight.jira.app');
+        return $this->containerProvider->build($version)->get('technodelight.jira.app');
     }
 }

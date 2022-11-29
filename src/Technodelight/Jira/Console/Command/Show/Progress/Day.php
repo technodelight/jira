@@ -9,7 +9,7 @@ use Technodelight\Jira\Console\Dashboard\Dashboard;
 
 class Day extends Base
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:day')
@@ -25,18 +25,17 @@ class Day extends Base
         $this->addProgressCommandOptions();
     }
 
-    /**
-     * @return string
-     */
-    protected function defaultRendererType()
+    protected function defaultRendererType(): string
     {
         return self::RENDERER_TYPE_LIST;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $date = $this->dateArgument($input);
         $collection = $this->dashboardConsole()->fetch($date, $this->userArgument($input), Dashboard::MODE_DAILY);
         $this->rendererForOptions($input->getOptions())->render($output, $collection);
+
+        return self::SUCCESS;
     }
 }

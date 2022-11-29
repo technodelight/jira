@@ -6,28 +6,22 @@ use Fixture\Configuration\Loader;
 use Fixture\DependencyInjection\Provider;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Technodelight\Jira\Console\Application;
 use Technodelight\Jira\Console\Bootstrap\Bootstrap;
 
 class ApplicationContext implements Context
 {
-    private $app;
-    private $exitCode;
-    /**
-     * @var string
-     */
-    private $output;
+    private int $exitCode;
+    private string $output;
+    private Application $app;
 
-    /**
-     * @Given the application configuration :property is configured with:
-     */
+    /** @Given the application configuration :property is configured with: */
     public function theApplicationIsConfiguredWith($property, $jsonString)
     {
-        Loader::$configs[$property] = json_decode($jsonString, true);
+        Loader::$configs[$property] = json_decode($jsonString, true, 512, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @When I run the application with the following input:
-     */
+    /** @When I run the application with the following input: */
     public function iRunTheApplicationWithTheFollowingInput(TableNode $table)
     {
         $input = new ArrayInput($table->getRowsHash() + ['-vvv' => '']);
@@ -37,38 +31,36 @@ class ApplicationContext implements Context
         print($this->output);
     }
 
-    /**
-     * @Then the exit code should be :exitCode
-     */
+    /** @Then the exit code should be :exitCode */
     public function theExitCodeShouldBe($exitCode)
     {
         if ($this->exitCode !== (int) $exitCode) {
-            throw new \RuntimeException(sprintf("Expected exit code %d, got %d", $exitCode, $this->exitCode));
+            throw new RuntimeException(sprintf("Expected exit code %d, got %d", $exitCode, $this->exitCode));
         }
     }
 
-    /**
-     * @Then the output should contain :text
-     */
+    /** @Then the output should contain :text */
     public function theOutputShouldContain($text)
     {
-        if (strpos($this->output, $text) === false) {
-            throw new \RuntimeException(sprintf('Output does not contain expected string:' .PHP_EOL . '%s', $text));
+        if (!str_contains($this->output, $text)) {
+            throw new RuntimeException(sprintf('Output does not contain expected string:' .PHP_EOL . '%s', $text));
         }
     }
 
-    public function app()
+    public function app(): Application
     {
-        if (!defined('APPLICATION_ROOT_DIR')) {
-            define('APPLICATION_ROOT_DIR', realpath(__DIR__ . '/../..'));
-            define('SKIP_CACHE_CONTAINER', true);
-            define('ENVIRONMENT', 'test');
+        if (!isset($this->app)) {
+            defined('APPLICATION_ROOT_DIR') || define('APPLICATION_ROOT_DIR', realpath(dirname(__DIR__, 2)));
+            defined('SKIP_CACHE_CONTAINER') || define('SKIP_CACHE_CONTAINER', true);
+            defined('ENVIRONMENT') || define('ENVIRONMENT', 'test');
+
+            $boot = new Bootstrap(new Provider);
+            $app = $boot->boot('behat');
+            $app->setAutoExit(false);
+
+            $this->app = $app;
         }
 
-        $boot = new Bootstrap(new Provider);
-        $app = $boot->boot('behat');
-        $app->setAutoExit(false);
-
-        return $app;
+        return $this->app;
     }
 }

@@ -14,7 +14,7 @@ class Instances implements Configuration
      */
     public function configurations()
     {
-        $root = (new TreeBuilder())->root('instances');
+        $root = (new TreeBuilder('instances'))->getRootNode();
 
         $root
             ->info('Different JIRA instances to use')

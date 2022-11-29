@@ -12,12 +12,9 @@ use Technodelight\Jira\Domain\Filter;
 
 class Filters extends Command
 {
-    /**
-     * @var Api
-     */
-    private $api;
+    private Api $api;
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:filters')
@@ -31,12 +28,12 @@ class Filters extends Command
         ;
     }
 
-    public function setJiraApi(Api $api)
+    public function setJiraApi(Api $api): void
     {
         $this->api = $api;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $search = $input->getOption('search');
         $filters = $this->api->retrieveFilters();
@@ -54,9 +51,11 @@ class Filters extends Command
         foreach ($filters as $filter) {
             $this->renderFilter($output, $filter);
         }
+
+        return self::SUCCESS;
     }
 
-    private function renderFilter(OutputInterface $output, Filter $filter)
+    private function renderFilter(OutputInterface $output, Filter $filter): void
     {
         $output->writeln([
             sprintf(

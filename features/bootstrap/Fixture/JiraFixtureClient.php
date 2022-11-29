@@ -2,17 +2,16 @@
 
 namespace Fixture;
 
+use InvalidArgumentException;
 use Technodelight\Jira\Api\JiraRestApi\Client;
 
 class JiraFixtureClient implements Client
 {
     const FIXTURE_PATH = '../fixtures/jira/';
     const ERROR_NO_SUCH_FIXTURE = 'No such fixture: "%s" (%s)';
-    const ERROR_CANNOT_WRITE_FIXTURE = 'Fixture assertion failed: "%s"';
     const ERROR_CANNOT_UNSERIALIZE_FIXTURE = "Fixture unserialization failure: \"%s\" (%s)\n%s";
 
-    private $posts = [];
-    private static $setups = ['get' => [], 'post' => [], 'put' => [], 'delete' => [], 'search' => []];
+    private static array $setups = ['get' => [], 'post' => [], 'put' => [], 'delete' => [], 'search' => []];
 
     public function post($url, $data = [])
     {
@@ -75,17 +74,10 @@ class JiraFixtureClient implements Client
         }
 
         if (!is_readable($filename)) {
-            throw new \InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url, $this->keyify($url)));
-        }
-        $data = json_decode(file_get_contents($filename), true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException(
-                sprintf(self::ERROR_CANNOT_UNSERIALIZE_FIXTURE, $url, $this->keyify($url), json_last_error_msg())
-            );
+            throw new InvalidArgumentException(sprintf(self::ERROR_NO_SUCH_FIXTURE, $url, $this->keyify($url)));
         }
 
-        return $data;
+        return json_decode(file_get_contents($filename), true, 512, JSON_THROW_ON_ERROR);
     }
 
     private function write($url, $data)
@@ -102,13 +94,21 @@ class JiraFixtureClient implements Client
 
     private function debugInfo($method, $url, $filename = '')
     {
+        if (!empty($filename)) {
+            $baseDir = __DIR__ . DIRECTORY_SEPARATOR
+                . implode(DIRECTORY_SEPARATOR, array_fill(0, 3, '..'));
+            $path = strtr(realpath($filename), [realpath($baseDir) => '']);
+            $path = empty($path) ? basename($filename) : $path;
+        } else {
+            $path = 'no file';
+        }
         file_put_contents(
             'php://stdout',
             sprintf(
                 "      \033[1;36mFixture: %s %s\033[0m (%s)" . PHP_EOL,
                 $method,
                 $url,
-                $filename ? basename($filename) : 'no file'
+                $path
             )
         );
     }

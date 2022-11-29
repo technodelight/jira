@@ -17,22 +17,16 @@ use Technodelight\Jira\Helper\Wordwrap;
 
 class Filter extends Command
 {
-    private Api $jira;
-    private IssueKeyResolver $issueKeyResolver;
-    private ExpressionLanguage $exp;
-    private Wordwrap $wordwrap;
-
-    public function __construct(Api $jira, IssueKeyResolver $issueKeyResolver, ExpressionLanguage $exp, Wordwrap $wordwrap)
-    {
-        $this->jira = $jira;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->exp = $exp;
-        $this->wordwrap = $wordwrap;
-
+    public function __construct(
+        private readonly Api $jira,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly ExpressionLanguage $exp,
+        private readonly Wordwrap $wordwrap
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('filter')
@@ -47,8 +41,7 @@ class Filter extends Command
                 InputArgument::REQUIRED,
                 'Filter condition, for example "issue.labels in [\'1.60.0\']"'
             )
-            ->setHelp($this->assembleHelp())
-        ;
+            ->setHelp($this->assembleHelp());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -60,10 +53,10 @@ class Filter extends Command
             if ($this->exp->evaluate($condition, ['issue' => $issue])) {
                 $output->writeln((string)$issueKey);
             }
-            return 0;
+            return self::SUCCESS;
         } catch (Exception $e) {
             $output->writeln($e->getMessage(), OutputInterface::VERBOSITY_VERY_VERBOSE);
-            return 1;
+            return self::FAILURE;
         }
     }
 

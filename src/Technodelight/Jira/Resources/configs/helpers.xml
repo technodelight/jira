@@ -69,14 +69,14 @@
         <service public="false"
                  id="technodelight.jira.connector.jira_tag_converter.factory"
                  class="Technodelight\Jira\Connector\JiraTagConverter\Factory">
-            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="terminal" />
         </service>
         <service id="technodelight.jira.jira_tag_converter" class="Technodelight\JiraTagConverter\JiraTagConverter">
             <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
             <argument type="collection" />
             <argument type="constant">TRUE</argument>
         </service>
-        <service id="technodelight.jira.jira_tag_converter.no_color" class="Technodelight\Jira\Api\JiraTagConverter\JiraTagConverter">
+        <service id="technodelight.jira.jira_tag_converter.no_color" class="Technodelight\JiraTagConverter\JiraTagConverter">
             <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
             <argument type="collection">
                 <argument key="strip_color" type="constant">TRUE</argument>
@@ -88,8 +88,10 @@
             <argument type="service" id="technodelight.jira.helper.terminal_dimension_provider"/>
         </service>
 
+        <service id="terminal" public="false" class="Symfony\Component\Console\Terminal" />
+
         <service id="technodelight.jira.helper.terminal_dimension_provider" class="Technodelight\Jira\Helper\TerminalDimensionProvider">
-            <argument type="service" id="technodelight.jira.app" />
+            <argument type="service" id="terminal" />
         </service>
 
         <service id="technodelight.jira.image_provider" class="Technodelight\Jira\Helper\ImageProvider">

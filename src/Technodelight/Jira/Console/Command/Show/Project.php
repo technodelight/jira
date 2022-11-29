@@ -12,39 +12,16 @@ use Technodelight\Jira\Renderer\Project\Renderer;
 
 class Project extends Command
 {
-    /**
-     * @var ProjectKeyResolver
-     */
-    private $projectKeyResolver;
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var Renderer
-     */
-    private $projectRenderer;
-    /**
-     * @var Renderer
-     */
-    private $fullProjectRenderer;
-
     public function __construct(
-        ProjectKeyResolver $projectKeyResolver,
-        Api $api,
-        Renderer $projectRenderer,
-        Renderer $fullProjectRenderer
-    )
-    {
-        $this->projectKeyResolver = $projectKeyResolver;
-        $this->api = $api;
-        $this->projectRenderer = $projectRenderer;
-        $this->fullProjectRenderer = $fullProjectRenderer;
-
+        private readonly ProjectKeyResolver $projectKeyResolver,
+        private readonly Api $api,
+        private readonly Renderer $projectRenderer,
+        private readonly Renderer $fullProjectRenderer
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:project')
@@ -57,7 +34,7 @@ class Project extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $projectKey = $this->projectKeyResolver->argument($input);
         if (null === $projectKey) {
@@ -70,5 +47,7 @@ class Project extends Command
         } else {
             $this->projectRenderer->render($output, $project);
         }
+
+        return self::SUCCESS;
     }
 }

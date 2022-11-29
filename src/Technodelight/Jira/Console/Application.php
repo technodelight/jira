@@ -4,36 +4,24 @@ namespace Technodelight\Jira\Console;
 
 use Exception;
 use Symfony\Component\Console\Application as BaseApp;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Helper\PluralizeHelper;
 
 class Application extends BaseApp
 {
-    private ContainerInterface $container;
     private string $currentInstanceName = 'default';
 
-    public function setContainer(ContainerInterface $container)
-    {
-        if (!isset($this->container)) {
-            $this->container = $container;
-        }
-    }
-
-    public function getContainer()
-    {
-        return $this->container;
-    }
-
-    public function currentInstanceName()
+    public function currentInstanceName(): string
     {
         return $this->currentInstanceName;
     }
 
-    public function run(InputInterface $input = null, OutputInterface $output = null)
+    public function run(InputInterface $input = null, OutputInterface $output = null): int
     {
         $this->handleCacheClearFlagAndInstanceSelector($input);
         $this->setCatchExceptions(true);
@@ -78,7 +66,7 @@ class Application extends BaseApp
         return parent::doRun($input, $output);
     }
 
-    public function getDefaultHelperSet()
+    public function getDefaultHelperSet(): HelperSet
     {
         $helperSet = parent::getDefaultHelperSet();
         $helperSet->set(new PluralizeHelper);
@@ -86,7 +74,7 @@ class Application extends BaseApp
         return $helperSet;
     }
 
-    public function getLongVersion()
+    public function getLongVersion(): string
     {
         $banner = <<<BANNER
        ___                     ___           ___
@@ -109,7 +97,7 @@ BANNER;
             . 'See https://github.com/technodelight/jira/blob/master/LICENSE.';
     }
 
-    protected function getDefaultInputDefinition()
+    protected function getDefaultInputDefinition(): InputDefinition
     {
         $input = parent::getDefaultInputDefinition();
         $input->addOption(new InputOption('--debug', null, InputOption::VALUE_NONE, 'Enable debug mode'));
@@ -119,11 +107,11 @@ BANNER;
         return $input;
     }
 
-    private function formatBytes($size, $precision = 4): string
+    private function formatBytes($size): string
     {
         $base = log($size, 1024);
 
-        return round(1024 ** ($base - floor($base)), $precision) . ' ' . ['', 'K', 'M', 'G', 'T'][(int) floor($base)];
+        return round(1024 ** ($base - floor($base)), 4) . ' ' . ['', 'K', 'M', 'G', 'T'][(int) floor($base)];
     }
 
     /** @throws Exception */

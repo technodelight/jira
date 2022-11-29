@@ -27,79 +27,21 @@ use \UnexpectedValueException;
 
 class Transition extends Command
 {
-    const TRANSITION_DESCRIPTION_SINGLE = 'Moves issue to %s';
-    const TRANSITION_DESCRIPTION_MULTIPLE = 'Moves issue to one of: %s (whichever applies first)';
+    private const TRANSITION_DESCRIPTION_SINGLE = 'Moves issue to %s';
+    private const TRANSITION_DESCRIPTION_MULTIPLE = 'Moves issue to one of: %s (whichever applies first)';
 
-    /**
-     * @var string
-     */
-    private $name;
-    /**
-     * @var array
-     */
-    private $transitions;
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var CheckoutBranch
-     */
-    private $checkoutBranch;
-    /**
-     * @var GitShell
-     */
-    private $git;
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var Checker
-     */
-    private $optionChecker;
-    /**
-     * @var AssigneeInput
-     */
-    private $assigneeInput;
-    /**
-     * @var QuestionHelper
-     */
-    private $questionHelper;
-    /**
-     * @var Renderer
-     */
-    private $renderer;
-
-    /**
-     * @param $name
-     * @param $transitions
-     * @param Api $jira
-     * @param IssueKeyResolver $issueKeyResolver
-     * @param CheckoutBranch $checkoutBranch
-     * @param GitShell $git
-     * @param TemplateHelper $templateHelper
-     * @param Checker $optionChecker
-     * @param AssigneeInput $assignee
-     * @param QuestionHelper $questionHelper
-     * @param Renderer $renderer
-     */
     public function __construct(
-        $name,
-        $transitions,
-        Api $jira,
-        IssueKeyResolver $issueKeyResolver,
-        CheckoutBranch $checkoutBranch,
-        GitShell $git,
-        TemplateHelper $templateHelper,
-        Checker $optionChecker,
-        AssigneeInput $assignee,
-        QuestionHelper $questionHelper,
-        Renderer $renderer
+        private readonly string $name,
+        private readonly array $transitions,
+        private readonly Api $jira,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly CheckoutBranch $checkoutBranch,
+        private readonly GitShell $git,
+        private readonly TemplateHelper $templateHelper,
+        private readonly Checker $optionChecker,
+        private readonly AssigneeInput $assigneeInput,
+        private readonly QuestionHelper $questionHelper,
+        private readonly Renderer $renderer
     )
     {
         if (empty($transitions)) {
@@ -108,22 +50,10 @@ class Transition extends Command
             );
         }
 
-        $this->name = $name;
-        $this->transitions = $transitions;
-        $this->jira = $jira;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->checkoutBranch = $checkoutBranch;
-        $this->git = $git;
-        $this->templateHelper = $templateHelper;
-        $this->optionChecker = $optionChecker;
-        $this->assigneeInput = $assignee;
-        $this->questionHelper = $questionHelper;
-        $this->renderer = $renderer;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName($this->prepareIssueTransitionCommandName($this->name))
@@ -155,13 +85,7 @@ class Transition extends Command
         ;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|null
-     * @throws \Exception
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $issueKey = $this->issueKeyResolver->argument($input, $output);
@@ -191,30 +115,19 @@ class Transition extends Command
             if (isset($issue)) {
                 $this->checkoutToBranch($input, $output, $issue);
             }
-        } finally {
-            return isset($returnCode) ? $returnCode : 1;
         }
+
+        return $returnCode;
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     */
-    private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
+    private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue): void
     {
         if ($input->getOption('branch')) {
             $this->checkoutBranch->checkoutToBranch($input, $output, $issue);
         }
     }
 
-    /**
-     * @param IssueTransition[] $transitions
-     * @param array $transitionsToSearchFor
-     * @return IssueTransition
-     * @throws \UnexpectedValueException
-     */
-    private function findTransitionByName(array $transitions, $transitionsToSearchFor)
+    private function findTransitionByName(array $transitions, $transitionsToSearchFor): IssueTransition
     {
         foreach ($transitionsToSearchFor as $name) {
             foreach ($transitions as $transition) {
@@ -229,7 +142,7 @@ class Transition extends Command
         );
     }
 
-    private function checkGitChanges(InputInterface $input, OutputInterface $output, IssueTransition $transition)
+    private function checkGitChanges(InputInterface $input, OutputInterface $output, IssueTransition $transition): void
     {
         if (($diff = $this->git->diff()) && $input->isInteractive()) {
             $output->writeln('It seems you have the following uncommited changes on your current branch:');
@@ -255,15 +168,15 @@ class Transition extends Command
         }
     }
 
-    private function getCommandDescription()
+    private function getCommandDescription(): string
     {
-        if (count($this->transitions) == 1) {
+        if (count($this->transitions) === 1) {
             return sprintf(self::TRANSITION_DESCRIPTION_SINGLE, current($this->transitions));
         }
         return sprintf(self::TRANSITION_DESCRIPTION_MULTIPLE, join(', ', $this->transitions));
     }
 
-    private function prepareIssueTransitionCommandName($name)
+    private function prepareIssueTransitionCommandName($name): string
     {
         return sprintf('workflow:%s', $name);
     }

@@ -9,7 +9,7 @@ Do you use JIRA in your daily work a lot? Are you a developer? Then this tool is
 This command line application helps you managing issue transitions, searches using JQL and assists time logging based on your recent git commit messages, with ease.
 All these comes in a highly customisable manner and with many useful extras.
 
-This tool was evolved into it's current state over the years I've spent with development on my largest side project. I wanted to create a tool I can quickly and effectively use, without having to grab my mouse. It spares a lot of time with all the micro management an issue needs. 
+This tool was evolved into it's current state over the years I've spent with development on my largest side project. I wanted to create a tool I can quickly and effectively use, without having to grab my mouse. It spares a lot of time with all the micro management an issue needs.
 
 # Quickstart guide
 
@@ -29,13 +29,13 @@ This tool was evolved into it's current state over the years I've spent with dev
 
   ```
   jira init
-  ``` 
+  ```
   Just follow the steps and you should be good to go.
-  
+
 ### 4. Updating your tool
 
   Once you've installed `jira` you can perform updates by running `jira self-update`.
-  
+
 ### Alternative installation mode, A.K.A. build-your-own:
 
   ```
@@ -51,7 +51,7 @@ This tool was evolved into it's current state over the years I've spent with dev
 - perform any transition (for example, `jira workflow:start`, but you can configure commands for multiple transitions)
 - list available transitions for an issue (`jira show:transitions`) or all possible issue status (`jira show:statuses`)
 - create a branch for the issue you're going to work (`jira branch`)
-- create pull request for your current branch, assign labels and milestones (`jira pr`) 
+- create pull request for your current branch, assign labels and milestones (`jira pr`)
 - assign issue to your team member or yourself (`jira assign`)
 - log new work/edit existing records against an issue (`jira log PROJ-123 1h "worklog comment" yesterday`)
 - add and edit comments quickly (`jira comment`)
@@ -69,7 +69,6 @@ This tool was evolved into it's current state over the years I've spent with dev
 
 And other powerful features such as:
 
-- time logging works with JIRA built in mechanism and with [Tempo Timesheets](https://www.tempo.io/jira-project-management-tool) too
 - the tool works in ANSI 256 colors mode
 - supports almost every "jira markdown" syntax, displayed console-friendly
 - render images from issue description, comments, etc. (requires iTerm2 on OSX!)
@@ -77,19 +76,19 @@ And other powerful features such as:
 - show available local/remote branches and pull requests for an issue (you will need a github API token for this), shows CI build statuses too
 - guess issue key from your current GIT branch (works with all the commands where an issue key is required!)
 - use issue key aliases or alias a full branch name for an issue (nice use case: `jira log standup 15m "standup"`)
-- or be lazy and just paste the full URL (`jira show https://project.atlassian.net/browse/PROJ-123` for example)  
+- or be lazy and just paste the full URL (`jira show https://project.atlassian.net/browse/PROJ-123` for example)
 - assemble worklog messages from commit messages, when you log your time interactively (by typing `jira log` on the issue's branch)
 - auto-generate branch name from issue summary, auto-checkout to branch (by specifying `-b` option, ie. `jira start PROJ-123 -b`)
 - define your own branch name generation strategies by adding rules to your configuration file
 - define your custom view modes for various use cases. There are 2 different rendering "modes" currently, one for rendering single issues and one for rendering lists. You can add/remove/reorder fields, add custom fields on demand. For all available renderers and fields `jira show:fields` and `jira show:renderers` can help.
-- define how much work hours do you have per day, to easily track your overtime 
+- define how much work hours do you have per day, to easily track your overtime
 
 Please bear in mind *this app is still in development* and it may have bugs. If you find one or you have a feature request/suggestion, please open an issue [here](https://github.com/technodelight/jira/issues).
 
 
 # Tips
 
-- **Add .jira.yml to your global gitignore:** 
+- **Add .jira.yml to your global gitignore:**
 
   `echo .jira.yml | tee -a ~/.gitignore_global`
 
@@ -181,7 +180,7 @@ integrations:
             replace:
 
                 # Defaults:
-                -  
+                -
                 - :
                 - /
                 - ,
@@ -195,13 +194,6 @@ integrations:
                 - change
                 - remove
                 - implement
-
-    # Tempo timesheets (https://tempo.io/doc/timesheets/api/rest/latest)
-    tempo:
-        enabled:              false
-        version:              null
-        apiToken:             null
-        instances:            null # Example: secondary
 
     # iTerm2 integration (OS X Only)
     iterm:
@@ -310,13 +302,11 @@ renderers:
 
 - **Register GitHub api token:** https://github.com/settings/tokens/new?scopes=repo&description=jira+cli+tool
 - **JQL:** https://confluence.atlassian.com/jiracloud/advanced-searching-735937166.html
-- Tempo Timesheets: https://www.tempo.io/jira-project-management-tool
-- Steps on how to gather an **API token for Tempo Timesheets** (section "Using the REST API as an individual user"): https://tempo-io.github.io/tempo-api-docs/
 
 # License
 
 GNU GPLv3
 
-Copyright (c) 2015-2019 Zsolt Gál
+Copyright (c) 2015-2022 Zsolt Gál
 See LICENSE.
 

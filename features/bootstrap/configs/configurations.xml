@@ -5,8 +5,8 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-
-        <service id="fixture.configuration.loader" class="Fixture\Configuration\Loader" decorates="technodelight.jira.console.configuration.loader" />
-
+        <service public="false"
+                 id="technodelight.jira.console.configuration.loader"
+                 class="Fixture\Configuration\Loader" />
     </services>
 </container>

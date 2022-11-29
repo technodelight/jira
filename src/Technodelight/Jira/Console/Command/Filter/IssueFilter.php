@@ -13,22 +13,8 @@ use Technodelight\Jira\Template\IssueRenderer;
 
 class IssueFilter extends Command implements IssueRendererAware
 {
-    /**
-     * @var string
-     */
-    private $name;
-    /**
-     * @var string
-     */
-    private $jql;
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var IssueRenderer
-     */
-    private $issueRenderer;
+    private Api $api;
+    private IssueRenderer $issueRenderer;
 
     /**
      * Constructor.
@@ -38,13 +24,12 @@ class IssueFilter extends Command implements IssueRendererAware
      *
      * @throws \LogicException When the command name is empty
      */
-    public function __construct(string $name, string $jql)
+    public function __construct(private string $name, private readonly string $jql)
     {
         if (empty($jql)) {
             throw new InvalidArgumentException('JQL is empty');
         }
 
-        $this->jql = $jql;
         $this->name = $this->prepareCommandName($name);
 
         parent::__construct($this->prepareCommandName($this->name));
@@ -86,22 +71,22 @@ class IssueFilter extends Command implements IssueRendererAware
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');
             $output->writeln(sprintf('<fg=black>%s</>', $this->jql));
-            return 1;
+            return self::FAILURE;
         }
 
         $this->issueRenderer->renderIssues($output, $issues, $input->getOptions());
 
-        return 0;
+        return self::SUCCESS;
     }
 
-    private function descriptionFromJql()
+    private function descriptionFromJql(): string
     {
         return sprintf(
             'Runs filter: \'%s\'', $this->jql
         );
     }
 
-    private function page(InputInterface $input)
+    private function page(InputInterface $input): ?int
     {
         if (is_numeric($input->getOption('page'))) {
             return ($input->getOption('page') - 1) * 50;

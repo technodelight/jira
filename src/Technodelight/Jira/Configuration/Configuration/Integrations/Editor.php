@@ -14,7 +14,7 @@ class Editor implements Configuration
      */
     public function configurations()
     {
-        return (new TreeBuilder)->root('editor')
+        return (new TreeBuilder('editor'))->getRootNode()
             ->info('Editor preferences')
             ->addDefaultsIfNotSet()
             ->children()

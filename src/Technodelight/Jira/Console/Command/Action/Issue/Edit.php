@@ -24,36 +24,21 @@ use Technodelight\Jira\Renderer\Issue\MinimalHeader;
 
 class Edit extends Command
 {
-    const ACTION_OPTS = ['add', 'set', 'remove'];
-    private Api $jira;
-    private QuestionHelper $questionHelper;
-    private IssueKeyResolver $issueKeyResolver;
-    private Checker $checker;
-    private FieldEditor $editor;
-    private TemplateHelper $templateHelper;
-    private MinimalHeader $minimalHeaderRenderer;
+    private const ACTION_OPTS = ['add', 'set', 'remove'];
 
     public function __construct(
-        Api $jira,
-        IssueKeyResolver $issueKeyResolver,
-        Checker $checker,
-        QuestionHelper $questionHelper,
-        FieldEditor $editor,
-        TemplateHelper $templateHelper,
-        MinimalHeader $minimalHeaderRenderer
+        private readonly Api $jira,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly Checker $checker,
+        private readonly QuestionHelper $questionHelper,
+        private readonly FieldEditor $editor,
+        private readonly TemplateHelper $templateHelper,
+        private readonly MinimalHeader $minimalHeaderRenderer
     ) {
-        $this->jira = $jira;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->checker = $checker;
-        $this->questionHelper = $questionHelper;
-        $this->editor = $editor;
-        $this->templateHelper = $templateHelper;
-        $this->minimalHeaderRenderer = $minimalHeaderRenderer;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:edit')
@@ -104,9 +89,7 @@ class Edit extends Command
             );
     }
 
-    /**
-     * @throws EditorException
-     */
+    /** @throws EditorException */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
@@ -155,7 +138,7 @@ class Edit extends Command
         $field = $this->jira->issueEditMeta($issueKey)->field($fieldKey);
         if ($input->getOption('list')) {
             $output->writeln($field->allowedValues());
-            return 0;
+            return self::SUCCESS;
         }
 
         $beforeUpdate = $this->jira->retrieveIssue($issueKey);
@@ -169,7 +152,7 @@ class Edit extends Command
         $this->minimalHeaderRenderer->render($output, $this->jira->retrieveIssue($issueKey));
         $this->renderChange($field, $beforeUpdate, $afterUpdate, $output);
 
-        return 0;
+        return self::SUCCESS;
     }
 
     private function renderChange(Field $field, Issue $before, Issue $after, OutputInterface $output): void

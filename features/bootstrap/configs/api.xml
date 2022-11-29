@@ -24,12 +24,6 @@
             <factory service="fixture.github_client_builder" method="build" />
         </service>
         <!-- hub -->
-        <!-- tempo -->
-        <service id="fixture.jira.api.tempo.test_http_client" class="Fixture\Tempo\TestHttpClient"/>
-        <service id="technodelight.jira.api.tempo.api" class="Technodelight\Tempo2\Api">
-            <argument type="service" id="fixture.jira.api.tempo.test_http_client" />
-        </service>
-        <!-- tempo -->
 
     </services>
 

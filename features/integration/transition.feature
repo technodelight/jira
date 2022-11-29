@@ -17,7 +17,7 @@ Feature: Perform issue transitions
   Scenario: An issue transition could not be performed
     Given the application configuration "transitions" is configured with:
     """
-    [{"command": "pick", "transitions":["Picked up by Dev"]}]
+    [{"command": "pick", "transition":["Picked up by Dev"]}]
     """
     When I run the application with the following input:
       | command  | pick    |
@@ -27,7 +27,7 @@ Feature: Perform issue transitions
   Scenario: An issue transition could be performed
     Given the application configuration "transitions" is configured with:
     """
-    [{"command": "resolve", "transitions":["Resolve Issue"]}]
+    [{"command": "resolve", "transition":["Resolve Issue"]}]
     """
     When I run the application with the following input:
       | command  | workflow:resolve |

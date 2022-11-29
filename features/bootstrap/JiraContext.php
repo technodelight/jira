@@ -11,7 +11,7 @@ class JiraContext implements Context
      */
     public function jiraRespondsToUrlWith($method, $url, PyStringNode $string)
     {
-        JiraFixtureClient::setup($method, $url, json_decode(trim($string->getRaw()), true));
+        JiraFixtureClient::setup($method, $url, json_decode(trim($string->getRaw()), true, 512, JSON_THROW_ON_ERROR));
     }
 
 }

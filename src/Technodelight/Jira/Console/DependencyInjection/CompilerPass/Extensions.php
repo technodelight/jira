@@ -6,30 +6,25 @@ use Exception;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Technodelight\Jira\Configuration\Configuration;
 use Technodelight\Jira\Console\Configuration\Provider;
 use Technodelight\Jira\Extension\ConfigurationPreProcessor;
 use Technodelight\Jira\Extension\Locator as ExtensionLocator;
 
 class Extensions implements CompilerPassInterface
 {
-    const PHP_REQUIRE_STATEMENT = 'if (is_file(\'%1$s\')) { require_once "%1$s"; } else echo(\'cannot load extension: %2$s\' . PHP_EOL);';
+    private const PHP_REQUIRE_STATEMENT = 'if (is_file(\'%1$s\')) { require_once "%1$s"; } else echo(\'cannot load extension: %2$s\' . PHP_EOL);';
 
-    /**
-     * @param ContainerBuilder $container
-     * @throws Exception
-     */
-    public function process(ContainerBuilder $container)
+    /** @throws Exception */
+    public function process(ContainerBuilder $container): void
     {
         $this->updateDef($container);
         $this->processConfig($container);
         $this->loadExtensions($container);
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @throws Exception
-     */
-    private function updateDef(ContainerBuilder $container)
+    /** @throws Exception */
+    private function updateDef(ContainerBuilder $container): void
     {
         $provider = $container->get('technodelight.jira.console.configuration.provider');
         $extensionLocator = new ExtensionLocator;
@@ -49,7 +44,7 @@ class Extensions implements CompilerPassInterface
         $this->cacheExtensionPaths($extensionClassMap);
     }
 
-    private function cacheExtensionPaths(array $extensionClassMap)
+    private function cacheExtensionPaths(array $extensionClassMap): void
     {
         $f = fopen(getenv('HOME') . '/.jira/extensions.php', 'w');
         fwrite($f, '<?php' . PHP_EOL);
@@ -60,32 +55,27 @@ class Extensions implements CompilerPassInterface
         fclose($f);
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @throws Exception
-     */
-    private function processConfig(ContainerBuilder $container)
+    /** @throws Exception */
+    private function processConfig(ContainerBuilder $container): void
     {
         $container->get('technodelight.jira.extension.configurator')->configure(
             $container->get('technodelight.jira.console.configuration.configuration')->getRootNode()
         );
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @throws Exception
-     */
-    private function loadExtensions(ContainerBuilder $container)
+    /** @throws Exception */
+    private function loadExtensions(ContainerBuilder $container): void
     {
         /** @var Provider $provider */
         $provider = $container->get('technodelight.jira.console.configuration.provider');
+        /** @var Configuration $configuration */
         $configuration = $container->get('technodelight.jira.console.configuration.configuration');
 
         $config = (new Processor)->process(
             $configuration->getConfigTreeBuilder()->buildTree(), $provider->get()
         );
 
-        $container->get('technodelight.jira.extension.configurator')->load(
+        $container->get('technodelight.jira.extension.configurator')?->load(
             $config,
             $container
         );

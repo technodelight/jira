@@ -11,18 +11,12 @@ use Technodelight\Jira\Domain\IssueLink\IssueLinkId;
 
 class Unlink extends Command
 {
-    /**
-     * @var Api
-     */
-    private $api;
-
-    public function __construct(Api $api)
+    public function __construct(private readonly Api $api)
     {
         parent::__construct();
-        $this->api = $api;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:unlink')
@@ -35,10 +29,12 @@ class Unlink extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $linkId = $input->getArgument('linkId');
         $this->api->removeIssueLink(IssueLinkId::fromString($linkId));
         $output->writeln(sprintf('Link <info>%s</info> has been successfully removed.', $linkId));
+
+        return self::SUCCESS;
     }
 }

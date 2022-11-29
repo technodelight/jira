@@ -10,16 +10,12 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Aliases extends Command
 {
-    private $aliasesConfiguration;
-
-    public function __construct(AliasesConfiguration $aliasesConfiguration)
+    public function __construct(private readonly AliasesConfiguration $aliasesConfiguration)
     {
-        $this->aliasesConfiguration = $aliasesConfiguration;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:aliases')
@@ -27,7 +23,7 @@ class Aliases extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($rows = $this->issueAliases()) {
             $output->writeln(['<comment>Issue Aliases:</comment>', '']);
@@ -43,12 +39,11 @@ class Aliases extends Command
         $table->setHeaders(['Command', 'Aliases']);
         $table->addRows($this->commandAliases());
         $table->render();
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @return array
-     */
-    private function issueAliases()
+    private function issueAliases(): array
     {
         $rows = [];
         foreach ($this->aliasesConfiguration->items() as $aliasConfiguration) {
@@ -58,7 +53,7 @@ class Aliases extends Command
         return $rows;
     }
 
-    private function commandAliases()
+    private function commandAliases(): array
     {
         $commands = $this->getApplication()->all();
         $rows = [];

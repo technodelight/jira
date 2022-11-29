@@ -12,7 +12,7 @@
         "symfony/dependency-injection": "~6",
         "sirprize/queried": "^0.1.0",
         "symfony/yaml": "~6",
-        "icanboogie/storage": "~4",
+        "icanboogie/storage": "^4.2",
         "technodelight/seconds-to-none": "~1.0",
         "ssnepenthe/color-utils": "^0.4.2",
         "technodelight/php-time-ago": "^1.1",
@@ -29,7 +29,8 @@
         "technodelight/php-cli-iterm-image-renderer": "^1.0",
         "technodelight/php-jira-domain-models": "^1.4",
         "technodelight/php-jira-cli-interfaces": "^2.0",
-        "technodelight/php-jira-cli-tag-converter": "^2.0"
+        "technodelight/php-jira-cli-tag-converter": "^2.0",
+        "knplabs/github-api": "^3.9"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

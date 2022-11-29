@@ -13,20 +13,15 @@ use Technodelight\Jira\Helper\CheckoutBranch;
 
 class Branch extends Command
 {
-    private $api;
-    private $checkoutBranch;
-    private $issueKeyResolver;
-
-    public function __construct(Api $api, CheckoutBranch $checkoutBranch, IssueKeyResolver $issueKeyResolver)
-    {
-        $this->api = $api;
-        $this->checkoutBranch = $checkoutBranch;
-        $this->issueKeyResolver = $issueKeyResolver;
-
+    public function __construct(
+        private readonly Api $api,
+        private readonly CheckoutBranch $checkoutBranch,
+        private readonly IssueKeyResolver $issueKeyResolver
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:branch')
@@ -45,9 +40,11 @@ class Branch extends Command
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $this->checkoutBranch->checkoutToBranch($input, $output, $this->api->retrieveIssue($issueKey));
+
+        return self::SUCCESS;
     }
 }

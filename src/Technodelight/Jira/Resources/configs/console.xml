@@ -35,9 +35,6 @@
         <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
             <argument type="string">%technodelight.jira.app.name%</argument>
             <argument type="string">%technodelight.jira.app.version%</argument>
-            <call method="setContainer">
-                <argument type="service" id="service_container" />
-            </call>
         </service>
 
         <service id="technodelight.jira.app.default_helper_set"

@@ -78,7 +78,7 @@ function checkToolsInstalled(ConsoleOutput $output)
             'url' => 'https://git-scm.com/downloads',
         ],
         'box' => [
-            'version' => '3.0',
+            'version' => '4.1',
             'url' => 'https://github.com/humbug/box/blob/master/doc/installation.md#installation',
             'alter_path' => '/home/runner/work/jira/jira/box',
             'legend' => 'box is a tool used for building PHAR files',
@@ -154,7 +154,7 @@ function box($commands, &$returnVar = null)
  */
 function createBuildDirectory(ConsoleOutput $output)
 {
-    $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . uniqid();
+    $buildDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . PHAR_NAME . '-' . BUILD_COMMIT . '-' . uniqid('jrbld', true);
     $output->writeln('<info>Creating build directory</info>');
     $output->writeln($buildDir);
     if (!mkdir($buildDir, 0733, true) && !is_dir($buildDir)) {

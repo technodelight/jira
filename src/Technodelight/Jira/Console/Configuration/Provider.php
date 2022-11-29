@@ -4,14 +4,10 @@ namespace Technodelight\Jira\Console\Configuration;
 
 class Provider
 {
-    private $directoryProvider;
-    private $loader;
-
-    public function __construct(DirectoryProvider $directoryProvider, Loader $loader)
-    {
-        $this->directoryProvider = $directoryProvider;
-        $this->loader = $loader;
-    }
+    public function __construct(
+        private readonly DirectoryProvider $directoryProvider,
+        private readonly Loader $loader
+    ) {}
 
     public function get(): array
     {

@@ -14,7 +14,7 @@ class Git implements Configuration
      */
     public function configurations()
     {
-        return (new TreeBuilder)->root('git')
+        return (new TreeBuilder('git'))->getRootNode()
             ->info('GIT related configurations')
             ->addDefaultsIfNotSet()
             ->children()

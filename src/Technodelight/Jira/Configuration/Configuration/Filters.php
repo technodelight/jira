@@ -15,10 +15,11 @@ class Filters implements Configuration
      */
     public function configurations()
     {
-        $root = (new TreeBuilder)->root('filters');
+        $root = (new TreeBuilder('filters'))->getRootNode();
 
         $root
             ->info('Custom quick filters registered as commands. See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html')
+            ->normalizeKeys(false)
             ->prototype('array')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()

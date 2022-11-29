@@ -43,8 +43,8 @@ namespace Technodelight\JiraGitHubExtension {
 
         public function configure(): ArrayNodeDefinition
         {
-            $builder = new TreeBuilder;
-            $node = $builder->root('github');
+            $builder = new TreeBuilder('github');
+            $node = $builder->getRootNode();
 
             $node
                 ->info('GitHub credentials - used to retrieve pull request data, including webhook '

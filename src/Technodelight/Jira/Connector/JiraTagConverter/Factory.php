@@ -2,26 +2,20 @@
 
 namespace Technodelight\Jira\Connector\JiraTagConverter;
 
+use Symfony\Component\Console\Terminal;
 use Technodelight\Jira\Console\Application;
 use Technodelight\JiraTagConverter\JiraTagConverter;
 
 class Factory
 {
-    /**
-     * @var Application
-     */
-    private $app;
-
-    public function __construct(Application $app)
+    public function __construct(private Terminal $terminal)
     {
-        $this->app = $app;
     }
 
     public function build(array $opts = [], $setTermWidth = true)
     {
         if ($setTermWidth) {
-            list($width, ) = $this->app->getTerminalDimensions();
-            $opts['terminalWidth'] = $width;
+            $opts['terminalWidth'] = $this->terminal->getWidth();
         }
         return new JiraTagConverter($opts);
     }

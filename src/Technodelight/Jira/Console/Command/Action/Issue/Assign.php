@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,39 +18,17 @@ use Technodelight\Jira\Renderer\Action\Renderer;
 
 class Assign extends Command
 {
-    /**
-     * @var Assignee
-     */
-    private $assigneeInput;
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var AssigneeResolver
-     */
-    private $assigneeResolver;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var Renderer
-     */
-    private $resultRenderer;
-
-    public function __construct(Api $api, Assignee $assigneeInput, AssigneeResolver $assigneeResolver, IssueKeyResolver $issueKeyResolver, Renderer $resultRenderer)
-    {
-        $this->api = $api;
-        $this->assigneeInput = $assigneeInput;
-        $this->assigneeResolver = $assigneeResolver;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->resultRenderer = $resultRenderer;
-
+    public function __construct(
+        private readonly Api $api,
+        private readonly Assignee $assigneeInput,
+        private readonly AssigneeResolver $assigneeResolver,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly Renderer $resultRenderer
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:assign')
@@ -76,11 +55,10 @@ class Assign extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Assign issue to default assignee'
-            )
-        ;
+            );
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $this->issueKeyResolver->argument($input, $output);
         if (!$input->getArgument('assignee') && !$input->getOption('unassign')) {
@@ -88,7 +66,7 @@ class Assign extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $assignee = $this->assigneeResolver->resolve($input);
@@ -100,7 +78,7 @@ class Assign extends Command
                 $output,
                 Success::fromIssueKeyAndAssignee($issueKey, $this->assigneeName($assignee))
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->resultRenderer->render(
                 $output,
                 Error::fromExceptionIssueKeyAndAssignee($e, $issueKey, $this->assigneeName($assignee))
@@ -108,11 +86,7 @@ class Assign extends Command
         }
     }
 
-    /**
-     * @param $assignee
-     * @return |null
-     */
-    protected function assigneeName($assignee)
+    private function assigneeName($assignee): ?string
     {
         if ($assignee === AssigneeResolver::UNASSIGN) {
             return null;

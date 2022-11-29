@@ -17,45 +17,17 @@ use Technodelight\Jira\Template\IssueRenderer;
 
 class Issue extends Command implements IssueRendererAware
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var IssueRenderer
-     */
-    private $issueRenderer;
-    /**
-     * @var WorklogHandler
-     */
-    private $worklogHandler;
-    /**
-     * @var Wordwrap
-     */
-    private $wordwrap;
-
     public function __construct(
-        Api $api,
-        IssueKeyResolver $issueKeyResolver,
-        IssueRenderer $issueRenderer,
-        WorklogHandler $worklogHandler,
-        Wordwrap $wordwrap
-    )
-    {
-        $this->api = $api;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->issueRenderer = $issueRenderer;
-        $this->worklogHandler = $worklogHandler;
-        $this->wordwrap = $wordwrap;
-
+        private readonly Api $api,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly IssueRenderer $issueRenderer,
+        private readonly WorklogHandler $worklogHandler,
+        private readonly Wordwrap $wordwrap
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show')
@@ -68,7 +40,7 @@ class Issue extends Command implements IssueRendererAware
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $issue = $this->api->retrieveIssue($issueKey);
@@ -76,13 +48,11 @@ class Issue extends Command implements IssueRendererAware
         $this->tryFetchAndAssignWorklogs($output, $issue);
 
         $this->issueRenderer->render($output, $issue, $input->getOptions());
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param DomainIssue $issue
-     */
-    private function tryFetchAndAssignWorklogs(OutputInterface $output, DomainIssue $issue)
+    private function tryFetchAndAssignWorklogs(OutputInterface $output, DomainIssue $issue): void
     {
         $formatterHelper = new FormatterHelper;
         try {

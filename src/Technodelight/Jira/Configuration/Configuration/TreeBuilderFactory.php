@@ -8,8 +8,8 @@ class TreeBuilderFactory
 {
     public function build(): array
     {
-        $treeBuilder = new TreeBuilder;
-        $rootNode = $treeBuilder->root('');
+        $treeBuilder = new TreeBuilder('root');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()

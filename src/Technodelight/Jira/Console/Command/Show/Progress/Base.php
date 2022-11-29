@@ -6,102 +6,83 @@ use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Technodelight\Jira\Console\Argument\Date;
 use Technodelight\Jira\Console\Argument\DateResolver;
 use Technodelight\Jira\Console\Dashboard\Dashboard;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 abstract class Base extends Command
 {
-    const RENDERER_TYPE_LIST = 'list';
-    const RENDERER_TYPE_SUMMARY = 'summary';
-    const RENDERER_TYPE_TABLE = 'table';
+    protected const RENDERER_TYPE_LIST = 'list';
+    protected const RENDERER_TYPE_SUMMARY = 'summary';
+    protected const RENDERER_TYPE_TABLE = 'table';
 
-    /**
-     * @var Dashboard
-     */
-    private $dashboardConsole;
-    /**
-     * @var DateResolver
-     */
-    private $dateResolver;
-    /**
-     * @var DashboardRenderer[]
-     */
-    private $renderers = [];
+    /** @var DashboardRenderer[] */
+    private array $renderers = [];
 
-    public function __construct(Dashboard $dashboardConsole, DateResolver $dateResolver)
-    {
-        $this->dashboardConsole = $dashboardConsole;
-        $this->dateResolver = $dateResolver;
-
+    public function __construct(
+        private readonly Dashboard $dashboardConsole,
+        private readonly DateResolver $dateResolver
+    ) {
         parent::__construct();
     }
 
-    public function addRenderer($type, DashboardRenderer $renderer)
+    public function addRenderer($type, DashboardRenderer $renderer): void
     {
         $this->renderers[$type] = $renderer;
     }
 
-    protected function addProgressCommandOptions()
+    protected function addProgressCommandOptions(): void
     {
-        $this->addOption(
-            'list',
-            'l',
-            InputOption::VALUE_NONE,
-            'Render dashboard as a list'
-        )
-        ->addOption(
-            'summary',
-            's',
-            InputOption::VALUE_NONE,
-            'Render summary only'
-        )
-        ->addOption(
-            'table',
-            't',
-            InputOption::VALUE_NONE,
-            'Render dashboard as table'
-        )
-        ->addOption(
-            'user',
-            'u',
-            InputOption::VALUE_REQUIRED,
-            'Fetch worklogs for specified user. This is you by default'
-        )
+        $this
+            ->addOption(
+                'list',
+                'l',
+                InputOption::VALUE_NONE,
+                'Render dashboard as a list'
+            )
+            ->addOption(
+                'summary',
+                's',
+                InputOption::VALUE_NONE,
+                'Render summary only'
+            )
+            ->addOption(
+                'table',
+                't',
+                InputOption::VALUE_NONE,
+                'Render dashboard as table'
+            )
+            ->addOption(
+                'user',
+                'u',
+                InputOption::VALUE_REQUIRED,
+                'Fetch worklogs for specified user. This is you by default'
+            )
         ;
     }
 
-    /**
-     * @return Dashboard
-     */
-    protected function dashboardConsole()
+    protected function dashboardConsole(): Dashboard
     {
         return $this->dashboardConsole;
     }
 
-    protected function dateArgument(InputInterface $input)
+    protected function dateArgument(InputInterface $input): ?Date
     {
         return $this->dateResolver->argument($input);
     }
 
-    protected function userArgument(InputInterface $input)
+    protected function userArgument(InputInterface $input): ?string
     {
-        if ($input->getOption('user')) {
-            return $input->getOption('user');
+        if (is_string($user = $input->getOption('user'))) {
+            return $user;
         }
         return null;
     }
 
-    /**
-     * @return string
-     */
-    abstract protected function defaultRendererType();
+    abstract protected function defaultRendererType(): string;
 
-    /**
-     * @param InputOption[] $options
-     * @return DashboardRenderer
-     */
-    protected function rendererForOptions(array $options)
+    protected function rendererForOptions(array $options): DashboardRenderer
     {
         $renderers = ['list', 'summary', 'table'];
         foreach ($renderers as $rendererType) {
@@ -112,11 +93,7 @@ abstract class Base extends Command
         return $this->rendererFor($this->defaultRendererType());
     }
 
-    /**
-     * @param string $type
-     * @return DashboardRenderer
-     */
-    private function rendererFor($type)
+    private function rendererFor($type): DashboardRenderer
     {
         if (isset($this->renderers[$type])) {
             return $this->renderers[$type];

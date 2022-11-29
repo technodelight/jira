@@ -16,31 +16,24 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Modes extends Command
 {
-    const PADDING_WIDTH_WITH_SEPARATORS = 8;
-    private $renderersConfiguration;
-    private $wordwrapper;
-    private $terminalDimensionProvider;
+    private const PADDING_WIDTH_WITH_SEPARATORS = 8;
 
     public function __construct(
-        RenderersConfiguration $renderersConfiguration,
-        Wordwrap $wordwrapper,
-        TerminalDimensionProvider $terminalDimensionProvider
+        private readonly RenderersConfiguration $renderersConfiguration,
+        private readonly Wordwrap $wordwrapper,
+        private readonly TerminalDimensionProvider $terminalDimensionProvider
     ) {
-        $this->renderersConfiguration = $renderersConfiguration;
-        $this->wordwrapper = $wordwrapper;
-        $this->terminalDimensionProvider = $terminalDimensionProvider;
-
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:modes')
             ->setDescription('Show configured issue rendering modes');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new PrettyTable($output);
         $table->setHeaders(['Name', 'Fields']);
@@ -54,13 +47,11 @@ class Modes extends Command
             ]);
         }
         $table->render();
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param FieldConfiguration[] $fields
-     * @return string
-     */
-    private function fields(array $fields)
+    private function fields(array $fields): string
     {
         $fieldNames = [];
         foreach ($fields as $field) {
@@ -70,12 +61,10 @@ class Modes extends Command
         return implode(', ', $fieldNames);
     }
 
-    /**
-     * @param RendererConfiguration $mode
-     * @return int
-     */
-    private function calculateWrapWidth(RendererConfiguration $mode)
+    private function calculateWrapWidth(RendererConfiguration $mode): int
     {
-        return $this->terminalDimensionProvider->width() - strlen($mode->name()) - self::PADDING_WIDTH_WITH_SEPARATORS;
+        return $this->terminalDimensionProvider->width()
+            - strlen($mode->name())
+            - self::PADDING_WIDTH_WITH_SEPARATORS;
     }
 }

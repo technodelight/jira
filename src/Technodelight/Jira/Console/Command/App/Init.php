@@ -19,22 +19,17 @@ use Technodelight\SymfonyConfigurationInitialiser\Initialiser;
 class Init extends Command
 {
     private const CONFIG_FILENAME = '.jira.yml';
-    private ConfigurationDumper $configurationDumper;
-    private Api $git;
-    private TreeBuilderFactory $treeBuilderFactory;
-    private QuestionHelper $questionHelper;
 
-    public function __construct(ConfigurationDumper $configurationDumper, Api $git, TreeBuilderFactory $treeBuilderFactory, QuestionHelper $questionHelper)
-    {
-        $this->configurationDumper = $configurationDumper;
-        $this->git = $git;
-        $this->treeBuilderFactory = $treeBuilderFactory;
-        $this->questionHelper = $questionHelper;
-
+    public function __construct(
+        private readonly ConfigurationDumper $configurationDumper,
+        private readonly Api $git,
+        private readonly TreeBuilderFactory $treeBuilderFactory,
+        private readonly QuestionHelper $questionHelper
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('app:init')
@@ -51,8 +46,7 @@ class Init extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Dump sample configuration instead of interactive init'
-            )
-        ;
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -66,7 +60,7 @@ class Init extends Command
 
     private function interactiveInit(InputInterface $input, OutputInterface $output): int
     {
-        $path = $this->configFilePath((bool) $input->getOption('local'));
+        $path = $this->configFilePath((bool)$input->getOption('local'));
 
         $confirm = new ConfirmationQuestion(sprintf('Config file %s already exists. Shall we overwrite? [Yn]', $path));
         if (is_file($path) && !$this->questionHelper->ask($input, $output, $confirm)) {
@@ -82,40 +76,20 @@ class Init extends Command
         if ($this->questionHelper->ask($input, $output, $confirm)) {
             file_put_contents($path, Yaml::dump($config));
             chmod($path, 0600);
-            return 0;
+            return self::SUCCESS;
         }
 
-        return 1;
+        return self::FAILURE;
     }
 
     private function dumpSample(InputInterface $input, OutputInterface $output): int
     {
-        $path = $this->configFilePath((bool) $input->getOption('local')) . '.sample';
+        $path = $this->configFilePath((bool)$input->getOption('local')) . '.sample';
         $this->configurationDumper->dump($path, false === $input->getOption('local'));
 
         $output->writeln('Sample configuration has been written to ' . $path);
 
-        return 0;
-    }
-
-    private function configFilename(InputInterface $input): string
-    {
-        $fileProvider = $this->filenameProvider();
-        if ($input->getOption('local')) {
-            $path = '';
-        } else {
-            $path = $fileProvider->userFile();
-        }
-
-        if (is_file($path)) {
-            throw new ErrorException('Config file already exists: ' . $path);
-        }
-
-        if (is_dir($path)) {
-            throw new ErrorException('Unexpected error: path is dir');
-        }
-
-        return $path;
+        return self::SUCCESS;
     }
 
     private function configFilePath(bool $local): string

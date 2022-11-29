@@ -31,7 +31,7 @@ jobs:
       run: composer install --prefer-dist --no-progress --no-dev -o
 
     - name: Install box
-      run: wget https://github.com/humbug/box/releases/download/3.8.4/box.phar -O box && chmod 0755 box && pwd
+      run: wget https://github.com/humbug/box/releases/download/4.1.0/box.phar -O box && chmod 0755 box && pwd
 
     # Runs a single command using the runners shell
     - name: Build phar

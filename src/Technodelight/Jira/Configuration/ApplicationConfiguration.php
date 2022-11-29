@@ -13,96 +13,51 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfigu
 
 class ApplicationConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var InstancesConfiguration
-     */
-    private $instances;
-    /**
-     * @var IntegrationsConfiguration
-     */
-    private $integrations;
-    /**
-     * @var ProjectConfiguration
-     */
-    private $project;
-    /**
-     * @var TransitionsConfiguration
-     */
-    private $transitions;
-    /**
-     * @var AliasesConfiguration
-     */
-    private $aliases;
-    /**
-     * @var FiltersConfiguration
-     */
-    private $filters;
-    /**
-     * @var RenderersConfiguration
-     */
-    private $renderers;
-    /**
-     * @var array
-     */
-    private $config;
+    private InstancesConfiguration $instances;
+    private IntegrationsConfiguration $integrations;
+    private ProjectConfiguration $project;
+    private TransitionsConfiguration $transitions;
+    private AliasesConfiguration $aliases;
+    private FiltersConfiguration $filters;
+    private RenderersConfiguration $renderers;
+    private array $config;
 
-    /**
-     * @return InstancesConfiguration
-     */
-    public function instances()
+    public function instances(): InstancesConfiguration
     {
         return $this->instances;
     }
 
-    /**
-     * @return IntegrationsConfiguration
-     */
-    public function integrations()
+    public function integrations(): IntegrationsConfiguration
     {
         return $this->integrations;
     }
 
-    /**
-     * @return ProjectConfiguration
-     */
-    public function project()
+    public function project(): ProjectConfiguration
     {
         return $this->project;
     }
 
-    /**
-     * @return TransitionsConfiguration
-     */
-    public function transitions()
+    public function transitions(): TransitionsConfiguration
     {
         return $this->transitions;
     }
 
-    /**
-     * @return AliasesConfiguration
-     */
-    public function aliases()
+    public function aliases(): AliasesConfiguration
     {
         return $this->aliases;
     }
 
-    /**
-     * @return FiltersConfiguration
-     */
-    public function filters()
+    public function filters(): FiltersConfiguration
     {
         return $this->filters;
     }
 
-    /**
-     * @return RenderersConfiguration
-     */
-    public function renderers()
+    public function renderers(): RenderersConfiguration
     {
         return $this->renderers;
     }
 
-    public static function fromSymfonyConfigArray(array $config)
+    public static function fromSymfonyConfigArray(array $config): ApplicationConfiguration
     {
         $configuration = new self;
         $configuration->config = $config;
@@ -118,15 +73,12 @@ class ApplicationConfiguration implements RegistrableConfiguration
         return $configuration;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'technodelight.jira.config';
     }
 
-    /**
-     * @return array
-     */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

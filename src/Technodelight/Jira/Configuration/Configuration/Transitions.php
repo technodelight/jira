@@ -9,24 +9,28 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 class Transitions implements Configuration
 {
 
-    /**
-     * @return ArrayNodeDefinition|NodeDefinition
-     */
-    public function configurations()
+    /** @return ArrayNodeDefinition|NodeDefinition */
+    public function configurations(): ArrayNodeDefinition|NodeDefinition
     {
-        $root = (new TreeBuilder)->root('transitions');
-
-        $root
-            ->info('Issue transitions registered as commands')
-            ->prototype('array')
+        return (new TreeBuilder('transitions'))->getRootNode()
+            ->arrayPrototype()
+                ->normalizeKeys(true)
+                ->info('Issue transitions registered as commands')
                 ->children()
                     ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
-                    ->variableNode('transition')->beforeNormalization()->ifString()->then(function ($value) {
-                        return [$value];
-                    })
+                    ->variableNode('transition')->beforeNormalization()->castToArray()->end()->end()
                 ->end()
-            ->end();
-
-        return $root;
+            ->end()
+        ;
+//        return (new TreeBuilder('transitions', 'array'))->getRootNode()
+//            ->info('Issue transitions registered as commands')
+//            ->arrayPrototype()
+//                ->children()
+//                    ->scalarNode('command')->cannotBeEmpty()->isRequired()->end()
+//                    ->variableNode('transition')->beforeNormalization()->ifString()->then(function ($value) {
+//                        return [$value];
+//                    })->end()
+//                ->end()
+//            ->end();
     }
 }

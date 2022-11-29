@@ -21,51 +21,18 @@ use Technodelight\Jira\Template\IssueRenderer;
 
 class Search extends Command implements IssueRendererAware
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var IssueRenderer
-     */
-    private $renderer;
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var OpenApp
-     */
-    private $openApp;
-    /**
-     * @var Configuration
-     */
-    private $configuration;
-    /**
-     * @var CurrentInstanceProvider
-     */
-    private $currentInstanceProvider;
-
     public function __construct(
-        Api $api,
-        IssueRenderer $renderer,
-        TemplateHelper $templateHelper,
-        OpenApp $openApp,
-        CurrentInstanceProvider $currentInstanceProvider,
-        Configuration $configuration
-    )
-    {
-        $this->api = $api;
-        $this->renderer = $renderer;
-        $this->templateHelper = $templateHelper;
-        $this->openApp = $openApp;
-        $this->currentInstanceProvider = $currentInstanceProvider;
-        $this->configuration = $configuration;
-
+        private readonly Api $api,
+        private readonly IssueRenderer $renderer,
+        private readonly TemplateHelper $templateHelper,
+        private readonly OpenApp $openApp,
+        private readonly CurrentInstanceProvider $currentInstanceProvider,
+        private readonly Configuration $configuration
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('search')
@@ -98,7 +65,7 @@ class Search extends Command implements IssueRendererAware
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // open in browser instead
         if ($input->getOption('open')) {
@@ -109,7 +76,7 @@ class Search extends Command implements IssueRendererAware
                     urlencode($input->getArgument('jql'))
                 )
             );
-            return;
+            return self::SUCCESS;
         }
 
         // render query results in console
@@ -121,13 +88,10 @@ class Search extends Command implements IssueRendererAware
         if ($input->getOption('dump-config')) {
             $this->dumpFilterConfiguration($output, '<insert your preferred filter command here>', $input->getArgument('jql'));
         }
+
+        return self::SUCCESS;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param string $filterName
-     * @param string $jql
-     */
     protected function dumpFilterConfiguration(OutputInterface $output, string $filterName, string $jql): void
     {
         // perform saving of that filter!
@@ -139,7 +103,7 @@ class Search extends Command implements IssueRendererAware
 
         foreach ($config->getChildren() as $child) {
             /** @var $child NodeInterface */
-            if ($child->getName() == 'filters') {
+            if ($child->getName() === 'filters') {
                 $value = $child->normalize([['command' => $filterName, 'jql' => $jql]]);
                 $output->writeln([
                     'filters:',

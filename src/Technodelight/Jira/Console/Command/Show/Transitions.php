@@ -15,29 +15,15 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Transitions extends Command
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var TransitionsConfiguration
-     */
-    private $transitionsConfiguration;
-
-    public function __construct(Api $jira, IssueKeyResolver $issueKeyResolver, TransitionsConfiguration $transitionsConfiguration)
-    {
-        $this->jira = $jira;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->transitionsConfiguration = $transitionsConfiguration;
-
+    public function __construct(
+        private readonly Api $jira,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly TransitionsConfiguration $transitionsConfiguration
+    ) {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:transitions')
@@ -50,20 +36,22 @@ class Transitions extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
 
-        if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
+        if ($output->getVerbosity() === OutputInterface::VERBOSITY_QUIET) {
             $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
             $this->renderQuietOutput($issueKey, $output);
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         } else {
             $this->renderTableOutput($issueKey, $output);
         }
+
+        return self::SUCCESS;
     }
 
-    private function renderQuietOutput($issueKey, OutputInterface $output)
+    private function renderQuietOutput($issueKey, OutputInterface $output): void
     {
         $transitions = $this->jira->retrievePossibleTransitionsForIssue($issueKey);
         foreach ($transitions as $transition) {
@@ -73,7 +61,7 @@ class Transitions extends Command
         }
     }
 
-    private function renderTableOutput(IssueKey $issueKey, OutputInterface $output)
+    private function renderTableOutput(IssueKey $issueKey, OutputInterface $output): void
     {
         $renderer = new PrettyTable($output);
         $renderer->setHeaders(['Transition', 'Command']);
@@ -81,11 +69,7 @@ class Transitions extends Command
         $renderer->render();
     }
 
-    /**
-     * @param Transition $transition
-     * @return string
-     */
-    private function checkHasCommand(Transition $transition)
+    private function checkHasCommand(Transition $transition): string
     {
         try {
             return 'workflow:' . $this->transitionsConfiguration->commandForTransition($transition->name());
@@ -94,11 +78,7 @@ class Transitions extends Command
         }
     }
 
-    /**
-     * @param IssueKey $issueKey
-     * @return array
-     */
-    private function collectTableRows(IssueKey $issueKey)
+    private function collectTableRows(IssueKey $issueKey): array
     {
         $transitions = $this->jira->retrievePossibleTransitionsForIssue($issueKey);
         $rows = [];

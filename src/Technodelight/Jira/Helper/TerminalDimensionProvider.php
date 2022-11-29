@@ -2,24 +2,21 @@
 
 namespace Technodelight\Jira\Helper;
 
-use Technodelight\Jira\Console\Application;
+use Symfony\Component\Console\Terminal;
 
 class TerminalDimensionProvider
 {
-    private $application;
-
-    public function __construct(Application $application)
+    public function __construct(private Terminal $terminal)
     {
-        $this->application = $application;
     }
 
-    public function width()
+    public function width(): int
     {
-        return $this->application->getTerminalDimensions()[0];
+        return $this->terminal->getWidth();
     }
 
-    public function height()
+    public function height(): int
     {
-        return $this->application->getTerminalDimensions()[1];
+        return $this->terminal->getHeight();
     }
 }

@@ -25,89 +25,28 @@ use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 use Technodelight\Jira\Renderer\Issue\Header as HeaderRenderer;
 use Technodelight\Jira\Renderer\Issue\Worklog as WorklogRenderer;
+use UnexpectedValueException;
 
 class LogTime extends Command
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var IssueKeyOrWorklogIdResolver
-     */
-    private $issueKeyOrWorklogIdResolver;
-    /**
-     * @var InteractiveIssueSelector
-     */
-    private $issueSelector;
-    /**
-     * @var CommentInput
-     */
-    private $commentInput;
-    /**
-     * @var DateResolver
-     */
-    private $dateResolver;
-    /**
-     * @var QuestionHelper
-     */
-    private $questionHelper;
-    /**
-     * @var WorklogHandler
-     */
-    private $worklogHandler;
-    /**
-     * @var DateHelper
-     */
-    private $dateHelper;
-    /**
-     * @var WorklogRenderer
-     */
-    private $worklogRenderer;
-    /**
-     * @var HeaderRenderer
-     */
-    private $headerRenderer;
-    /**
-     * @var DashboardRenderer
-     */
-    private $dashboardRenderer;
-    /**
-     * @var Dashboard
-     */
-    private $dashboardDataProvider;
-
     public function __construct(
-        Api $jira,
-        IssueKeyOrWorklogIdResolver $issueKeyOrWorklogIdResolver,
-        InteractiveIssueSelector $issueSelector,
-        CommentInput $commentInput,
-        DateResolver $dateResolver,
-        QuestionHelper $questionHelper,
-        WorklogHandler $worklogHandler,
-        DateHelper $dateHelper,
-        WorklogRenderer $worklogRenderer,
-        HeaderRenderer $headerRenderer,
-        DashboardRenderer $dashboardRenderer,
-        Dashboard $dashboardDataProvider
-    )
-    {
+        private readonly Api $jira,
+        private readonly IssueKeyOrWorklogIdResolver $issueKeyOrWorklogIdResolver,
+        private readonly InteractiveIssueSelector $issueSelector,
+        private readonly CommentInput $commentInput,
+        private readonly DateResolver $dateResolver,
+        private readonly QuestionHelper $questionHelper,
+        private readonly WorklogHandler $worklogHandler,
+        private readonly DateHelper $dateHelper,
+        private readonly WorklogRenderer $worklogRenderer,
+        private readonly HeaderRenderer $headerRenderer,
+        private readonly DashboardRenderer $dashboardRenderer,
+        private readonly Dashboard $dashboardDataProvider
+    ) {
         parent::__construct();
-        $this->jira = $jira;
-        $this->issueKeyOrWorklogIdResolver = $issueKeyOrWorklogIdResolver;
-        $this->issueSelector = $issueSelector;
-        $this->commentInput = $commentInput;
-        $this->dateResolver = $dateResolver;
-        $this->questionHelper = $questionHelper;
-        $this->worklogHandler = $worklogHandler;
-        $this->dateHelper = $dateHelper;
-        $this->worklogRenderer = $worklogRenderer;
-        $this->headerRenderer = $headerRenderer;
-        $this->dashboardRenderer = $dashboardRenderer;
-        $this->dashboardDataProvider = $dashboardDataProvider;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:log')
@@ -161,7 +100,7 @@ class LogTime extends Command
         ;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $argParser = LogTimeArgsOptsParser::fromArgsOpts($input->getArguments(), $input->getOptions());
 
@@ -174,7 +113,7 @@ class LogTime extends Command
             return;
         }
 
-        /** @var \Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId $issueKeyOrWorklogId */
+        /** @var IssueKeyOrWorklogId $issueKeyOrWorklogId */
         $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
 
         // fix when no arguments but you want to log your time to current issue specified by branch
@@ -212,7 +151,7 @@ class LogTime extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('interactive')) {
             return $this->interactiveTimelog($input, $output);
@@ -221,7 +160,7 @@ class LogTime extends Command
         return $this->doWorklog($input, $output);
     }
 
-    private function doWorklog(InputInterface $input, OutputInterface $output)
+    private function doWorklog(InputInterface $input, OutputInterface $output): int
     {
         $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
         $timeSpent = $input->getArgument('time') ?: null;
@@ -235,15 +174,6 @@ class LogTime extends Command
         return $this->processNewWorklog($input, $output, $issueKeyOrWorklogId, $timeSpent, $comment);
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param IssueKeyOrWorklogId $issueKeyOrWorklogId
-     * @param string|null $timeSpent
-     * @param string|null $comment
-     * @param string|null $worklogDate
-     * @return int
-     */
     private function processExistingWorklog(
         InputInterface $input,
         OutputInterface $output,
@@ -251,7 +181,7 @@ class LogTime extends Command
         $timeSpent = null,
         $comment = null,
         $worklogDate = null
-    )
+    ): int
     {
         try {
             if ($input->getOption('delete')) {
@@ -270,8 +200,8 @@ class LogTime extends Command
                 );
             }
 
-            return 0;
-        } catch (\UnexpectedValueException $exception) {
+            return self::SUCCESS;
+        } catch (UnexpectedValueException $exception) {
             $output->writeln($exception->getMessage());
 
             return 1;
@@ -281,30 +211,22 @@ class LogTime extends Command
             );
             $output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
 
-            return 1;
+            return self::FAILURE;
         }
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param IssueKeyOrWorklogId $issueKeyOrWorklogId
-     * @param string|null $timeSpent
-     * @param string|null $comment
-     * @return int
-     */
     private function processNewWorklog(
         InputInterface $input,
         OutputInterface $output,
         IssueKeyOrWorklogId $issueKeyOrWorklogId,
         $timeSpent = null,
         $comment = null
-    )
+    ): int
     {
         if (!$timeSpent) {
             $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
 
-            return 1;
+            return self::FAILURE;
         }
 
         $worklog = $this->logNewWork(
@@ -315,10 +237,10 @@ class LogTime extends Command
         );
         $this->showSuccessMessages($output, $worklog);
 
-        return 0;
+        return self::SUCCESS;
     }
 
-    private function interactiveTimelog(InputInterface $input, OutputInterface $output)
+    private function interactiveTimelog(InputInterface $input, OutputInterface $output): int
     {
         $worklogs = $this->worklogHandler->find(new DateTime, new DateTime)->filterByUser($this->jira->user());
         $timeLeft = $this->dateHelper->humanToSeconds('1d') - $worklogs->totalTimeSpentSeconds();
@@ -329,7 +251,7 @@ class LogTime extends Command
                     (string) $this->dateResolver->argument($input) == 'now' ? 'today' : $this->dateResolver->argument($input)
                 )
             );
-            return 1;
+            return self::FAILURE;
         }
 
         while ($timeLeft > 0) {
@@ -346,7 +268,7 @@ class LogTime extends Command
 
         $this->renderDashboard($input, $output);
 
-        return 0;
+        return self::SUCCESS;
     }
 
     private function deleteWorklog(Worklog $worklog)
@@ -355,7 +277,7 @@ class LogTime extends Command
         return true;
     }
 
-    private function updateWorklog(Worklog $worklog, $timeSpent, $comment, $startDay)
+    private function updateWorklog(Worklog $worklog, $timeSpent, $comment, $startDay): bool
     {
         $updatedWorklog = clone $worklog;
 
@@ -374,10 +296,12 @@ class LogTime extends Command
             return true;
         }
 
-        throw new \UnexpectedValueException(sprintf('Cannot update worklog <info>%d</info> as it looks the same as it was.', $worklog->id()));
+        throw new UnexpectedValueException(
+            sprintf('Cannot update worklog <info>%d</info> as it looks the same as it was.', $worklog->id())
+        );
     }
 
-    private function logNewWork($issueKey, $timeSpent, $comment, $startDay)
+    private function logNewWork($issueKey, $timeSpent, $comment, $startDay): Worklog
     {
         $user = $this->jira->user();
 
@@ -398,12 +322,7 @@ class LogTime extends Command
         return $worklog;
     }
 
-    /**
-     * @param string|int $issueKey
-     * @param Worklog $worklog
-     * @return string
-     */
-    protected function loggedTimeDialogText($issueKey, $worklog = null)
+    private function loggedTimeDialogText(string $issueKey, Worklog $worklog = null): string
     {
         if ($worklog) {
             $confirm = sprintf(
@@ -418,7 +337,7 @@ class LogTime extends Command
             . sprintf('<comment>Please enter the time you want to log against <info>%s</info>:</> ', $issueKey . ($worklog ? ' ('.$worklog->id().')' : ''));
     }
 
-    private function showSuccessMessages(OutputInterface $output, Worklog $worklog)
+    private function showSuccessMessages(OutputInterface $output, Worklog $worklog): void
     {
         $output->writeln(
             "You have successfully logged <comment>{$this->dateHelper->secondsToHuman($worklog->timeSpentSeconds())}</comment>"
@@ -436,30 +355,19 @@ class LogTime extends Command
         $this->dashboardRenderer->render($output, $this->dashboardDataProvider->fetch($worklog->date()->format('Y-m-d')));
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return Issue
-     */
-    private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output)
+    private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output): Issue
     {
         return $this->issueSelector->chooseIssue($input, $output);
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param string $issueKey
-     * @param Worklog $worklog
-     * @return string
-     */
-    protected function askForTimeToLog(InputInterface $input, OutputInterface $output, $issueKey, Worklog $worklog = null)
+    private function askForTimeToLog(InputInterface $input, OutputInterface $output, string $issueKey, Worklog $worklog = null): string
     {
         $question = new Question(
             $this->loggedTimeDialogText($issueKey, $worklog), $worklog ? $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d');
         $question->setValidator(function ($answer) {
             return preg_replace('~[^0-9hmds. ]+~', '', $answer);
         });
+
         return $this->questionHelper->ask(
             $input,
             $output,
@@ -467,11 +375,7 @@ class LogTime extends Command
         );
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    private function renderDashboard(InputInterface $input, OutputInterface $output)
+    private function renderDashboard(InputInterface $input, OutputInterface $output): void
     {
         $this->dashboardRenderer->render(
             $output,

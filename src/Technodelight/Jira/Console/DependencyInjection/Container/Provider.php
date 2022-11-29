@@ -44,7 +44,7 @@ class Provider
         $containerBuilder->compile();
 
         if (!defined('SKIP_CACHE_CONTAINER')) {
-            $containerBuilder->get('technodelight.jira.console.di.cache_maintainer')->dump($containerBuilder);
+            $containerBuilder->get('technodelight.jira.console.di.cache_maintainer')?->dump($containerBuilder);
         }
 
         return $containerBuilder;

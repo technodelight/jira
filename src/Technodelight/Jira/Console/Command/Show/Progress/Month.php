@@ -9,7 +9,7 @@ use Technodelight\Jira\Console\Dashboard\Dashboard;
 
 class Month extends Base
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('show:month')
@@ -25,18 +25,17 @@ class Month extends Base
         $this->addProgressCommandOptions();
     }
 
-    /**
-     * @return string
-     */
-    protected function defaultRendererType()
+    protected function defaultRendererType(): string
     {
         return self::RENDERER_TYPE_SUMMARY;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $date = $this->dateArgument($input);
         $collection = $this->dashboardConsole()->fetch($date, $this->userArgument($input), Dashboard::MODE_MONTHLY);
         $this->rendererForOptions($input->getOptions())->render($output, $collection);
+
+        return self::SUCCESS;
     }
 }

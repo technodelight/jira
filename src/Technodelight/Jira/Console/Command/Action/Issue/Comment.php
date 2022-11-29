@@ -16,39 +16,17 @@ use Technodelight\Jira\Template\IssueRenderer;
 
 class Comment extends Command
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var CommentInput
-     */
-    private $commentInput;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-    /**
-     * @var IssueRenderer
-     */
-    private $issueRenderer;
-    /**
-     * @var CommentRenderer
-     */
-    private $commentRenderer;
-
-    public function __construct(Api $jira, CommentInput $commentInput, IssueKeyResolver $issueKeyResolver, IssueRenderer $issueRenderer, CommentRenderer $commentRenderer)
-    {
-        $this->jira = $jira;
-        $this->commentInput = $commentInput;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->issueRenderer = $issueRenderer;
-        $this->commentRenderer = $commentRenderer;
-
-        parent::__construct();
+    public function __construct(
+        private readonly Api $jira,
+        private readonly CommentInput $commentInput,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly IssueRenderer $issueRenderer,
+        private readonly CommentRenderer $commentRenderer
+    ) {
+         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:comment')
@@ -77,11 +55,10 @@ class Comment extends Command
                 InputOption::VALUE_REQUIRED,
                 'Update comment by ID',
                 false
-            )
-        ;
+            );
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         if ($input->getOption('delete')) {
@@ -102,7 +79,7 @@ class Comment extends Command
         }
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $comment = $input->getArgument('comment');
@@ -121,5 +98,7 @@ class Comment extends Command
             $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
         }
+
+        return self::SUCCESS;
     }
 }

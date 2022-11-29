@@ -14,7 +14,7 @@ class Iterm implements Configuration
      */
     public function configurations()
     {
-        return (new TreeBuilder)->root('iterm')
+        return (new TreeBuilder('iterm'))->getRootNode()
             ->info('iTerm2 integration (OS X Only)')
             ->addDefaultsIfNotSet()
             ->children()

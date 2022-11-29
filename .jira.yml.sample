@@ -42,11 +42,6 @@ integrations:
         # Maximum branch name length where the tool starts complaining during automatic branch name generation (-b option for issue transition type commands). Defaults to 30
         maxBranchNameLength:  30
 
-    # Tempo timesheets (https://tempo.io/doc/timesheets/api/rest/latest)
-    tempo:
-        enabled:              false
-        instances:            null # Example: secondary
-
     # iTerm2 integration (OS X Only)
     iterm:
         renderImages:         true

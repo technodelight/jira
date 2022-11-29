@@ -10,11 +10,11 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyleInterface;
 
 class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
 {
-    const UNSET_CODE = 0;
-    const UNSET_FG_CODE = 39;
-    const UNSET_BG_CODE = 49;
+    private const UNSET_CODE = 0;
+    private const UNSET_FG_CODE = 39;
+    private const UNSET_BG_CODE = 49;
 
-    private static $availableOptions = [
+    private static array $availableOptions = [
         'bold' => ['set' => 1, 'unset' => 22],
         'italic' => ['set' => 3, 'unset' => 23],
         'underscore' => ['set' => 4, 'unset' => 24],
@@ -24,22 +24,11 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         'strikethrough' => ['set' => 9, 'unset' => 29],
     ];
 
-    /**
-     * @var Rgb
-     */
-    private $foreground;
-    /**
-     * @var Rgb
-     */
-    private $background;
-    private $options = [];
+    private ?Rgb $foreground;
+    private ?Rgb $background;
+    private array $options = [];
 
-    /**
-     * Sets style foreground color.
-     *
-     * @param string $color The color name
-     */
-    public function setForeground($color = null)
+    public function setForeground(string $color = null): void
     {
         if (is_null($color)) {
             $this->foreground = null;
@@ -49,12 +38,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         $this->foreground = $this->colorToRgb($color);
     }
 
-    /**
-     * Sets style background color.
-     *
-     * @param string $color The color name
-     */
-    public function setBackground($color = null)
+    public function setBackground(string $color = null): void
     {
         if (is_null($color)) {
             $this->background = null;
@@ -64,12 +48,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         $this->background = $this->colorToRgb($color);
     }
 
-    /**
-     * Sets some specific style option.
-     *
-     * @param string $option The option name
-     */
-    public function setOption($option)
+    public function setOption(string $option): void
     {
         if (!isset(static::$availableOptions[$option])) {
             throw new InvalidArgumentException(sprintf(
@@ -79,17 +58,12 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             ));
         }
 
-        if (!in_array(static::$availableOptions[$option], $this->options)) {
+        if (!in_array(static::$availableOptions[$option], $this->options, true)) {
             $this->options[] = static::$availableOptions[$option];
         }
     }
 
-    /**
-     * Unsets some specific style option.
-     *
-     * @param string $option The option name
-     */
-    public function unsetOption($option)
+    public function unsetOption(string $option): void
     {
         if (!isset(static::$availableOptions[$option])) {
             throw new InvalidArgumentException(sprintf(
@@ -99,18 +73,13 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             ));
         }
 
-        $pos = array_search(static::$availableOptions[$option], $this->options);
+        $pos = array_search(static::$availableOptions[$option], $this->options, true);
         if (false !== $pos) {
             unset($this->options[$pos]);
         }
     }
 
-    /**
-     * Sets multiple style options at once.
-     *
-     * @param array $options
-     */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = [];
 
@@ -119,14 +88,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         }
     }
 
-    /**
-     * Applies the style to a given text.
-     *
-     * @param string $text The text to style
-     *
-     * @return string
-     */
-    public function apply($text)
+    public function apply(string $text): string
     {
         // ESC[ … 38;2;<r>;<g>;<b> … m Select RGB foreground color
 
@@ -164,11 +126,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         return sprintf("\033[%sm%s\033[%sm", implode(';', $setCodes), $text, implode(';', $unsetCodes));
     }
 
-    /**
-     * @param string $colorDef
-     * @return Rgb
-     */
-    private function colorToRgb($colorDef)
+    private function colorToRgb(string $colorDef): Rgb
     {
         try {
             if (strpos($colorDef, '-')) {
