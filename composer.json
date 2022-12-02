@@ -27,10 +27,11 @@
         "technodelight/php-cli-cross-platform-open": "^1.0",
         "technodelight/php-cli-editor-input": "^1.0",
         "technodelight/php-cli-iterm-image-renderer": "^1.0",
-        "technodelight/php-jira-domain-models": "^1.4",
+        "technodelight/php-jira-domain-models": "^2.0",
         "technodelight/php-jira-cli-interfaces": "^2.0",
         "technodelight/php-jira-cli-tag-converter": "^2.0",
-        "knplabs/github-api": "^3.9"
+        "knplabs/github-api": "^3.9",
+        "cweagans/composer-patches": "^1.7"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -50,7 +51,10 @@
         }
     },
     "config": {
-      "bin-dir": "bin"
+        "bin-dir": "bin",
+        "allow-plugins": {
+            "cweagans/composer-patches": true
+        }
     },
     "scripts": {
         "test": [
@@ -65,6 +69,14 @@
         "build": [
             "./build"
         ]
+    },
+    "extra": {
+        "patches": {
+            "icanboogie/storage": {
+                "Fix mixed return types": "vendor-patches/0001-patch-array-access.patch",
+                "Fix iterable": "vendor-patches/0002-patch-cache.patch"
+            }
+        }
     },
     "autoload-dev": {"psr-0": {"": "features/bootstrap"}},
     "bin": ["bin/jira"]

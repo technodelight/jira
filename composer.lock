@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "40bb0b1d7b7e6c1e111c1aad5406ff13",
+    "content-hash": "d0c5041d972467fa54b86a6013d7817c",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -71,6 +71,54 @@
                 }
             ],
             "time": "2022-02-21T13:15:14+00:00"
+        },
+        {
+            "name": "cweagans/composer-patches",
+            "version": "1.7.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cweagans/composer-patches.git",
+                "reference": "e9969cfc0796e6dea9b4e52f77f18e1065212871"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cweagans/composer-patches/zipball/e9969cfc0796e6dea9b4e52f77f18e1065212871",
+                "reference": "e9969cfc0796e6dea9b4e52f77f18e1065212871",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0 || ^2.0",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "composer/composer": "~1.0 || ~2.0",
+                "phpunit/phpunit": "~4.6"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "cweagans\\Composer\\Patches"
+            },
+            "autoload": {
+                "psr-4": {
+                    "cweagans\\Composer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Cameron Eagans",
+                    "email": "me@cweagans.net"
+                }
+            ],
+            "description": "Provides a way to patch Composer packages.",
+            "support": {
+                "issues": "https://github.com/cweagans/composer-patches/issues",
+                "source": "https://github.com/cweagans/composer-patches/tree/1.7.2"
+            },
+            "time": "2022-01-25T19:21:20+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -3466,24 +3514,27 @@
         },
         {
             "name": "technodelight/php-jira-cli-interfaces",
-            "version": "2.0",
+            "version": "2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-cli-interfaces.git",
-                "reference": "101e433d83cc17bff5e3de01b6fe724cfd8f9b9d"
+                "reference": "93f8952f7cdf590f1a89c4a5deb90453dbf1c43b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-cli-interfaces/zipball/101e433d83cc17bff5e3de01b6fe724cfd8f9b9d",
-                "reference": "101e433d83cc17bff5e3de01b6fe724cfd8f9b9d",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-interfaces/zipball/93f8952f7cdf590f1a89c4a5deb90453dbf1c43b",
+                "reference": "93f8952f7cdf590f1a89c4a5deb90453dbf1c43b",
                 "shasum": ""
             },
             "require": {
-                "php": ">= 7.0",
+                "php": ">= 8.1",
                 "symfony/config": ">=2.7",
                 "symfony/console": ">=2.7",
                 "symfony/dependency-injection": ">=2.7",
-                "technodelight/php-jira-domain-models": "^1.0"
+                "technodelight/php-jira-domain-models": "^2.0"
+            },
+            "require-dev": {
+                "roave/security-advisories": "dev-latest"
             },
             "type": "jira-cli-extension",
             "autoload": {
@@ -3504,9 +3555,9 @@
             "description": "Interfaces to be used for extending of the JIRA CLI tool",
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-cli-interfaces/issues",
-                "source": "https://github.com/technodelight/php-jira-cli-interfaces/tree/2.0"
+                "source": "https://github.com/technodelight/php-jira-cli-interfaces/tree/2.1"
             },
-            "time": "2022-11-15T12:52:37+00:00"
+            "time": "2022-12-02T10:41:14+00:00"
         },
         {
             "name": "technodelight/php-jira-cli-tag-converter",
@@ -3557,20 +3608,25 @@
         },
         {
             "name": "technodelight/php-jira-domain-models",
-            "version": "1.5",
+            "version": "2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "b114adfa288228fefa396dcd4cae073f4d408e73"
+                "reference": "564cec4fb9ac9cd02d581a67b44575cb77647eb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/b114adfa288228fefa396dcd4cae073f4d408e73",
-                "reference": "b114adfa288228fefa396dcd4cae073f4d408e73",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/564cec4fb9ac9cd02d581a67b44575cb77647eb5",
+                "reference": "564cec4fb9ac9cd02d581a67b44575cb77647eb5",
                 "shasum": ""
             },
+            "require": {
+                "php": ">=8.1"
+            },
             "require-dev": {
-                "phpspec/phpspec": "2.5"
+                "phpcompatibility/php-compatibility": "dev-master",
+                "phpspec/phpspec": "~7",
+                "squizlabs/php_codesniffer": "^3.5"
             },
             "type": "library",
             "autoload": {
@@ -3591,9 +3647,9 @@
             "description": "Domain models for Jira entities",
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-domain-models/issues",
-                "source": "https://github.com/technodelight/php-jira-domain-models/tree/master"
+                "source": "https://github.com/technodelight/php-jira-domain-models/tree/2.1"
             },
-            "time": "2020-03-27T08:45:35+00:00"
+            "time": "2022-12-02T10:39:06+00:00"
         },
         {
             "name": "technodelight/php-time-ago",

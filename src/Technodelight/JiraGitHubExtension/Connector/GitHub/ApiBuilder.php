@@ -14,7 +14,7 @@ class ApiBuilder
     public function __construct(private readonly GitHubConfiguration $configuration)
     {}
 
-    public function build()
+    public function build(): Client
     {
         $client = new Client(
             new Builder(new MultiCurl(

@@ -24,7 +24,7 @@ namespace Technodelight\JiraGitHubExtension {
 
     class Extension implements ExtensionInterface
     {
-        public function load(array $configs, ContainerBuilder $container)
+        public function load(array $configs, ContainerBuilder $container): void
         {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
             $loader->load('services.xml');

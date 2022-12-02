@@ -78,7 +78,7 @@
         <!-- task -->
 
         <!-- github client for self update -->
-        <service id="technodelight.self_update.github.api" class="GitHub\Client" lazy="true">
+        <service id="technodelight.self_update.github.api" class="Github\Client" lazy="true">
             <factory class="Technodelight\Jira\Connector\GitHub\ApiBuilder" method="build" />
         </service>
         <!-- github client for self update -->

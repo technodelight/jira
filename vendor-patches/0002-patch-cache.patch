@@ -1,0 +1,146 @@
+From cecd5339a9092050ce83e6334b32a98d42013e8a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zsolt.gal@sessiondigital.com>
+Date: Fri, 2 Dec 2022 11:55:57 +0100
+Subject: [PATCH] patch cache
+
+---
+ lib/APCStorage.php      | 4 +++-
+ lib/Cache.php           | 4 +++-
+ lib/CacheCollection.php | 4 +++-
+ lib/FileStorage.php     | 3 ++-
+ lib/RedisStorage.php    | 4 +++-
+ lib/RunTimeStorage.php  | 4 +++-
+ 6 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/lib/APCStorage.php b/lib/APCStorage.php
+index 65a6937..51a3bdd 100644
+--- a/lib/APCStorage.php
++++ b/lib/APCStorage.php
+@@ -11,6 +11,8 @@
+ 
+ namespace ICanBoogie\Storage;
+ 
++use Traversable;
++
+ /**
+  * A storage using APC.
+  */
+@@ -83,7 +85,7 @@ class APCStorage implements Storage, \ArrayAccess
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable
++	public function getIterator(): Traversable
+ 	{
+ 		$prefix_length = strlen($this->prefix);
+ 
+diff --git a/lib/Cache.php b/lib/Cache.php
+index 8f2d56d..f771d00 100644
+--- a/lib/Cache.php
++++ b/lib/Cache.php
+@@ -11,6 +11,8 @@
+ 
+ namespace ICanBoogie\Storage;
+ 
++use Traversable;
++
+ /**
+  * An interface for classes implementing cache capabilities.
+  */
+@@ -31,5 +33,5 @@ interface Cache extends \IteratorAggregate
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable;
++	public function getIterator(): Traversable;
+ }
+diff --git a/lib/CacheCollection.php b/lib/CacheCollection.php
+index 02af83c..5419662 100644
+--- a/lib/CacheCollection.php
++++ b/lib/CacheCollection.php
+@@ -11,6 +11,8 @@
+ 
+ namespace ICanBoogie\Storage;
+ 
++use Traversable;
++
+ /**
+  * A collection of {@link Cache} instances.
+  */
+@@ -64,7 +66,7 @@ class CacheCollection implements Cache
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable
++	public function getIterator(): Traversable
+ 	{
+ 		return reset($this->collection)->getIterator();
+ 	}
+diff --git a/lib/FileStorage.php b/lib/FileStorage.php
+index 8d3a064..d89ca65 100644
+--- a/lib/FileStorage.php
++++ b/lib/FileStorage.php
+@@ -14,6 +14,7 @@ namespace ICanBoogie\Storage;
+ use ICanBoogie\Storage\FileStorage\Adapter;
+ use ICanBoogie\Storage\FileStorage\Adapter\SerializeAdapter;
+ use ICanBoogie\Storage\FileStorage\Iterator;
++use Traversable;
+ 
+ /**
+  * A storage using the file system.
+@@ -259,7 +260,7 @@ class FileStorage implements Storage, \ArrayAccess
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable
++	public function getIterator(): Traversable
+ 	{
+ 		if (!is_dir($this->path))
+ 		{
+diff --git a/lib/RedisStorage.php b/lib/RedisStorage.php
+index c7286ba..9a18ec3 100644
+--- a/lib/RedisStorage.php
++++ b/lib/RedisStorage.php
+@@ -11,6 +11,8 @@
+ 
+ namespace ICanBoogie\Storage;
+ 
++use Traversable;
++
+ /**
+  * A storage using Redis.
+  */
+@@ -89,7 +91,7 @@ class RedisStorage implements Storage, \ArrayAccess
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable
++	public function getIterator(): Traversable
+ 	{
+ 		$redis = $this->redis;
+ 		$prefix = $this->prefix;
+diff --git a/lib/RunTimeStorage.php b/lib/RunTimeStorage.php
+index 65c6e6e..bb5551f 100644
+--- a/lib/RunTimeStorage.php
++++ b/lib/RunTimeStorage.php
+@@ -11,6 +11,8 @@
+ 
+ namespace ICanBoogie\Storage;
+ 
++use Traversable;
++
+ /**
+  * A storage that uses an array to store values.
+  */
+@@ -76,7 +78,7 @@ class RunTimeStorage implements Storage, \ArrayAccess
+ 	/**
+ 	 * @inheritdoc
+ 	 */
+-	public function getIterator(): iterable
++	public function getIterator(): Traversable
+ 	{
+ 		return new \ArrayIterator(array_keys($this->values));
+ 	}
+-- 
+2.25.1
+

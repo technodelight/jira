@@ -1,0 +1,52 @@
+From ea186e706375f054f438c2f56f690d0a2fa5e768 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zsolt.gal@sessiondigital.com>
+Date: Fri, 2 Dec 2022 11:54:39 +0100
+Subject: [PATCH] patch array access
+
+---
+ lib/Storage/ArrayAccess.php | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lib/Storage/ArrayAccess.php b/lib/Storage/ArrayAccess.php
+index a21a737..dfa1040 100644
+--- a/lib/Storage/ArrayAccess.php
++++ b/lib/Storage/ArrayAccess.php
+@@ -27,7 +27,7 @@ trait ArrayAccess
+ 	 * @param string $key
+ 	 * @param mixed $value
+ 	 */
+-	public function offsetSet($key, $value)
++	public function offsetSet($key, $value): void
+ 	{
+ 		$this->store($key, $value);
+ 	}
+@@ -39,7 +39,7 @@ trait ArrayAccess
+ 	 *
+ 	 * @return bool
+ 	 */
+-	public function offsetExists($key)
++	public function offsetExists($key): bool
+ 	{
+ 		return $this->exists($key);
+ 	}
+@@ -49,7 +49,7 @@ trait ArrayAccess
+ 	 *
+ 	 * @param string $key
+ 	 */
+-	public function offsetUnset($key)
++	public function offsetUnset($key): void
+ 	{
+ 		$this->eliminate($key);
+ 	}
+@@ -61,7 +61,7 @@ trait ArrayAccess
+ 	 *
+ 	 * @return mixed
+ 	 */
+-	public function offsetGet($key)
++	public function offsetGet($key): mixed
+ 	{
+ 		return $this->retrieve($key);
+ 	}
+-- 
+2.25.1
+

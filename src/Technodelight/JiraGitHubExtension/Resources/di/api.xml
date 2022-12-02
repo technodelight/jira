@@ -10,7 +10,7 @@
         <service public="false" id="technodelight.github.api_builder" class="Technodelight\JiraGitHubExtension\Connector\GitHub\ApiBuilder">
             <argument type="service" id="technodelight.jira.config.integrations.github" />
         </service>
-        <service id="technodelight.github.api" class="GitHub\Client">
+        <service id="technodelight.github.api" class="Github\Client">
             <factory method="build" service="technodelight.github.api_builder" />
         </service>
         <!-- hub -->
