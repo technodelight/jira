@@ -7,7 +7,7 @@ use Technodelight\Jira\Domain\Issue;
 
 class Badges extends Base
 {
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $versions = array_map(
             function($version) {

@@ -5,8 +5,8 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
-use Technodelight\Jira\Console\Dashboard\Collection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
+use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
 class ProjectStats implements DashboardRenderer
 {
@@ -25,7 +25,7 @@ class ProjectStats implements DashboardRenderer
         $this->aliasesConfiguration = $aliasesConfiguration;
     }
 
-    public function render(OutputInterface $output, Collection $collection)
+    public function render(OutputInterface $output, Collection $collection): void
     {
         if (!$collection->count()) {
             return;

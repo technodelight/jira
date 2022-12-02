@@ -27,7 +27,7 @@ class Attachment implements IssueRenderer
         $this->shortMode = $shortMode;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($attachments = $issue->attachments()) {
             if ($this->shortMode) {

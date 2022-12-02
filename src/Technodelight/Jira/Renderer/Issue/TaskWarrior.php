@@ -25,7 +25,7 @@ class TaskWarrior implements IssueRenderer
         $this->task = $task;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if (!$this->task->isSupported()) {
             return;

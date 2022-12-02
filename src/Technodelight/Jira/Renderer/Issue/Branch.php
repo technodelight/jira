@@ -31,7 +31,7 @@ class Branch implements IssueRenderer
         $this->branchCollector = $branchCollector;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln($this->tab('<comment>branches:</comment>'));
         $output->writeln(

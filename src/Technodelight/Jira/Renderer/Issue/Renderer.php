@@ -18,7 +18,7 @@ class Renderer implements IssueRenderer
         $this->renderers = $renderers;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         foreach ($this->renderers as $renderer) {
             $renderer->render($output, $issue);

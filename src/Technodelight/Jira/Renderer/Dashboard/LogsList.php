@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Console\Dashboard\Collection;
+use Technodelight\Jira\Domain\DashboardCollection;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
@@ -28,7 +29,7 @@ class LogsList implements DashboardRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Collection $collection)
+    public function render(OutputInterface $output, DashboardCollection $collection): void
     {
         if (!$collection->count()) {
             return;

@@ -15,49 +15,15 @@ use Technodelight\TimeAgo;
 
 class Comment implements IssueRenderer
 {
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var Image
-     */
-    private $imageRenderer;
-    /**
-     * @var Wordwrap
-     */
-    private $wordwrap;
-    /**
-     * @var DateHelper
-     */
-    private $dateHelper;
-    /**
-     * @var JiraTagConverter
-     */
-    private $tagConverter;
-    /**
-     * @var bool
-     */
-    private $verbose;
-
     public function __construct(
-        TemplateHelper $templateHelper,
-        Image $imageRenderer,
-        Wordwrap $wordwrap,
-        DateHelper $dateHelper,
-        JiraTagConverter $tagConverter,
-        $verbose = true
-    )
-    {
-        $this->templateHelper = $templateHelper;
-        $this->imageRenderer = $imageRenderer;
-        $this->wordwrap = $wordwrap;
-        $this->dateHelper = $dateHelper;
-        $this->tagConverter = $tagConverter;
-        $this->verbose = $verbose;
-    }
+        private readonly TemplateHelper $templateHelper,
+        private readonly Image $imageRenderer,
+        private readonly Wordwrap $wordwrap,
+        private readonly JiraTagConverter $tagConverter,
+        private readonly bool $verbose = true
+    ) {}
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($comments = $this->filterComments($issue->comments())) {
             $output->writeln($this->tab('<comment>comments:</comment>'));

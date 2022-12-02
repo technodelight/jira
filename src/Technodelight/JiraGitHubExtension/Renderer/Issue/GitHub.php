@@ -30,7 +30,7 @@ class GitHub implements IssueRenderer
         $this->hub = $hub;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($hubIssues = $this->retrieveHubIssues($issue)) {
             $output->writeln($this->tabWithLevel('<comment>pull requests:</comment>'));

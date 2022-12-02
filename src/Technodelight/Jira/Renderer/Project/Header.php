@@ -9,7 +9,7 @@ use Technodelight\Jira\Renderer\ProjectRenderer;
 
 class Header implements ProjectRenderer
 {
-    public function render(OutputInterface $output, Project $project)
+    public function render(OutputInterface $output, Project $project): void
     {
         $output->writeln(
             sprintf(

@@ -59,7 +59,9 @@
         </service>
 
         <!-- container caching, etc -->
-        <service id="technodelight.jira.console.di.cache_maintainer" class="Technodelight\Jira\Console\DependencyInjection\CacheMaintainer">
+        <service id="technodelight.jira.console.di.cache_maintainer"
+                 class="Technodelight\Jira\Console\DependencyInjection\CacheMaintainer"
+                 public="true">
             <argument type="service" id="technodelight.jira.console.configuration.directory_provider" />
         </service>
 

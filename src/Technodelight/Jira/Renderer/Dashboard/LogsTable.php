@@ -5,8 +5,8 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
+use Technodelight\Jira\Domain\DashboardCollection;
 use Technodelight\JiraTagConverter\Components\PrettyTable;
-use Technodelight\Jira\Console\Dashboard\Collection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class LogsTable implements DashboardRenderer
@@ -21,12 +21,7 @@ class LogsTable implements DashboardRenderer
         $this->dateHelper = $dateHelper;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param Collection $collection
-     * @throws \Exception
-     */
-    public function render(OutputInterface $output, Collection $collection)
+    public function render(OutputInterface $output, DashboardCollection $collection): void
     {
         if (!$collection->count()) {
             return;
@@ -38,7 +33,7 @@ class LogsTable implements DashboardRenderer
         }
     }
 
-    private function renderWeek(OutputInterface $output, Collection $collection, $weekCount)
+    private function renderWeek(OutputInterface $output, DashboardCollection $collection, $weekCount)
     {
         $dailySum = array_fill_keys($this->createDaysArray($collection), 0);
         $headers = $this->tableHeaders($collection, array_keys($dailySum));
@@ -79,7 +74,7 @@ class LogsTable implements DashboardRenderer
         $table->render();
     }
 
-    private function tableHeaders(Collection $collection, array $days)
+    private function tableHeaders(DashboardCollection $collection, array $days)
     {
         $headers = ['Issue'];
 
@@ -109,7 +104,7 @@ class LogsTable implements DashboardRenderer
         return array_shift($wrapped) . (count($wrapped) >= 1 ? '..' : '');
     }
 
-    private function tableDateSpanHeader(Collection $collection)
+    private function tableDateSpanHeader(DashboardCollection $collection)
     {
         return sprintf(
             'From %s to %s:',
@@ -118,7 +113,7 @@ class LogsTable implements DashboardRenderer
         );
     }
 
-    private function createDaysArray(Collection $collection)
+    private function createDaysArray(DashboardCollection $collection)
     {
         $weekends = [6,7];
         $days = array_filter(array_map(function(\DateTime $date) use ($weekends, $collection) {

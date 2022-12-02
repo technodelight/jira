@@ -20,7 +20,7 @@ class IssueRelations implements IssueRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($parent = $issue->parent()) {
             $output->writeln($this->templateHelper->tabulate($this->renderTasks([$parent], 'parent')));

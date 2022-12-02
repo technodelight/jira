@@ -20,7 +20,7 @@ class Versions implements ProjectRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Project $project)
+    public function render(OutputInterface $output, Project $project): void
     {
         if ($versions = $project->versions()) {
             $this->renderVersions($output, $versions);

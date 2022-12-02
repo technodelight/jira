@@ -42,14 +42,14 @@ class Description implements IssueRenderer
         $this->renderFullDescription = $renderFullDescription;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($formattedDescription = $this->formatDescription($output, $issue)) {
             $output->writeln($this->templateHelper->tabulate($formattedDescription));
         }
     }
 
-    private function formatDescription(OutputInterface $output, Issue $issue)
+    private function formatDescription(OutputInterface $output, Issue $issue): string
     {
         $description = $this->shortenIfNotFullRendering(trim($issue->description()));
         if (!empty($description)) {
@@ -60,7 +60,7 @@ class Description implements IssueRenderer
         return '';
     }
 
-    private function shortenIfNotFullRendering($text, $maxLines = 2)
+    private function shortenIfNotFullRendering(string $text, int $maxLines = 2): string
     {
         if (!$this->renderFullDescription) {
             $lines = explode(PHP_EOL, $text);
@@ -81,7 +81,7 @@ class Description implements IssueRenderer
      * @param string $description
      * @return string
      */
-    private function renderContents(OutputInterface $output, Issue $issue, $description)
+    private function renderContents(OutputInterface $output, Issue $issue, $description): string
     {
         $body = $this->wordwrap->wrap($this->tagConverter->convert($output, $description, ['tabulation' => 8]));
         if ($this->renderFullDescription) {

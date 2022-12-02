@@ -19,7 +19,7 @@ class Description implements ProjectRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Project $project)
+    public function render(OutputInterface $output, Project $project): void
     {
         if ($description = $project->description()) {
             $output->writeln($this->tab(wordwrap(strip_tags($description))));

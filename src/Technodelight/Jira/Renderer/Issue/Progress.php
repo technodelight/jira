@@ -31,7 +31,7 @@ class Progress implements IssueRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $this->getProgressBar($output, $issue)->display();
         $output->writeln('');

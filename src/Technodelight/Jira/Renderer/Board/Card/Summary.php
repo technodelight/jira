@@ -8,7 +8,7 @@ use Technodelight\Jira\Renderer\Board\Renderer;
 
 class Summary extends Base
 {
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln($this->wordwrap->shorten($issue->summary(), Renderer::BLOCK_WIDTH));
     }

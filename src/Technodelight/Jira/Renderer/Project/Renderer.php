@@ -23,7 +23,7 @@ class Renderer implements ProjectRenderer
         $this->renderers = $renderers;
     }
 
-    public function render(OutputInterface $output, Project $project)
+    public function render(OutputInterface $output, Project $project): void
     {
         foreach ($this->renderers as $renderer) {
             $renderer->render($output, $project);

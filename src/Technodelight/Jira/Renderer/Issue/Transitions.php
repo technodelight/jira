@@ -37,7 +37,7 @@ class Transitions implements IssueRenderer
         $this->fullMode = $fullMode;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $transitions = $this->api->retrievePossibleTransitionsForIssue($issue->key());
         if (!empty($transitions)) {

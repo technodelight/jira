@@ -8,7 +8,7 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class HeaderWithSummary implements IssueRenderer
 {
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln(
             sprintf(

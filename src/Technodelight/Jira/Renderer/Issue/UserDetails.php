@@ -20,7 +20,7 @@ class UserDetails implements IssueRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln($this->templateHelper->tabulate($this->userDetails($issue)));
     }

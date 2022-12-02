@@ -27,7 +27,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param DateTime $to
      * @return WorklogCollection
      */
-    public function find(DateTime $from, DateTime $to)
+    public function find(DateTime $from, DateTime $to): WorklogCollection
     {
         $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user());
 
@@ -43,7 +43,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param null $limit
      * @return WorklogCollection
      */
-    public function findByIssue(Issue $issue, $limit = null)
+    public function findByIssue(Issue $issue, $limit = null): WorklogCollection
     {
         return $this->api->retrieveIssueWorklogs($issue->key(), $limit);
     }
@@ -52,7 +52,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param Worklog $worklog
      * @return Worklog
      */
-    public function create(Worklog $worklog)
+    public function create(Worklog $worklog): Worklog
     {
         return $this->api->createWorklog($worklog);
     }
@@ -61,7 +61,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param Worklog $worklog
      * @return Worklog
      */
-    public function update(Worklog $worklog)
+    public function update(Worklog $worklog): Worklog
     {
         return $this->api->updateWorklog($worklog);
     }
@@ -70,7 +70,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param int $worklogId
      * @return Worklog
      */
-    public function retrieve($worklogId)
+    public function retrieve($worklogId): Worklog
     {
         return $this->api->retrieveWorklogs([WorklogId::fromString($worklogId)])->current();
     }
@@ -79,7 +79,7 @@ class WorklogHandler implements WorklogHandlerInterface
      * @param Worklog $worklog
      * @return bool
      */
-    public function delete(Worklog $worklog)
+    public function delete(Worklog $worklog): bool
     {
         $this->api->deleteWorklog($worklog);
         return true;

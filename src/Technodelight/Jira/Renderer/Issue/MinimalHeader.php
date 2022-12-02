@@ -10,7 +10,7 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class MinimalHeader implements IssueRenderer
 {
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln((string) $issue->key());
     }

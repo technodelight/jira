@@ -25,7 +25,7 @@ class Versions implements IssueRenderer
         $this->git = $git;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($versions = $issue->findField('versions')) {
             $this->renderVersions($output, $versions, 'versions');

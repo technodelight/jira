@@ -43,7 +43,7 @@ class CustomField implements IssueRenderer
         $this->inline = $inline;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $field = $this->lookupField($this->customFieldName);
         if ($value = $issue->findField($field->key())) {

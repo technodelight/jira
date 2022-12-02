@@ -19,7 +19,7 @@ class Priority implements IssueRenderer
         $this->templateHelper = $templateHelper;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($priority = $issue->priority()) {
             $output->writeln(

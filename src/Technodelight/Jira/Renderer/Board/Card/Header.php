@@ -9,7 +9,7 @@ use Technodelight\Jira\Domain\Status;
 
 class Header extends Base
 {
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $output->writeln($this->formatIssueKey($issue->status(), $issue->key()));
         $output->writeln(str_repeat('─', self::BLOCK_WIDTH));

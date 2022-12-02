@@ -111,7 +111,6 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
-            <argument type="service" id="technodelight.jira.date_helper" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <tag name="issue_renderer" key="comments" />
         </service>
@@ -119,7 +118,6 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
-            <argument type="service" id="technodelight.jira.date_helper" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
             <argument>0</argument>
             <tag name="issue_renderer" key="comments.latest" />

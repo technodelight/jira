@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
-use Technodelight\Jira\Console\Dashboard\Collection;
+use Technodelight\Jira\Domain\DashboardCollection as Collection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class Stats implements DashboardRenderer
@@ -19,7 +19,7 @@ class Stats implements DashboardRenderer
         $this->dateHelper = $dateHelper;
     }
 
-    public function render(OutputInterface $output, Collection $collection)
+    public function render(OutputInterface $output, Collection $collection): void
     {
         if (!$collection->count()) {
             return;

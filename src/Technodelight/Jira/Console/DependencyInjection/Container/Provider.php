@@ -23,10 +23,11 @@ class Provider
             /** @var Container $container */
             $container = new \ProjectServiceContainer();
 
-            $cacheMaintainer = $container->get('technodelight.jira.console.di.cache_maintainer');
-            if (!$cacheMaintainer->checkAndInvalidate()) {
-                return $container;
-            }
+            //@TODO this stopped working with the new symfony DI version
+//            $cacheMaintainer = $container->get('technodelight.jira.console.di.cache_maintainer');
+//            if (!$cacheMaintainer->checkAndInvalidate()) {
+//                return $container;
+//            }
         }
 
         return $this->rebuildContainer($version);

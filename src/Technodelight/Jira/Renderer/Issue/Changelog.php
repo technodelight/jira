@@ -16,37 +16,15 @@ use Technodelight\TimeAgo;
 
 class Changelog implements IssueRenderer
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var TemplateHelper
-     */
-    private $helper;
-    /**
-     * @var JiraTagConverter
-     */
-    private $tagConverter;
-    /**
-     * @var string|bool
-     */
-    private $timeLimit;
-    /**
-     * @var int|bool
-     */
-    private $limit;
+    public function __construct(
+        private readonly Api $api,
+        private readonly TemplateHelper $helper,
+        private readonly JiraTagConverter $tagConverter,
+        private readonly string|bool $timeLimit = false,
+        private readonly int|bool $limit = false
+    ) {}
 
-    public function __construct(Api $api, TemplateHelper $helper, JiraTagConverter $tagConverter, $timeLimit = false, $limit = false)
-    {
-        $this->api = $api;
-        $this->helper = $helper;
-        $this->tagConverter = $tagConverter;
-        $this->timeLimit = $timeLimit;
-        $this->limit = $limit;
-    }
-
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         if ($changelogs = $this->filterChangelogs($this->api->issueChangelogs($issue->key()))) {
             $output->writeln($this->tab('<comment>changelogs:</comment>'));

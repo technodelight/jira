@@ -35,7 +35,7 @@ class Worklog implements IssueRenderer
         $this->wordwrap = $wordwrap;
     }
 
-    public function render(OutputInterface $output, Issue $issue)
+    public function render(OutputInterface $output, Issue $issue): void
     {
         $worklogs = $issue->worklogs();
         if ($worklogs->count()) {

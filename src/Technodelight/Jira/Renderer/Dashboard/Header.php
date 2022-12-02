@@ -4,12 +4,12 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 
 use DateTime;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Dashboard\Collection;
+use Technodelight\Jira\Domain\DashboardCollection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class Header implements DashboardRenderer
 {
-    public function render(OutputInterface $output, Collection $collection)
+    public function render(OutputInterface $output, DashboardCollection $collection): void
     {
         if (!$collection->count()) {
             $from = $collection->from();

@@ -3514,16 +3514,16 @@
         },
         {
             "name": "technodelight/php-jira-cli-interfaces",
-            "version": "2.1",
+            "version": "2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-cli-interfaces.git",
-                "reference": "93f8952f7cdf590f1a89c4a5deb90453dbf1c43b"
+                "reference": "37d55215bf78f319eb10a7ec9106129c07743d1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-cli-interfaces/zipball/93f8952f7cdf590f1a89c4a5deb90453dbf1c43b",
-                "reference": "93f8952f7cdf590f1a89c4a5deb90453dbf1c43b",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-interfaces/zipball/37d55215bf78f319eb10a7ec9106129c07743d1f",
+                "reference": "37d55215bf78f319eb10a7ec9106129c07743d1f",
                 "shasum": ""
             },
             "require": {
@@ -3555,9 +3555,9 @@
             "description": "Interfaces to be used for extending of the JIRA CLI tool",
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-cli-interfaces/issues",
-                "source": "https://github.com/technodelight/php-jira-cli-interfaces/tree/2.1"
+                "source": "https://github.com/technodelight/php-jira-cli-interfaces/tree/2.2"
             },
-            "time": "2022-12-02T10:41:14+00:00"
+            "time": "2022-12-02T11:52:01+00:00"
         },
         {
             "name": "technodelight/php-jira-cli-tag-converter",
