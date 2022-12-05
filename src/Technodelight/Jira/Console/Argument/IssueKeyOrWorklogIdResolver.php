@@ -10,29 +10,15 @@ use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
 
 class IssueKeyOrWorklogIdResolver
 {
-    const NAME = 'issueKeyOrWorklogId';
+    public const NAME = 'issueKeyOrWorklogId';
 
-    /**
-     * @var WorklogHandler
-     */
-    private $worklogHandler;
-    /**
-     * @var Api
-     */
-    private $git;
-    /**
-     * @var Guesser
-     */
-    private $guesser;
+    public function __construct(
+        private readonly WorklogHandler $worklogHandler,
+        private readonly Api $git,
+        private readonly Guesser $guesser)
+    {}
 
-    public function __construct(WorklogHandler $worklogHandler, Api $git, Guesser $guesser)
-    {
-        $this->worklogHandler = $worklogHandler;
-        $this->git = $git;
-        $this->guesser = $guesser;
-    }
-
-    public function argument(InputInterface $input)
+    public function argument(InputInterface $input): IssueKeyOrWorklogId
     {
         if ($input->hasArgument(self::NAME)) {
             return $this->resolve($input->getArgument(self::NAME));
@@ -41,7 +27,7 @@ class IssueKeyOrWorklogIdResolver
         throw new RuntimeException('Input does not have issue argument specified');
     }
 
-    private function resolve($value)
+    private function resolve(string $value): IssueKeyOrWorklogId
     {
         $argument = IssueKeyOrWorklogId::fromString((string) $this->guesser->guessIssueKey($value) ?: $value);
         if ($argument->isWorklogId()) {
