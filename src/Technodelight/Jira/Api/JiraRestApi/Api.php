@@ -7,6 +7,7 @@ use DateTime;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Domain\Filter\FilterId;
+use Technodelight\Jira\Domain\Issue\IssueId;
 use Technodelight\Jira\Domain\IssueLink\IssueLinkId;
 use Technodelight\Jira\Domain\Worklog\WorklogId;
 use Technodelight\Jira\Domain\Comment;
@@ -230,11 +231,11 @@ class Api
         );
 
         foreach ($records as $logRecord) {
-            yield Worklog::fromArray($this->normaliseDateFields($logRecord), $logRecord['issueId']);
+            yield Worklog::fromArray($this->normaliseDateFields($logRecord), IssueId::fromNumeric($logRecord['issueId']));
         }
     }
 
-    public function updateWorklog(Worklog $worklog)
+    public function updateWorklog(Worklog $worklog): Worklog
     {
         $jiraRecord = $this->client->put(
             sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueIdentifier(), (string) $worklog->id()),
@@ -244,10 +245,11 @@ class Api
                 'timeSpentSeconds' => $worklog->timeSpentSeconds(),
             ]
         );
-        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), $jiraRecord['issueId']);
+
+        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), IssueId::fromNumeric($jiraRecord['issueId']));
     }
 
-    public function deleteWorklog(Worklog $worklog)
+    public function deleteWorklog(Worklog $worklog): void
     {
         $this->client->delete(sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey() ?: $worklog->issueId(), (string) $worklog->id()));
     }

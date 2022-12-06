@@ -31,7 +31,7 @@ class IssueKeyOrWorklogIdResolver
     {
         $argument = IssueKeyOrWorklogId::fromString((string) $this->guesser->guessIssueKey($value) ?: $value);
         if ($argument->isWorklogId()) {
-            return IssueKeyOrWorklogId::fromWorklog($this->worklogHandler->retrieve($argument->worklogId()));
+            return IssueKeyOrWorklogId::fromWorklog($this->worklogHandler->retrieve($argument->worklogId()?->id()));
         }
         if ($argument->isEmpty() && $issueKey = $this->guesser->guessIssueKey(null, $this->git->currentBranch())) {
             return IssueKeyOrWorklogId::fromString((string) $issueKey);

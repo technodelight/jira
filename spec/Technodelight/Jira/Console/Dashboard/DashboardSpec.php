@@ -7,11 +7,12 @@ use Technodelight\Jira\Console\Dashboard\Dashboard;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
-use Technodelight\Jira\Console\Dashboard\Collection as Collection;
+use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
 class DashboardSpec extends ObjectBehavior
 {
@@ -39,13 +40,13 @@ class DashboardSpec extends ObjectBehavior
 
     function it_loads_and_groups_worklogs_per_day(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
     {
-        $log = Worklog::fromArray($this->logRecord, self::ISSUEKEY);
+        $log = Worklog::fromArray($this->logRecord, IssueKey::fromString(self::ISSUEKEY));
         $worklogCollection = WorklogCollection::createEmpty();
         $worklogCollection->push($log);
         $ref = new \DateTime(self::DATE);
 
         $worklogHandler->find($ref, $ref)->willReturn($worklogCollection);
-        $issue->issueKey()->willReturn(self::ISSUEKEY);
+        $issue->issueKey()->willReturn(IssueKey::fromString(self::ISSUEKEY));
         $issue->worklogs()->willReturn($worklogCollection);
 
         $jira->retrieveIssues([self::ISSUEKEY])->shouldBeCalled()->willReturn($issueCollection);
@@ -59,7 +60,7 @@ class DashboardSpec extends ObjectBehavior
 
     function it_loads_and_groups_worklogs_per_week(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
     {
-        $log = Worklog::fromArray($this->logRecord, self::ISSUEKEY);
+        $log = Worklog::fromArray($this->logRecord, IssueKey::fromString(self::ISSUEKEY));
         $worklogCollection = WorklogCollection::createEmpty();
         $worklogCollection->push($log);
         $start = new \DateTime('2018-01-08');
@@ -68,7 +69,7 @@ class DashboardSpec extends ObjectBehavior
 
         $jira->retrieveIssues([self::ISSUEKEY])->shouldBeCalled()->willReturn($issueCollection);
         $issueCollection->find(self::ISSUEKEY)->willReturn($issue);
-        $issue->issueKey()->willReturn(self::ISSUEKEY);
+        $issue->issueKey()->willReturn(IssueKey::fromString(self::ISSUEKEY));
         $issue->worklogs()->willReturn($worklogCollection);
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);
@@ -78,7 +79,7 @@ class DashboardSpec extends ObjectBehavior
 
     function it_loads_and_groups_worklogs_per_month(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
     {
-        $log = Worklog::fromArray($this->logRecord, self::ISSUEKEY);
+        $log = Worklog::fromArray($this->logRecord, IssueKey::fromString(self::ISSUEKEY));
         $worklogCollection = WorklogCollection::createEmpty();
         $worklogCollection->push($log);
         $start = new \DateTime('2018-01-01');
@@ -87,7 +88,7 @@ class DashboardSpec extends ObjectBehavior
 
         $jira->retrieveIssues([self::ISSUEKEY])->shouldBeCalled()->willReturn($issueCollection);
         $issueCollection->find(self::ISSUEKEY)->willReturn($issue);
-        $issue->issueKey()->willReturn(self::ISSUEKEY);
+        $issue->issueKey()->willReturn(IssueKey::fromString(self::ISSUEKEY));
         $issue->worklogs()->willReturn($worklogCollection);
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);

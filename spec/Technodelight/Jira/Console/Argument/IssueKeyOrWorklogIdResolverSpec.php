@@ -10,6 +10,7 @@ use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Worklog;
 
 class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
@@ -46,7 +47,7 @@ class IssueKeyOrWorklogIdResolverSpec extends ObjectBehavior
         $input->hasArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(true);
         $input->getArgument(IssueKeyOrWorklogIdResolver::NAME)->willReturn(self::WORKLOG_ID);
 
-        $worklog = Worklog::fromArray($this->worklog, self::ISSUE_KEY);
+        $worklog = Worklog::fromArray($this->worklog, IssueKey::fromString(self::ISSUE_KEY));
         $worklogHandler->retrieve(self::WORKLOG_ID)->willReturn($worklog);
 
         $this->argument($input)->shouldBeLike(IssueKeyOrWorklogId::fromWorklog($worklog));

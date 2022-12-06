@@ -303,12 +303,10 @@ class LogTime extends Command
 
     private function logNewWork($issueKey, $timeSpent, $comment, $startDay): Worklog
     {
-        $user = $this->jira->user();
-
         $worklog = $this->worklogHandler->create(
             Worklog::fromArray([
                 'id' => null,
-                'author' => $user,
+                'author' => $this->jira->user(),
                 'comment' => $comment,
                 'started' => date(DateHelper::FORMAT_FROM_JIRA, strtotime($startDay)),
                 'timeSpentSeconds' => $this->dateHelper->humanToSeconds($timeSpent)

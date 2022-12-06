@@ -7,27 +7,18 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Worklog;
+use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
 class Dashboard
 {
-    const MODE_DAILY = 1;
-    const MODE_WEEKLY = 2;
-    const MODE_MONTHLY = 3;
+    public const MODE_DAILY = 1;
+    public const MODE_WEEKLY = 2;
+    public const MODE_MONTHLY = 3;
 
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private $jira;
-    /**
-     * @var \Technodelight\Jira\Connector\WorklogHandler
-     */
-    private $worklogHandler;
-
-    public function __construct(Api $jira, WorklogHandler $worklogHandler)
-    {
-        $this->jira = $jira;
-        $this->worklogHandler = $worklogHandler;
-    }
+    public function __construct(
+        private readonly Api $jira,
+        private readonly WorklogHandler $worklogHandler
+    ) {}
 
     public function fetch($dateString, User $user = null, $mode = self::MODE_DAILY)
     {
@@ -42,7 +33,7 @@ class Dashboard
                 if ($log->issueKey()) {
                     /** @var $log Worklog */
                     $log->assignIssue($issues->find($log->issueKey()));
-                } else if ($log->issueId) {
+                } else if ($log->issueId()) {
                     $log->assignIssue($issues->findById($log->issueId()));
                 }
             }

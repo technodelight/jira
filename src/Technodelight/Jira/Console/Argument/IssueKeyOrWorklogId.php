@@ -8,15 +8,15 @@ use Technodelight\Jira\Domain\Worklog\WorklogId;
 
 class IssueKeyOrWorklogId
 {
-    private $worklogId;
-    private $issueKey;
-    private $worklog;
+    private ?WorklogId $worklogId = null;
+    private ?IssueKey $issueKey = null;
+    private ?Worklog $worklog = null;
 
     public static function fromString($string)
     {
         $instance = new self;
-        if (intval($string)) {
-            $instance->worklogId = WorklogId::fromString($string);
+        if (is_numeric($string)) {
+            $instance->worklogId = WorklogId::fromNumeric($string);
         } elseif(!empty($string)) {
             $instance->issueKey = IssueKey::fromString($string);
         }
@@ -32,35 +32,32 @@ class IssueKeyOrWorklogId
         return $instance;
     }
 
-    public function issueKey()
+    public function issueKey(): ?IssueKey
     {
         return $this->issueKey;
     }
 
-    public function worklogId()
+    public function worklogId(): ?WorklogId
     {
         return $this->worklogId;
     }
 
-    public function isWorklogId()
+    public function isWorklogId(): bool
     {
         return !empty($this->worklogId);
     }
 
-    public function isIssueKey()
+    public function isIssueKey(): bool
     {
         return !empty($this->issueKey);
     }
 
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return empty($this->worklogId) && empty($this->issueKey);
     }
 
-    /**
-     * @return Worklog|null
-     */
-    public function worklog()
+    public function worklog(): ?Worklog
     {
         return $this->worklog;
     }

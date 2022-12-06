@@ -38,7 +38,7 @@ class LogsList implements DashboardRenderer
         $this->renderList($output, $collection);
     }
 
-    private function renderList(OutputInterface $output, Collection $collection)
+    private function renderList(OutputInterface $output, DashboardCollection $collection)
     {
         $daysCount = $collection->days();
 

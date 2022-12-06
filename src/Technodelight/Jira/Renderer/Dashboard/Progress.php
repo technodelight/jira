@@ -11,20 +11,10 @@ use Technodelight\Jira\Renderer\DashboardRenderer;
 
 class Progress implements DashboardRenderer
 {
-    /**
-     * @var DateHelper
-     */
-    private $dateHelper;
-    /**
-     * @var PluralizeHelper
-     */
-    private $pluralizeHelper;
-
-    public function __construct(DateHelper $dateHelper, PluralizeHelper $pluralizeHelper)
-    {
-        $this->dateHelper = $dateHelper;
-        $this->pluralizeHelper = $pluralizeHelper;
-    }
+    public function __construct(
+        private readonly DateHelper $dateHelper,
+        private readonly PluralizeHelper $pluralizeHelper
+    ) {}
 
     public function render(OutputInterface $output, DashboardCollection $collection): void
     {
@@ -48,7 +38,7 @@ class Progress implements DashboardRenderer
         $output->writeln('');
     }
 
-    private function createProgressbar(OutputInterface $output, $steps)
+    private function createProgressbar(OutputInterface $output, $steps): ProgressBar
     {
         // render progress bar
         $progress = new ProgressBar($output, $steps);
@@ -60,19 +50,19 @@ class Progress implements DashboardRenderer
         return $progress;
     }
 
-    private function dateRange(Collection $collection)
+    private function dateRange(DashboardCollection $collection): string
     {
         if ($collection->from() == $collection->to()) {
             return sprintf(
                 'on %s',
                 $collection->from()->format('Y-m-d l')
             );
-        } else {
-            return sprintf(
-                'from %s to %s',
-                $collection->from()->format('Y-m-d l'),
-                $collection->to()->format('Y-m-d l')
-            );
         }
+
+        return sprintf(
+            'from %s to %s',
+            $collection->from()->format('Y-m-d l'),
+            $collection->to()->format('Y-m-d l')
+        );
     }
 }

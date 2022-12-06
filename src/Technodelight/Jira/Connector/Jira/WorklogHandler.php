@@ -72,7 +72,7 @@ class WorklogHandler implements WorklogHandlerInterface
      */
     public function retrieve($worklogId): Worklog
     {
-        return $this->api->retrieveWorklogs([WorklogId::fromString($worklogId)])->current();
+        return $this->api->retrieveWorklogs([WorklogId::fromNumeric($worklogId)])->current();
     }
 
     /**

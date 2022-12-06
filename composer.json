@@ -58,7 +58,8 @@
     },
     "scripts": {
         "test": [
-            "@test-unit"
+            "@test-unit",
+            "@test-acceptance"
         ],
         "test-unit": [
             "bin/phpspec --ansi run -fpretty"
