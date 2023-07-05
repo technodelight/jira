@@ -6,10 +6,10 @@
 
 Do you use JIRA in your daily work a lot? Are you a developer? Then this tool is for _you_!
 
-This command line application helps you managing issue transitions, searches using JQL and assists time logging based on your recent git commit messages, with ease.
-All these comes in a highly customisable manner and with many useful extras.
+This command line application helps you to manage issue transitions, perform searches using JQL and assists time logging based on your recent git commit messages, with ease.
+All in a highly customisable manner and with many useful add-ons.
 
-This tool was evolved into it's current state over the years I've spent with development on my largest side project. I wanted to create a tool I can quickly and effectively use, without having to grab my mouse. It spares a lot of time with all the micro management an issue needs.
+This tool evolved into it's current state over years. I wanted to create a tool I can quickly and effectively use, without having to grab my mouse. It spares a lot of time micro-managing issues in Jira.
 
 # Quickstart guide
 

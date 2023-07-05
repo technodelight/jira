@@ -12,29 +12,20 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Description implements IssueRenderer
 {
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var Image
-     */
-    private $imageRenderer;
-    /**
-     * @var Wordwrap
-     */
-    private $wordwrap;
-    /**
-     * @var JiraTagConverter
-     */
-    private $tagConverter;
-    /**
-     * @var bool
-     */
-    private $renderFullDescription;
+    private const MAX_ROWS = 2;
+    private TemplateHelper $templateHelper;
+    private Image $imageRenderer;
+    private Wordwrap $wordwrap;
+    private JiraTagConverter $tagConverter;
+    private bool $renderFullDescription;
 
-    public function __construct(TemplateHelper $templateHelper, Image $imageRenderer, Wordwrap $wordwrap, JiraTagConverter $tagConverter, $renderFullDescription = true)
-    {
+    public function __construct(
+        TemplateHelper $templateHelper,
+        Image $imageRenderer,
+        Wordwrap $wordwrap,
+        JiraTagConverter $tagConverter,
+        bool $renderFullDescription = true
+    ) {
         $this->templateHelper = $templateHelper;
         $this->imageRenderer = $imageRenderer;
         $this->wordwrap = $wordwrap;
@@ -51,7 +42,7 @@ class Description implements IssueRenderer
 
     private function formatDescription(OutputInterface $output, Issue $issue): string
     {
-        $description = $this->shortenIfNotFullRendering(trim($issue->description()));
+        $description = $this->shortenIfNotFullRendering(trim($issue->description() ?: ''));
         if (!empty($description)) {
             return '<comment>description:</comment>' . PHP_EOL
                 . $this->templateHelper->tabulate($this->renderContents($output, $issue, $description));
@@ -60,16 +51,16 @@ class Description implements IssueRenderer
         return '';
     }
 
-    private function shortenIfNotFullRendering(string $text, int $maxLines = 2): string
+    private function shortenIfNotFullRendering(string $text): string
     {
         if (!$this->renderFullDescription) {
             $lines = explode(PHP_EOL, $text);
             return implode(
-                    PHP_EOL,
-                    array_filter(
-                        array_map('trim', array_slice($lines, 0, $maxLines))
-                    )
-                ) . (count($lines) > $maxLines ? '...' : '');
+                PHP_EOL,
+                array_filter(
+                    array_map('trim', array_slice($lines, 0, self::MAX_ROWS))
+                )
+            ) . (count($lines) > self::MAX_ROWS ? '...' : '');
         }
 
         return $text;
@@ -81,7 +72,7 @@ class Description implements IssueRenderer
      * @param string $description
      * @return string
      */
-    private function renderContents(OutputInterface $output, Issue $issue, $description): string
+    private function renderContents(OutputInterface $output, Issue $issue, string $description): string
     {
         $body = $this->wordwrap->wrap($this->tagConverter->convert($output, $description, ['tabulation' => 8]));
         if ($this->renderFullDescription) {
