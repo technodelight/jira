@@ -8,7 +8,7 @@ use Technodelight\JiraTagConverter\JiraTagConverter;
 
 class Factory
 {
-    public function __construct(private Terminal $terminal)
+    public function __construct(private readonly Terminal $terminal)
     {
     }
 

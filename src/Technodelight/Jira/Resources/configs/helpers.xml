@@ -30,6 +30,11 @@
 
         <service id="technodelight.jira.template_helper" class="Technodelight\Jira\Helper\TemplateHelper" />
 
+        <service id="technodelight.jira.account_id_username_replacer"
+                 class="Technodelight\Jira\Helper\AccountIdUsernameReplacer">
+            <argument type="service" id="technodelight.jira.api" />
+        </service>
+
         <!-- branch name generator -->
         <service public="false"
                  id="technodelight.jira.git_branchname_generator.string_cleaner_factory"

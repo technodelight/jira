@@ -77,15 +77,17 @@ class Api
         if (empty($accountIds)) {
             return [];
         }
+        $accountIdString = '';
+        foreach (array_unique($accountIds) as $accountId) {
+            $accountIdString.= (strlen($accountIdString) ? '&' : '') . 'accountId=' . $accountId;
+        }
 
         return array_filter(array_map(
             static function (?array $user): ?User {
                 return $user ? User::fromArray($user) : null;
             },
             $this->client->get(
-                'user/bulk' . $this->queryStringFromParams([
-                    'accountId' => implode(',', $accountIds),
-                ])
+                'user/bulk?' . $accountIdString
             )['values'] ?? []
         ));
     }

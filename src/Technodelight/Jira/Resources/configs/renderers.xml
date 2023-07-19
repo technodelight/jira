@@ -60,6 +60,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
+            <argument type="service" id="technodelight.jira.account_id_username_replacer" />
             <argument type="string">1</argument>
             <tag name="issue_renderer" key="full_description" />
         </service>
@@ -68,6 +69,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
+            <argument type="service" id="technodelight.jira.account_id_username_replacer" />
             <argument type="string">0</argument>
             <tag name="issue_renderer" key="short_description" />
         </service>
@@ -112,6 +114,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
+            <argument type="service" id="technodelight.jira.account_id_username_replacer" />
             <tag name="issue_renderer" key="comments" />
         </service>
         <service id="technodelight.jira.renderer.issue.comment.latest" class="Technodelight\Jira\Renderer\Issue\Comment">
@@ -119,6 +122,7 @@
             <argument type="service" id="technodelight.jira.image_renderer" />
             <argument type="service" id="technodelight.jira.word_wrap" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
+            <argument type="service" id="technodelight.jira.account_id_username_replacer" />
             <argument>0</argument>
             <tag name="issue_renderer" key="comments.latest" />
         </service>

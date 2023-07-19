@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\AccountIdUsernameReplacer;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -13,24 +14,15 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 class Description implements IssueRenderer
 {
     private const MAX_ROWS = 2;
-    private TemplateHelper $templateHelper;
-    private Image $imageRenderer;
-    private Wordwrap $wordwrap;
-    private JiraTagConverter $tagConverter;
-    private bool $renderFullDescription;
 
     public function __construct(
-        TemplateHelper $templateHelper,
-        Image $imageRenderer,
-        Wordwrap $wordwrap,
-        JiraTagConverter $tagConverter,
-        bool $renderFullDescription = true
+        private readonly TemplateHelper $templateHelper,
+        private readonly Image $imageRenderer,
+        private readonly Wordwrap $wordwrap,
+        private readonly JiraTagConverter $tagConverter,
+        private readonly AccountIdUsernameReplacer $replacer,
+        private bool $renderFullDescription = true
     ) {
-        $this->templateHelper = $templateHelper;
-        $this->imageRenderer = $imageRenderer;
-        $this->wordwrap = $wordwrap;
-        $this->tagConverter = $tagConverter;
-        $this->renderFullDescription = $renderFullDescription;
     }
 
     public function render(OutputInterface $output, Issue $issue): void
@@ -42,7 +34,8 @@ class Description implements IssueRenderer
 
     private function formatDescription(OutputInterface $output, Issue $issue): string
     {
-        $description = $this->shortenIfNotFullRendering(trim($issue->description() ?: ''));
+        $content = $this->replacer->replace(trim($issue->description() ?: ''));
+        $description = $this->shortenIfNotFullRendering($content);
         if (!empty($description)) {
             return '<comment>description:</comment>' . PHP_EOL
                 . $this->templateHelper->tabulate($this->renderContents($output, $issue, $description));

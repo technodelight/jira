@@ -3,9 +3,9 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Helper\AccountIdUsernameReplacer;
 use Technodelight\Jira\Helper\Image;
 use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -20,6 +20,7 @@ class Comment implements IssueRenderer
         private readonly Image $imageRenderer,
         private readonly Wordwrap $wordwrap,
         private readonly JiraTagConverter $tagConverter,
+        private readonly AccountIdUsernameReplacer $replacer,
         private readonly bool $verbose = true
     ) {}
 
@@ -47,7 +48,8 @@ class Comment implements IssueRenderer
 
     public function renderComment(OutputInterface $output, IssueComment $comment, Issue $issue = null)
     {
-        $content = $this->renderTags($output, trim($comment->body()));
+        $content = $this->replacer->replace(trim($comment->body()));
+        $content = $this->renderTags($output, $content);
         if ($issue) {
             $content = $this->imageRenderer->render($content, $issue);
         }
