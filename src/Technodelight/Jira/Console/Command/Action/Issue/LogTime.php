@@ -70,7 +70,8 @@ class LogTime extends Command
             ->addArgument(
                 'date',
                 InputArgument::OPTIONAL,
-                'Date to put your log to, like \'yesterday 12:00\' or \'' . date('Y-m-d') . '\', anything http://php.net/strtotime can parse'
+                'Date to put your log to, like \'yesterday 12:00\' or \'' . date('Y-m-d')
+                . '\', anything http://php.net/strtotime can parse'
             )
             ->addOption(
                 'delete',
@@ -113,10 +114,9 @@ class LogTime extends Command
             return;
         }
 
-        /** @var IssueKeyOrWorklogId $issueKeyOrWorklogId */
         $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
 
-        // fix when no arguments but you want to log your time to current issue specified by branch
+        // fix when no arguments, but you want to log your time to current issue specified by branch
         if (!$input->getArgument('issueKeyOrWorklogId') && $issueKeyOrWorklogId->isEmpty()) {
             $input->setOption('interactive', $argParser->isInteractive());
             return;
@@ -135,19 +135,30 @@ class LogTime extends Command
         }
 
         if (!$input->getArgument('time')) {
-            $input->setArgument('time', $this->askForTimeToLog($input, $output, $issueKeyOrWorklogId->issueKey(), $issueKeyOrWorklogId->worklog()));
+            $input->setArgument(
+                'time',
+                $this->askForTimeToLog(
+                    $input,
+                    $output,
+                    $issueKeyOrWorklogId->issueKey(),
+                    $issueKeyOrWorklogId->worklog()
+                )
+            );
         }
 
         if (!$input->getArgument('comment')) {
             if ($issueKeyOrWorklogId->isWorklogId()) {
-                $worklog = $this->worklogHandler->retrieve($issueKeyOrWorklogId->worklogId());
+                $worklog = $this->worklogHandler->retrieve($issueKeyOrWorklogId->worklogId()->id());
                 $issue = $this->jira->retrieveIssue($worklog->issueKey());
             } else {
                 $issue = $this->jira->retrieveIssue($issueKeyOrWorklogId->issueKey());
                 $worklog = null;
             }
 
-            $input->setArgument('comment', $this->commentInput->read($input, $output, $issue, $worklog, $input->getOption('keep-default-comment')));
+            $input->setArgument(
+                'comment',
+                $this->commentInput->read($input, $output, $issue, $worklog, $input->getOption('keep-default-comment'))
+            );
         }
     }
 
@@ -168,7 +179,14 @@ class LogTime extends Command
         $worklogDate = $input->getOption('move') ? $this->dateResolver->option($input, 'move') : null;
 
         if ($issueKeyOrWorklogId->isWorklogId()) {
-            return $this->processExistingWorklog($input, $output, $issueKeyOrWorklogId, $timeSpent, $comment, $worklogDate);
+            return $this->processExistingWorklog(
+                $input,
+                $output,
+                $issueKeyOrWorklogId,
+                $timeSpent,
+                $comment,
+                $worklogDate
+            );
         }
 
         return $this->processNewWorklog($input, $output, $issueKeyOrWorklogId, $timeSpent, $comment);
@@ -181,33 +199,37 @@ class LogTime extends Command
         $timeSpent = null,
         $comment = null,
         $worklogDate = null
-    ): int
-    {
+    ): int {
         try {
             if ($input->getOption('delete')) {
                 $this->deleteWorklog($issueKeyOrWorklogId->worklog());
                 $output->writeln(
-                    sprintf('<comment>Worklog <info>%d</info> has been deleted successfully</comment>', $issueKeyOrWorklogId->worklog()
-                        ->id())
+                    sprintf(
+                        '<comment>Worklog <info>%s</info> has been deleted successfully</comment>',
+                        $issueKeyOrWorklogId->worklog()->id()
+                    )
                 );
             } else {
                 $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
                 $output->writeln(
                     sprintf(
-                        '<comment>Worklog <info>%d</info> has been updated</comment>',
-                        (string) $issueKeyOrWorklogId->worklog()->id()
+                        '<comment>Worklog <info>%s</info> has been updated</comment>',
+                        $issueKeyOrWorklogId->worklog()->id()
                     )
                 );
             }
 
-            return self::SUCCESS;
+            return Command::SUCCESS;
         } catch (UnexpectedValueException $exception) {
             $output->writeln($exception->getMessage());
 
             return 1;
         } catch (\Exception $exception) {
             $output->writeln(
-                sprintf('<error>Something bad happened while processing %s</error>', $issueKeyOrWorklogId->worklogId())
+                sprintf(
+                    '<error>Something bad happened while processing %s</error>',
+                    $issueKeyOrWorklogId->worklogId()
+                )
             );
             $output->writeln(sprintf('<error>%s</error>', $exception->getMessage()));
 
@@ -221,8 +243,7 @@ class LogTime extends Command
         IssueKeyOrWorklogId $issueKeyOrWorklogId,
         $timeSpent = null,
         $comment = null
-    ): int
-    {
+    ): int {
         if (!$timeSpent) {
             $output->writeln('<error>You need to specify the issue and time arguments at least</error>');
 
@@ -248,18 +269,27 @@ class LogTime extends Command
             $output->writeln(
                 sprintf(
                     '<info>You already filled in your timesheets for %s</info>',
-                    (string) $this->dateResolver->argument($input) == 'now' ? 'today' : $this->dateResolver->argument($input)
+                    (string) $this->dateResolver->argument($input) == 'now'
+                        ? 'today'
+                        : $this->dateResolver->argument($input)
                 )
             );
             return self::FAILURE;
         }
 
         while ($timeLeft > 0) {
-            $output->writeln(sprintf('<comment>%s</comment> time left to log.', $this->dateHelper->secondsToHuman($timeLeft)));
+            $output->writeln(
+                sprintf('<comment>%s</comment> time left to log.', $this->dateHelper->secondsToHuman($timeLeft))
+            );
             $issue = $this->askIssueToChooseFrom($input, $output);
             $time = $this->askForTimeToLog($input, $output, $issue->key());
             $comment = $this->commentInput->read($input, $output, $issue);
-            $worklog = $this->logNewWork($issue->key(), $time, $comment ?: 'Worked on issue ' . $issue->key(), $this->dateResolver->argument($input));
+            $worklog = $this->logNewWork(
+                $issue->key(),
+                $time,
+                $comment ?: 'Worked on issue ' . $issue->key(),
+                $this->dateResolver->argument($input)
+            );
             $this->showSuccessMessages($output, $worklog);
             $timeLeft = $timeLeft - $worklog->timeSpentSeconds();
         }
@@ -271,10 +301,9 @@ class LogTime extends Command
         return self::SUCCESS;
     }
 
-    private function deleteWorklog(Worklog $worklog)
+    private function deleteWorklog(Worklog $worklog): void
     {
         $this->worklogHandler->delete($worklog);
-        return true;
     }
 
     private function updateWorklog(Worklog $worklog, $timeSpent, $comment, $startDay): bool
@@ -297,7 +326,7 @@ class LogTime extends Command
         }
 
         throw new UnexpectedValueException(
-            sprintf('Cannot update worklog <info>%d</info> as it looks the same as it was.', $worklog->id())
+            sprintf('Cannot update worklog <info>%s</info> as it does not introduce a change.', $worklog->id())
         );
     }
 
@@ -332,25 +361,39 @@ class LogTime extends Command
         }
 
         return $confirm . PHP_EOL
-            . sprintf('<comment>Please enter the time you want to log against <info>%s</info>:</> ', $issueKey . ($worklog ? ' ('.$worklog->id().')' : ''));
+            . sprintf(
+                '<comment>Please enter the time you want to log against <info>%s</info>:</> ',
+                $issueKey . ($worklog ? ' ('.$worklog->id().')' : '')
+            );
     }
 
     private function showSuccessMessages(OutputInterface $output, Worklog $worklog): void
     {
         $output->writeln(
-            "You have successfully logged <comment>{$this->dateHelper->secondsToHuman($worklog->timeSpentSeconds())}</comment>"
-            ." to issue <info>{$worklog->issueKey()} on {$worklog->date()->format('Y-m-d H:i:s')}</info> ({$worklog->id()})"
+            sprintf(
+                'You have successfully logged <comment>%s</comment> to issue <info>%s on %s</info> (%s)',
+                $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()),
+                $worklog->issueKey(),
+                $worklog->date()->format('Y-m-d H:i:s'),
+                $worklog->id()
+            )
         );
         $output->writeln('');
         $output->writeln(
-            "Time spent: <comment>{$this->dateHelper->secondsToHuman($worklog->issue()->timeSpent())}</comment>, "
-            . "Remaining estimate: <comment>{$this->dateHelper->secondsToHuman($worklog->issue()->remainingEstimate())}</comment>"
+            sprintf(
+                "Time spent: <comment>%s</comment>, Remaining estimate: <comment>%s</comment>",
+                $this->dateHelper->secondsToHuman($worklog->issue()->timeSpent()),
+                $this->dateHelper->secondsToHuman($worklog->issue()->remainingEstimate())
+            )
         );
         $output->writeln('');
         $output->writeln('Logged work so far:');
         $this->worklogRenderer->renderWorklogs($output, $worklog->issue()->worklogs());
         $output->writeln('');
-        $this->dashboardRenderer->render($output, $this->dashboardDataProvider->fetch($worklog->date()->format('Y-m-d')));
+        $this->dashboardRenderer->render(
+            $output,
+            $this->dashboardDataProvider->fetch($worklog->date()->format('Y-m-d'))
+        );
     }
 
     private function askIssueToChooseFrom(InputInterface $input, OutputInterface $output): Issue
@@ -358,10 +401,16 @@ class LogTime extends Command
         return $this->issueSelector->chooseIssue($input, $output);
     }
 
-    private function askForTimeToLog(InputInterface $input, OutputInterface $output, string $issueKey, Worklog $worklog = null): string
-    {
+    private function askForTimeToLog(
+        InputInterface $input,
+        OutputInterface $output,
+        string $issueKey,
+        Worklog $worklog = null
+    ): string {
         $question = new Question(
-            $this->loggedTimeDialogText($issueKey, $worklog), $worklog ? $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d');
+            $this->loggedTimeDialogText($issueKey, $worklog),
+            $worklog ? $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d'
+        );
         $question->setValidator(function ($answer) {
             return preg_replace('~[^0-9hmds. ]+~', '', $answer);
         });
