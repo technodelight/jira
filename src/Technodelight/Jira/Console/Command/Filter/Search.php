@@ -37,7 +37,10 @@ class Search extends Command implements IssueRendererAware
         $this
             ->setName('search')
             ->setDescription('Search in Jira using JQL')
-            ->setHelp('Search using JQL.' . PHP_EOL . 'See advanced search help at https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html')
+            ->setHelp('Search using JQL.' . PHP_EOL
+                . 'See advanced search help at '
+                . 'https://confluence.atlassian.com/jiracorecloud/advanced-searching-765593707.html'
+            )
             ->addArgument(
                 'jql',
                 InputArgument::REQUIRED,
@@ -45,7 +48,7 @@ class Search extends Command implements IssueRendererAware
             )
             ->addOption(
                 'dump-config',
-                'd',
+                'c',
                 InputOption::VALUE_NONE,
                 'Dump the query as yaml configuration for quicker config updates'
             )
@@ -86,7 +89,11 @@ class Search extends Command implements IssueRendererAware
         $command->execute($input, $output);
 
         if ($input->getOption('dump-config')) {
-            $this->dumpFilterConfiguration($output, '<insert your preferred filter command here>', $input->getArgument('jql'));
+            $this->dumpFilterConfiguration(
+                $output,
+                '<filter command name>',
+                $input->getArgument('jql')
+            );
         }
 
         return self::SUCCESS;

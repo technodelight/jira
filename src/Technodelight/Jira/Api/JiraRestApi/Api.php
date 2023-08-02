@@ -33,16 +33,11 @@ use Technodelight\Jira\Domain\WorklogCollection;
 class Api
 {
     public const FIELDS_ALL = '*all';
-    private const SEARCH_HELP_LINK = 'https://support.atlassian.com/jira-work-management/docs/use-advanced-search-with-jira-query-language-jql/';
+    private const SEARCH_HELP_LINK = 'https://support.atlassian.com/'
+        . 'jira-work-management/docs/use-advanced-search-with-jira-query-language-jql/';
 
-    /**
-     * @var Client
-     */
-    private $client;
-
-    public function __construct(Client $client)
+    public function __construct(private readonly Client $client)
     {
-        $this->client = $client;
     }
 
     /**
@@ -111,7 +106,7 @@ class Api
      * }
      * ```
      *
-     * @param string $query	string A string used to search username, Name or e-mail address
+     * @param string $query string A string used to search username, Name or e-mail address
      * @param int|null $maxResults the maximum number of users to return (defaults to 50). The maximum allowed value is 1000. If you specify a value that is higher than this number, your search results will be truncated.
      * @param bool|null $showAvatar boolean
      * @param string|null $exclude string
@@ -563,8 +558,12 @@ class Api
     public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = [])
     {
         try {
+            // prepare JQL to replace usernames with account IDs
+            $replacedJqlResult = $this->client->post('jql/pdcleaner', ['queryStrings' => [$jql]]);
+            $replacedJql = $replacedJqlResult['queryStrings'][0] ?? $jql;
+
             $results = $this->client->search(
-                $jql,
+                $replacedJql,
                 $startAt,
                 $fields,
                 $expand,
@@ -683,7 +682,7 @@ class Api
     }
 
     /**
-     * @param string $query	Query used to filter issue search results.
+     * @param string $query Query used to filter issue search results.
      * @param string $currentJql JQL defining search context. Only issues matching this JQL query are included in the results.
      * @param string $currentIssueKey Key of the issue defining search context. The issue defining a context is excluded from the search results.
      * @param string $currentProjectId ID of a project defining search context. Only issues belonging to a given project are suggested.
