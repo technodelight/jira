@@ -14,7 +14,7 @@ class Downloader
         $callback = static function ($resource, $downloadTotal, $downloadedBytes) use ($output) {
             $output->write(
                 sprintf(
-                    "\033[1G\033[2K" . 'downloaded: %.4fMiB / %.4fMiB' . "\033[1A",
+                    "\033[1G\033[2K" . 'downloaded: %.4fMiB / %.4fMiB',
                     $downloadedBytes / 1024 / 1024,
                     $downloadTotal / 1024 / 1024
                 )
