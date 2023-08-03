@@ -27,7 +27,7 @@ class Guesser
 
     public function guessIssueKey($guessable, Branch $currentBranch = null): ?IssueKey
     {
-        if ($key = $this->fromString($guessable)) {
+        if ($key = $this->fromString((string)$guessable)) {
             return $key;
         }
         if ($key = $this->fromUrl($guessable)) {
@@ -87,7 +87,7 @@ class Guesser
                         }
                         return IssueKey::fromString($subMatches[0]);
                     } catch (MissingIssueKeyException $e) {
-
+                        // no-op
                     }
                 }
             }
@@ -98,7 +98,7 @@ class Guesser
 
     private function fromUrl($guessable): ?IssueKey
     {
-        if (preg_match('~https?://.*/(' . IssueKey::PATTERN . ').*~', $guessable, $matches)) {
+        if (preg_match('~https?://.*/(' . IssueKey::PATTERN . ').*~', (string)$guessable, $matches)) {
             try {
                 return IssueKey::fromString($matches[1]);
             } catch (MissingIssueKeyException $e) {
