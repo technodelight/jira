@@ -1,18 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper;
 
 use CurlHandle;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 class Downloader
 {
     public function downloadWithCurl(OutputInterface $output, $downloadUrl, $targetFile): bool
     {
         $callback = static function ($resource, $downloadTotal, $downloadedBytes) use ($output) {
-            $output->write(sprintf("\033[K" . 'downloaded: %.4fMiB / %.4fMiB', $downloadedBytes, $downloadTotal));
+            $output->write(
+                sprintf(
+                    "\033[1G\033[2K" . 'downloaded: %.4fMiB / %.4fMiB' . "\033[1A",
+                    $downloadedBytes / 1024 / 1024,
+                    $downloadTotal / 1024 / 1024
+                )
+            );
         };
 
         $f = fopen($targetFile, 'w');

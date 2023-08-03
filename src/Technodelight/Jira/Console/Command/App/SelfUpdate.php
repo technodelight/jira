@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\App;
 
+use ErrorException;
 use Github\Client;
 use Phar;
 use Symfony\Component\Console\Command\Command;
@@ -73,15 +74,15 @@ class SelfUpdate extends Command
     {
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
-            chmod($runningFile, 0755);
+            if(!chmod($runningFile, 0755)) {
+                $output->writeln(sprintf('chmod failed, please ensure %s is set to 0755', $runningFile));
+            }
             $this->cacheMaintainer->clear();
 
             return true;
         }
 
-        throw new \ErrorException(
-            'Cannot update to the latest release :('
-        );
+        return false;
     }
 
     private function getReleaseNotesSince($currentVersion, $newVersion): array
