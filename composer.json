@@ -53,7 +53,8 @@
     "config": {
         "bin-dir": "bin",
         "allow-plugins": {
-            "cweagans/composer-patches": true
+            "cweagans/composer-patches": true,
+            "php-http/discovery": true
         }
     },
     "scripts": {

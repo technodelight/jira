@@ -4,7 +4,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
-use GuzzleHttp\Promise;
+use GuzzleHttp\Promise\Utils;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
 
 class HttpClient implements Client
@@ -76,7 +76,7 @@ class HttpClient implements Client
             $promises[$url] = $this->httpClient()->getAsync($url);
         }
 
-        $responses = Promise\settle($promises)->wait();
+        $responses = Utils::settle($promises)->wait();
         $results = [];
         foreach ($responses as $url => $settle) {
             if ($settle['state'] != 'fulfilled') {
