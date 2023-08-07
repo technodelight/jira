@@ -43,7 +43,10 @@ class GitBranchnameGenerator
     public function fromIssueWithAutocomplete(Issue $issue, InputInterface $input, OutputInterface $output): string
     {
         $q = new QuestionHelper();
-        $question = new Question('> ');
+        $basePatternForPrompt = $this->patternFromData(
+            ['issueKey' => $issue->issueKey(), 'summary' => '', 'issue' => $issue]
+        );
+        $question = new Question($basePatternForPrompt);
         $question->setAutocompleterCallback(new Aggregate([
             new Word($this->getAutocompleteWords($issue))
         ]));

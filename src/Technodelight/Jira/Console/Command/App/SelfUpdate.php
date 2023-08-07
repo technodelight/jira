@@ -74,7 +74,7 @@ class SelfUpdate extends Command
     {
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
-            if(!chmod($runningFile, 0755)) {
+            if(!@chmod($runningFile, 0755)) {
                 $output->writeln(sprintf('chmod failed, please ensure %s is set to 0755', $runningFile));
             }
             $this->cacheMaintainer->clear();
