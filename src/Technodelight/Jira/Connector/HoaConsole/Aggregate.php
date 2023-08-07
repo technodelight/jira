@@ -14,14 +14,17 @@ class Aggregate
         $this->autocompleters = $autocompleters;
     }
 
-    public function __invoke(string $word, int $offset): ?array
+    public function __invoke(string $buffer, int $offset = 0): array
     {
+        $words = explode(' ', $buffer);
+        $word = end($words);
+
         foreach ($this->autocompleters as $autocompleter) {
-            if (preg_match(sprintf('~%s~', $autocompleter->getWordDefinition()), $word)) {
-                return $autocompleter->complete($word);
+            if ($complete = $autocompleter->complete($word)) {
+                return is_array($complete) ? $complete : [$complete];
             }
         }
 
-        return null;
+        return [];
     }
 }
