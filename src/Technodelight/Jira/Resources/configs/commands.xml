@@ -200,6 +200,10 @@
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
             </call>
+            <call method="addRenderer">
+                <argument>short-list</argument>
+                <argument type="service" id="technodelight.jira.renderer.dashboard.short_list" />
+            </call>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.week" class="Technodelight\Jira\Console\Command\Show\Progress\Week">
@@ -217,6 +221,10 @@
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
             </call>
+            <call method="addRenderer">
+                <argument>short-list</argument>
+                <argument type="service" id="technodelight.jira.renderer.dashboard.short_list" />
+            </call>
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.month" class="Technodelight\Jira\Console\Command\Show\Progress\Month">
@@ -233,6 +241,10 @@
             <call method="addRenderer">
                 <argument>summary</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.summary" />
+            </call>
+            <call method="addRenderer">
+                <argument>short-list</argument>
+                <argument type="service" id="technodelight.jira.renderer.dashboard.short_list" />
             </call>
             <tag name="command" />
         </service>

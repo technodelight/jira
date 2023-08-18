@@ -248,6 +248,10 @@
             <argument type="service" id="technodelight.jira.date_helper" />
             <argument type="service" id="technodelight.jira.template_helper"/>
         </service>
+        <service id="technodelight.jira.renderer.dashboard.short_logs_list" class="Technodelight\Jira\Renderer\Dashboard\ShortLogsList">
+            <argument type="service" id="technodelight.jira.date_helper" />
+            <argument type="service" id="technodelight.jira.template_helper"/>
+        </service>
         <service id="technodelight.jira.renderer.dashboard.logs_table" class="Technodelight\Jira\Renderer\Dashboard\LogsTable">
             <argument type="service" id="technodelight.jira.date_helper" />
         </service>
@@ -258,6 +262,15 @@
                 <argument type="service" id="technodelight.jira.renderer.dashboard.progress" />
                 <argument type="service" id="technodelight.jira.renderer.dashboard.stats" />
                 <argument type="service" id="technodelight.jira.renderer.dashboard.logs_list" />
+            </argument>
+        </service>
+
+        <service id="technodelight.jira.renderer.dashboard.short_list" class="Technodelight\Jira\Renderer\Dashboard\Renderer">
+            <argument type="collection">
+                <argument type="service" id="technodelight.jira.renderer.dashboard.header" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.progress" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.stats" />
+                <argument type="service" id="technodelight.jira.renderer.dashboard.short_logs_list" />
             </argument>
         </service>
 

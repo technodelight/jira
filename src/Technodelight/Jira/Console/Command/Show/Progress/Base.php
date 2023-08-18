@@ -54,6 +54,12 @@ abstract class Base extends Command
                 'Render dashboard as table'
             )
             ->addOption(
+                'short-list',
+                'L',
+                InputOption::VALUE_NONE,
+                'Render dashboard as table'
+            )
+            ->addOption(
                 'user',
                 'u',
                 InputOption::VALUE_REQUIRED,
@@ -84,7 +90,7 @@ abstract class Base extends Command
 
     protected function rendererForOptions(array $options): DashboardRenderer
     {
-        $renderers = ['list', 'summary', 'table'];
+        $renderers = array_keys($this->renderers);
         foreach ($renderers as $rendererType) {
             if (!empty($options[$rendererType])) {
                 return $this->rendererFor($rendererType);

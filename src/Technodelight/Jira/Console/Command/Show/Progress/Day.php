@@ -18,7 +18,8 @@ class Day extends Base
             ->addArgument(
                 'date',
                 InputArgument::OPTIONAL,
-                'Show your worklogs for the given date, could be "yesterday", "2015-09-28", "-1 week", etc. Set to "today" by default, which default can be configured',
+                'Show your worklogs for the given date, could be "yesterday", "2015-09-28", "-1 week", etc.'
+                . ' Set to "today" by default, which default can be configured',
                 'today'
             )
         ;
