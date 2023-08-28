@@ -9,12 +9,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Downloader
 {
-    public function downloadWithCurl(OutputInterface $output, $downloadUrl, $targetFile): bool
+    public function downloadWithCurl(OutputInterface $output, string $downloadUrl, string $targetFile): bool
     {
         $callback = static function ($resource, $downloadTotal, $downloadedBytes) use ($output) {
             $output->write(
                 sprintf(
-                    "\033[1G\033[2K" . 'downloaded: %.4fMiB / %.4fMiB',
+                    "\033[1G\033[2K" . '<fg=green>[%s%%]</fg> downloaded: %.4fMiB / %.4fMiB',
+                    str_pad((string)(($downloadedBytes / $downloadTotal) * 100), STR_PAD_LEFT),
                     $downloadedBytes / 1024 / 1024,
                     $downloadTotal / 1024 / 1024
                 )
