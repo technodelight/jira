@@ -28,7 +28,7 @@ class SelfUpdate extends Command
     protected function configure(): void
     {
         $this
-            ->setName('app:selfupdate')
+            ->setName('app:self-update')
             ->setDescription('Check latest releases and update')
             ->setAliases(['selfupdate', 'self-update'])
         ;
@@ -74,8 +74,9 @@ class SelfUpdate extends Command
     {
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
-            if(!@chmod($runningFile, 0755)) {
-                $output->writeln(sprintf('chmod failed, please ensure %s is set to 0755', $runningFile));
+            if(!is_executable($runningFile) && !@chmod($runningFile, 0755)) {
+                $output->writeln(sprintf('chmod failed and file %1$s is not executable,'
+                    . ' please check the output of \'chmod 0755 %1$s\'', $runningFile));
             }
             $this->cacheMaintainer->clear();
 
@@ -96,7 +97,8 @@ class SelfUpdate extends Command
         );
         $releaseNotes = [];
         foreach ($releasesSince as $release) {
-            $releaseNotes[] = "<info>{$release['tag_name']}</info> {$release['name']} " . ($newVersion === $release['tag_name'] ? '<info>(latest)</>' : '');
+            $releaseNotes[] = "<info>{$release['tag_name']}</info> {$release['name']} "
+                . ($newVersion === $release['tag_name'] ? '<info>(latest)</>' : '');
             $releaseNotes[] = '';
             if (!empty(trim($release['body']))) {
                 $releaseNotes[] = trim($release['body']);
