@@ -50,7 +50,7 @@ class Locator
             "$extensionPath/src/$nameSpacePath",
             "$extensionPath/lib/$nameSpacePath",
         ];
-        //@TODO add project directory too!
+        //@TODO add project directory too by fetching base directory from git
         $globPaths = [
             getenv('HOME') . "/.composer/vendor/*/*/src",
             getenv('HOME') . "/.composer/vendor/*/*/lib",
