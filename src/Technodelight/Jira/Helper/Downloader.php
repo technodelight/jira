@@ -11,19 +11,8 @@ class Downloader
 {
     public function downloadWithCurl(OutputInterface $output, string $downloadUrl, string $targetFile): bool
     {
-        $callback = static function ($resource, $downloadTotal, $downloadedBytes) use ($output) {
-            $output->write(
-                sprintf(
-                    "\033[1G\033[2K" . '<fg=green>[%s%%]</fg> downloaded: %.4fMiB / %.4fMiB',
-                    str_pad((string)(($downloadedBytes / $downloadTotal) * 100), STR_PAD_LEFT),
-                    $downloadedBytes / 1024 / 1024,
-                    $downloadTotal / 1024 / 1024
-                )
-            );
-        };
-
         $f = fopen($targetFile, 'w');
-        $ch = $this->initCurl($downloadUrl, $f, $callback);
+        $ch = $this->initCurl($downloadUrl, $f, $this->progressBar($output));
 
         $old = umask(0);
         curl_exec($ch);
@@ -35,6 +24,21 @@ class Downloader
         $output->writeln('');
 
         return $err === 0;
+    }
+
+    public function progressBar(OutputInterface $output): callable {
+        return static function ($resource, $downloadedBytes, $downloadTotal) use ($output) {
+            if ($downloadTotal > 0) {
+                $output->write(
+                    sprintf(
+                        "\033[1G\033[2K" . '<fg=green>[%s%%]</fg> downloaded: %.4fMiB / %.4fMiB',
+                        str_pad((string)(($downloadedBytes / $downloadTotal) * 100), STR_PAD_LEFT),
+                        $downloadedBytes / 1024 / 1024,
+                        $downloadTotal / 1024 / 1024
+                    )
+                );
+            }
+        };
     }
 
     /**

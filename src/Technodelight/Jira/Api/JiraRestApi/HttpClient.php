@@ -117,15 +117,15 @@ class HttpClient implements Client
         }
     }
 
-    public function download($url, $filename, callable $progressFunction = null)
+    public function download($url, $filename, callable $progressFunction = null): void
     {
         if ($progressFunction) {
             $this->httpClient()->get(
                 $url,
-                [
-                    'save_to' => $filename,
+                array_filter([
+                    'sink' => $filename,
                     'progress' => $progressFunction,
-                ]
+                ])
             );
             return;
         }
@@ -133,7 +133,7 @@ class HttpClient implements Client
         $this->httpClient()->get($url, ['save_to' => $filename]);
     }
 
-    public function upload($url, $filename)
+    public function upload($url, $filename): void
     {
         $this->httpClient()->post($url, [
             'headers' => [
