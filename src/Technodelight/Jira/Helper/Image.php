@@ -36,7 +36,7 @@ class Image
 
     public function render($body, Issue $issue)
     {
-        if (preg_match_all('~!([^|]+)(\|thumbnail!)?~', $body, $matches)) {
+        if (preg_match_all('~!([^|!]+)(\|thumbnail)?(\|width=\d*(,height=\d*)?)?!~', $body, $matches)) {
             $replacePairs = [];
             foreach ($matches[1] as $k => $embeddedImage) {
                 if (empty(trim($embeddedImage))) {
@@ -44,7 +44,7 @@ class Image
                 }
 
                 if (!$this->isIterm() || !$this->displayImages) {
-                    $image = '<comment>jira download ' . $embeddedImage . '</>';
+                    $image = sprintf('<comment>jira download %s %s</>', $issue->issueKey(), $embeddedImage);
                 } else {
                     try {
                         $image = $this->renderThumbnail($issue, $embeddedImage);

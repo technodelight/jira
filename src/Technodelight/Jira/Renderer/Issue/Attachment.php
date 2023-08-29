@@ -55,13 +55,12 @@ class Attachment implements IssueRenderer
         $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en');
 
         return sprintf(
-            '<info>%s</info> %s (by <fg=cyan>%s</> %s) <fg=black>jira download %s %s</>',
+            '<info>%1$s</info> %2$s (by <fg=cyan>%3$s</> %4$s) <fg=black>jira download %5$s %1$s</>',
             $attachment->filename(),
             BytesInHuman::fromBytes($attachment->size()),
             $attachment->author(),
             $timeAgo->inWords(),
             $attachment->issue()->issueKey(),
-            $attachment->filename()
         );
     }
 
