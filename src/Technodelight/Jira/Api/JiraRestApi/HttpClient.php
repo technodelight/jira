@@ -5,6 +5,8 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Promise\Utils;
+use GuzzleHttp\TransferStats;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
 
 class HttpClient implements Client
@@ -183,6 +185,34 @@ class HttpClient implements Client
                     'base_uri' => $this->apiUrl($this->config->domain()),
                     'auth' => [$this->config->username(), $this->config->password()],
                     'allow_redirects' => true,
+                    'progress' => static function () {
+                        static $i = 0;
+                        static $chars = ['/', '-', '\\', '|'];
+
+                        printf("\033[1G\033[2K" . $chars[$i % 4] . PHP_EOL . "\033[1A");
+                        $i++;
+                    },
+                    'stream' => true,
+                    'on_stats' => function (TransferStats $stats) {
+                        if (!in_array('--debug', $_SERVER['argv'])) {
+                            return;
+                        }
+                        printf('%s: %s' . PHP_EOL, $stats->getEffectiveUri(), $stats->getTransferTime());
+
+                        // You must check if a response was received before using the
+                        // response object.
+                        if ($stats->hasResponse()) {
+                            printf('%s: %s' . PHP_EOL,
+                                $stats->getResponse()->getStatusCode(),
+                                $stats->getResponse()->getReasonPhrase()
+                            );
+                        } else {
+                            // Error data is handler specific. You will need to know what
+                            // type of error data your handler uses before using this
+                            // value.
+                            var_dump($stats->getHandlerErrorData());
+                        }
+                    }
                 ]
             );
         }

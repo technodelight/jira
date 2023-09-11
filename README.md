@@ -4,20 +4,20 @@
 
 [![Build Status](https://travis-ci.org/technodelight/jira.svg?branch=master)](https://travis-ci.org/technodelight/jira)
 
-Do you use JIRA in your daily work a lot? Are you a developer? Then this tool is for _you_!
+Do you JIRA in your daily work? Are you a developer? This tool is tailored for your needs!
 
-This command line application helps you to manage issue transitions, perform searches using JQL and assists time logging based on your recent git commit messages, with ease.
-All in a highly customisable manner and with many useful add-ons.
+This command line application helps with managing issue transitions, JQL searches and time logging based by leveraging your recent git commit messages.
+All in a highly customisable manner.
 
-This tool evolved into it's current state over years. I wanted to create a tool I can quickly and effectively use, without having to grab my mouse. It spares a lot of time micro-managing issues in Jira.
+This tool evolved into it's current state over years. I wanted to create a tool which I can quickly and effectively use in my day-to-day work. It spares a lot of time with micromanagement.
 
 # Quickstart guide
 
 ### 1. Get the phar
 
-  Check out the [github releases](https://github.com/technodelight/jira/releases) and download the latest `jira.phar`.
+  Check out the [GitHub releases page](https://github.com/technodelight/jira/releases) and grab your latest `jira.phar`.
 
-### 2. Make it executable and move to somewhere in your PATH:
+### 2. Make it executable and move to somewhere in your `$PATH`:
 
   ```
   chmod +x /path/to/jira.phar
@@ -25,7 +25,7 @@ This tool evolved into it's current state over years. I wanted to create a tool 
   mv /path/to/downloads/jira.phar /usr/local/bin/jira
   ```
 
-### 3. CD into your project's git-managed directory and init the configuration:
+### 3. `cd` into your project's git-managed directory and init the configuration:
 
   ```
   jira init
@@ -34,37 +34,38 @@ This tool evolved into it's current state over years. I wanted to create a tool 
 
 ### 4. Updating your tool
 
-  Once you've installed `jira` you can perform updates by running `jira self-update`.
+  Once you have installed `jira` you can update by running `jira self-update`.
 
-### Alternative installation mode, A.K.A. build-your-own:
+## Alternative installation mode, A.K.A. build-your-own:
 
   ```
   git clone https://github.com/technodelight/jira
   git checkout master
   make && make install
   ```
-  Does the very same as above, tho it copies the built file into a fixed directory of `/usr/local/bin/jira`, but you can change this by adjusting the `Makefile`
+  You will need several tools to build on your local system, but the build tool will guide you through the rest of the steps you need to do.
 
 # Features
 
+### Main features
+
 - render issue details in terminal (`jira show`)
-- perform any transition (for example, `jira workflow:start`, but you can configure commands for multiple transitions)
-- list available transitions for an issue (`jira show:transitions`) or all possible issue status (`jira show:statuses`)
-- create a branch for the issue you're going to work (`jira branch`)
-- create pull request for your current branch, assign labels and milestones (`jira pr`)
-- assign issue to your team member or yourself (`jira assign`)
+- perform any issue transition (for example, `jira workflow:start`, but you can configure commands for multiple transitions)
+- list available transitions for an issue (`jira show:transitions`) or all possible issue statuses (`jira show:statuses`)
+- create a GIT branch based on issue details (`jira branch`)
+- assign issues to Jira users (`jira assign`)
 - log new work/edit existing records against an issue (`jira log PROJ-123 1h "worklog comment" yesterday`)
-- add and edit comments quickly (`jira comment`)
+- add and edit comments (`jira comment`)
 - set up and remove links between issues (`jira link` / `jira unlink`, for example `jira link --relates-to PROJ-456`)
 - edit issue properties from command line (`jira edit`)
-- show editable fields for an issue (`jira show:fields`)
-- download issue attachments (`jira attachment`)
+- show properties (fields) for an issue (`jira show:fields`)
+- download attachments (`jira attachment`)
+- perform commands on a batch of issues (for example, move issues to UAT deployed based on GIT commit messages use case: `git log asdf123...123asdf | egrep '[A-Z]+-[0-9]+' -o | sort | uniq | jira + deployed-uat`)
 - search issues on-demand by using Atlassian's JQL language (`jira search '<your JQL here>'`)
 - create pre-stored search queries and run them quickly by assigning a command alias (`jira search:my-issues` for example)
 - list your daily/weekly/monthly work logs in a nice manner (`jira day`, `jira week` and `jira month`)
 - open your issue by issue key in your default browser (`jira browse`) which works with github integration too (open your PR in GitHub or CI tool's result page right from your terminal)
-- perform any command on a list of issues using `jira batch` (nice use case: `git log asdf123...123asdf | egrep '[A-Z]+-[0-9]+' -o | sort | uniq | jira batch + deployed-uat`)
-- filter any list of issues using `jira batch filter + 'issue.status() != "Closed"'`
+- filter a batch of issues using `jira filter + 'issue.status() != "Closed"'`
 - show details about projects (`jira show:project`)
 
 And other powerful features such as:
@@ -101,7 +102,6 @@ Interactively initialising the configuration is as easy as running the `init` co
 You could always dump the configuration sample from below file by running `jira init --sample`
 
 ```yaml
-
 # JIRA connection credentials
 credentials:
 
@@ -150,7 +150,7 @@ integrations:
         # Maximum branch name length where the tool starts complaining during automatic branch name generation (-b option for issue transition type commands). Defaults to 30
         maxBranchNameLength:  30
 
-        # Branch name generation settings. By default it conforms to https://nvie.com/posts/a-successful-git-branching-model/
+        # Branch name generation settings. By default, it conforms to https://nvie.com/posts/a-successful-git-branching-model/
         branchNameGenerator:
             patterns:
 
@@ -295,7 +295,6 @@ renderers:
 
             # Full class path with namespace
             class:                ~ # Required
-
 ```
 
 # Useful links

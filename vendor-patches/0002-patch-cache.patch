@@ -1,5 +1,5 @@
 From cecd5339a9092050ce83e6334b32a98d42013e8a Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zsolt.gal@sessiondigital.com>
+From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zenc@zenc.hu>
 Date: Fri, 2 Dec 2022 11:55:57 +0100
 Subject: [PATCH] patch cache
 
@@ -17,9 +17,9 @@ index 65a6937..51a3bdd 100644
 --- a/lib/APCStorage.php
 +++ b/lib/APCStorage.php
 @@ -11,6 +11,8 @@
- 
+
  namespace ICanBoogie\Storage;
- 
+
 +use Traversable;
 +
  /**
@@ -33,15 +33,15 @@ index 65a6937..51a3bdd 100644
 +	public function getIterator(): Traversable
  	{
  		$prefix_length = strlen($this->prefix);
- 
+
 diff --git a/lib/Cache.php b/lib/Cache.php
 index 8f2d56d..f771d00 100644
 --- a/lib/Cache.php
 +++ b/lib/Cache.php
 @@ -11,6 +11,8 @@
- 
+
  namespace ICanBoogie\Storage;
- 
+
 +use Traversable;
 +
  /**
@@ -59,9 +59,9 @@ index 02af83c..5419662 100644
 --- a/lib/CacheCollection.php
 +++ b/lib/CacheCollection.php
 @@ -11,6 +11,8 @@
- 
+
  namespace ICanBoogie\Storage;
- 
+
 +use Traversable;
 +
  /**
@@ -85,7 +85,7 @@ index 8d3a064..d89ca65 100644
  use ICanBoogie\Storage\FileStorage\Adapter\SerializeAdapter;
  use ICanBoogie\Storage\FileStorage\Iterator;
 +use Traversable;
- 
+
  /**
   * A storage using the file system.
 @@ -259,7 +260,7 @@ class FileStorage implements Storage, \ArrayAccess
@@ -102,9 +102,9 @@ index c7286ba..9a18ec3 100644
 --- a/lib/RedisStorage.php
 +++ b/lib/RedisStorage.php
 @@ -11,6 +11,8 @@
- 
+
  namespace ICanBoogie\Storage;
- 
+
 +use Traversable;
 +
  /**
@@ -124,9 +124,9 @@ index 65c6e6e..bb5551f 100644
 --- a/lib/RunTimeStorage.php
 +++ b/lib/RunTimeStorage.php
 @@ -11,6 +11,8 @@
- 
+
  namespace ICanBoogie\Storage;
- 
+
 +use Traversable;
 +
  /**
@@ -141,6 +141,6 @@ index 65c6e6e..bb5551f 100644
  	{
  		return new \ArrayIterator(array_keys($this->values));
  	}
--- 
+--
 2.25.1
 

@@ -1,5 +1,5 @@
 From ea186e706375f054f438c2f56f690d0a2fa5e768 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zsolt.gal@sessiondigital.com>
+From: =?UTF-8?q?Zsolt=20G=C3=A1l?= <zenc@zenc.hu>
 Date: Fri, 2 Dec 2022 11:54:39 +0100
 Subject: [PATCH] patch array access
 
@@ -47,6 +47,6 @@ index a21a737..dfa1040 100644
  	{
  		return $this->retrieve($key);
  	}
--- 
+--
 2.25.1
 
