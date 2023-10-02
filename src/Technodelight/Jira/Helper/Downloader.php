@@ -31,7 +31,7 @@ class Downloader
             if ($downloadTotal > 0) {
                 $output->write(
                     sprintf(
-                        "\033[1G\033[2K" . '<fg=green>[%s%%]</fg> downloaded: %.4fMiB / %.4fMiB',
+                        "\033[1G\033[2K" . '<fg=green>[%s%%]</> downloaded: %.4fMiB / %.4fMiB',
                         str_pad((string)(($downloadedBytes / $downloadTotal) * 100), STR_PAD_LEFT),
                         $downloadedBytes / 1024 / 1024,
                         $downloadTotal / 1024 / 1024

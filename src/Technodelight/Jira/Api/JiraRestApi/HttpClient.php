@@ -186,8 +186,12 @@ class HttpClient implements Client
                     'auth' => [$this->config->username(), $this->config->password()],
                     'allow_redirects' => true,
                     'progress' => static function () {
+                        if (in_array('--quiet', $_SERVER['argv']) || getopt('q')) {
+                            return;
+                        }
+
                         static $i = 0;
-                        static $chars = ['/', '-', '\\', '|'];
+                        static $chars = ['|', '/', '-', '\\'];
 
                         printf("\033[1G\033[2K" . $chars[$i % 4] . PHP_EOL . "\033[1A");
                         $i++;

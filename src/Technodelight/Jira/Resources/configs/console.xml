@@ -33,6 +33,7 @@
         <!-- extensions -->
 
         <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
+            <argument type="service" id="technodelight.jira.console.batch_assistant" />
             <argument type="string">%technodelight.jira.app.name%</argument>
             <argument type="string">%technodelight.jira.app.version%</argument>
         </service>
@@ -46,11 +47,6 @@
         <service id="console.formatter_helper" class="Symfony\Component\Console\Helper\FormatterHelper">
             <factory service="technodelight.jira.app.default_helper_set" method="get" />
             <argument type="string">formatter</argument>
-        </service>
-
-        <service id="console.dialog_helper" class="Symfony\Component\Console\Helper\DialogHelper">
-            <factory service="technodelight.jira.app.default_helper_set" method="get" />
-            <argument type="string">dialog</argument>
         </service>
 
         <service id="console.question_helper" class="Symfony\Component\Console\Helper\QuestionHelper">

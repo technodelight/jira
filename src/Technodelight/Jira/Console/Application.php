@@ -9,12 +9,20 @@ use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Helper\PluralizeHelper;
 
 class Application extends BaseApp
 {
     private string $currentInstanceName = 'default';
+
+    public function __construct(
+        private readonly BatchAssistant $batchAssistant,
+        string $name = 'UNKNOWN',
+        string $version = 'UNKNOWN',
+    ) {
+        parent::__construct($name, $version);
+    }
+
 
     public function currentInstanceName(): string
     {
@@ -45,21 +53,18 @@ class Application extends BaseApp
         }
 
         // handle batch processing
-        if ($input->isInteractive() === false) {
-            $batchAssistant = $this->container->get('technodelight.jira.console.batch_assistant');
-            if ($issueKeys = $batchAssistant->issueKeysFromPipe()) {
-                $exitCode = 0;
-                $this->setAutoExit(false);
-                foreach ($issueKeys as $issueKey) {
-                    $inputs = $batchAssistant->prepareInput($issueKey);
-                    array_map(function($input) use (&$exitCode, $output) {
-                        $lastExitCode = parent::doRun($input, $output); // make sure to exit with non-zero code
-                        $exitCode = max($exitCode, $lastExitCode);      // if any sub command failed
-                    }, $inputs);
-                }
-                $this->setAutoExit(true);
-                return $exitCode;
+        if ($issueKeys = $this->batchAssistant->issueKeysFromPipe()) {
+            $exitCode = 0;
+            $this->setAutoExit(false);
+            foreach ($issueKeys as $issueKey) {
+                $inputs = $this->batchAssistant->prepareInput($issueKey);
+                array_map(function($input) use (&$exitCode, $output) {
+                    $lastExitCode = parent::doRun($input, $output); // make sure to exit with non-zero code
+                    $exitCode = max($exitCode, $lastExitCode);      // if any sub command failed
+                }, $inputs);
             }
+            $this->setAutoExit(true);
+            return $exitCode;
         }
 
         // normal, interactive behaviour

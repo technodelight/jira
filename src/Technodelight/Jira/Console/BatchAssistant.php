@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console;
 
+use Sirprize\Queried\QueryException;
 use Symfony\Component\Console\Input\StringInput;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
@@ -9,17 +10,14 @@ use Technodelight\Jira\Console\Command\Show\Issue;
 
 class BatchAssistant
 {
-    private Api $jira;
-    private Application $app;
-    private RenderersConfiguration $configuration;
-
-    public function __construct(Api $jira, Application $app, RenderersConfiguration $configuration)
-    {
-        $this->jira = $jira;
-        $this->app = $app;
-        $this->configuration = $configuration;
+    public function __construct(
+        private readonly Api $jira,
+        private readonly Application $app,
+        private readonly RenderersConfiguration $configuration
+    ) {
     }
 
+    /** @throws QueryException */
     public function issueKeysFromPipe(): array
     {
         $issueKeys = $this->fetchIssueKeysFromStdIn();
@@ -53,6 +51,7 @@ class BatchAssistant
         return $inputs;
     }
 
+    /** @throws QueryException */
     private function prefetchIssuesByKey(array $issueKeys): void
     {
         if (!empty($issueKeys)) {
@@ -60,12 +59,7 @@ class BatchAssistant
         }
     }
 
-    /**
-     * @param string $issueKey
-     * @param array $args
-     * @return array
-     */
-    private function assembleArgumentsFromInput($issueKey, array $args)
+    private function assembleArgumentsFromInput(string $issueKey, array $args): array
     {
         if ($args[0] == $_SERVER['PHP_SELF']) {
             array_shift($args);
@@ -74,15 +68,25 @@ class BatchAssistant
             array_shift($args);
         }
 
+        // process argument placeholders
         if (in_array('+', $args)) {
             while (in_array('+', $args) === true) {
                 $args[array_search('+', $args)] = $issueKey;
             }
+        } elseif (in_array('.', $args)) {
+            while (in_array('.', $args) === true) {
+                $args[array_search('.', $args)] = $issueKey;
+            }
+        } elseif (in_array('{}', $args)) {
+            while (in_array('{}', $args) === true) {
+                $args[array_search('{}', $args)] = $issueKey;
+            }
         } else {
-            array_push($args, $issueKey);
+            $args[] = $issueKey;
         }
+
         foreach ($args as $idx => $arg) {
-            if (strpos($arg, ' ') !== false) {
+            if (str_contains($arg, ' ')) {
                 $args[$idx] = "'" . strtr($arg, ["'" => "\'"]) . "'";
             }
         }
@@ -90,11 +94,7 @@ class BatchAssistant
         return $args;
     }
 
-    /**
-     * @param array $inputArguments
-     * @return array
-     */
-    private function glueOptionsIfRequired(array $inputArguments)
+    private function glueOptionsIfRequired(array $inputArguments): array
     {
         $commandName = reset($inputArguments);
         $command = $this->app->get($commandName);
@@ -114,20 +114,14 @@ class BatchAssistant
         return $appendDefaultListOpt ? ['--' . $this->configuration->preferredListRenderer()] : [];
     }
 
-    /**
-     * @return array
-     */
-    private function fetchIssueKeysFromStdIn()
+    private function fetchIssueKeysFromStdIn(): array
     {
-        if (function_exists('posix_isatty')) {
-            if (posix_isatty(STDIN) == true) {
-                return [];
-            }
+        if (function_exists('posix_isatty') && posix_isatty(STDIN) === true) {
+            return [];
         }
-        if (function_exists('stream_isatty')) {
-            if (stream_isatty(STDIN) == true) {
-                return [];
-            }
+
+        if (function_exists('stream_isatty') && stream_isatty(STDIN) === true) {
+            return [];
         }
 
         $issueKeys = file('php://stdin', FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
