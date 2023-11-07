@@ -1,42 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
 use Symfony\Component\Console\Input\InputInterface;
 
 class AssigneeResolver
 {
-    const UNASSIGN = null;
-    const DEFAULT_ASSIGNEE = -1;
+    public const UNASSIGN = null;
+    public const DEFAULT_ASSIGNEE = -1;
 
-    private $defaultUsers = [
+    private array $defaultUsers = [
         '(Unassign)' => self::UNASSIGN,
         '(Default Assignee)' => self::DEFAULT_ASSIGNEE,
     ];
 
-    public function resolve(InputInterface $input)
+    public function resolve(InputInterface $input): mixed
     {
-        switch (true) {
-            case $input->getOption('unassign'):
-                return self::UNASSIGN;
-            case $input->getOption('default'):
-                return self::DEFAULT_ASSIGNEE;
-            default:
-                return $input->getArgument('assignee');
-        }
+        return match (true) {
+            $input->getOption('unassign') => self::UNASSIGN,
+            $input->getOption('default') => self::DEFAULT_ASSIGNEE,
+            default => $input->getArgument('assignee'),
+        };
     }
 
-    public function defaultUsers()
+    public function defaultUsers(): array
     {
         return array_keys($this->defaultUsers);
     }
 
-    public function isDefaultUser($username)
+    public function isDefaultUser(string $username): bool
     {
         return array_key_exists($username, $this->defaultUsers);
     }
 
-    public function fetchValueForDefaultUser($username)
+    public function fetchValueForDefaultUser(string $username): string
     {
         if ($this->isDefaultUser($username)) {
             return $this->defaultUsers[$username];

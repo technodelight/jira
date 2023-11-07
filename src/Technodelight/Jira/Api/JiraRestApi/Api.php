@@ -405,7 +405,8 @@ class Api
      *
      * Note that:
      * - Only the name property needs to be set in the request object.
-     * - If name in the request object is set to "-1", then the issue is assigned to the default assignee for the project.
+     * - If name in the request object is set to "-1", then the issue is assigned to the default assignee
+     *   for the project.
      * - If name in the request object is set to null, then the issue is set to unassigned.
      *
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/v3/#api-api-3-issue-issueIdOrKey-assignee-put
@@ -414,9 +415,21 @@ class Api
      * @param string|int|null $usernameKey
      * @return mixed
      */
-    public function assignIssue(IssueKey $issueKey, $usernameKey)
+    public function assignIssue(IssueKey $issueKey, mixed $usernameKey): ?array
     {
-        return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['name' => $usernameKey]);
+        if (is_string($usernameKey)) {
+            $user = $this->client->get(
+                sprintf(
+                    'user/assignable/search?query=%s&issueKey=%s',
+                    $usernameKey,
+                    $issueKey
+                )
+            );
+            // change to default user if accountId cannot be resolved
+            $usernameKey = $user[0]['accountId'] ?? -1;
+        }
+
+        return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['accountId' => $usernameKey]);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\TransferStats;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -97,6 +98,7 @@ class HttpClient implements Client
      * @param string|null $fields
      *
      * @return array
+     * @throws GuzzleException
      */
     public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
     {
@@ -154,7 +156,7 @@ class HttpClient implements Client
         ]);
     }
 
-    private function apiUrl($projectDomain)
+    private function apiUrl(string $projectDomain): string
     {
         $parts = parse_url($projectDomain);
         if (count($parts) === 1 && isset($parts['path'])) {
@@ -166,18 +168,16 @@ class HttpClient implements Client
             $parts['host'],
             isset($parts['port']) ? ':' . $parts['port'] : null,
         ]));
+
         return sprintf(
             '%s://%s%s',
-            isset($parts['proto']) ? $parts['proto'] : 'https',
+            $parts['scheme'] ?? 'https',
             $url,
             self::API_PATH
         );
     }
 
-    /**
-     * @return GuzzleClient
-     */
-    private function httpClient()
+    private function httpClient(): GuzzleClient
     {
         if (!isset($this->httpClient)) {
             $this->httpClient = new GuzzleClient(

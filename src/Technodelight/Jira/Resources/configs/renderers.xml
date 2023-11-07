@@ -340,7 +340,6 @@
         <service id="technodelight.jira.renderer.action.show.user"
                  public="false"
                  class="Technodelight\Jira\Renderer\Action\Show\User\Renderer">
-            <argument type="service" id="console.formatter_helper" />
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
         </service>

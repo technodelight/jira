@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Action\Show\User;
 
 use Symfony\Component\Console\Helper\FormatterHelper;
@@ -12,28 +14,10 @@ use Technodelight\Jira\Renderer\Action\StyleGuide;
 
 class Renderer implements ActionRenderer
 {
-    /**
-     * @var FormatterHelper
-     */
-    private $formatterHelper;
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var StyleGuide
-     */
-    private $styleGuide;
-
     public function __construct(
-        FormatterHelper $formatterHelper,
-        TemplateHelper $templateHelper,
-        StyleGuide $styleGuide
-    )
-    {
-        $this->formatterHelper = $formatterHelper;
-        $this->styleGuide = $styleGuide;
-        $this->templateHelper = $templateHelper;
+        private readonly TemplateHelper $templateHelper,
+        private readonly StyleGuide $styleGuide
+    ) {
     }
 
     public function canProcess(Result $result): bool
@@ -51,12 +35,12 @@ class Renderer implements ActionRenderer
             return $this->renderError($output, $result);
         }
 
-        return 0;
+        return 1;
     }
 
     /**
      * @param OutputInterface $output
-     * @param Result $result
+     * @param Success $result
      * @return int
      */
     protected function renderSuccess(OutputInterface $output, Success $result): int
@@ -69,21 +53,32 @@ class Renderer implements ActionRenderer
         $output->writeln(
             sprintf('%s (%s)', $this->styleGuide->formatUsername($user->key()), $user->displayName())
         );
-        $output->writeln(
-            $this->templateHelper->tabulate([
-                sprintf('%s %s', $this->styleGuide->formatFirstLevelInfo('email address:'), $user->emailAddress()),
-                sprintf('%s %s', $this->styleGuide->formatFirstLevelInfo('active:'), $user->active() ? 'yes' : 'no'),
-                sprintf('%s %s', $this->styleGuide->formatFirstLevelInfo('time zone:'), $user->timeZone()),
-                sprintf('%s %s', $this->styleGuide->formatFirstLevelInfo('locale:'), $user->locale()),
-            ])
-        );
+        $dataToDisplay = [
+            'account id' => $user->id(),
+            'username' => $user->displayName(),
+            'email address' => $user->emailAddress(),
+            'active' => $user->active() ? 'yes' : 'no',
+            'time zone' => $user->timeZone(),
+            'locale' => $user->locale()
+        ];
+        foreach ($dataToDisplay as $column => $info) {
+            $output->writeln(
+                $this->templateHelper->tabulate(
+                    sprintf(
+                        '%s: %s',
+                        $this->styleGuide->formatFirstLevelInfo($column),
+                        $info
+                    )
+                )
+            );
+        }
 
         return 0;
     }
 
     private function renderError(OutputInterface $output, Error $error): int
     {
-        if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
+        if ($output->getVerbosity() === OutputInterface::VERBOSITY_QUIET) {
             return $error->exception()->getCode() ?: 1;
         }
 
