@@ -13,6 +13,7 @@ use Technodelight\Jira\Connector\HoaConsole\Aggregate;
 use Technodelight\Jira\Connector\HoaConsole\IssueAttachmentAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\IssueAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\UsernameAutocomplete;
+use Technodelight\Jira\Connector\HoaConsole\Word;
 use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Issue;
@@ -34,17 +35,22 @@ class Comment
         $output->write('</>');
 
         return $this->editor->edit(
-            sprintf('Edit comment #%d on %s', $commentId, $issueKey),
+            sprintf('Edit comment #%s on %s', $commentId, $issueKey),
             $this->jira->retrieveComment($issueKey, $commentId)->body()
         );
     }
 
     public function createComment(Issue $issue, InputInterface $input,  OutputInterface $output)
     {
-        $autocompleter = $this->buildAutocompleters($issue, $this->fetchPossibleIssuesCollection(), $this->fetchWordsList($issue));
+        $autocompleter = $this->buildAutocompleters(
+            $issue,
+            $this->fetchPossibleIssuesCollection(),
+            $this->fetchWordsList($issue)
+        );
         $q = new QuestionHelper();
         $question = new Question('<info>Comment:</> ' . PHP_EOL);
         $question->setAutocompleterCallback($autocompleter);
+        $question->setMultiline(true);
 
         return $q->ask($input, $output, $question);
     }
@@ -83,7 +89,7 @@ class Comment
     {
         $words = [];
         foreach ($texts as $text) {
-            foreach ($this->collectAutocompleteableWords($text) as $word) {
+            foreach ($this->collectAutocompletableWords($text) as $word) {
                 $words[] = $word;
             }
         }
@@ -91,7 +97,7 @@ class Comment
         return array_unique($words);
     }
 
-    private function collectAutocompleteableWords(string $text): array
+    private function collectAutocompletableWords(string $text): array
     {
         $text = preg_replace('~(\[\^)([^]]+)(\])~mu', '', $text);
         $text = preg_replace('~!([^|!]+)(\|thumbnail)?!~', '', $text);
