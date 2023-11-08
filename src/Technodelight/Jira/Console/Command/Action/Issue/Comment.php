@@ -71,7 +71,7 @@ class Comment extends Command
             $this->issueRenderer->render($output, $issue);
 
             try {
-                $commentId = CommentId::fromString($input->getOption('update'));
+                $commentId = CommentId::fromNumeric($input->getOption('update'));
                 $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
             } catch (\InvalidArgumentException $e) {
                 $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
@@ -87,11 +87,11 @@ class Comment extends Command
         $updateCommentId = $input->getOption('update');
 
         if ($updateCommentId) {
-            $comment = $this->jira->updateComment($issueKey, CommentId::fromString($updateCommentId), $comment);
+            $comment = $this->jira->updateComment($issueKey, CommentId::fromNumeric($updateCommentId), $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
         } elseif ($deleteCommentId) {
-            $this->jira->deleteComment($issueKey, CommentId::fromString($deleteCommentId));
+            $this->jira->deleteComment($issueKey, CommentId::fromNumeric($deleteCommentId));
             $output->writeln('<info>Comment has been deleted</>');
         } else {
             $comment = $this->jira->addComment($issueKey, $comment);

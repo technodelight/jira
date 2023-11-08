@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use BadMethodCallException;
 use DateTime;
+use Sirprize\Queried\QueryException;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Domain\Filter\FilterId;
@@ -106,14 +107,17 @@ class Api
      * }
      * ```
      *
+     * the maximum number of users to return (defaults to 50). The maximum allowed value is 1000.
+     * If you specify a value that is higher than this number, your search results will be truncated.
      * @param string $query string A string used to search username, Name or e-mail address
-     * @param int|null $maxResults the maximum number of users to return (defaults to 50). The maximum allowed value is 1000. If you specify a value that is higher than this number, your search results will be truncated.
+     * @param int|null $maxResults
      * @param bool|null $showAvatar boolean
      * @param string|null $exclude string
      * @return UserPickerResult[]
      */
-    public function userPicker($query, $maxResults = null, $showAvatar = null, $exclude = null)
-    {
+    public function userPicker(
+        string $query, ?int $maxResults = null, ?bool $showAvatar = null, ?string $exclude = null
+    ): array {
         $response = $this->client->get(
             'user/picker' . $this->queryStringFromParams([
                 'query' => $query,
@@ -131,11 +135,36 @@ class Api
     }
 
     /**
+     * Return a list of assignable users for a given query and/or issue
+     *
+     * @param string $query
+     * @param IssueKey|null $issueKey
+     * @param int $maxResults
+     * @return array
+     */
+    public function assignablePicker(
+        string $query,
+        ?IssueKey $issueKey = null,
+        int $maxResults = 20
+    ): array {
+        $users = $this->client->get(
+            'user/assignable/search' . $this->queryStringFromParams([
+                'query' => $query,
+                'issueKey' => (string)$issueKey,
+                'maxResults' => $maxResults
+            ])
+        );
+        return array_map(static function(array $user) { return User::fromArray($user); }, $users);
+    }
+
+    /**
+     * Retrieve project
+     *
      * @param ProjectKey $projectKey
      *
      * @return Project
      */
-    public function project(ProjectKey $projectKey)
+    public function project(ProjectKey $projectKey): Project
     {
         return Project::fromArray($this->client->get(sprintf('project/%s', $projectKey)));
     }
@@ -338,7 +367,7 @@ class Api
      *
      * @return Issue
      */
-    public function retrieveIssue(IssueKey $issueKey)
+    public function retrieveIssue(IssueKey $issueKey): Issue
     {
         return Issue::fromArray(
             $this->normaliseIssueArray($this->client->get(sprintf('issue/%s', $issueKey)))
@@ -348,9 +377,9 @@ class Api
     /**
      * @param IssueKey[]|string[] $issueKeys
      * @return IssueCollection
-     * @throws \Sirprize\Queried\QueryException
+     * @throws QueryException
      */
-    public function retrieveIssues(array $issueKeys)
+    public function retrieveIssues(array $issueKeys): IssueCollection
     {
         $query = SearchQueryBuilder::factory()
             ->issueKey($issueKeys);
@@ -418,7 +447,7 @@ class Api
     public function assignIssue(IssueKey $issueKey, mixed $usernameKey): ?array
     {
         if (is_string($usernameKey)) {
-            $user = $this->client->get(
+            $users = $this->client->get(
                 sprintf(
                     'user/assignable/search?query=%s&issueKey=%s',
                     $usernameKey,
@@ -426,7 +455,7 @@ class Api
                 )
             );
             // change to default user if accountId cannot be resolved
-            $usernameKey = $user[0]['accountId'] ?? -1;
+            $usernameKey = $users[0]['accountId'] ?? -1;
         }
 
         return $this->client->put(sprintf('issue/%s/assignee', $issueKey), ['accountId' => $usernameKey]);
@@ -457,7 +486,7 @@ class Api
      * @param bool|null $editableFlag overrideEditableFlag
      * @return Meta
      */
-    public function issueEditMeta(IssueKey $issueKey, $screenSecurity = null, $editableFlag = null)
+    public function issueEditMeta(IssueKey $issueKey, ?bool $screenSecurity = null, ?bool $editableFlag = null): Meta
     {
         $result = $this->client->get(
             sprintf('issue/%s/editmeta', $issueKey) . $this->queryStringFromParams([
@@ -477,7 +506,7 @@ class Api
      * @param null|int $maxResults
      * @return Changelog[]
      */
-    public function issueChangelogs(IssueKey $issueKey, $startAt = null, $maxResults = null)
+    public function issueChangelogs(IssueKey $issueKey, ?int $startAt = null, ?int $maxResults = null): array
     {
         $result = $this->client->get(
             sprintf('issue/%s/changelog', $issueKey) . $this->queryStringFromParams([

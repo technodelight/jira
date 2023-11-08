@@ -128,7 +128,9 @@
         <!-- issue assignee input -->
         <service id="technodelight.jira.console.input.issue.assignee" class="Technodelight\Jira\Console\Input\Issue\Assignee\Assignee">
             <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver"/>
             <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver"/>
+            <argument type="service" id="console.question_helper"/>
         </service>
         <service id="technodelight.jira.console.input.issue.assignee_resolver"
                  class="Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver" />

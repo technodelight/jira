@@ -14,6 +14,7 @@ use Technodelight\GitShell\DiffEntry;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee as AssigneeInput;
+use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\GitShell\ApiInterface as GitShell;
@@ -68,7 +69,8 @@ class Transition extends Command
                 'assign',
                 'a',
                 InputOption::VALUE_OPTIONAL,
-                'change assignee'
+                'change assignee',
+                AssigneeResolver::DEFAULT_ASSIGNEE
             )
             ->addOption(
                 'unassign',
@@ -98,20 +100,29 @@ class Transition extends Command
 
             $this->jira->performIssueTransition($issueKey, $transition);
             if ($input->getOption('assign') || $this->optionChecker->hasOptionWithoutValue($input, 'assign')) {
-                $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign') ? $this->assigneeInput->userPicker($input, $output) : $input->getOption('assign');
-                $this->jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => $assignee]]]);
-            } else
-            if ($input->getOption('unassign')) {
+                $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign')
+                    ? $this->assigneeInput->userPicker($input, $output)
+                    : $input->getOption('assign');
+                $this->jira->assignIssue($issueKey, $assignee);
+            } elseif ($input->getOption('unassign')) {
                 $assignee = false;
-                $this->jira->updateIssue($issueKey, ['fields' => ['assignee' => ['name' => '']]]);
+                $this->jira->assignIssue($issueKey, AssigneeResolver::UNASSIGN);
             }
 
             $issue = $this->jira->retrieveIssue($issueKey);
 
-            $returnCode = $this->renderer->render($output, Success::fromIssueKeyAndAssignee($issueKey, $transition, $assignee));
+            $returnCode = $this->renderer->render(
+                $output,
+                Success::fromIssueKeyAndAssignee($issueKey, $transition, $assignee)
+            );
             $this->checkoutToBranch($input, $output, $issue);
         } catch (Exception $exception) {
-            $returnCode = $this->renderer->render($output, Error::fromExceptionIssueKeyTransitions($exception, isset($issueKey) ? $issueKey : 'nada', $this->transitions));
+            $returnCode = $this->renderer->render(
+                $output,
+                Error::fromExceptionIssueKeyTransitions(
+                    $exception, $issueKey ?? '- no issue key -', $this->transitions
+                )
+            );
             if (isset($issue)) {
                 $this->checkoutToBranch($input, $output, $issue);
             }

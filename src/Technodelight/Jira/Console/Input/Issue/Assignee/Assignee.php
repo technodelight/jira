@@ -1,46 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Input\Issue\Assignee;
 
+use LogicException;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\JiraRestApi\Api;
-use Technodelight\Jira\Connector\HoaConsole\DefaultUsersAutocomplete;
-use Technodelight\Jira\Connector\HoaConsole\UserPickerAutocomplete;
+use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 
 class Assignee
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var AssigneeResolver
-     */
-    private $assigneeResolver;
-
-    public function __construct(Api $api, AssigneeResolver $assigneeResolver)
-    {
-        $this->api = $api;
-        $this->assigneeResolver = $assigneeResolver;
+    public function __construct(
+        private readonly Api $api,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly AssigneeResolver $assigneeResolver,
+        private readonly QuestionHelper $questionHelper
+    ) {
     }
 
-    public function userPicker(InputInterface $input, OutputInterface $output)
+    public function userPicker(InputInterface $input, OutputInterface $output): mixed
     {
         if (!$input->isInteractive()) {
-            throw new \RuntimeException('Input is not interactive, cannot select assigne interactively');
+            throw new LogicException('Input is not interactive, cannot select assigne interactively');
         }
 
-        throw new \ErrorException('Hoa\\Console deprecated');
+        $assignee = $this->assigneeResolver->resolve($input);
+        $issueKey = $this->issueKeyResolver->argument($input, $output);
 
-        $readline = new Readline;
-        $readline->setAutocompleter(
-            new Aggregate([
-                new DefaultUsersAutocomplete($this->assigneeResolver),
-                new UserPickerAutocomplete($this->api),
-            ])
-        );
-        $output->write('<comment>Please provide a username for assignee:</comment> ');
-        return $this->assigneeResolver->fetchValueForDefaultUser($readline->readLine());
+        if (empty($assignee)) {
+            $users = $this->api->assignablePicker($assignee, $issueKey);
+            $question = new Question('Please provide a username for assignee');
+            $question->setAutocompleterValues($users);
+            return $this->questionHelper->ask($input, $output, $question);
+        }
+
+        return $assignee;
     }
 }
