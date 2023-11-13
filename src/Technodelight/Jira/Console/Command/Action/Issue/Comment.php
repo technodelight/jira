@@ -11,6 +11,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Comment\Comment as CommentInput;
+use Technodelight\Jira\Domain\Exception\NonNumericException;
 use Technodelight\Jira\Renderer\Issue\Comment as CommentRenderer;
 use Technodelight\Jira\Template\IssueRenderer;
 
@@ -73,7 +74,7 @@ class Comment extends Command
             try {
                 $commentId = CommentId::fromNumeric($input->getOption('update'));
                 $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
-            } catch (\InvalidArgumentException $e) {
+            } catch (NonNumericException $e) {
                 $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
             }
         }

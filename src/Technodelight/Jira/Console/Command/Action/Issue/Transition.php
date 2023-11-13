@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Exception;
+use LogicException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,6 +19,7 @@ use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
 use Technodelight\Jira\Console\Option\Checker;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\GitShell\ApiInterface as GitShell;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Transition as IssueTransition;
 use Technodelight\Jira\Helper\CheckoutBranch;
 use Technodelight\Jira\Helper\TemplateHelper;
@@ -73,6 +75,12 @@ class Transition extends Command
                 AssigneeResolver::DEFAULT_ASSIGNEE
             )
             ->addOption(
+                'assignee',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'change assignee (alias)'
+            )
+            ->addOption(
                 'unassign',
                 'u',
                 InputOption::VALUE_NONE,
@@ -99,15 +107,8 @@ class Transition extends Command
             $this->checkGitChanges($input, $output, $transition);
 
             $this->jira->performIssueTransition($issueKey, $transition);
-            if ($input->getOption('assign') || $this->optionChecker->hasOptionWithoutValue($input, 'assign')) {
-                $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign')
-                    ? $this->assigneeInput->userPicker($input, $output)
-                    : $input->getOption('assign');
-                $this->jira->assignIssue($issueKey, $assignee);
-            } elseif ($input->getOption('unassign')) {
-                $assignee = false;
-                $this->jira->assignIssue($issueKey, AssigneeResolver::UNASSIGN);
-            }
+
+            $assignee = $this->getAssignee($input, $output, $assignee, $issueKey);
 
             $issue = $this->jira->retrieveIssue($issueKey);
 
@@ -129,6 +130,36 @@ class Transition extends Command
         }
 
         return $returnCode;
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param mixed $assignee
+     * @param IssueKey $issueKey
+     * @return false|mixed
+     */
+    private function getAssignee(
+        InputInterface $input,
+        OutputInterface $output,
+        mixed $assignee,
+        IssueKey $issueKey
+    ): mixed {
+        // copy value from assignee shortcut
+        if ($input->getOption('assignee') && !$input->getOption('assign')) {
+            $input->setOption('assign', $input->getOption('assignee'));
+        }
+        if ($input->getOption('assign') || $this->optionChecker->hasOptionWithoutValue($input, 'assign')) {
+            $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign')
+                ? $this->assigneeInput->userPicker($input, $output)
+                : $input->getOption('assign');
+            $this->jira->assignIssue($issueKey, $assignee);
+        } elseif ($input->getOption('unassign')) {
+            $assignee = false;
+            $this->jira->assignIssue($issueKey, AssigneeResolver::UNASSIGN);
+        }
+
+        return $assignee;
     }
 
     private function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue): void
@@ -174,7 +205,7 @@ class Transition extends Command
             );
 
             if (!$this->questionHelper->ask($input, $output, $question)) {
-                throw new \RuntimeException('Please commit your changes first.');
+                throw new LogicException('Please commit your changes first.');
             }
         }
     }
