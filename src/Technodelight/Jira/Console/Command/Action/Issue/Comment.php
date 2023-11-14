@@ -71,10 +71,10 @@ class Comment extends Command
 
             $this->issueRenderer->render($output, $issue);
 
-            try {
+            if ($input->getOption('update')) {
                 $commentId = CommentId::fromNumeric($input->getOption('update'));
                 $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
-            } catch (NonNumericException $e) {
+            } else {
                 $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
             }
         }
@@ -84,14 +84,12 @@ class Comment extends Command
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $comment = $input->getArgument('comment');
-        $deleteCommentId = $input->getOption('delete');
-        $updateCommentId = $input->getOption('update');
 
-        if ($updateCommentId) {
+        if ($updateCommentId = $input->getOption('update')) {
             $comment = $this->jira->updateComment($issueKey, CommentId::fromNumeric($updateCommentId), $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
-        } elseif ($deleteCommentId) {
+        } elseif ($deleteCommentId = $input->getOption('delete')) {
             $this->jira->deleteComment($issueKey, CommentId::fromNumeric($deleteCommentId));
             $output->writeln('<info>Comment has been deleted</>');
         } else {
