@@ -4,6 +4,7 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 
 use BadMethodCallException;
 use DateTime;
+use Exception;
 use Sirprize\Queried\QueryException;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment\CommentId;
@@ -248,7 +249,7 @@ class Api
     public function retrieveWorklogs(array $worklogIds)
     {
         $records = $this->client->post(
-            'worklog/list?expand=properties,issueKey',
+            'worklog/list?expand=properties',
             [
                 'ids' => array_map(function (WorklogId $worklogId) {
                     return (string) $worklogId;
@@ -272,23 +273,29 @@ class Api
             ]
         );
 
-        return Worklog::fromArray($this->normaliseDateFields($jiraRecord), IssueId::fromNumeric($jiraRecord['issueId']));
+        return Worklog::fromArray(
+            $this->normaliseDateFields($jiraRecord),
+            IssueId::fromNumeric($jiraRecord['issueId'])
+        );
     }
 
     public function deleteWorklog(Worklog $worklog): void
     {
-        $this->client->delete(sprintf('issue/%s/worklog/%d?adjustEstimate=auto', $worklog->issueKey() ?: $worklog->issueId(), (string) $worklog->id()));
+        $this->client->delete(
+            sprintf(
+                'issue/%s/worklog/%d?adjustEstimate=auto',
+                $worklog->issueKey() ?: $worklog->issueId(),
+                (string) $worklog->id()
+            )
+        );
     }
 
-    /**
-     * @param IssueKey $issueKey
-     *
-     * @return WorklogCollection
-     */
-    public function retrieveIssueWorklogs(IssueKey $issueKey, $limit = null)
+    public function retrieveIssueWorklogs(IssueKey $issueKey, ?int $limit = null): WorklogCollection
     {
         try {
-            $response = $this->client->get(sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey));
+            $response = $this->client->get(
+                sprintf('issue/%s/worklog' . $this->queryStringFromParams(['maxResults' => $limit]), $issueKey)
+            );
             $results = WorklogCollection::createEmpty();
             if (!is_null($limit)) {
                 $response['worklogs'] = array_slice($response['worklogs'], $limit * -1);
@@ -298,20 +305,18 @@ class Api
             }
 
             return $results;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return WorklogCollection::createEmpty();
         }
     }
 
-    /**
-     * @param IssueCollection $issues
-     * @param DateTime|null $from
-     * @param DateTime|null $to
-     * @param string|null $username
-     * @param int|null $limit
-     */
-    private function fetchAndAssignWorklogsToIssues(IssueCollection $issues, DateTime $from = null, DateTime $to = null, User $user = null, $limit = null)
-    {
+    private function fetchAndAssignWorklogsToIssues(
+        IssueCollection $issues,
+        DateTime $from = null,
+        DateTime $to = null,
+        User $user = null,
+        ?int $limit = null
+    ): void {
         $requests = [];
         foreach ($issues->keys() as $issueKey) {
             $requests[] = sprintf('issue/%s/worklog' . ($limit ? '?maxResults='.$limit : ''), $issueKey);
@@ -338,18 +343,12 @@ class Api
         }
     }
 
-    /**
-     * Find issues with matching worklogs for user
-     *
-     * @param DateTime $from
-     * @param DateTime $to
-     * @param User|null $user
-     * @param int|null $limit
-     *
-     * @return IssueCollection
-     */
-    public function findUserIssuesWithWorklogs(DateTime $from, DateTime $to, User $user = null, $limit = null)
-    {
+    public function findUserIssuesWithWorklogs(
+        DateTime $from,
+        DateTime $to,
+        User $user = null,
+        ?int $limit = null
+    ): IssueCollection {
         $query = SearchQueryBuilder::factory()
             ->worklogDate($from->format('Y-m-d'), $to->format('Y-m-d'));
         if ($user) {
@@ -362,11 +361,6 @@ class Api
         return $issues;
     }
 
-    /**
-     * @param IssueKey|IssueId $issueKey
-     *
-     * @return Issue
-     */
     public function retrieveIssue(IssueKey|IssueId $issueKey): Issue
     {
         return Issue::fromArray(
@@ -410,20 +404,19 @@ class Api
      * operation. Using a “field_id”: field_value construction in the fields parameter is a shortcut of “set” operation
      * in the update parameter.
      *
-     * @param  string $issueKey
-     * @param  array  $data
-     *
      * @see Api::issueEditMeta()
      * @link https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issue-issueIdOrKey-put
-     *
      * @param IssueKey $issueKey
      * @param array $data
      * @param array $params
      * @return array
      */
-    public function updateIssue(IssueKey $issueKey, array $data, array $params = [])
+    public function updateIssue(IssueKey $issueKey, array $data, array $params = []): array
     {
-        return $this->client->put(sprintf('issue/%s', $issueKey) . $this->queryStringFromParams($params), $data);
+        return $this->client->put(
+            sprintf('issue/%s', $issueKey) . $this->queryStringFromParams($params),
+            $data
+        );
     }
 
     /**
@@ -442,7 +435,7 @@ class Api
      *
      * @param IssueKey $issueKey
      * @param string|int|null $usernameKey
-     * @return mixed
+     * @return ?array
      */
     public function assignIssue(IssueKey $issueKey, mixed $usernameKey): ?array
     {
@@ -468,7 +461,7 @@ class Api
      * @param IssueKey $issueKey
      * @return array
      */
-    public function issueProperties(IssueKey $issueKey)
+    public function issueProperties(IssueKey $issueKey): array
     {
         return $this->client->get(sprintf('issue/%s/properties', $issueKey));
     }
@@ -740,8 +733,7 @@ class Api
         $currentProjectId = null,
         $showSubTasks = null,
         $showSubTaskParent = null
-    )
-    {
+    ): IssueCollection {
         $response = $this->client->get(
             'issue/picker' . $this->queryStringFromParams([
                 'query' => $query,
@@ -799,8 +791,12 @@ class Api
      * @param string $comment
      * @return IssueLink
      */
-    public function linkIssue(IssueKey $inwardIssueKey, IssueKey $outwardIssueKey, $linkName, $comment = '')
-    {
+    public function linkIssue(
+        IssueKey $inwardIssueKey,
+        IssueKey $outwardIssueKey,
+        $linkName,
+        string $comment = ''
+    ): IssueLink {
         $data = [
             'type' => ['name' => $linkName],
             'inwardIssue' => ['key' => (string) $inwardIssueKey],
@@ -820,7 +816,7 @@ class Api
      * @param IssueLinkId $linkId
      * @return IssueLink
      */
-    public function retrieveIssueLink(IssueLinkId $linkId)
+    public function retrieveIssueLink(IssueLinkId $linkId): IssueLink
     {
         return IssueLink::fromArray($this->client->get(sprintf('issueLink/%s', $linkId)));
     }
@@ -835,7 +831,7 @@ class Api
      * @param IssueLinkId $linkId
      * @return bool
      */
-    public function removeIssueLink(IssueLinkId $linkId)
+    public function removeIssueLink(IssueLinkId $linkId): bool
     {
         $this->client->delete(sprintf('issueLink/%s', $linkId));
         return true;
@@ -848,7 +844,7 @@ class Api
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-issueLinkType-get
      * @return Type[]
      */
-    public function linkTypes()
+    public function linkTypes(): array
     {
         return array_map(
             function(array $linkType) { return Type::fromArray($linkType); },
@@ -862,7 +858,7 @@ class Api
      * @see https://developer.atlassian.com/cloud/jira/platform/rest/#api-api-2-filter-get
      * @return Filter[]
      */
-    public function retrieveFilters()
+    public function retrieveFilters(): array
     {
         return array_map(
             function (array $filter) {
@@ -879,18 +875,14 @@ class Api
      * @param FilterId $filterId
      * @return Filter
      */
-    public function retrieveFilter(FilterId $filterId)
+    public function retrieveFilter(FilterId $filterId): Filter
     {
         return Filter::fromArray($this->client->get(sprintf('filter/%s', $filterId)));
     }
 
-    /**
-     * @param array $jiraIssue
-     * @return array
-     */
-    private function normaliseIssueArray(array $jiraIssue)
+    private function normaliseIssueArray(array $jiraIssue): array
     {
-        $attachments = isset($jiraIssue['fields']['attachment']) ? $jiraIssue['fields']['attachment'] : [];
+        $attachments = $jiraIssue['fields']['attachment'] ?? [];
         foreach ($attachments as $k => $attachment) {
             $this->replaceAccountIds($attachment);
             $attachments[$k] = $this->normaliseDateFields($attachment);
@@ -901,7 +893,7 @@ class Api
             $this->replaceAccountIds($parent);
             $jiraIssue['fields']['parent'] = $this->normaliseDateFields($parent);
         }
-        $comments = isset($jiraIssue['fields']['comment']) ? $jiraIssue['fields']['comment'] : [];
+        $comments = $jiraIssue['fields']['comment'] ?? [];
         if ($comments) {
             foreach ($comments['comments'] as $k => $comment) {
                 $this->replaceAccountIds($comment);
@@ -909,7 +901,7 @@ class Api
             }
         }
         $jiraIssue['fields']['comment'] = $comments;
-        $worklog = isset($jiraIssue['fields']['worklog']) ? $jiraIssue['fields']['worklog'] : [];
+        $worklog = $jiraIssue['fields']['worklog'] ?? [];
         if ($worklog) {
             foreach ($worklog['worklogs'] as $k => $worklog) {
                 $this->replaceAccountIds($worklog);
@@ -922,7 +914,7 @@ class Api
         return $jiraIssue;
     }
 
-    private function normaliseDateFields(array $jiraItem)
+    private function normaliseDateFields(array $jiraItem): array
     {
         $fields = ['created', 'started', 'updated', 'createdAt', 'startedAt', 'updatedAt'];
         foreach ($fields as $field) {
@@ -933,16 +925,15 @@ class Api
         return $jiraItem;
     }
 
-    private function collectAccountIds(array $jiraItem)
+    private function collectAccountIds(array $jiraItem): array
     {
         $fields = ['body', 'comment', 'value'];
         $accountIds = [];
         foreach ($jiraItem as $field => $value) {
-            if (in_array($field, $fields, true)) {
-                if ($numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches)) {
-                    for ($i = 0; $i < $numOfMatches; $i++) {
-                        $accountIds[] = $matches[3][$i];
-                    }
+            if (in_array($field, $fields, true)
+                && $numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches)) {
+                for ($i = 0; $i < $numOfMatches; $i++) {
+                    $accountIds[] = $matches[3][$i];
                 }
             }
         }
@@ -952,7 +943,6 @@ class Api
 
     private function replaceAccountIds(array &$jiraItem)
     {
-        $fields = ['body', 'comment'];
         $accountIds = $this->collectAccountIds($jiraItem);
         if (empty($accountIds)) {
             return;
@@ -960,23 +950,22 @@ class Api
 
         $users = $this->users($accountIds);
         foreach ($jiraItem as $field => $value) {
-            if (in_array($field, $fields, true)) {
-                if ($numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $value, $matches)) {
-                    for ($i = 0; $i < $numOfMatches; $i++) {
-                        $username = $matches[2][$i];
-                        foreach ($users as $user) {
-                            if ('accountid:' . $user->id() === $matches[2][$i]) {
-                                $username = $user->displayName();
-                            }
+            if (in_array($field, ['body', 'comment'], true)
+                && $numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $value, $matches)) {
+                for ($i = 0; $i < $numOfMatches; $i++) {
+                    $username = $matches[2][$i];
+                    foreach ($users as $user) {
+                        if ('accountid:' . $user->id() === $username) {
+                            $username = $user->displayName();
                         }
-                        $value = str_replace(
-                            $matches[1][$i].$matches[2][$i].$matches[3][$i],
-                            '[~' . $username . ']',
-                            $value
-                        );
                     }
-                    $jiraItem[$field] = $value;
+                    $value = str_replace(
+                        $matches[1][$i].$matches[2][$i].$matches[3][$i],
+                        '[~' . $username . ']',
+                        $value
+                    );
                 }
+                $jiraItem[$field] = $value;
             }
         }
     }
@@ -985,12 +974,12 @@ class Api
      * @param string $jiraDate in idiot jira date format
      * @return string in normal Y-m-d H:i:s date format
      */
-    private function normaliseDate($jiraDate)
+    private function normaliseDate(string $jiraDate): string
     {
-        return DateHelper::dateTimeFromJira($jiraDate)->format(DateHelper::FORMAT_FROM_JIRA);
+        return (string)DateHelper::dateTimeFromJira($jiraDate)?->format(DateHelper::FORMAT_FROM_JIRA);
     }
 
-    private function queryStringFromParams(array $query)
+    private function queryStringFromParams(array $query): string
     {
         $params = http_build_query(array_filter($query, function($value) { return !is_null($value); }));
         return $params ? '?' . $params : '';

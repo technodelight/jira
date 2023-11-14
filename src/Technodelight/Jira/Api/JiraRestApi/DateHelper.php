@@ -21,12 +21,13 @@ class DateHelper
         $this->config = $config;
     }
 
-    public static function dateTimeFromJira($dateString)
+    public static function dateTimeFromJira($dateString): ?DateTime
     {
         list(,$timeZone) = explode('+', $dateString, 2);
         $dateString = substr($dateString, 0, strpos($dateString, '.'))
             . substr($dateString, strpos($dateString, '+'));
-        return DateTime::createFromFormat(self::FORMAT_FROM_JIRA, $dateString, new DateTimeZone('+' . $timeZone));
+        return DateTime::createFromFormat(self::FORMAT_FROM_JIRA, $dateString, new DateTimeZone('+' . $timeZone))
+            ?: null;
     }
 
     public static function dateTimeToJira($datetime)

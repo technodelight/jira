@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Connector\Jira;
 
 use DateTime;
@@ -12,21 +14,10 @@ use Technodelight\Jira\Domain\WorklogCollection;
 
 class WorklogHandler implements WorklogHandlerInterface
 {
-    /**
-     * @var Api
-     */
-    private $api;
-
-    public function __construct(Api $api)
+    public function __construct(private readonly Api $api)
     {
-        $this->api = $api;
     }
 
-    /**
-     * @param DateTime $from
-     * @param DateTime $to
-     * @return WorklogCollection
-     */
     public function find(DateTime $from, DateTime $to): WorklogCollection
     {
         $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user());
@@ -38,47 +29,26 @@ class WorklogHandler implements WorklogHandlerInterface
         return $worklogCollection;
     }
 
-    /**
-     * @param Issue $issue
-     * @param null $limit
-     * @return WorklogCollection
-     */
-    public function findByIssue(Issue $issue, $limit = null): WorklogCollection
+    public function findByIssue(Issue $issue, ?int $limit = null): WorklogCollection
     {
         return $this->api->retrieveIssueWorklogs($issue->key(), $limit);
     }
 
-    /**
-     * @param Worklog $worklog
-     * @return Worklog
-     */
     public function create(Worklog $worklog): Worklog
     {
         return $this->api->createWorklog($worklog);
     }
 
-    /**
-     * @param Worklog $worklog
-     * @return Worklog
-     */
     public function update(Worklog $worklog): Worklog
     {
         return $this->api->updateWorklog($worklog);
     }
 
-    /**
-     * @param int $worklogId
-     * @return Worklog
-     */
-    public function retrieve($worklogId): Worklog
+    public function retrieve(int $worklogId): Worklog
     {
         return $this->api->retrieveWorklogs([WorklogId::fromNumeric($worklogId)])->current();
     }
 
-    /**
-     * @param Worklog $worklog
-     * @return bool
-     */
     public function delete(Worklog $worklog): bool
     {
         $this->api->deleteWorklog($worklog);
