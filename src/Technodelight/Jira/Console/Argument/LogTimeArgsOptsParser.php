@@ -4,18 +4,11 @@ namespace Technodelight\Jira\Console\Argument;
 
 class LogTimeArgsOptsParser
 {
-    /** @var array */
-    private $handledArguments = ['issueKeyOrWorklogId', 'time', 'comment', 'date'];
-    /** @var array */
-    private $arguments;
-    /** @var array */
-    private $opts;
+    private array $handledArguments = ['issueKeyOrWorklogId', 'time', 'comment', 'date'];
+    private array $arguments;
+    private array $opts;
 
-    private function __construct()
-    {
-    }
-
-    public static function fromArgsOpts(array $arguments = [], array $opts = [])
+    public static function fromArgsOpts(array $arguments = [], array $opts = []): self
     {
         $logTimeArgsOptsParser = new LogTimeArgsOptsParser();
         $logTimeArgsOptsParser->arguments = $arguments;
@@ -25,51 +18,37 @@ class LogTimeArgsOptsParser
         return $logTimeArgsOptsParser;
     }
 
-    /**
-     * @return string|int
-     */
-    public function issueKeyOrWorklogId()
+    /** @return string|int|null */
+    public function issueKeyOrWorklogId(): mixed
     {
         return $this->arguments['issueKeyOrWorklogId'];
     }
 
-    /**
-     * @return string
-     */
-    public function time()
+    public function time(): ?string
     {
         return $this->arguments['time'];
     }
 
-    /**
-     * @return string
-     */
-    public function comment()
+    public function comment(): ?string
     {
         return $this->arguments['comment'];
     }
 
-    /**
-     * @return string
-     */
-    public function date()
+    public function date(): ?string
     {
         return $this->arguments['date'];
     }
 
-    /**
-     * @return bool
-     */
-    public function isInteractive()
+    public function isInteractive(): bool
     {
-        return $this->opts['interactive'];
+        return (bool)$this->opts['interactive'] ?? false;
     }
 
-    private function parse()
+    private function parse(): void
     {
         unset($this->arguments['command']);
 
-        if (0 == $this->countArguments()) {
+        if (0 === $this->countArguments()) {
             $this->opts['interactive'] = true;
         }
 
@@ -87,23 +66,24 @@ class LogTimeArgsOptsParser
         }
     }
 
-    private function checkIfArgumentIsTime($arg)
+    private function checkIfArgumentIsTime(string $arg): bool
     {
         return (bool) preg_match('~([0-9]+[hmsdw]{1})+~', $this->arguments[$arg]);
     }
 
-    private function checkIfArgumentIsDate($arg)
+    private function checkIfArgumentIsDate(string $arg): bool
     {
-        return false !== strtotime($this->arguments[$arg]);
+        return null !== $this->arguments[$arg]
+            && false !== strtotime($this->arguments[$arg]);
     }
 
-    private function checkIfArgumentIsDotOrEmpty($arg)
+    private function checkIfArgumentIsDotOrEmpty(string $arg): bool
     {
         return '.' == $this->arguments[$arg]
             || '' == $this->arguments[$arg];
     }
 
-    private function shiftArguments()
+    private function shiftArguments(): void
     {
         $this->arguments['date'] = $this->arguments['comment'];
         $this->arguments['comment'] = $this->arguments['time'];
@@ -111,7 +91,7 @@ class LogTimeArgsOptsParser
         $this->arguments['issueKeyOrWorklogId'] = null;
     }
 
-    private function countArguments()
+    private function countArguments(): int
     {
         $handledArgs = $this->handledArguments;
         $arguments = $this->arguments;

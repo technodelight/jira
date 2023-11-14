@@ -149,7 +149,7 @@ class LogTime extends Command
         if (!$input->getArgument('comment')) {
             if ($issueKeyOrWorklogId->isWorklogId()) {
                 $worklog = $this->worklogHandler->retrieve($issueKeyOrWorklogId->worklogId()->id());
-                $issue = $this->jira->retrieveIssue($worklog->issueKey());
+                $issue = $this->jira->retrieveIssue($worklog->issueId());
             } else {
                 $issue = $this->jira->retrieveIssue($issueKeyOrWorklogId->issueKey());
                 $worklog = null;

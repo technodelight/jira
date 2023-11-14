@@ -248,7 +248,7 @@ class Api
     public function retrieveWorklogs(array $worklogIds)
     {
         $records = $this->client->post(
-            'worklog/list?expand=properties',
+            'worklog/list?expand=properties,issueKey',
             [
                 'ids' => array_map(function (WorklogId $worklogId) {
                     return (string) $worklogId;
@@ -363,11 +363,11 @@ class Api
     }
 
     /**
-     * @param IssueKey $issueKey
+     * @param IssueKey|IssueId $issueKey
      *
      * @return Issue
      */
-    public function retrieveIssue(IssueKey $issueKey): Issue
+    public function retrieveIssue(IssueKey|IssueId $issueKey): Issue
     {
         return Issue::fromArray(
             $this->normaliseIssueArray($this->client->get(sprintf('issue/%s', $issueKey)))
