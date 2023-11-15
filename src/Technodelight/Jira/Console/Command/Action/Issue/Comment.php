@@ -11,7 +11,6 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Domain\Comment\CommentId;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Comment\Comment as CommentInput;
-use Technodelight\Jira\Domain\Exception\NonNumericException;
 use Technodelight\Jira\Renderer\Issue\Comment as CommentRenderer;
 use Technodelight\Jira\Template\IssueRenderer;
 

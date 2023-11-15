@@ -79,8 +79,8 @@ class Comment
     private function fetchWordsList(Issue $issue): array
     {
         $list = $issue->comments();
-        $list[] = $issue->description();
-        $list[] = $issue->summary();
+        $list[] = $issue->description() ?? '';
+        $list[] = $issue->summary() ?? '';
 
         return $this->collectWords($list);
     }
@@ -88,7 +88,7 @@ class Comment
     private function collectWords(array $texts): array
     {
         $words = [];
-        foreach ($texts as $text) {
+        foreach (array_filter($texts) as $text) {
             foreach ($this->collectAutocompletableWords($text) as $word) {
                 $words[] = $word;
             }

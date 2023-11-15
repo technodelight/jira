@@ -21,12 +21,16 @@ class UsernameAutocomplete implements Autocompleter
 
     public function complete(string $prefix): ?array
     {
-        return $this->getAutocompletedValues($this->getMatchesForPrefix($this->issue, $prefix));
+        if (preg_match('/'. $this->getWordDefinition().'/', $prefix)) {
+            return $this->getAutocompletedValues($this->getMatchesForPrefix($this->issue, $prefix));
+        }
+
+        return null;
     }
 
     public function getWordDefinition(): string
     {
-        return '\[~[^]]+|@[^]]+';
+        return '@[a-zA-Z]+';
     }
 
     private function getMatchesForPrefix(Issue $issue, $prefix): array

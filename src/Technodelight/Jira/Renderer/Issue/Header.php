@@ -26,7 +26,7 @@ class Header implements IssueRenderer
     {
         $output->writeln(
             sprintf(
-                '<info>%s</info> %s %s %s <fg=black>(%s)</>',
+                '<info>%s</info> %s %s %s <fg=black>%s</>',
                 $issue->key(),
                 $this->formatStatus($issue->status()),
                 $this->formatIssueType($issue->issueType()),

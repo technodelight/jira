@@ -3,8 +3,10 @@
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueLink;
+use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\IssueRenderer;
 
@@ -51,8 +53,9 @@ class IssueRelations implements IssueRenderer
     private function renderRelatedTask(Issue $related)
     {
         return sprintf(
-            '<info>%s</> %s <fg=black>(%s)</>',
+            '<info>%s</> %s %s <fg=black>%s</>',
             $related->issueKey(),
+            $this->formatStatus($related->status()),
             $related->summary(),
             $related->url()
         );
@@ -61,12 +64,21 @@ class IssueRelations implements IssueRenderer
     private function renderLink(IssueLink $link)
     {
         return sprintf(
-            '<comment>%s</> <info>%s</> %s <fg=black>%s</> <fg=black>(%s)</>',
+            '<comment>%s</> <info>%s</> %s %s <fg=black>%s</> <fg=black>%s</>',
             $link->isInward() ? $link->type()->inward() : $link->type()->outward(),
             $link->isInward() ? $link->inwardIssue()->key() : $link->outwardIssue()->key(),
+            $this->formatStatus($link->isInward() ? $link->inwardIssue()->status() : $link->outwardIssue()->status()),
             $link->isInward() ? $link->inwardIssue()->summary() : $link->outwardIssue()->summary(),
             $link->id(),
             $link->isInward() ? $link->inwardIssue()->url() : $link->outwardIssue()->url()
         );
+    }
+
+    private function formatStatus(Status $status): string
+    {
+        $style = new PaletteOutputFormatterStyle;
+        $style->setForeground('black');
+        $style->setBackground($status->statusCategoryColor());
+        return $style->apply(sprintf(' %s ', $status));
     }
 }

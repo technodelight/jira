@@ -14,7 +14,7 @@ class Aggregate
         $this->autocompleters = $autocompleters;
     }
 
-    public function __invoke(string $buffer, int $offset = 0): array
+    public function __invoke(string $buffer): array
     {
         $words = explode(' ', $buffer);
         $word = end($words);
