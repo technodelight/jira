@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,14 +14,8 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class IssueRelations implements IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Helper\TemplateHelper
-     */
-    private $templateHelper;
-
-    public function __construct(TemplateHelper $templateHelper)
+    public function __construct(private readonly TemplateHelper $templateHelper)
     {
-        $this->templateHelper = $templateHelper;
     }
 
     public function render(OutputInterface $output, Issue $issue): void

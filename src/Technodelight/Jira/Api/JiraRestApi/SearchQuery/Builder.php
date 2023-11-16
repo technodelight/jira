@@ -7,12 +7,7 @@ use Technodelight\Jira\Domain\User;
 
 class Builder
 {
-    /**
-     * @var BaseQuery
-     */
-    private $baseQuery;
-
-    private $defaultConditions = [
+    private const DEFAULT_CONDITIONS = [
         'project' => [Condition::OPERATOR_AND, 'project = :project'],
         'status' => [Condition::OPERATOR_AND, 'status in (:status)'],
         'statusCategory' => [Condition::OPERATOR_AND, 'statusCategory in (:statusCategory)'],
@@ -25,22 +20,22 @@ class Builder
         'assignee' => [Condition::OPERATOR_AND, 'assignee = :assignee'],
         'assigneeWas' => [Condition::OPERATOR_AND, 'assignee was :assignee'],
         'sprint' => [Condition::OPERATOR_AND, 'Sprint in :sprint'],
+        'epicLink' => [Condition::OPERATOR_AND, '"Epic Link" = :epicLink'],
         'orderByDesc' => [Condition::OPERATOR_ORDER_BY, ':field DESC'],
         'orderByAsc' => [Condition::OPERATOR_ORDER_BY, ':field ASC'],
     ];
 
-    public function __construct(BaseQuery $baseQuery)
+    public function __construct(private readonly BaseQuery $baseQuery)
     {
-        $this->baseQuery = $baseQuery;
         $this->registerDefaultConditions();
     }
 
-    public static function factory()
+    public static function factory(): self
     {
         return new self(new BaseQuery);
     }
 
-    public function registerCondition($name, array $def)
+    public function registerCondition(string $name, array $def): self
     {
         list ($operator, $clause) = $def;
         $paramsList = $this->parseParamsListFromClause($clause);
@@ -52,13 +47,13 @@ class Builder
     }
 
 
-    public function resetActiveConditions()
+    public function resetActiveConditions(): self
     {
         $this->baseQuery->resetActiveConditions();
         return $this;
     }
 
-    public function project($project)
+    public function project($project): self
     {
         $this->baseQuery->activateCondition('project', ['project' => $project]);
         return $this;
@@ -69,7 +64,7 @@ class Builder
      * @return $this
      * @throws \Sirprize\Queried\QueryException
      */
-    public function issueKey($issueKey)
+    public function issueKey($issueKey): self
     {
         if (!is_array($issueKey)) {
             $issueKey = [$issueKey];
@@ -81,13 +76,13 @@ class Builder
         return $this;
     }
 
-    public function issueKeyInHistory()
+    public function issueKeyInHistory(): self
     {
         $this->baseQuery->activateCondition('issueKeyInHistory');
         return $this;
     }
 
-    public function issueType($issueType)
+    public function issueType($issueType): self
     {
         if (!is_array($issueType)) {
             $issueType = [$issueType];
@@ -96,7 +91,7 @@ class Builder
         return $this;
     }
 
-    public function status($status)
+    public function status($status): self
     {
         if (!is_array($status)) {
             $status = [$status];
@@ -105,7 +100,7 @@ class Builder
         return $this;
     }
 
-    public function statusCategory($statusCategory)
+    public function statusCategory($statusCategory): self
     {
         if (!is_array($statusCategory)) {
             $statusCategory = [$statusCategory];
@@ -115,13 +110,13 @@ class Builder
         return $this;
     }
 
-    public function sprint($sprint)
+    public function sprint($sprint): self
     {
         $this->baseQuery->activateCondition('sprint', ['sprint' => $sprint]);
         return $this;
     }
 
-    public function worklogDate($from, $to)
+    public function worklogDate($from, $to): self
     {
         $this->baseQuery->activateCondition(
             'worklogDate',
@@ -137,37 +132,43 @@ class Builder
         return $this;
     }
 
-    public function updated($from, $to)
+    public function updated($from, $to): self
     {
         $this->baseQuery->activateCondition('updated', ['from' => $from, 'to' => $to]);
         return $this;
     }
 
-    public function assignee($assignee)
+    public function assignee($assignee): self
     {
         $this->baseQuery->activateCondition('assignee', ['assignee' => $assignee]);
         return $this;
     }
 
-    public function assigneeWas($assignee)
+    public function assigneeWas($assignee): self
     {
         $this->baseQuery->activateCondition('assigneeWas', ['assignee' => $assignee]);
         return $this;
     }
 
-    public function orderAsc($field)
+    public function epicLink(IssueKey $issueKey): self
+    {
+        $this->baseQuery->activateCondition('epicLink', ['epicLink' => (string)$issueKey]);
+        return $this;
+    }
+
+    public function orderAsc($field): self
     {
         $this->baseQuery->activateCondition('orderByAsc', ['field' => $field]);
         return $this;
     }
 
-    public function orderDesc($field)
+    public function orderDesc($field): self
     {
         $this->baseQuery->activateCondition('orderByDesc', ['field' => $field]);
         return $this;
     }
 
-    public function assemble()
+    public function assemble(): string
     {
         $index = -1;
         return join(
@@ -185,7 +186,7 @@ class Builder
         );
     }
 
-    private function createCondition($clause, $operator, array $params = [])
+    private function createCondition($clause, $operator, array $params = []): Condition
     {
         $condition = new Condition();
         $condition->setClause($clause);
@@ -196,14 +197,14 @@ class Builder
         return $condition;
     }
 
-    private function registerDefaultConditions()
+    private function registerDefaultConditions(): void
     {
-        foreach ($this->defaultConditions as $name => $def) {
+        foreach (self::DEFAULT_CONDITIONS as $name => $def) {
             $this->registerCondition($name, $def);
         }
     }
 
-    private function parseParamsListFromClause($clause)
+    private function parseParamsListFromClause($clause): array
     {
         if (preg_match_all('~\s*:([A-Za-z]+)\s*~', $clause, $matches)) {
             return $matches[1];

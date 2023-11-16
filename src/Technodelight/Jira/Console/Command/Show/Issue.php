@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
@@ -44,6 +45,13 @@ class Issue extends Command implements IssueRendererAware
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $issue = $this->api->retrieveIssue($issueKey);
+        if ($issue->issueType()->name() === 'Epic') {
+            //@TODO refactor $issue->links() to return an IssueCollection, so the list can be extended with the epic links
+            // and then passed over to the issue renderer, thus allowing the epic links to render
+            $linkedIssues = $this->api->search(
+                Builder::factory()->epicLink($issueKey)->assemble()
+            );
+        }
 
         $this->tryFetchAndAssignWorklogs($output, $issue);
 
