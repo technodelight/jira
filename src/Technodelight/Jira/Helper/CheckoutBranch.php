@@ -136,13 +136,13 @@ class CheckoutBranch
 
     private function gitBranchesForIssue(Issue $issue)
     {
-        return $this->git->branches($issue->ticketNumber());
+        return $this->git->branches((string)$issue->issueKey());
     }
 
     private function localGitBranchesForIssue(Issue $issue)
     {
         return array_filter(
-            $this->git->branches($issue->ticketNumber()),
+            $this->git->branches((string)$issue->issueKey()),
             function (Branch $branch) {
                 return !$branch->isRemote();
             }

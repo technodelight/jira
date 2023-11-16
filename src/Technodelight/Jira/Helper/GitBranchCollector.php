@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper;
 
 use Technodelight\GitShell\ApiInterface as Api;
@@ -8,22 +10,11 @@ use Technodelight\Jira\Domain\Issue;
 
 class GitBranchCollector
 {
-    /**
-     * @var Api
-     */
-    private $git;
-    /**
-     * @var GitBranchnameGenerator
-     */
-    private $generator;
-
-    public function __construct(Api $git, GitBranchnameGenerator $generator)
+    public function __construct(private readonly Api $git, private readonly GitBranchnameGenerator $generator)
     {
-        $this->git = $git;
-        $this->generator = $generator;
     }
 
-    public function forIssue(Issue $issue)
+    public function forIssue(Issue $issue): array
     {
         $generatedName = $this->generator->fromIssue($issue);
         return array_map(
@@ -31,7 +22,7 @@ class GitBranchCollector
                 return sprintf('%s (%s)', $branch->name(), $branch->isRemote() ? 'remote' : 'local');
             },
             array_merge(
-                $this->git->branches($issue->ticketNumber()),
+                $this->git->branches((string)$issue->issueKey()),
                 $this->git->branches($generatedName)
             )
         );

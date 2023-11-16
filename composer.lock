@@ -3567,16 +3567,16 @@
         },
         {
             "name": "technodelight/php-jira-domain-models",
-            "version": "2.25",
+            "version": "2.26.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-domain-models.git",
-                "reference": "51a7be72846efc89972a8467b686ccf948d6db61"
+                "reference": "45e9e87a668c1cd960b1a5d5bcd16e7845db3759"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/51a7be72846efc89972a8467b686ccf948d6db61",
-                "reference": "51a7be72846efc89972a8467b686ccf948d6db61",
+                "url": "https://api.github.com/repos/technodelight/php-jira-domain-models/zipball/45e9e87a668c1cd960b1a5d5bcd16e7845db3759",
+                "reference": "45e9e87a668c1cd960b1a5d5bcd16e7845db3759",
                 "shasum": ""
             },
             "require": {
@@ -3606,9 +3606,9 @@
             "description": "Domain models for Jira entities",
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-domain-models/issues",
-                "source": "https://github.com/technodelight/php-jira-domain-models/tree/2.25"
+                "source": "https://github.com/technodelight/php-jira-domain-models/tree/2.26.1"
             },
-            "time": "2022-12-06T13:51:27+00:00"
+            "time": "2023-11-16T14:23:56+00:00"
         },
         {
             "name": "technodelight/php-time-ago",

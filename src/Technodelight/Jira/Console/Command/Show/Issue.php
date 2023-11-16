@@ -45,12 +45,11 @@ class Issue extends Command implements IssueRendererAware
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $issue = $this->api->retrieveIssue($issueKey);
-        if ($issue->issueType()->name() === 'Epic') {
-            //@TODO refactor $issue->links() to return an IssueCollection, so the list can be extended with the epic links
-            // and then passed over to the issue renderer, thus allowing the epic links to render
-            $linkedIssues = $this->api->search(
-                Builder::factory()->epicLink($issueKey)->assemble()
-            );
+        $parentOf = $this->api->search(
+            Builder::factory()->parent($issueKey)->assemble()
+        );
+        foreach ($parentOf as $subtask) {
+            $issue->subtasks()->add($subtask);
         }
 
         $this->tryFetchAndAssignWorklogs($output, $issue);

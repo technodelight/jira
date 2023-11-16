@@ -20,7 +20,7 @@ class Builder
         'assignee' => [Condition::OPERATOR_AND, 'assignee = :assignee'],
         'assigneeWas' => [Condition::OPERATOR_AND, 'assignee was :assignee'],
         'sprint' => [Condition::OPERATOR_AND, 'Sprint in :sprint'],
-        'epicLink' => [Condition::OPERATOR_AND, '"Epic Link" = :epicLink'],
+        'parent' => [Condition::OPERATOR_AND, 'parent = :parent'],
         'orderByDesc' => [Condition::OPERATOR_ORDER_BY, ':field DESC'],
         'orderByAsc' => [Condition::OPERATOR_ORDER_BY, ':field ASC'],
     ];
@@ -150,9 +150,9 @@ class Builder
         return $this;
     }
 
-    public function epicLink(IssueKey $issueKey): self
+    public function parent(IssueKey $issueKey): self
     {
-        $this->baseQuery->activateCondition('epicLink', ['epicLink' => (string)$issueKey]);
+        $this->baseQuery->activateCondition('parent', ['parent' => (string)$issueKey]);
         return $this;
     }
 

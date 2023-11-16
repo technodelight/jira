@@ -24,7 +24,7 @@ class IssueRelations implements IssueRenderer
             $output->writeln($this->templateHelper->tabulate($this->renderTasks([$parent], 'parent')));
         }
         if ($subtasks = $issue->subtasks()) {
-            $output->writeln($this->templateHelper->tabulate($this->renderTasks($subtasks, 'subtasks')));
+            $output->writeln($this->templateHelper->tabulate($this->renderTasks(iterator_to_array($subtasks), 'subtasks')));
         }
         if ($links = $issue->links()) {
             $output->writeln($this->templateHelper->tabulate($this->renderTasks($links, 'links')));
