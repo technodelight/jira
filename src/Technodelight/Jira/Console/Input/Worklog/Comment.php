@@ -26,7 +26,7 @@ class Comment
         OutputInterface $output,
         Issue $issue = null,
         Worklog $worklog = null
-    ): string {
+    ): ?string {
         $q = new QuestionHelper();
         $question = new Question($this->worklogCommentDialogText($worklog->comment(), $worklog));
         $question->setAutocompleterCallback(new Aggregate([
