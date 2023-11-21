@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 use RuntimeException;
@@ -27,7 +29,7 @@ class IssueKeyOrWorklogIdResolver
         throw new RuntimeException('Input does not have issue argument specified');
     }
 
-    private function resolve(string $value): IssueKeyOrWorklogId
+    private function resolve(?string $value): IssueKeyOrWorklogId
     {
         $argument = IssueKeyOrWorklogId::fromString((string) $this->guesser->guessIssueKey($value) ?: $value);
         if ($argument->isWorklogId()) {

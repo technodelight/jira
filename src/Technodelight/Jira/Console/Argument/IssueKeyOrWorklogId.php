@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 use Technodelight\Jira\Domain\Issue\IssueKey;
@@ -12,7 +14,7 @@ class IssueKeyOrWorklogId
     private ?IssueKey $issueKey = null;
     private ?Worklog $worklog = null;
 
-    public static function fromString($string)
+    public static function fromString($string): self
     {
         $instance = new self;
         if (is_numeric($string)) {
@@ -23,7 +25,7 @@ class IssueKeyOrWorklogId
         return $instance;
     }
 
-    public static function fromWorklog(Worklog $worklog)
+    public static function fromWorklog(Worklog $worklog): self
     {
         $instance = new self;
         $instance->worklogId = $worklog->id();
