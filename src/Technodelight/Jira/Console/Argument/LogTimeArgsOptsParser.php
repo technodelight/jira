@@ -68,7 +68,7 @@ class LogTimeArgsOptsParser
 
     private function checkIfArgumentIsTime(string $arg): bool
     {
-        return (bool) preg_match('~([0-9]+[hmsdw]{1})+~', $this->arguments[$arg]);
+        return (bool) preg_match('~([0-9]+[hmsdw]{1})+~', $this->arguments[$arg] ?? '');
     }
 
     private function checkIfArgumentIsDate(string $arg): bool
