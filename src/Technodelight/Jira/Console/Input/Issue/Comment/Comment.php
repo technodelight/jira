@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
+use Technodelight\Jira\Connector\Autocompleter\Factory;
 use Technodelight\Jira\Connector\HoaConsole\Aggregate;
 use Technodelight\Jira\Connector\HoaConsole\IssueAttachmentAutocomplete;
 use Technodelight\Jira\Connector\HoaConsole\IssueAutocomplete;
@@ -22,13 +23,12 @@ use Technodelight\Jira\Domain\IssueCollection;
 class Comment
 {
     private const AUTOCOMPLETE_WORD_MIN_LENGTH = 2;
-    private Api $jira;
-    private EditApp $editor;
 
-    public function __construct(Api $jira, EditApp $editor)
-    {
-        $this->jira = $jira;
-        $this->editor = $editor;
+    public function __construct(
+        private readonly Api $jira,
+        private readonly EditApp $editor,
+        private readonly Factory $autocompleterFactory
+    ) {
     }
 
     public function updateComment(IssueKey $issueKey, CommentId $commentId, OutputInterface $output): string
@@ -43,16 +43,15 @@ class Comment
 
     public function createComment(Issue $issue, InputInterface $input,  OutputInterface $output): string
     {
-        $autocomplete = $this->buildAutocompleteAggregate(
+        $autocomplete = $this->autocompleterFactory->create($input, $output);
+        $autocomplete->setAutocomplete($this->buildAutocompleteAggregate(
             $issue,
             $this->fetchPossibleIssuesCollection(),
             $this->fetchWordsList($issue)
-        );
-
-        readline_completion_function($autocomplete);
+        ));
         $output->writeln('<info>Comment:</>');
 
-        return readline();
+        return $autocomplete->read();
     }
 
     private function buildAutocompleteAggregate(

@@ -141,6 +141,7 @@
                  public="false">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.edit" />
+            <argument type="service" id="autocompleter" />
         </service>
 
         <!-- issue dowloadable attachment input -->

@@ -15,6 +15,10 @@
             <argument type="service" id="seconds_to_none.configuration"/>
         </service>
 
+        <service id="autocompleter" class="Technodelight\Jira\Connector\Autocompleter\Factory">
+            <argument key="$className">Technodelight\Jira\Connector\Autocompleter\ReadlineAutocompleter</argument>
+        </service>
+
         <service id="technodelight.jira.date_helper" class="Technodelight\Jira\Api\JiraRestApi\DateHelper">
             <argument type="service" id="seconds_to_none.configuration" />
         </service>
@@ -61,6 +65,7 @@
             <argument type="service" id="symfony.expression.language" />
             <argument type="service" id="technodelight.jira.git_branchname_generator.pattern_prepare" />
             <argument type="service" id="technodelight.jira.git_branchname_generator.string_cleaner" />
+            <argument type="service" id="autocompleter" />
         </service>
         <!-- branch name generator -->
 

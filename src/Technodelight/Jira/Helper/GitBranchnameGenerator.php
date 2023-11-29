@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
+use Technodelight\Jira\Connector\Autocompleter;
 use Technodelight\Jira\Connector\HoaConsole\Aggregate;
 use Technodelight\Jira\Connector\HoaConsole\Word;
 use Technodelight\Jira\Domain\Issue;
@@ -16,43 +17,35 @@ use Technodelight\Jira\Helper\GitBranchnameGenerator\StringCleaner;
 
 class GitBranchnameGenerator
 {
-    private BranchNameGeneratorConfiguration $config;
-    private ExpressionLanguage $expression;
-    private PatternPrepare $patternPrepare;
-    private StringCleaner $stringCleaner;
-
     public function __construct(
-        BranchNameGeneratorConfiguration $config,
-        ExpressionLanguage $expression,
-        PatternPrepare $patternPrepare,
-        StringCleaner $stringCleaner
+        private readonly BranchNameGeneratorConfiguration $config,
+        private readonly ExpressionLanguage $expression,
+        private readonly PatternPrepare $patternPrepare,
+        private readonly StringCleaner $stringCleaner,
+        private readonly Autocompleter\Factory $autocompleterFactory
     ) {
-        $this->config = $config;
-        $this->patternPrepare = $patternPrepare;
-        $this->stringCleaner = $stringCleaner;
-        $this->expression = $expression;
     }
 
     public function fromIssue(Issue $issue): string
     {
         return $this->patternFromData(
-            ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($issue->summary()), 'issue' => $issue]
+            [
+                'issueKey' => $issue->issueKey(),
+                'summary' => $this->stringCleaner->clean($issue->summary()),
+                'issue' => $issue
+            ]
         );
     }
 
     public function fromIssueWithAutocomplete(Issue $issue, InputInterface $input, OutputInterface $output): string
     {
-        $q = new QuestionHelper();
         $basePatternForPrompt = $this->patternFromData(
             ['issueKey' => $issue->issueKey(), 'summary' => '', 'issue' => $issue]
         );
-        readline_completion_function(new Aggregate([new Word($this->getAutocompleteWords($issue))]));
-        $summary = readline($basePatternForPrompt);
-//        $question = new Question($basePatternForPrompt);
-//        $question->setAutocompleterCallback(new Aggregate([
-//            new Word($this->getAutocompleteWords($issue))
-//        ]));
-//        $summary = $q->ask($input, $output, $question);
+        $autocompleter = $this->autocompleterFactory->create($input, $output);
+        $autocompleter->setAutocomplete(new Aggregate([new Word($this->getAutocompleteWords($issue))]));
+        $summary = $autocompleter->read($basePatternForPrompt);
+
 
         return $this->patternFromData(
             ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($summary), 'issue' => $issue]

@@ -34,7 +34,12 @@ class Downloader
                 $output->write(
                     sprintf(
                         "\033[1G\033[2K" . '<fg=green>[%s%%]</> downloaded: %.4fMiB / %.4fMiB in %.3s',
-                        str_pad((string)(($downloadedBytes / $downloadTotal) * 100), STR_PAD_LEFT),
+                        str_pad(
+                            (string)(($downloadedBytes / $downloadTotal) * 100),
+                            3,
+                            ' ',
+                            STR_PAD_LEFT
+                        ),
                         $downloadedBytes / 1024 / 1024,
                         $downloadTotal / 1024 / 1024,
                         microtime(true) - $startTime
