@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Input\Issue\Comment;
 
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Technodelight\CliEditorInput\CliEditorInput as EditApp;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
@@ -21,6 +21,7 @@ use Technodelight\Jira\Domain\IssueCollection;
 
 class Comment
 {
+    private const AUTOCOMPLETE_WORD_MIN_LENGTH = 2;
     private Api $jira;
     private EditApp $editor;
 
@@ -40,31 +41,31 @@ class Comment
         );
     }
 
-    public function createComment(Issue $issue, InputInterface $input,  OutputInterface $output)
+    public function createComment(Issue $issue, InputInterface $input,  OutputInterface $output): string
     {
-        $autocompleter = $this->buildAutocompleters(
+        $autocomplete = $this->buildAutocompleteAggregate(
             $issue,
             $this->fetchPossibleIssuesCollection(),
             $this->fetchWordsList($issue)
         );
-        $q = new QuestionHelper();
-        $question = new Question('<info>Comment:</> ' . PHP_EOL);
-        $question->setAutocompleterCallback($autocompleter);
-        $question->setMultiline(true);
 
-        return $q->ask($input, $output, $question);
+        readline_completion_function($autocomplete);
+        $output->writeln('<info>Comment:</>');
+
+        return readline();
     }
 
-    private function buildAutocompleters(Issue $issue, IssueCollection $issues = null, array $words = []): Aggregate
-    {
-        $autocompleters = [
+    private function buildAutocompleteAggregate(
+        Issue $issue,
+        IssueCollection $issues = null,
+        array $words = []
+    ): Aggregate {
+        return new Aggregate(array_filter([
             $words ? new Word(array_unique($words)) : null,
             new UsernameAutocomplete($issue, $this->jira),
             !is_null($issues) ? new IssueAutocomplete($issues) : null,
             new IssueAttachmentAutocomplete($this->jira, $issue->key())
-        ];
-
-        return new Aggregate(array_filter($autocompleters));
+        ]));
     }
 
     private function fetchPossibleIssuesCollection(): IssueCollection
@@ -89,7 +90,7 @@ class Comment
     {
         $words = [];
         foreach (array_filter($texts) as $text) {
-            foreach ($this->collectAutocompletableWords($text) as $word) {
+            foreach ($this->sanitize($text) as $word) {
                 $words[] = $word;
             }
         }
@@ -97,18 +98,22 @@ class Comment
         return array_unique($words);
     }
 
-    private function collectAutocompletableWords(string $text): array
+    private function sanitize(string $text): array
     {
-        $text = preg_replace('~(\[\^)([^]]+)(\])~mu', '', $text);
-        $text = preg_replace('~!([^|!]+)(\|thumbnail)?!~', '', $text);
-        $text = preg_replace('~[^a-zA-Z0-9\s\']+~', '', $text);
+        // sanitize text from special jira tags and non-alphabetic chars
+        $text = preg_replace(
+            [
+                '~(\[\^)([^]]+)(\])~mu',
+                '~!([^|!]+)(\|thumbnail)?!~',
+                '~[^a-zA-Z0-9\s\']+~'
+            ],
+            '',
+            $text
+        );
 
-        $words = array_map(static function(string $word) {
-            return strtolower(trim($word));
-        }, preg_split('~\s+~', $text));
-
-        return array_filter($words, static function(string $word) {
-            return mb_strlen($word) > 2;
+        // filter out everything what's less than the defined minimum length
+        return array_filter(preg_split('~\s+~', $text), static function(string $word) {
+            return mb_strlen(trim($word)) > self::AUTOCOMPLETE_WORD_MIN_LENGTH;
         });
     }
 }

@@ -31,7 +31,8 @@
         "technodelight/php-jira-cli-interfaces": "^2.0",
         "technodelight/php-jira-cli-tag-converter": "^2.0",
         "knplabs/github-api": "^3.9",
-        "cweagans/composer-patches": "^1.7"
+        "cweagans/composer-patches": "^1.7",
+        "ext-readline": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
