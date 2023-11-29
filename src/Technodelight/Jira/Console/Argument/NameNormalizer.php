@@ -1,23 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 class NameNormalizer
 {
-    private $name;
+    private const PATTERNS = [
+        '~[^a-z0-9]+~i' => '-',
+        '/(?<!^)[A-Z]/' => '-$0',
+        '~[-]+~' => '-'
+    ];
+    private string $name;
 
-    public function __construct($name)
+    public function __construct(?string $name)
     {
-        $this->name = $name;
+        $this->name = $name ?? '';
     }
 
-    public function normalize()
+    public function normalize(): string
     {
-        return trim(
-            strtolower(
-                preg_replace('~[-]+~', '-', preg_replace('/(?<!^)[A-Z]/', '-$0', preg_replace('~[^a-z0-9]+~i', '-', $this->name)))
-            ),
-            '-'
-        );
+        $str = $this->name;
+        foreach (self::PATTERNS as $pattern => $replacement) {
+            $str = preg_replace($pattern, $replacement, $str);
+        }
+
+        return strtolower(trim($this->name, '-'));
     }
 }

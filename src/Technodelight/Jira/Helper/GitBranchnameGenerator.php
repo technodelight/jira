@@ -46,11 +46,13 @@ class GitBranchnameGenerator
         $basePatternForPrompt = $this->patternFromData(
             ['issueKey' => $issue->issueKey(), 'summary' => '', 'issue' => $issue]
         );
-        $question = new Question($basePatternForPrompt);
-        $question->setAutocompleterCallback(new Aggregate([
-            new Word($this->getAutocompleteWords($issue))
-        ]));
-        $summary = $q->ask($input, $output, $question);
+        readline_completion_function(new Aggregate([new Word($this->getAutocompleteWords($issue))]));
+        $summary = readline($basePatternForPrompt);
+//        $question = new Question($basePatternForPrompt);
+//        $question->setAutocompleterCallback(new Aggregate([
+//            new Word($this->getAutocompleteWords($issue))
+//        ]));
+//        $summary = $q->ask($input, $output, $question);
 
         return $this->patternFromData(
             ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($summary), 'issue' => $issue]
