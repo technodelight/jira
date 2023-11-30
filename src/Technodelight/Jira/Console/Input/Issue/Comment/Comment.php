@@ -78,7 +78,10 @@ class Comment
 
     private function fetchWordsList(Issue $issue): array
     {
-        $list = $issue->comments();
+        $list = [];
+        foreach ($issue->comments() as $comment) {
+            $list[] = $comment->body();
+        }
         $list[] = $issue->description() ?? '';
         $list[] = $issue->summary() ?? '';
 

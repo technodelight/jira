@@ -24,26 +24,13 @@ class Renderer
 {
     const BLOCK_WIDTH = 30;
 
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var RendererContainer
-     */
-    private $rendererProvider;
-
-    /**
-     * @param Api $api
-     * @param RendererContainer $rendererProvider
-     */
-    public function __construct(Api $api, RendererContainer $rendererProvider)
-    {
-        $this->api = $api;
-        $this->rendererProvider = $rendererProvider;
+    public function __construct(
+        private readonly Api $api,
+        private readonly RendererContainer $rendererProvider
+    ) {
     }
 
-    public function render(OutputInterface $output, IssueCollection $collection)
+    public function render(OutputInterface $output, IssueCollection $collection): void
     {
         $table = new Table($output);
         $table->setStyle('borderless');
@@ -63,7 +50,7 @@ class Renderer
         foreach ($this->api->status() as $status) {
             $allStatuses[$status->name()] = $status->id();
         }
-        array_unique($allStatuses);
+
         uasort($statuses, function($a, $b) use ($allStatuses) {
             if ($a == $b) {
                 return 0;
@@ -114,7 +101,7 @@ class Renderer
         $table->render();
     }
 
-    private function wrapOutputInCard(BufferedOutput $columnOutput, Priority $priority)
+    private function wrapOutputInCard(BufferedOutput $columnOutput, Priority $priority): string
     {
         $rows = explode(PHP_EOL, $columnOutput->fetch());
         foreach ($rows as $idx => $row) {
@@ -125,7 +112,8 @@ class Renderer
         return PHP_EOL . join(PHP_EOL, $rows);
     }
 
-    private function pad(BufferedOutput $output, $string) {
+    private function pad(BufferedOutput $output, $string): string
+    {
         return $string
             . '<fg=black;bg=white>'
             . str_repeat(
@@ -134,7 +122,7 @@ class Renderer
             );
     }
 
-    private function leftSide(Priority $priority)
+    private function leftSide(Priority $priority): string
     {
         $style = new PaletteOutputFormatterStyle;
         $style->setForeground($priority->statusColor());
