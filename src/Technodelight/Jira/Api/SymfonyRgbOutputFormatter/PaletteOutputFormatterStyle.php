@@ -24,8 +24,8 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
         'strikethrough' => ['set' => 9, 'unset' => 29],
     ];
 
-    private ?Rgb $foreground;
-    private ?Rgb $background;
+    private ?Rgb $foreground = null;
+    private ?Rgb $background = null;
     private array $options = [];
 
     public function setForeground(string $color = null): void
@@ -119,7 +119,7 @@ class PaletteOutputFormatterStyle implements OutputFormatterStyleInterface
             }
         }
 
-        if (0 === count($setCodes)) {
+        if (empty($setCodes)) {
             return $text;
         }
 

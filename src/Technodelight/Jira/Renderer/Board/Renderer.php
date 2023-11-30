@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Board;
 
 use Symfony\Component\Console\Helper\Table;
@@ -128,7 +130,7 @@ class Renderer
             . '<fg=black;bg=white>'
             . str_repeat(
                 ' ',
-                max(self::BLOCK_WIDTH - Helper::strlenWithoutDecoration($output->getFormatter(), $string), 0)
+                max(self::BLOCK_WIDTH - strlen(Helper::removeDecoration($output->getFormatter(), $string)), 0)
             );
     }
 
