@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\TransferStats;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
 
@@ -123,18 +124,14 @@ class HttpClient implements Client
 
     public function download($url, $filename, callable $progressFunction = null): void
     {
-        if ($progressFunction) {
-            $this->httpClient()->get(
-                $url,
-                array_filter([
-                    'sink' => $filename,
-                    'progress' => $progressFunction,
-                ])
-            );
-            return;
-        }
+        $response = $this->httpClient()->get(
+            $url,
+            array_filter([
+                'progress' => $progressFunction
+            ])
+        );
 
-        $this->httpClient()->get($url, ['save_to' => $filename]);
+        fwrite($filename, (string)$response->getBody());
     }
 
     public function upload($url, $filename): void

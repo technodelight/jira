@@ -6,6 +6,7 @@ namespace Technodelight\Jira\Console\Command\Action\Issue\Attachment;
 
 use ErrorException;
 use Exception;
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -77,7 +78,7 @@ class Download extends Command
 
         try {
             if (!count($issue->attachments())) {
-                throw new ErrorException(
+                throw new InvalidArgumentException(
                     sprintf('No attachments for %s', $issue->issueKey())
                 );
             }
