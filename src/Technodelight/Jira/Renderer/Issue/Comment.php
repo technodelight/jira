@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
+use DateTime;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Comment as IssueComment;
 use Technodelight\Jira\Domain\Issue;
@@ -35,7 +38,7 @@ class Comment implements IssueRenderer
     /**
      * @param IssueComment[] $comments
      */
-    public function renderComments(OutputInterface $output, array $comments, Issue $issue = null)
+    public function renderComments(OutputInterface $output, array $comments, Issue $issue = null): array
     {
         $self = $this;
         return array_map(
@@ -46,7 +49,7 @@ class Comment implements IssueRenderer
         );
     }
 
-    public function renderComment(OutputInterface $output, IssueComment $comment, Issue $issue = null)
+    public function renderComment(OutputInterface $output, IssueComment $comment, Issue $issue = null): string
     {
         $content = $this->replacer->replace(trim($comment->body()));
         $content = $this->renderTags($output, $content);
@@ -54,41 +57,43 @@ class Comment implements IssueRenderer
             $content = $this->imageRenderer->render($content, $issue);
         }
 
-        return <<<EOL
-<info>{$comment->author()->displayName()}</info> <comment>[~{$comment->author()->name()}]</>{$this->visibility($comment)} {$this->ago($comment->created())}: <fg=black>({$comment->id()}) ({$comment->created()->format('Y-m-d H:i:s')}) {$this->commentUrl($comment, $issue)}</>
-{$this->tab($this->wordwrap->wrap($content))}
-EOL;
+        return sprintf(
+            '<info>%s</> <comment>[~%s]</>%s %s: <fg=black>(%d) (%s) %s</>',
+            $comment->author()->displayName(),
+            $comment->author()->name(),
+            $this->visibility($comment),
+            $this->ago($comment->created()),
+            $comment->id(),
+            $comment->created()->format('Y-m-d H:i:s'),
+            $this->commentUrl($comment, $issue)
+        ) . PHP_EOL . $this->tab($this->wordwrap->wrap($content));
     }
 
-    private function renderTags($output, $body)
+    private function renderTags($output, $body): string
     {
         return $this->tagConverter->convert($output, $body);
     }
 
-    private function tab($string)
+    private function tab($string): string
     {
         return $this->templateHelper->tabulate($string);
     }
 
-    /**
-     * @param \Technodelight\Jira\Domain\Comment $comment
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @return string
-     */
-    protected function commentUrl(IssueComment $comment, Issue $issue = null)
+    private function commentUrl(IssueComment $comment, ?Issue $issue = null): string
     {
         if ($issue) {
-            return $issue->url() . '#comment-' . $comment->id();
+            return $issue->url() . '?focusedCommentId=' . $comment->id();
         }
+
         return '';
     }
 
-    private function ago(\DateTime $date)
+    private function ago(DateTime $date): string
     {
         return TimeAgo::fromDateTime($date)->inWords();
     }
 
-    private function visibility(IssueComment $comment)
+    private function visibility(IssueComment $comment): string
     {
         if ($comment->visibility()) {
             return sprintf(' <fg=red>(%s only)</>', $comment->visibility());
@@ -100,7 +105,7 @@ EOL;
      * @param IssueComment[] $comments
      * @return array
      */
-    private function filterComments($comments)
+    private function filterComments(array $comments): array
     {
         if ($this->verbose) {
             return $comments;
@@ -109,7 +114,7 @@ EOL;
         return array_filter(
             $comments,
             function (IssueComment $comment) {
-                return $comment->created() >= new \DateTime('-2 weeks');
+                return $comment->created() >= new DateTime('-2 weeks');
             }
         );
     }
