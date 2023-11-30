@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -11,7 +13,6 @@ use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver\Guesser;
-use Technodelight\Jira\Console\IssueStats\StatCollector;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\IssueCollection;
@@ -19,42 +20,15 @@ use Technodelight\Jira\Domain\Project;
 
 class InteractiveIssueSelector
 {
-    /**
-     * @var Api
-     */
-    private $jira;
-    /**
-     * @var Git
-     */
-    private $git;
-    /**
-     * @var StatCollector
-     */
-    private $statCollector;
-    /**
-     * @var QuestionHelper
-     */
-    private $questionHelper;
-    /**
-     * @var Guesser
-     */
-    private $guesser;
-
-    public function __construct(Api $jira, Git $git, StatCollector $statCollector, QuestionHelper $questionHelper, Guesser $guesser)
-    {
-        $this->jira = $jira;
-        $this->git = $git;
-        $this->statCollector = $statCollector;
-        $this->questionHelper = $questionHelper;
-        $this->guesser = $guesser;
+    public function __construct(
+        private readonly Api $jira,
+        private readonly Git $git,
+        private readonly QuestionHelper $questionHelper,
+        private readonly Guesser $guesser
+    ) {
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return \Technodelight\Jira\Domain\Issue
-     */
-    public function chooseIssue(InputInterface $input, OutputInterface $output)
+    public function chooseIssue(InputInterface $input, OutputInterface $output): Issue
     {
         $issues = $this->retrieveIssuesToChooseFrom();
         $options = $this->assembleOptionsForQuestionHelper($issues);
@@ -65,13 +39,7 @@ class InteractiveIssueSelector
         return $issues->findByIndex($index);
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param array $options
-     * @return int
-     */
-    private function ask(InputInterface $input, OutputInterface $output, array $options)
+    private function ask(InputInterface $input, OutputInterface $output, array $options): int
     {
         $answer = $this->questionHelper->ask($input, $output, new ChoiceQuestion(
             PHP_EOL . '<comment>Choose an issue (or press Ctrl+C to quit):</>',
@@ -80,12 +48,7 @@ class InteractiveIssueSelector
         return array_search($answer, $options);
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @return \Technodelight\Jira\Domain\Issue
-     */
-    private function retrieveIssueFromManualInput(InputInterface $input, OutputInterface $output)
+    private function retrieveIssueFromManualInput(InputInterface $input, OutputInterface $output): Issue
     {
         $question = new Question(
             '<comment>Please enter issue key (or press Ctrl+C to quit):</> '
@@ -109,26 +72,18 @@ class InteractiveIssueSelector
         return $this->jira->retrieveIssue($issueKey);
     }
 
-    /**
-     * @return IssueCollection
-     */
     public function retrieveIssuesToChooseFrom(?string $searchString = null): IssueCollection
     {
         $issuesToChooseFrom = IssueCollection::createEmpty();
         $this->collectIssuesFromHistory($issuesToChooseFrom);
         $this->collectRecentlyUpdatedIssues($issuesToChooseFrom);
         $this->collectIssuesWithSearchString($searchString, $issuesToChooseFrom);
-//        $this->collectIssuesFromStat($issuesToChooseFrom); // @TODO: buggy
         $this->collectIssuesFromLocalBranches($issuesToChooseFrom, $searchString);
 
         return $issuesToChooseFrom;
     }
 
-    /**
-     * @param IssueCollection $issues
-     * @return array
-     */
-    private function assembleOptionsForQuestionHelper(IssueCollection $issues)
+    private function assembleOptionsForQuestionHelper(IssueCollection $issues): array
     {
         $options = array_values(array_map(
             function (Issue $issue) {
@@ -141,20 +96,12 @@ class InteractiveIssueSelector
         return $options;
     }
 
-    /**
-     * @param array $options
-     * @param int $index
-     * @return bool
-     */
-    private function shouldEnterManually(array $options, $index)
+    private function shouldEnterManually(array $options, int $index): bool
     {
-        return $index == count($options) - 1;
+        return $index === count($options) - 1;
     }
 
-    /**
-     * @param IssueCollection $issuesToChooseFrom
-     */
-    private function collectIssuesFromHistory(IssueCollection $issuesToChooseFrom)
+    private function collectIssuesFromHistory(IssueCollection $issuesToChooseFrom): void
     {
         $issueHistory = $this->jira->search(
             SearchQueryBuilder::factory()
@@ -166,39 +113,10 @@ class InteractiveIssueSelector
         $issuesToChooseFrom->merge($issueHistory);
     }
 
-    /**
-     * @param $issuesToChooseFrom
-     * @return array
-     */
-    private function collectIssuesFromStat(IssueCollection $issuesToChooseFrom)
-    {
-        if ($usedIssues = $this->statCollector->all()) {
-            $usedIssues->orderByMostRecent();
-            $usedIssues->orderByTotal();
-            $issueKeys = [];
-            foreach ($usedIssues->issueKeys(10) as $issueKey) {
-                if (!$issuesToChooseFrom->has($issueKey)) {
-                    $issueKeys[] = $issueKey;
-                }
-            }
-
-            if (!empty($issueKeys)) {
-                $issueStats = $this->jira->search(
-                    SearchQueryBuilder::factory()
-                                      ->issueKey($usedIssues->issueKeys(10))
-                                      ->assemble()
-                );
-                $issuesToChooseFrom->merge($issueStats);
-            }
-        }
-    }
-
-    /**
-     * @param IssueCollection $issuesToChooseFrom
-     * @param string|null $searchString
-     */
-    private function collectIssuesFromLocalBranches(IssueCollection $issuesToChooseFrom, ?string $searchString = null)
-    {
+    private function collectIssuesFromLocalBranches(
+        IssueCollection $issuesToChooseFrom,
+        ?string $searchString = null
+    ): void {
         if ($localBranches = $this->git->branches('feature/', false)) {
             $issueKeys = [];
             foreach ($localBranches as $branch) {
@@ -226,7 +144,7 @@ class InteractiveIssueSelector
         }
     }
 
-    private function collectRecentlyUpdatedIssues(IssueCollection $issuesToChooseFrom)
+    private function collectRecentlyUpdatedIssues(IssueCollection $issuesToChooseFrom): void
     {
         $issuesToChooseFrom->merge(
             $this->jira->search(
@@ -238,9 +156,9 @@ class InteractiveIssueSelector
         );
     }
 
-    private function collectIssuesWithSearchString(?string $searchString, IssueCollection $issuesToChooseFrom)
+    private function collectIssuesWithSearchString(?string $searchString, IssueCollection $issuesToChooseFrom): void
     {
-        $searchString = trim($searchString);
+        $searchString = trim((string)$searchString);
         if (!empty($searchString)) {
             try {
                 $issuesToChooseFrom->merge(

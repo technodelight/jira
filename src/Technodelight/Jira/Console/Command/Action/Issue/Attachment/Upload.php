@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Action\Issue\Attachment;
 
 use Symfony\Component\Console\Command\Command;
@@ -12,29 +14,15 @@ use Technodelight\Jira\Console\Input\Issue\Attachment\UploadableAttachment;
 
 class Upload extends Command
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var UploadableAttachment
-     */
-    private $uploadableAttachmentInput;
-    /**
-     * @var IssueKeyResolver
-     */
-    private $issueKeyResolver;
-
-    public function __construct(Api $api, IssueKeyResolver $issueKeyResolver, UploadableAttachment $uploadableAttachmentInput)
-    {
-        $this->api = $api;
-        $this->issueKeyResolver = $issueKeyResolver;
-        $this->uploadableAttachmentInput = $uploadableAttachmentInput;
-
-        parent::__construct();
+    public function __construct(
+        private readonly Api $api,
+        private readonly IssueKeyResolver $issueKeyResolver,
+        private readonly UploadableAttachment $uploadableAttachmentInput
+    ) {
+         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('issue:attachment:upload')
@@ -52,17 +40,13 @@ class Upload extends Command
         ;
     }
 
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
-     * @throws \ErrorException
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $filename = $this->uploadableAttachmentInput->resolve($input, $output);
 
         $this->api->addAttachment($issueKey, $filename);
+
+        return self::SUCCESS;
     }
 }
