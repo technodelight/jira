@@ -64,7 +64,9 @@ class LogsList implements DashboardRenderer
                         $day->format('l'),
                         $worklogs->issueCount(),
                         $worklogs->issueCount() == 1 ? 'issue' : 'issues',
-                        $worklogs->issueCount() != $worklogs->count() ? sprintf(', %d worklogs', $worklogs->count()) : ''
+                        $worklogs->issueCount() !== $worklogs->count()
+                            ? sprintf(', %d worklogs', $worklogs->count())
+                            : ''
                     ),
                     ''
                 ]);
@@ -82,15 +84,21 @@ class LogsList implements DashboardRenderer
                     continue;
                 }
 
-                // parent issue
+                // parent issue, highlighted box
                 $parentInfo = '';
                 if ($parent = $issue->parent()) {
                     $parentInfo = sprintf('<bg=yellow>[%s %s]</>', $parent->issueKey(), $parent->summary());
                 }
+
                 // issue header
                 if (count($records) > 1) {
                     $output->writeln(
-                        sprintf('<info>%s</info> %s: (%s) ' . $parentInfo, $issueKey, $issue->summary(), $this->dateHelper->secondsToHuman($totalTimes[$issueKey]))
+                        sprintf(
+                            '<info>%s</info> %s: (%s) ' . $parentInfo,
+                            $issueKey,
+                            $issue->summary(),
+                            $this->dateHelper->secondsToHuman($totalTimes[$issueKey])
+                        )
                     );
                 } else {
                     $output->writeln(

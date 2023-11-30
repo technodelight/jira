@@ -28,7 +28,7 @@ class Comment
         Worklog $worklog = null
     ): ?string {
         $q = new QuestionHelper();
-        $question = new Question($this->worklogCommentDialogText($worklog->comment(), $worklog));
+        $question = new Question($this->worklogCommentDialogText($worklog->comment() ?? '', $worklog));
         $question->setAutocompleterCallback(new Aggregate([
             new Word($this->fetchWordsList($issue)),
             new UsernameAutocomplete($issue, $this->api)

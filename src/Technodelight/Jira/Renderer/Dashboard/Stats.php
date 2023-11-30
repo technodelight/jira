@@ -50,7 +50,7 @@ class Stats implements DashboardRenderer
         $output->writeln('');
     }
 
-    private function timeDifferenceText($missingTime)
+    private function timeDifferenceText($missingTime): string
     {
         if ($missingTime >= 0) {
             return sprintf(
