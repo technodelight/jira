@@ -63,7 +63,7 @@ class Comment implements IssueRenderer
             $comment->author()->name(),
             $this->visibility($comment),
             $this->ago($comment->created()),
-            $comment->id(),
+            $comment->id()->id(),
             $comment->created()->format('Y-m-d H:i:s'),
             $this->commentUrl($comment, $issue)
         ) . PHP_EOL . $this->tab($this->wordwrap->wrap($content));
