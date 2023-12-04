@@ -65,7 +65,6 @@
         <service id="technodelight.jira.console.interactive_issue_selector" class="Technodelight\Jira\Console\Argument\InteractiveIssueSelector">
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.gitshell.api" />
-            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <argument type="service" id="console.question_helper" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
         </service>
