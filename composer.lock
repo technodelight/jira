@@ -3520,16 +3520,16 @@
         },
         {
             "name": "technodelight/php-jira-cli-tag-converter",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/technodelight/php-jira-cli-tag-converter.git",
-                "reference": "6261152234c0193abc276aa4ef5688bf976a0353"
+                "reference": "6b383a2ed6c14c1014331c7dc674e57eee59f55d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/6261152234c0193abc276aa4ef5688bf976a0353",
-                "reference": "6261152234c0193abc276aa4ef5688bf976a0353",
+                "url": "https://api.github.com/repos/technodelight/php-jira-cli-tag-converter/zipball/6b383a2ed6c14c1014331c7dc674e57eee59f55d",
+                "reference": "6b383a2ed6c14c1014331c7dc674e57eee59f55d",
                 "shasum": ""
             },
             "require": {
@@ -3561,9 +3561,9 @@
             ],
             "support": {
                 "issues": "https://github.com/technodelight/php-jira-cli-tag-converter/issues",
-                "source": "https://github.com/technodelight/php-jira-cli-tag-converter/tree/2.0.1"
+                "source": "https://github.com/technodelight/php-jira-cli-tag-converter/tree/2.1.0"
             },
-            "time": "2022-11-15T13:02:20+00:00"
+            "time": "2023-12-04T08:48:50+00:00"
         },
         {
             "name": "technodelight/php-jira-domain-models",
