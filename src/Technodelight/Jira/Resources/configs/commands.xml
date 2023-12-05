@@ -97,6 +97,10 @@
             <argument type="service" id="technodelight.jira.renderer.action.renderer" />
             <tag name="command" />
         </service>
+        <service id="technodelight.jira.app.command.stats" class="Technodelight\Jira\Console\Command\Show\Stats">
+            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
+            <tag name="command" />
+        </service>
         <!-- show commands-->
 
         <!-- action commands -->

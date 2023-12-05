@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Technodelight\Jira\Console\IssueStats;
 
 use ICanBoogie\Storage\Storage;
+use Technodelight\Jira\Console\Configuration\DirectoryProvider;
 
 class StatCollector
 {
     public function __construct(
+        private readonly DirectoryProvider $directoryProvider,
         private readonly Storage $storage,
         private readonly Serializer $serializer
     ) {
@@ -27,15 +29,14 @@ class StatCollector
 
     private function cacheKeys(): array
     {
-        $keys = [];
-        foreach (glob($this->statDir() . DIRECTORY_SEPARATOR . '*.ttl') as $file) {
-            $keys[] = pathinfo($file, PATHINFO_FILENAME);
-        }
-        return $keys;
+        return array_map(
+            fn(string $filename) => pathinfo($filename, PATHINFO_FILENAME),
+            glob($this->statDir() . DIRECTORY_SEPARATOR . '*.ttl')
+        );
     }
 
     private function statDir(): string
     {
-        return getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/stats';
+        return $this->directoryProvider->user() . DIRECTORY_SEPARATOR . '.jira/stats';
     }
 }

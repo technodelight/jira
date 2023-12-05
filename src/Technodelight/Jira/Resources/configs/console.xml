@@ -169,6 +169,7 @@
             <argument type="service" id="technodelight.jira.console.issue_stats" />
         </service>
         <service id="technodelight.jira.console.issue_stats.stat_collector" class="Technodelight\Jira\Console\IssueStats\StatCollector">
+            <argument type="service" id="technodelight.jira.console.configuration.directory_provider" />
             <argument type="service" id="technodelight.jira.console.issue_stats.storage" />
             <argument type="service" id="technodelight.jira.console.issue_stats.serializer" />
         </service>
