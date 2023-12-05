@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\DialogHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Console\DependencyInjection\CacheMaintainer;
@@ -31,6 +32,7 @@ class SelfUpdate extends Command
             ->setName('app:self-update')
             ->setDescription('Check latest releases and update')
             ->setAliases(['selfupdate', 'self-update'])
+            ->addOption('yes', 'y', InputOption::VALUE_NONE, 'Accept everything')
         ;
     }
 
@@ -47,16 +49,20 @@ class SelfUpdate extends Command
             $output->writeln('');
             $output->writeln("Release date is {$release['published_at']}");
             $q = new QuestionHelper();
-            $consent = $q->ask(
-                $input,
-                $output,
-                new Question(PHP_EOL . "<comment>Do you want to perform an update now?</comment> [Y/n]", true)
-            );
-            if (!is_writable($runningFile)) {
-                $output->writeln("<error>Can't write file {$runningFile}.</error>");
-                return self::FAILURE;
+            if ($input->getOption('yes')) {
+                $consent = true;
+            } else {
+                $consent = $q->ask(
+                    $input,
+                    $output,
+                    new Question(PHP_EOL . "<comment>Do you want to perform an update now?</comment> [Y/n]", true)
+                );
             }
             if ($consent) {
+                if (!is_writable($runningFile)) {
+                    $output->writeln("<error>Can't write file {$runningFile}.</error>");
+                    return self::FAILURE;
+                }
                 if ($this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
                     $output->writeln("<info>Successfully updated to {$release['tag_name']}</info> 🤘");
                 } else {
