@@ -62,7 +62,7 @@ class SummarizeCommand extends Command
         $this->renderer->render($output, $issue);
         $output->writeln('<info>that\'s this thing all about:</info>');
         $output->writeln($this->templateHelper->tabulate($summary));
-        if ($input->getOption('with-comments')) {
+        if ($input->getOption('with-comments') && !empty($issue->comments())) {
             $output->writeln('<info>here\'s the discussion in the comments:</info>');
             $comments = $this->api->summarizeComments($issue);
             $output->writeln($this->templateHelper->tabulate($comments));

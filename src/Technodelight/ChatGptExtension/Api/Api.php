@@ -88,13 +88,6 @@ class Api
         return $response['choices'][0]['message']['content'] ?? '';
     }
 
-    private function log($var): void
-    {
-        if (in_array('--debug', $_SERVER['argv'])) {
-            file_put_contents('php://stdout', var_export($var, true) . PHP_EOL, FILE_APPEND);
-        }
-    }
-
     public function summarizeComments(Issue $issue): string
     {
         $response = $this->client->chat()->create([
@@ -118,5 +111,12 @@ class Api
         $this->log($response);
 
         return $response['choices'][0]['message']['content'] ?? '';
+    }
+
+    private function log($var): void
+    {
+        if (in_array('--debug', $_SERVER['argv'])) {
+            file_put_contents('php://stderr', var_export($var, true) . PHP_EOL, FILE_APPEND);
+        }
     }
 }

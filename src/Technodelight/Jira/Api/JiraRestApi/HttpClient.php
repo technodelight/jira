@@ -198,20 +198,26 @@ class HttpClient implements Client
                         if (!in_array('--debug', $_SERVER['argv'])) {
                             return;
                         }
-                        printf('%s: %s' . PHP_EOL, $stats->getEffectiveUri(), $stats->getTransferTime());
+                        file_put_contents(
+                            'php://stderr',
+                            sprintf('%s: %s' . PHP_EOL, $stats->getEffectiveUri(), $stats->getTransferTime())
+                        );
 
                         // You must check if a response was received before using the
                         // response object.
                         if ($stats->hasResponse()) {
-                            printf('%s: %s' . PHP_EOL,
+                            file_put_contents('php://stderr', sprintf('%s: %s' . PHP_EOL,
                                 $stats->getResponse()->getStatusCode(),
                                 $stats->getResponse()->getReasonPhrase()
-                            );
+                            ));
                         } else {
                             // Error data is handler specific. You will need to know what
                             // type of error data your handler uses before using this
                             // value.
-                            var_dump($stats->getHandlerErrorData());
+                            file_put_contents(
+                                'php://stderr',
+                                var_export($stats->getHandlerErrorData(), true)
+                            );
                         }
                     }
                 ]
