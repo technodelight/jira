@@ -24,7 +24,7 @@ install: jira.phar
 	@cp $(PHAR_FILE) $(INSTALL_DEST)
 
 push:
-	git push -u && git push --tags
+	git push -u && git push --tags --no-verify
 # To start over from scratch, type 'make clean'.
 # Removes all .phar files, so that the next make rebuilds them
 #
