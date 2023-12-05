@@ -37,6 +37,17 @@ class GitBranchnameGenerator
         );
     }
 
+    private function patternFromData($expressionData): string
+    {
+        foreach ($this->config->patterns() as $expression => $pattern) {
+            if ($this->expression->evaluate($expression, $expressionData)) {
+                return $this->patternPrepare->prepare($pattern, $expressionData);
+            }
+        }
+
+        return '';
+    }
+
     public function fromIssueWithAutocomplete(Issue $issue, InputInterface $input, OutputInterface $output): string
     {
         $basePatternForPrompt = $this->patternFromData(
@@ -50,17 +61,6 @@ class GitBranchnameGenerator
         return $this->patternFromData(
             ['issueKey' => $issue->issueKey(), 'summary' => $this->stringCleaner->clean($summary), 'issue' => $issue]
         );
-    }
-
-    private function patternFromData($expressionData): string
-    {
-        foreach ($this->config->patterns() as $expression => $pattern) {
-            if ($this->expression->evaluate($expression, $expressionData)) {
-                return $this->patternPrepare->prepare($pattern, $expressionData);
-            }
-        }
-
-        return '';
     }
 
     private function getAutocompleteWords(Issue $issue): array

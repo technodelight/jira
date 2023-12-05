@@ -6,5 +6,16 @@
 
     <services>
 
+        <service id="technodelight.chatgpt.summarize"
+                 class="Technodelight\ChatGptExtension\Console\Command\SummarizeCommand">
+            <argument type="service" id="technodelight.chatgpt.api" />
+            <argument type="service" id="technodelight.jira.api" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_autocomplete" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
+            <argument type="service" id="technodelight.jira.template_helper" />
+
+            <tag name="command"/>
+        </service>
     </services>
 </container>

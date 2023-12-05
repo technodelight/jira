@@ -13,7 +13,8 @@ use Technodelight\Jira\Extension\Locator as ExtensionLocator;
 
 class Extensions implements CompilerPassInterface
 {
-    private const PHP_REQUIRE_STATEMENT = 'if (is_file(\'%1$s\')) { require_once "%1$s"; } else echo(\'cannot load extension: %2$s\' . PHP_EOL);';
+    private const PHP_REQUIRE_STATEMENT =
+        'if (is_file(\'%1$s\')) { require_once "%1$s"; } else echo(\'cannot load extension: %2$s\' . PHP_EOL);';
 
     /** @throws Exception */
     public function process(ContainerBuilder $container): void
@@ -31,7 +32,7 @@ class Extensions implements CompilerPassInterface
 
         $preProcessedConfig = (new ConfigurationPreProcessor)->preProcess($provider->get());
         $extensionClassMap = $extensionLocator->locate(
-            isset($preProcessedConfig['extensions']) ? $preProcessedConfig['extensions'] : []
+            $preProcessedConfig['extensions'] ?? []
         );
 
         $def = $container->getDefinition('technodelight.jira.extension.configurator');

@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Technodelight\Jira\Helper\PluralizeHelper;
 
 class Application extends BaseApp
@@ -19,6 +20,7 @@ class Application extends BaseApp
 
     public function __construct(
         private readonly BatchAssistant $batchAssistant,
+        private readonly ContainerInterface $container,
         string $name = 'UNKNOWN',
         string $version = 'UNKNOWN',
     ) {
@@ -120,12 +122,13 @@ BANNER;
         );
         $input->addOption(
             new InputOption(
-                '--no-cache', '
-                -N',
+                '--no-cache',
+                '-N',
                 InputOption::VALUE_NONE,
-                'Clear app cache before running command'
+                'Clear app and container cache before running command'
             )
         );
+
 
         return $input;
     }

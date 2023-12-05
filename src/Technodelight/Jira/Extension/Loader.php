@@ -8,8 +8,8 @@ class Loader
     {
         $extensions = [];
         foreach ($classMap as $className => $path) {
-            if (!class_exists($className, true)) {
-                require_once $path;
+            if (!class_exists($className)) {
+                include_once $path;
             }
 
             $extension = new $className;

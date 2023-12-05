@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Extension;
 
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -10,38 +11,17 @@ use Technodelight\Jira\Console\Configuration\Provider;
 
 class ConfigurationProxy implements ConfigurationInterface
 {
-    /**
-     * @var Configuration
-     */
-    private $configuration;
-    /**
-     * @var Configurator
-     */
-    private $configurator;
-    /**
-     * @var Provider
-     */
-    private $provider;
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
-    private $loaded = false;
+    private bool $loaded = false;
 
-    public function __construct(Configuration $configuration, Configurator $configurator, Provider $provider, ContainerInterface $container)
-    {
-        $this->configuration = $configuration;
-        $this->configurator = $configurator;
-        $this->provider = $provider;
-        $this->container = $container;
+    public function __construct(
+        private readonly Configuration $configuration,
+        private readonly Configurator $configurator,
+        private readonly Provider $provider,
+        private readonly ContainerInterface $container
+    ) {
     }
 
-    /**
-     * Generates the configuration tree builder.
-     *
-     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder The tree builder
-     */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $result = $this->configuration->getConfigTreeBuilder();
         $this->processExtensions();

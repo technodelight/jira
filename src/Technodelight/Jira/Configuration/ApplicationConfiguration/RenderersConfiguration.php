@@ -109,10 +109,12 @@ class RenderersConfiguration implements RegistrableConfiguration
             function (array $formatter)  {
                 return FormatterConfiguration::fromArray($formatter);
             },
-            array_merge($instance->defaultFormatters, isset($config['formatters']) ? $config['formatters'] : [])
+            array_merge($instance->defaultFormatters, $config['formatters'] ?? [])
         );
 
-        $instance->preference = isset($config['preference']) ? $config['preference'] : ['list' => 'short', 'view' => 'full'];
+        $instance->preference = isset($config['preference'])
+            ? $config['preference']
+            : ['list' => 'short', 'view' => 'full'];
         foreach ($instance->preference as $type => $renderer) {
             if (!isset($instance->modes[$renderer])) {
                 throw new InvalidArgumentException(

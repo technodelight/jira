@@ -36,8 +36,11 @@ class ApplicationConfiguration implements CompilerPassInterface
      * @param string $parentPrefix
      * @throws ReflectionException
      */
-    private function collectRegistrablesAndProcess(ContainerBuilder $container, RegistrableConfiguration $config, $parentPrefix)
-    {
+    private function collectRegistrablesAndProcess(
+        ContainerBuilder $container,
+        RegistrableConfiguration $config,
+        string $parentPrefix
+    ): void {
         $reflection = new ReflectionClass($config);
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_STATIC) as $method) {
@@ -56,14 +59,12 @@ class ApplicationConfiguration implements CompilerPassInterface
         }
     }
 
-    /**
-     * @param ContainerBuilder $container
-     * @param string $parentPrefix
-     * @param string $servicePrefix
-     * @param RegistrableConfiguration $config
-     */
-    private function addServiceDefinition(ContainerBuilder $container, $parentPrefix, $servicePrefix, RegistrableConfiguration $config)
-    {
+    private function addServiceDefinition(
+        ContainerBuilder $container,
+        string $parentPrefix,
+        string $servicePrefix,
+        RegistrableConfiguration $config
+    ): void {
         $definition = new Definition(
             get_class($config)
         );
@@ -73,6 +74,7 @@ class ApplicationConfiguration implements CompilerPassInterface
         $definition->setArguments([$config->configAsArray()]);
 
         $serviceId = $this->prefix($parentPrefix, $servicePrefix);
+
         $container->removeDefinition($serviceId);
         $container->setDefinition(
             $serviceId,

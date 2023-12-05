@@ -34,6 +34,7 @@
 
         <service id="technodelight.jira.app" class="Technodelight\Jira\Console\Application" lazy="true">
             <argument type="service" id="technodelight.jira.console.batch_assistant" />
+            <argument type="service" id="service_container" />
             <argument type="string">%technodelight.jira.app.name%</argument>
             <argument type="string">%technodelight.jira.app.version%</argument>
         </service>

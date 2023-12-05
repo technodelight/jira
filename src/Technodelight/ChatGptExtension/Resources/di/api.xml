@@ -4,7 +4,23 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <service id="technodelight.chatgpt.git_branch_name_generator.original"
+                 public="true"
+                 class="Technodelight\Jira\Helper\GitBranchnameGenerator">
+            <argument type="service" id="technodelight.jira.config.integrations.git.branch_name_generator" />
+            <argument type="service" id="symfony.expression.language" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator.pattern_prepare" />
+            <argument type="service" id="technodelight.jira.git_branchname_generator.string_cleaner" />
+            <argument type="service" id="autocompleter" />
+        </service>
 
+        <service id="technodelight.chatgpt.api"
+                 class="Technodelight\ChatGptExtension\Api\Api"
+                 lazy="true">
+            <argument type="service" id="technodelight.chatgpt.config" />
+            <argument type="service" id="technodelight.jira.config.integrations.git" />
+            <argument type="service" id="technodelight.chatgpt.git_branch_name_generator.original" />
+        </service>
     </services>
 
 </container>

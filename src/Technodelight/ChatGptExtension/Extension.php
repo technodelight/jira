@@ -2,12 +2,17 @@
 
 namespace {
     spl_autoload_register(function ($className) {
-        if (strpos($className, 'Technodelight\\ChatGptExtension') === false) {
+        if (!str_starts_with($className, 'Technodelight\\ChatGptExtension')) {
             return;
         }
-        $path = str_replace('\\', DIRECTORY_SEPARATOR, str_replace('Technodelight\\ChatGptExtension\\', '', $className));
-        if (is_file('./' . $path . '.php')) {
-            require_once './' . $path . '.php';
+        $path = str_replace(
+            '\\',
+            DIRECTORY_SEPARATOR,
+            str_replace('Technodelight\\ChatGptExtension\\', '', $className)
+        );
+
+        if (is_file(__DIR__ . DIRECTORY_SEPARATOR . $path . '.php')) {
+            require_once __DIR__ . DIRECTORY_SEPARATOR . $path . '.php';
         }
     });
 }

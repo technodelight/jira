@@ -5,11 +5,11 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="technodelight.jira.config.integrations.chatgpt"
+        <service id="technodelight.chatgpt.config"
                  class="Technodelight\ChatGptExtension\Configuration\AppConfig"
-                 lazy="true">
-            <factory class="Technodelight\ChatGptExtension\Configuration\AppConfig" method="fromArray" />
-            <argument type="collection" />
+                 public="true">
+            <factory class="Technodelight\ChatGptExtension\Configuration\AppConfig" method="fromConfig" />
+            <argument type="service" id="technodelight.jira.config" />
         </service>
     </services>
 

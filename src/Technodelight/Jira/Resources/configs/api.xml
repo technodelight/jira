@@ -10,7 +10,9 @@
         <service public="false" id="technodelight.jira.api_cache_storage" class="ICanBoogie\Storage\Storage">
             <factory service="technodelight.jira.api_cache_storage.builder" method="build" />
         </service>
-        <service id="technodelight.jira.api_cache.clearer" class="Technodelight\Jira\Connector\ICanBoogie\ApiCacheStorageClearer">
+        <service id="technodelight.jira.api_cache.clearer"
+                 class="Technodelight\Jira\Connector\ICanBoogie\ApiCacheStorageClearer"
+                 public="true">
             <argument type="service" id="technodelight.jira.api_cache_storage" />
         </service>
         <service public="false" id="technodelight.jira.api_client.config_provider" class="Technodelight\Jira\Connector\Jira\ConfigProvider">

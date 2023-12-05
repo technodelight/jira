@@ -13,11 +13,11 @@ class Locator
      */
     public function locate(array $config): array
     {
-        $config = array_merge(['class' => [], 'paths' => []], $config);
+        $config+= ['class' => [], 'paths' => []];
+//        $config = array_merge(['class' => [], 'paths' => []], $config);
 
         $extensionClasses = $config['class'];
         $extensionPaths = array_merge($config['paths'], [APPLICATION_ROOT_DIR]);
-
         $classMap = [];
         foreach ($extensionClasses as $extensionClass) {
             $parts = explode('\\', $extensionClass);

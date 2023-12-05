@@ -4,7 +4,12 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-
+        <service id="technodelight.chatgpt.git_branchname_generator"
+                 class="Technodelight\ChatGptExtension\Helpers\BranchnameGenerator"
+                 decorates="technodelight.jira.git_branchname_generator">
+            <argument type="service" id="technodelight.chatgpt.git_branchname_generator.inner" />
+            <argument type="service" id="technodelight.chatgpt.api" />
+        </service>
     </services>
 
 </container>

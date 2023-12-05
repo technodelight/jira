@@ -63,12 +63,12 @@ class ApplicationConfiguration implements RegistrableConfiguration
         $configuration->config = $config;
 
         $configuration->instances = InstancesConfiguration::fromArray($config['instances']);
-        $configuration->integrations = IntegrationsConfiguration::fromArray(isset($config['integrations']) ? $config['integrations'] : []);
-        $configuration->project = ProjectConfiguration::fromArray(isset($config['project']) ? $config['project'] : []);
-        $configuration->transitions = TransitionsConfiguration::fromArray(isset($config['transitions']) ? $config['transitions'] : []);
-        $configuration->aliases = AliasesConfiguration::fromArray(isset($config['aliases']) ? $config['aliases'] : []);
-        $configuration->filters = FiltersConfiguration::fromArray(isset($config['filters']) ? $config['filters'] : []);
-        $configuration->renderers = RenderersConfiguration::fromArray(isset($config['renderers']) ? $config['renderers'] : []);
+        $configuration->integrations = IntegrationsConfiguration::fromArray($config['integrations'] ?? []);
+        $configuration->project = ProjectConfiguration::fromArray($config['project'] ?? []);
+        $configuration->transitions = TransitionsConfiguration::fromArray($config['transitions'] ?? []);
+        $configuration->aliases = AliasesConfiguration::fromArray($config['aliases'] ?? []);
+        $configuration->filters = FiltersConfiguration::fromArray($config['filters'] ?? []);
+        $configuration->renderers = RenderersConfiguration::fromArray($config['renderers'] ?? []);
 
         return $configuration;
     }
