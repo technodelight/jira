@@ -43,28 +43,20 @@ class Issue extends Command implements IssueRendererAware
                 'Issue key (ie. PROJ-123), defaults to current issue, taken from branch name',
                 null,
                 function (CompletionInput $completionInput) {
-                    return array_filter(array_unique(array_merge([
-                        array_map(
-                            function (DomainIssue $issue) use ($completionInput) {
-                                $issueKey = $issue->issueKey()->issueKey();
-                                if (str_starts_with($issueKey, $completionInput->getCompletionValue())) {
-                                    return $issueKey;
-                                }
-                            },
-                            iterator_to_array($this->api->search(
-                                sprintf(
-                                    'issueKey ~ "%s" and assignee was currentUser()',
-                                    addslashes($completionInput->getCompletionValue())
-                                )
-                            ))
-                        ),
+                    $issueKeys = array_filter(array_unique(array_merge([
                         array_slice(array_filter(
                             $this->statCollector->all()->orderByMostRecent()->issueKeys(),
                             static function (string $issueKey) use ($completionInput) {
-                                return str_starts_with($issueKey, $completionInput->getCompletionValue());
+                                return str_starts_with(
+                                    strtolower($issueKey),
+                                    strtolower($completionInput->getCompletionValue())
+                                );
                             }
                         ), 0, 10)
                     ])));
+                    usort($issueKeys, fn($a, $b) => $a <=> $b);
+
+                    return $issueKeys;
                 }
             )
         ;

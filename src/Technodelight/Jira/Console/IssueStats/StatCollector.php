@@ -1,27 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\IssueStats;
 
 use ICanBoogie\Storage\Storage;
 
 class StatCollector
 {
-    /**
-     * @var \ICanBoogie\Storage\Storage
-     */
-    private $storage;
-    /**
-     * @var \Technodelight\Jira\Console\IssueStats\Serializer
-     */
-    private $serializer;
-
-    public function __construct(Storage $storage, Serializer $serializer)
-    {
-        $this->storage = $storage;
-        $this->serializer = $serializer;
+    public function __construct(
+        private readonly Storage $storage,
+        private readonly Serializer $serializer
+    ) {
     }
 
-    public function all()
+    public function all(): Stats
     {
         $stats = new Stats;
         foreach ($this->cacheKeys() as $issueKey) {
@@ -32,7 +25,7 @@ class StatCollector
         return $stats;
     }
 
-    private function cacheKeys()
+    private function cacheKeys(): array
     {
         $keys = [];
         foreach (glob($this->statDir() . DIRECTORY_SEPARATOR . '*.ttl') as $file) {
@@ -41,8 +34,8 @@ class StatCollector
         return $keys;
     }
 
-    private function statDir()
+    private function statDir(): string
     {
-        return getenv('HOME') . DIRECTORY_SEPARATOR . '.jira.stats';
+        return getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/stats';
     }
 }
