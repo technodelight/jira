@@ -105,9 +105,25 @@ BANNER;
     protected function getDefaultInputDefinition(): InputDefinition
     {
         $input = parent::getDefaultInputDefinition();
-        $input->addOption(new InputOption('--debug', null, InputOption::VALUE_NONE, 'Enable debug mode'));
-        $input->addOption(new InputOption('--instance', '-i', InputOption::VALUE_REQUIRED, 'Use an instance from config temporarily'));
-        $input->addOption(new InputOption('--no-cache', '-N', InputOption::VALUE_NONE, 'Cleare app cache before running command'));
+        $input->addOption(
+            new InputOption('--debug', null, InputOption::VALUE_NONE, 'Enable debug mode')
+        );
+        $input->addOption(
+            new InputOption(
+                '--instance',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Use an instance from config temporarily'
+            )
+        );
+        $input->addOption(
+            new InputOption(
+                '--no-cache', '
+                -N',
+                InputOption::VALUE_NONE,
+                'Clear app cache before running command'
+            )
+        );
 
         return $input;
     }
