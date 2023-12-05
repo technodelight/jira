@@ -43,17 +43,15 @@ class Issue extends Command implements IssueRendererAware
                 'Issue key (ie. PROJ-123), defaults to current issue, taken from branch name',
                 null,
                 function (CompletionInput $completionInput) {
-                    $issueKeys = array_filter(array_unique(array_merge([
-                        array_slice(array_filter(
-                            $this->statCollector->all()->orderByMostRecent()->issueKeys(),
-                            static function (string $issueKey) use ($completionInput) {
-                                return str_starts_with(
-                                    strtolower($issueKey),
-                                    strtolower($completionInput->getCompletionValue())
-                                );
-                            }
-                        ), 0, 10)
-                    ])));
+                    $issueKeys = array_slice(array_filter(
+                        $this->statCollector->all()->orderByMostRecent()->issueKeys(),
+                        static function (string $issueKey) use ($completionInput) {
+                            return str_starts_with(
+                                strtolower($issueKey),
+                                strtolower($completionInput->getCompletionValue())
+                            );
+                        }
+                    ), 0, 10);
                     usort($issueKeys, fn($a, $b) => $a <=> $b);
 
                     return $issueKeys;
