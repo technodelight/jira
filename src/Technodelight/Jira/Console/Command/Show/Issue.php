@@ -27,8 +27,6 @@ class Issue extends Command implements IssueRendererAware
         private readonly IssueRenderer $issueRenderer,
         private readonly WorklogHandler $worklogHandler,
         private readonly Wordwrap $wordwrap,
-        private readonly IssueKeyResolver\Guesser $guesser,
-        private readonly Git $git,
         private readonly StatCollector $statCollector
     ) {
         parent::__construct();
@@ -60,15 +58,12 @@ class Issue extends Command implements IssueRendererAware
                                 )
                             ))
                         ),
-                        $this->guesser->guessIssueKey(
-                            $completionInput->getCompletionValue(), $this->git->currentBranch()
-                        ),
-                        array_filter(
+                        array_slice(array_filter(
                             $this->statCollector->all()->orderByMostRecent()->issueKeys(),
                             static function (string $issueKey) use ($completionInput) {
                                 return str_starts_with($issueKey, $completionInput->getCompletionValue());
                             }
-                        )
+                        ), 0, 10)
                     ])));
                 }
             )

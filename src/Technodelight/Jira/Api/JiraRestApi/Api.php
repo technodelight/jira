@@ -5,7 +5,6 @@ namespace Technodelight\Jira\Api\JiraRestApi;
 use BadMethodCallException;
 use DateTime;
 use Exception;
-use HttpResponseException;
 use Sirprize\Queried\QueryException;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder as SearchQueryBuilder;
 use Technodelight\Jira\Domain\Comment\CommentId;
@@ -746,7 +745,7 @@ class Api
             ])
         );
         if (empty($response['sections'])) {
-            throw new HttpResponseException(
+            throw new BadMethodCallException(
                 '"sections" is missing from response'
             );
         }
