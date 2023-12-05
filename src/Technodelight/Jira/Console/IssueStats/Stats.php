@@ -75,7 +75,7 @@ class Stats implements \IteratorAggregate, \Countable
      * <b>Traversable</b>
      * @since 5.0.0
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new \ArrayIterator($this->stats);
     }
@@ -104,7 +104,7 @@ class Stats implements \IteratorAggregate, \Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return count($this->stats);
     }

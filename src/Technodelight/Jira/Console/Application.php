@@ -4,6 +4,8 @@ namespace Technodelight\Jira\Console;
 
 use Exception;
 use Symfony\Component\Console\Application as BaseApp;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
@@ -142,7 +144,7 @@ BANNER;
             return;
         }
 
-        $this->currentInstanceName = $input->getParameterOption(['--instance', '-i']) ?: 'default';
+        $this->currentInstanceName = $input->getParameterOption(['--instance']) ?: 'default';
 
         if (true === $input->hasParameterOption(['--no-cache', '-N'])) {
             $cache = $this->container->get('technodelight.jira.api_cache.clearer');

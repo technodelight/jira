@@ -59,6 +59,9 @@
             <argument type="service" id="technodelight.jira.issue_renderer" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
             <argument type="service" id="technodelight.jira.word_wrap" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver.guesser" />
+            <argument type="service" id="technodelight.gitshell.api" />
+            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.browse" class="Technodelight\Jira\Console\Command\Show\Browse">
