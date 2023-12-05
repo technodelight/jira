@@ -12,6 +12,7 @@ use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Api\JiraRestApi\SearchQuery\Builder;
 use Technodelight\Jira\Connector\GitShell\Api as Git;
 use Technodelight\Jira\Connector\WorklogHandler;
+use Technodelight\Jira\Console\Argument\IssueKeyAutocomplete;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Command\IssueRendererAware;
 use Technodelight\Jira\Console\IssueStats\StatCollector;
@@ -27,7 +28,7 @@ class Issue extends Command implements IssueRendererAware
         private readonly IssueRenderer $issueRenderer,
         private readonly WorklogHandler $worklogHandler,
         private readonly Wordwrap $wordwrap,
-        private readonly StatCollector $statCollector
+        private readonly IssueKeyAutocomplete $autocomplete
     ) {
         parent::__construct();
     }
@@ -42,20 +43,8 @@ class Issue extends Command implements IssueRendererAware
                 InputArgument::OPTIONAL,
                 'Issue key (ie. PROJ-123), defaults to current issue, taken from branch name',
                 null,
-                function (CompletionInput $completionInput) {
-                    $issueKeys = array_slice(array_filter(
-                        $this->statCollector->all()->orderByMostRecent()->issueKeys(),
-                        static function (string $issueKey) use ($completionInput) {
-                            return str_starts_with(
-                                strtolower($issueKey),
-                                strtolower($completionInput->getCompletionValue())
-                            );
-                        }
-                    ), 0, 10);
-                    usort($issueKeys, fn($a, $b) => $a <=> $b);
-
-                    return $issueKeys;
-                }
+                fn(CompletionInput $completionInput)
+                    => $this->autocomplete->autocomplete($completionInput->getCompletionValue())
             )
         ;
         $this->getDefinition()->getArgument('issueKey')->hasCompletion();

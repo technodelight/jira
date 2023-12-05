@@ -11,6 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
+use Technodelight\Jira\Domain\User;
 
 class Assignee
 {
@@ -25,14 +26,14 @@ class Assignee
     public function userPicker(InputInterface $input, OutputInterface $output): mixed
     {
         if (!$input->isInteractive()) {
-            throw new LogicException('Input is not interactive, cannot select assigne interactively');
+            throw new LogicException('Input is not interactive, cannot select assignee interactively');
         }
 
         $assignee = $this->assigneeResolver->resolve($input);
         $issueKey = $this->issueKeyResolver->argument($input, $output);
 
         if (empty($assignee)) {
-            $users = $this->api->assignablePicker($assignee, $issueKey);
+            $users = array_map(fn(User $user) => $user->name(), $this->api->assignablePicker($assignee, $issueKey));
             $question = new Question('Please provide a username for assignee');
             $question->setAutocompleterValues($users);
             return $this->questionHelper->ask($input, $output, $question);

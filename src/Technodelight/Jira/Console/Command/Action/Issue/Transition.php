@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Console\Command\Action\Issue;
 use Exception;
 use LogicException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,6 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Technodelight\GitShell\DiffEntry;
 use Technodelight\Jira\Api\JiraRestApi\Api;
+use Technodelight\Jira\Console\Argument\AssigneeAutocomplete;
+use Technodelight\Jira\Console\Argument\IssueKeyAutocomplete;
 use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Console\Input\Issue\Assignee\Assignee as AssigneeInput;
 use Technodelight\Jira\Console\Input\Issue\Assignee\AssigneeResolver;
@@ -44,7 +47,9 @@ class Transition extends Command
         private readonly Checker $optionChecker,
         private readonly AssigneeInput $assigneeInput,
         private readonly QuestionHelper $questionHelper,
-        private readonly Renderer $renderer
+        private readonly Renderer $renderer,
+        private readonly AssigneeAutocomplete $assigneeAutocomplete,
+        private readonly IssueKeyAutocomplete $issueKeyAutocomplete
     )
     {
         if (empty($transitions)) {
@@ -65,20 +70,19 @@ class Transition extends Command
             ->addArgument(
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::OPTIONAL,
-                'Issue key (ie. PROJ-123)'
+                'Issue key (ie. PROJ-123)',
+                null,
+                fn(CompletionInput $completionInput)
+                    => $this->issueKeyAutocomplete->autocomplete($completionInput->getCompletionValue())
             )
             ->addOption(
                 'assign',
                 'a',
                 InputOption::VALUE_OPTIONAL,
                 'change assignee',
-                AssigneeResolver::DEFAULT_ASSIGNEE
-            )
-            ->addOption(
-                'assignee',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'change assignee (alias)'
+                AssigneeResolver::DEFAULT_ASSIGNEE,
+                fn(CompletionInput $completionInput)
+                    => $this->assigneeAutocomplete->autocomplete($completionInput->getCompletionValue())
             )
             ->addOption(
                 'unassign',
@@ -145,10 +149,6 @@ class Transition extends Command
         mixed $assignee,
         IssueKey $issueKey
     ): mixed {
-        // copy value from assignee shortcut
-        if ($input->getOption('assignee') && !$input->getOption('assign')) {
-            $input->setOption('assign', $input->getOption('assignee'));
-        }
         if ($input->getOption('assign') || $this->optionChecker->hasOptionWithoutValue($input, 'assign')) {
             $assignee = $this->optionChecker->hasOptionWithoutValue($input, 'assign')
                 ? $this->assigneeInput->userPicker($input, $output)

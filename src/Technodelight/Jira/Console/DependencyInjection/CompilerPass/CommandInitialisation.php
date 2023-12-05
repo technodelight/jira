@@ -21,8 +21,10 @@ class CommandInitialisation implements CompilerPassInterface
         $this->prepareCommandsFromConfiguration($container, $config);
     }
 
-    private function prepareCommandsFromConfiguration(ContainerBuilder $container, ApplicationConfiguration $config): void
-    {
+    private function prepareCommandsFromConfiguration(
+        ContainerBuilder $container,
+        ApplicationConfiguration $config
+    ): void {
         foreach ($config->transitions()->items() as $transition) {
             $this->createAndAddServiceCommand(
                 'transition',
@@ -51,8 +53,12 @@ class CommandInitialisation implements CompilerPassInterface
         }
     }
 
-    private function createAndAddServiceCommand(string $type, string $command, ContainerBuilder $container, Definition $definition): void
-    {
+    private function createAndAddServiceCommand(
+        string $type,
+        string $command,
+        ContainerBuilder $container,
+        Definition $definition
+    ): void {
         $serviceId = sprintf(
             'technodelight.jira.app.command.%s.%s',
             $type,
@@ -77,7 +83,9 @@ class CommandInitialisation implements CompilerPassInterface
                 $container->getDefinition('technodelight.jira.console.option.checker'),
                 $container->getDefinition('technodelight.jira.console.input.issue.assignee'),
                 $container->getDefinition('console.question_helper'),
-                $container->getDefinition('technodelight.jira.renderer.action.issue.transition')
+                $container->getDefinition('technodelight.jira.renderer.action.issue.transition'),
+                $container->getDefinition('technodelight.jira.console.argument.assignee_autocomplete'),
+                $container->getDefinition('technodelight.jira.console.argument.issue_key_autocomplete')
             ]
         );
     }
@@ -86,7 +94,9 @@ class CommandInitialisation implements CompilerPassInterface
     {
         $definition = new Definition(IssueFilter::class, $arguments);
         $definition->addMethodCall('setJiraApi', [$container->getDefinition('technodelight.jira.api')]);
-        $definition->addMethodCall('setIssueRenderer', [$container->getDefinition('technodelight.jira.issue_renderer')]);
+        $definition->addMethodCall(
+            'setIssueRenderer', [$container->getDefinition('technodelight.jira.issue_renderer')]
+        );
 
         return $definition;
     }

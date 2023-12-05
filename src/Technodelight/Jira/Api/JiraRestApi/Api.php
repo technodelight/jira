@@ -127,6 +127,7 @@ class Api
                 'exclude' => $exclude,
             ])
         );
+
         return array_map(
             function (array $user) {
                 return UserPickerResult::fromArray($user);
@@ -155,6 +156,7 @@ class Api
                 'maxResults' => $maxResults
             ])
         );
+
         return array_map(static function(array $user) { return User::fromArray($user); }, $users);
     }
 
@@ -184,7 +186,9 @@ class Api
             function(array $project) {
                 return Project::fromArray($project);
             },
-            $this->client->get('project' . $this->queryStringFromParams(['recent' => $numberOfRecent ? (int) $numberOfRecent : null]))
+            $this->client->get(
+                'project' . $this->queryStringFromParams(['recent' => $numberOfRecent ? (int) $numberOfRecent : null])
+            )
         );
     }
 
@@ -232,7 +236,9 @@ class Api
     public function createWorklog(Worklog $worklog)
     {
         $jiraRecord = $this->client->post(
-            sprintf('issue/%s/worklog', $worklog->issueIdentifier()) . $this->queryStringFromParams(['adjustEstimate' => 'auto']),
+            sprintf(
+                'issue/%s/worklog', $worklog->issueIdentifier()
+            ) . $this->queryStringFromParams(['adjustEstimate' => 'auto']),
             [
                 'comment' => $worklog->comment(),
                 'started' => DateHelper::dateTimeToJira($worklog->date()),
@@ -258,7 +264,10 @@ class Api
         );
 
         foreach ($records as $logRecord) {
-            yield Worklog::fromArray($this->normaliseDateFields($logRecord), IssueId::fromNumeric($logRecord['issueId']));
+            yield Worklog::fromArray(
+                $this->normaliseDateFields($logRecord),
+                IssueId::fromNumeric($logRecord['issueId'])
+            );
         }
     }
 

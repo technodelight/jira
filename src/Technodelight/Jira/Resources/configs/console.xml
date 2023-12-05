@@ -214,6 +214,14 @@
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
         </service>
+
+        <!-- autocompleters -->
+        <service id="technodelight.jira.console.argument.issue_key_autocomplete" class="Technodelight\Jira\Console\Argument\IssueKeyAutocomplete">
+            <argument type="service" id="technodelight.jira.console.issue_stats.stat_collector" />
+        </service>
+        <service id="technodelight.jira.console.argument.assignee_autocomplete" class="Technodelight\Jira\Console\Argument\AssigneeAutocomplete">
+            <argument type="service" id="technodelight.jira.api" />
+        </service>
     </services>
 
 </container>
