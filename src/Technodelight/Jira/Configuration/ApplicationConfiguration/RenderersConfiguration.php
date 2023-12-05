@@ -179,7 +179,7 @@ class RenderersConfiguration implements RegistrableConfiguration
         return $this->preference['view'];
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'renderers';
     }
@@ -187,7 +187,7 @@ class RenderersConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

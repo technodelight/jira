@@ -52,7 +52,7 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         return $this->editor;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'integrations';
     }
@@ -60,7 +60,7 @@ class IntegrationsConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

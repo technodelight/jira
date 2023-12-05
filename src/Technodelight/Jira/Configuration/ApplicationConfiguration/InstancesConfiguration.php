@@ -62,7 +62,7 @@ class InstancesConfiguration implements RegistrableConfiguration
         );
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'instances';
     }
@@ -70,7 +70,7 @@ class InstancesConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

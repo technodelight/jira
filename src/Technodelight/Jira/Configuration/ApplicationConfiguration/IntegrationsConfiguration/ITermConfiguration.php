@@ -49,7 +49,7 @@ class ITermConfiguration implements RegistrableConfiguration
         return $this->imageCacheTtl;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'iterm';
     }
@@ -57,7 +57,7 @@ class ITermConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

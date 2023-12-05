@@ -134,6 +134,8 @@
             <argument type="service" id="technodelight.jira.console.input.issue.assignee_resolver" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
             <argument type="service" id="technodelight.jira.renderer.action.renderer" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_autocomplete" />
+            <argument type="service" id="technodelight.jira.console.argument.assignee_autocomplete" />
 
             <tag name="command" />
         </service>

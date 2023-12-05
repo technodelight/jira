@@ -4,13 +4,7 @@ namespace Technodelight\Jira\Configuration\ApplicationConfiguration\Service;
 
 interface RegistrableConfiguration
 {
-    /**
-     * @return string
-     */
-    public function servicePrefix();
+    public function servicePrefix(): string;
 
-    /**
-     * @return array
-     */
-    public function configAsArray();
+    public function configAsArray(): array;
 }

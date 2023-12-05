@@ -61,7 +61,7 @@ class TransitionsConfiguration implements RegistrableConfiguration
         );
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'transitions';
     }
@@ -69,7 +69,7 @@ class TransitionsConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

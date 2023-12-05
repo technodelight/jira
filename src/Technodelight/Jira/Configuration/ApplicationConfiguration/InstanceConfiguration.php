@@ -61,7 +61,7 @@ class InstanceConfiguration implements RegistrableConfiguration
     /**
      * @return string
      */
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return $this->name;
     }
@@ -69,7 +69,7 @@ class InstanceConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

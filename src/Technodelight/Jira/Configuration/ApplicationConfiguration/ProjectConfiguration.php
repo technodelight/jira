@@ -59,7 +59,7 @@ class ProjectConfiguration implements RegistrableConfiguration
         return $this->cacheTtl;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'project';
     }
@@ -67,7 +67,7 @@ class ProjectConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

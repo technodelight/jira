@@ -38,7 +38,7 @@ class FiltersConfiguration implements RegistrableConfiguration
         return $this->filters;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'filters';
     }
@@ -46,7 +46,7 @@ class FiltersConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

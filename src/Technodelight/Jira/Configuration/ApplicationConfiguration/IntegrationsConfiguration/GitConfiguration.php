@@ -46,7 +46,7 @@ class GitConfiguration implements RegistrableConfiguration
         return $this->branchNameGenerator;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'git';
     }
@@ -54,7 +54,7 @@ class GitConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

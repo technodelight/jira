@@ -58,7 +58,7 @@ class GitHubConfiguration implements RegistrableConfiguration
         return $this->repo;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'github';
     }
@@ -66,7 +66,7 @@ class GitHubConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

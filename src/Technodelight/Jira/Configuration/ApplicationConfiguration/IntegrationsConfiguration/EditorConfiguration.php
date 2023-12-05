@@ -29,7 +29,7 @@ class EditorConfiguration implements RegistrableConfiguration
         return $this->executable;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'editor';
     }
@@ -37,7 +37,7 @@ class EditorConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }

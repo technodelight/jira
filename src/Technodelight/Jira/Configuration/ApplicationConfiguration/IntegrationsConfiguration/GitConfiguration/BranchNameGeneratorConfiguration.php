@@ -80,7 +80,7 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
         return $this->replace;
     }
 
-    public function servicePrefix()
+    public function servicePrefix(): string
     {
         return 'branch_name_generator';
     }
@@ -88,7 +88,7 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
     /**
      * @return array
      */
-    public function configAsArray()
+    public function configAsArray(): array
     {
         return $this->config;
     }
