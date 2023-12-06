@@ -773,12 +773,10 @@ class Api
      *
      * @return Field[]
      */
-    public function fields()
+    public function fields(): array
     {
         return array_map(
-            function (array $field) {
-                return Field::fromArray($field);
-            },
+            fn(array $field) => Field::fromArray($field),
             $this->client->get('field')
         );
     }
@@ -803,7 +801,7 @@ class Api
     public function linkIssue(
         IssueKey $inwardIssueKey,
         IssueKey $outwardIssueKey,
-        $linkName,
+        string $linkName,
         string $comment = ''
     ): IssueLink {
         $data = [

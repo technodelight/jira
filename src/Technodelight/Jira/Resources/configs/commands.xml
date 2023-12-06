@@ -34,6 +34,7 @@
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.console.argument.issue_key_resolver" />
             <argument type="service" id="technodelight.jira.console.option.checker" />
+            <argument type="service" id="technodelight.jira.console.argument.issue_key_autocomplete" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.statuses" class="Technodelight\Jira\Console\Command\Show\Statuses">

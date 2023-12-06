@@ -19,7 +19,8 @@ class Week extends Base
                 'date',
                 InputArgument::OPTIONAL,
                 'Show your worklogs for the given date, could be "last week", "2015-09-28", this week by default',
-                'this week'
+                'this week',
+                ['this week', 'last week']
             )
         ;
         $this->addProgressCommandOptions();

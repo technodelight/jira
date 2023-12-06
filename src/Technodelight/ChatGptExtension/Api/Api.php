@@ -73,10 +73,13 @@ class Api
                 [
                     'role' => 'user',
                     'content' => strtr(
-                        'summary: {summary}, description: {description}',
+                        'summary: {summary}{description}{ac}',
                         [
                             '{summary}' => $issue->summary(),
-                            '{description}' => $issue->description()
+                            '{description}' => ($description = $issue->description())
+                                ? ', description: ' . $description : '',
+                            '{ac}' => ($ac = $issue->findField('Acceptance Criteria'))
+                                ? ', acceptance criteria:' . $ac : ''
                         ]
                     )
                 ]
