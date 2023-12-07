@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper;
 
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -14,42 +16,15 @@ use Technodelight\Jira\Domain\Issue;
 
 class CheckoutBranch
 {
-    /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration
-     */
-    private $config;
-    /**
-     * @var \Technodelight\GitShell\ApiInterface
-     */
-    private $git;
-    /**
-     * @var \Technodelight\Jira\Helper\GitBranchnameGenerator
-     */
-    private $branchnameGenerator;
-    /**
-     * @var \Symfony\Component\Console\Helper\QuestionHelper
-     */
-    private $questionHelper;
-
     public function __construct(
-        GitConfiguration $config,
-        GitShell $git,
-        GitBranchnameGenerator $branchnameGenerator,
-        QuestionHelper $questionHelper
-    )
-    {
-        $this->config = $config;
-        $this->git = $git;
-        $this->branchnameGenerator = $branchnameGenerator;
-        $this->questionHelper = $questionHelper;
+        private readonly GitConfiguration $config,
+        private readonly GitShell $git,
+        private readonly GitBranchnameGenerator $branchnameGenerator,
+        private readonly QuestionHelper $questionHelper
+    ) {
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     */
-    public function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue)
+    public function checkoutToBranch(InputInterface $input, OutputInterface $output, Issue $issue): void
     {
         if (!$this->gitBranchesForIssue($issue)) {
             $branchName = $this->getProperBranchName($input, $output, $issue);
@@ -60,14 +35,7 @@ class CheckoutBranch
         }
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     * @return void
-     * @throws \LogicException if can't select branch
-     */
-    private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue)
+    private function chooseBranch(InputInterface $input, OutputInterface $output, Issue $issue): void
     {
         if ($input->hasOption('local') && true === $input->getOption('local')) {
             $generatedBranchOption = '';
@@ -121,25 +89,20 @@ class CheckoutBranch
         }
     }
 
-    /**
-     * @param Branch[] $branches
-     */
-    private function branchesAsTextArray(array $branches)
+    private function branchesAsTextArray(array $branches): array
     {
         return array_map(
-            function(Branch $branch) {
-                return sprintf('%s (%s)', $branch->name(), $branch->isRemote() ? 'remote' : 'local');
-            },
+            fn(Branch $branch) => sprintf('%s (%s)', $branch->name(), $branch->isRemote() ? 'remote' : 'local'),
             $branches
         );
     }
 
-    private function gitBranchesForIssue(Issue $issue)
+    private function gitBranchesForIssue(Issue $issue): array
     {
         return $this->git->branches((string)$issue->issueKey());
     }
 
-    private function localGitBranchesForIssue(Issue $issue)
+    private function localGitBranchesForIssue(Issue $issue): array
     {
         return array_filter(
             $this->git->branches((string)$issue->issueKey()),
@@ -149,24 +112,24 @@ class CheckoutBranch
         );
     }
 
-    private function generateBranchName(Issue $issue)
+    private function generateBranchName(Issue $issue): string
     {
         return $this->branchnameGenerator->fromIssue($issue);
     }
 
-    private function generateBranchNameWithAutocomplete(Issue $issue, InputInterface $input, OutputInterface $output)
-    {
+    private function generateBranchNameWithAutocomplete(
+        Issue $issue,
+        InputInterface $input,
+        OutputInterface $output
+    ): string {
         return $this->branchnameGenerator->fromIssueWithAutocomplete($issue, $input, $output);
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param string $branchName
-     * return bool
-     */
-    private function isShorteningBranchNameConfirmed(InputInterface $input, OutputInterface $output, $branchName)
-    {
+    private function isShorteningBranchNameConfirmed(
+        InputInterface $input,
+        OutputInterface $output,
+        string $branchName
+    ): bool {
         return $this->questionHelper->ask(
             $input,
             $output,
@@ -179,13 +142,7 @@ class CheckoutBranch
         );
     }
 
-    /**
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param Issue $issue
-     * @return string
-     */
-    private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue)
+    private function getProperBranchName(InputInterface $input, OutputInterface $output, Issue $issue): string
     {
         $selectedBranch = $this->generateBranchName($issue);
         if ((strlen($selectedBranch) > $this->config->maxBranchNameLength())

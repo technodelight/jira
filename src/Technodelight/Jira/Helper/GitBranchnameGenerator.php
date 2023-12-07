@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper;
 
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
 use Technodelight\Jira\Connector\Autocompleter;

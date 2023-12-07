@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Show;
 
 use Symfony\Component\Console\Command\Command;
@@ -35,7 +37,7 @@ class Fields extends Command
                 'issueKey',
                 '',
                 InputOption::VALUE_OPTIONAL,
-                'Check fields for a concrete issue',
+                'Check available fields for a specific issue',
                 null,
                 fn(CompletionInput $i) => $this->autocomplete->autocomplete($i->getCompletionValue())
             )

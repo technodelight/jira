@@ -5,9 +5,8 @@
 
     <services>
         <service id="technodelight.chatgpt.git_branchname_generator"
-                 class="Technodelight\ChatGptExtension\Helpers\BranchnameGenerator"
-                 decorates="technodelight.jira.git_branchname_generator">
-            <argument type="service" id="technodelight.chatgpt.git_branchname_generator.inner" />
+                 class="Technodelight\ChatGptExtension\Helpers\BranchnameGenerator">
+            <argument type="service" id="technodelight.jira.git_branchname_generator" />
             <argument type="service" id="technodelight.chatgpt.api" />
         </service>
     </services>

@@ -268,6 +268,24 @@
             <argument type="service" id="technodelight.jira.console.configuration.configuration" />
             <tag name="command" />
         </service>
+
+        <service id="technodelight.jira.app.command.filter.abstract"
+                 class="Technodelight\Jira\Console\Command\Action\Issue\Transition"
+                 abstract="true">
+            <argument type="abstract" key="$name">Command name</argument>
+            <argument type="abstract" key="$transitions">Transitions to perform</argument>
+            <argument type="service" key="$jira" id="technodelight.jira.api"/>
+            <argument type="service" key="$issueKeyResolver" id="technodelight.jira.console.argument.issue_key_resolver"/>
+            <argument type="service" key="$checkoutBranch" id="technodelight.jira.checkout_branch"/>
+            <argument type="service" key="$git" id="technodelight.gitshell.api"/>
+            <argument type="service" key="$templateHelper" id="technodelight.jira.template_helper"/>
+            <argument type="service" key="$optionChecker" id="technodelight.jira.console.option.checker"/>
+            <argument type="service" key="$assigneeInput" id="technodelight.jira.console.input.issue.assignee"/>
+            <argument type="service" key="$questionHelper" id="console.question_helper"/>
+            <argument type="service" key="$renderer" id="technodelight.jira.renderer.action.issue.transition"/>
+            <argument type="service" key="$assigneeAutocomplete" id="technodelight.jira.console.argument.assignee_autocomplete"/>
+            <argument type="service" key="$issueKeyAutocomplete" id="technodelight.jira.console.argument.issue_key_autocomplete"/>
+        </service>
         <!-- filter commands -->
 
     </services>

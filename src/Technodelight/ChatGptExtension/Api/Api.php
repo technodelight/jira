@@ -34,8 +34,9 @@ class Api
                     'content' => strtr('You are an assistant to generate GIT branch names from the context'
                     . ' given by the user. The branch pattern looks like this sample: {pattern}, with a maximum'
                     . ' preferred total length of {maxChars} characters. The user gives to the issue key and the other'
-                    . ' contextual information you need to use to generate a meaningful and short branch name. You'
-                    . ' only need to reply with the branch name.',
+                    . ' contextual information you need to use to generate a meaningful and short branch name. The'
+                    . ' branch name should reflect the intention of fixing or implementing a given feature, depending'
+                    . ' on the issue type. You only need to reply with the branch name.',
                         [
                             '{pattern}' => $this->branchnameGenerator->fromIssue($issue),
                             '{maxChars}' => $this->gitConfiguration->maxBranchNameLength()
@@ -44,11 +45,13 @@ class Api
                 [
                     'role' => 'user',
                     'content' => strtr(
-                        'Issue key: {issueKey}, summary: {summary}, description: {description}',
+                        'Issue key: {issueKey}, summary: {summary}, description: {description},'
+                        . ' issue type: {issueType}',
                         [
                             '{issueKey}' => $issue->issueKey()->issueKey(),
                             '{summary}' => $issue->summary(),
-                            '{description}' => $issue->description()
+                            '{description}' => $issue->description(),
+                            '{issueType}' => $issue->issueType()->name()
                         ]
                     )
                 ]

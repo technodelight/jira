@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Action\General;
 
-use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Renderer\Action\Error;
 use Technodelight\Jira\Renderer\Action\Renderer as ActionRenderer;
@@ -12,14 +14,8 @@ use Technodelight\Jira\Renderer\Action\Success;
 
 class Renderer implements ActionRenderer
 {
-    /**
-     * @var StyleGuide
-     */
-    private $styleGuide;
-
-    public function __construct(StyleGuide $styleGuide)
+    public function __construct(private readonly StyleGuide $styleGuide)
     {
-        $this->styleGuide = $styleGuide;
     }
 
     public function canProcess(Result $result): bool
@@ -64,9 +60,10 @@ class Renderer implements ActionRenderer
         );
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here
+            //@TODO: a nice formatting would be good here
+            $output->writeln($error->exception()->getTraceAsString());
         }
 
-        return $error->exception()->getCode() ?: 1;
+        return $error->exception()->getCode() ?: Command::FAILURE;
     }
 }

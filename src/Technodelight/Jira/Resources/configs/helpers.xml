@@ -26,7 +26,8 @@
         <service id="technodelight.jira.checkout_branch" class="Technodelight\Jira\Helper\CheckoutBranch">
             <argument type="service" id="technodelight.jira.config.integrations.git" />
             <argument type="service" id="technodelight.gitshell.api" />
-            <argument type="service" id="technodelight.jira.git_branchname_generator" />
+            <!-- @TODO instead of hard wiring this needs to be injected into the service -->
+            <argument type="service" id="technodelight.chatgpt.git_branchname_generator" />
             <argument type="service" id="console.question_helper" />
         </service>
 
