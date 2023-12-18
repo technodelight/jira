@@ -6,6 +6,7 @@
 #
 BUILDER = ./build
 VERSION = $(shell git describe --abbrev=0 --tags)
+NEXT_VERSION = $(shell echo "$(VERSION)" | awk -F. -v OFS=. 'NF==1{print ++$$NF}; NF>1{if(length($$NF+1)>length($$NF))$$(NF-1)++; $$NF=sprintf("%0*d", length($$NF), ($$NF+1)%(10^length($$NF))); print}')
 PHAR_FILE = jira.phar
 INSTALL_DEST = /usr/local/bin/jira
 
@@ -24,9 +25,14 @@ install: jira.phar
 	@cp $(PHAR_FILE) $(INSTALL_DEST)
 
 release:
-	git tag $(git tag --list | sort -k1V | tail -1 | awk -F. -v OFS=. 'NF==1{print ++$$NF}; NF>1{if(length($$NF+1)>length($$NF))$$(NF-1)++; $$NF=sprintf("%0*d", length($$NF), ($$NF+1)%(10^length($$NF))); print}')
+	@echo $(NEXT_VERSION)
+	git tag $(NEXT_VERSION)
+
 push:
 	git push -u && git push --tags --no-verify
+
+increment-release: release push
+
 # To start over from scratch, type 'make clean'.
 # Removes all .phar files, so that the next make rebuilds them
 #
