@@ -24,6 +24,7 @@ namespace Technodelight\ChatGptExtension
     use Symfony\Component\Config\FileLocator;
     use Symfony\Component\DependencyInjection\ContainerBuilder;
     use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+    use Symfony\Component\DependencyInjection\Reference;
     use Technodelight\Jira\Extension\ExtensionInterface;
 
     class Extension implements ExtensionInterface
@@ -32,6 +33,9 @@ namespace Technodelight\ChatGptExtension
         {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
             $loader->load('services.xml');
+
+            $def = $container->getDefinition('technodelight.jira.checkout_branch');
+            $def->setArgument(2, new Reference('technodelight.chatgpt.git_branchname_generator'));
         }
 
         public function configure(): ArrayNodeDefinition
