@@ -75,7 +75,7 @@ jobs:
           asset_name: jira.phar
           asset_content_type: application/php
       - name: Publish release
-        uses: StuYarrow/publish-release@v2
+        uses: StuYarrow/publish-release@v1.1.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
