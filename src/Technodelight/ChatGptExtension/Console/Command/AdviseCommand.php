@@ -17,7 +17,7 @@ use Technodelight\Jira\Console\Argument\IssueKeyResolver;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Renderer\Issue\Header;
 
-class SummarizeCommand extends Command
+class AdviseCommand extends Command
 {
     public function __construct(
         private readonly Api $api,
@@ -33,9 +33,9 @@ class SummarizeCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('chatgpt:summarize')
-            ->setAliases(['summarize'])
-            ->setDescription('Summarize an issue using chatGPT')
+            ->setName('chatgpt:advise')
+            ->setAliases(['advise'])
+            ->setDescription('Drop an advise to solve the issue using chatGPT')
             ->addArgument(
                 'issueKey',
                 InputArgument::OPTIONAL,
@@ -45,10 +45,10 @@ class SummarizeCommand extends Command
                 => $this->autocomplete->autocomplete($completionInput->getCompletionValue())
             )
             ->addOption(
-                'with-comments',
-                null,
-                InputOption::VALUE_NONE,
-                'Summarize comments as well. Might burn your token allowance, be aware.'
+                'additionalContext',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Provide additional context to the input'
             )
         ;
     }
@@ -56,16 +56,12 @@ class SummarizeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issue = $this->jira->retrieveIssue($this->issueKeyResolver->argument($input, $output));
-        $summary = $this->api->summarize($issue);
+        $advise = $this->api->advise($issue, $input->getOption('additionalContext') ?? null);
 
         $this->renderer->render($output, $issue);
-        $output->writeln('<info>that\'s this thing all about:</info>');
-        $output->writeln($this->templateHelper->tabulate($summary));
-        if ($input->getOption('with-comments') && !empty($issue->comments())) {
-            $output->writeln('<info>here\'s the discussion in the comments:</info>');
-            $comments = $this->api->summarizeComments($issue);
-            $output->writeln($this->templateHelper->tabulate($comments));
-        }
+        $output->writeln('<info>here\'s a possible solution:</info>');
+        $output->writeln($this->templateHelper->tabulate($advise));
+
         return self::SUCCESS;
     }
 }

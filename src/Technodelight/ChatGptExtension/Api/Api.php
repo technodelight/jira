@@ -94,6 +94,43 @@ class Api
         return $response['choices'][0]['message']['content'] ?? '';
     }
 
+    public function advise(Issue $issue, ?string $additionalContext): string
+    {
+        $response = $this->client->chat()->create([
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => 'You are a helpful assistant to advise on solutions for JIRA issues,'
+                        . ' based on context from the user. The user can input the issue name, description, acceptance'
+                        . ' critera and comments, if present. You need to advise up to 3 possible solutions and '
+                        . ' highlight which one is the most likely to solve the problem. The user may specify'
+                        . ' additional context.'
+                ],
+                [
+                    'role' => 'user',
+                    'content' => strtr(
+                        'summary: {summary}{description}{ac}{comments}{additionalContext}',
+                        [
+                            '{summary}' => '"' . $issue->summary() . '"',
+                            '{description}' => ($description = $issue->description())
+                                ? ', description: "' . $description : '"',
+                            '{ac}' => ($ac = $issue->findField('Acceptance Criteria'))
+                                ? ', acceptance criteria: "' . $ac : '"',
+                            '{comments}' => $issue->comments() ? ', ' . $this->assembleCommentsString($issue) : '',
+                            '{additionalContext}' => $additionalContext
+                                ? PHP_EOL. 'additional context:' . $additionalContext
+                                : ''
+                        ]
+                    )
+                ]
+            ],
+            'model' => self::MODEL
+        ]);
+        $this->log($response);
+
+        return $response['choices'][0]['message']['content'] ?? '';
+    }
+
     public function summarizeComments(Issue $issue): string
     {
         $response = $this->client->chat()->create([
@@ -106,10 +143,7 @@ class Api
                 ],
                 [
                     'role' => 'user',
-                    'content' => 'comments:' . PHP_EOL . join(PHP_EOL, array_map(
-                        fn(Comment $comment)
-                            => $comment->author()->displayName() . ': ' . $comment->body(), $issue->comments()
-                        , $issue->comments()))
+                    'content' => $this->assembleCommentsString($issue)
                 ]
             ],
             'model' => self::MODEL
@@ -124,5 +158,16 @@ class Api
         if (in_array('--debug', $_SERVER['argv'])) {
             file_put_contents('php://stderr', var_export($var, true) . PHP_EOL, FILE_APPEND);
         }
+    }
+
+    /**
+     * @param Issue $issue
+     * @return string
+     */
+    public function assembleCommentsString(Issue $issue): string
+    {
+        return 'comments:' . PHP_EOL . join(PHP_EOL, array_map(
+                fn(Comment $comment) => $comment->author()->displayName() . ': ' . $comment->body(), $issue->comments()
+                , $issue->comments()));
     }
 }
