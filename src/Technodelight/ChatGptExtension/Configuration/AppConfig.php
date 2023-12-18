@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Technodelight\ChatGptExtension\Configuration;
 
+use Technodelight\ChatGptExtension\Api\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 class AppConfig
@@ -11,11 +12,14 @@ class AppConfig
     private string $apiKey;
     private ?string $organization;
 
+    private string $model;
+
     public static function fromArray(array $config): AppConfig
     {
         $instance = new self;
         $instance->apiKey = $config['apiKey'] ?? '';
         $instance->organization = $config['organization'] ?? null;
+        $instance->model = $config['model'] ?? Api::MODEL;
 
         return $instance;
     }
@@ -35,6 +39,11 @@ class AppConfig
         return $this->organization;
     }
 
+    public function model(): string
+    {
+        return $this->model;
+    }
+
     public function servicePrefix(): string
     {
         return 'chatgpt';
@@ -42,6 +51,6 @@ class AppConfig
 
     public function configAsArray(): array
     {
-        return ['apiKey' => $this->apiKey, 'organization' => $this->organization];
+        return ['apiKey' => $this->apiKey, 'organization' => $this->organization, 'model' => $this->model];
     }
 }

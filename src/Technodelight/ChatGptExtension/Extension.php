@@ -25,6 +25,7 @@ namespace Technodelight\ChatGptExtension
     use Symfony\Component\DependencyInjection\ContainerBuilder;
     use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
     use Symfony\Component\DependencyInjection\Reference;
+    use Technodelight\ChatGptExtension\Api\Api;
     use Technodelight\Jira\Extension\ExtensionInterface;
 
     class Extension implements ExtensionInterface
@@ -48,6 +49,7 @@ namespace Technodelight\ChatGptExtension
                 ->children()
                     ->scalarNode('apiKey')->attribute('hidden', true)->defaultNull()->end()
                     ->scalarNode('organization')->defaultNull()->end()
+                    ->scalarNode('model')->defaultValue(Api::MODEL)->end()
                 ->end()
             ->end();
 
