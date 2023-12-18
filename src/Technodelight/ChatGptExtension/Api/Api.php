@@ -104,7 +104,8 @@ class Api
                         . ' based on context from the user. The user can input the issue name, description, acceptance'
                         . ' critera and comments, if present. You need to advise up to 3 possible solutions and '
                         . ' highlight which one is the most likely to solve the problem. The user may specify'
-                        . ' additional context.'
+                        . ' additional context. You can add your own proposed solution based on the previously'
+                        . ' described problems.'
                 ],
                 [
                     'role' => 'user',
