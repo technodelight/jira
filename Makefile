@@ -31,7 +31,7 @@ release:
 push:
 	git push -u && git push --tags --no-verify
 
-increment-release: release push
+incremental-release: release push
 
 # To start over from scratch, type 'make clean'.
 # Removes all .phar files, so that the next make rebuilds them
