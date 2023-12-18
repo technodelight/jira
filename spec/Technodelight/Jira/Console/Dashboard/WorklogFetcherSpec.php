@@ -3,7 +3,7 @@
 namespace spec\Technodelight\Jira\Console\Dashboard;
 
 use PhpSpec\ObjectBehavior;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 use Technodelight\Jira\Api\JiraRestApi\Api as Jira;
 use Technodelight\Jira\Connector\WorklogHandler;
 use Technodelight\Jira\Domain\Issue;
@@ -14,7 +14,7 @@ use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
-class DashboardSpec extends ObjectBehavior
+class WorklogFetcherSpec extends ObjectBehavior
 {
     const DATE = '2018-01-14T22:05:23+0000';
     const ISSUEKEY = 'TEST-001';
@@ -55,7 +55,7 @@ class DashboardSpec extends ObjectBehavior
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $ref, $ref);
 
-        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), Dashboard::MODE_DAILY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), WorklogFetcher::MODE_DAILY)->shouldBeLike($dashboardCollection);
     }
 
     function it_loads_and_groups_worklogs_per_week(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
@@ -74,7 +74,7 @@ class DashboardSpec extends ObjectBehavior
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);
 
-        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), Dashboard::MODE_WEEKLY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), WorklogFetcher::MODE_WEEKLY)->shouldBeLike($dashboardCollection);
     }
 
     function it_loads_and_groups_worklogs_per_month(Jira $jira, WorklogHandler $worklogHandler, IssueCollection $issueCollection, Issue $issue)
@@ -93,6 +93,6 @@ class DashboardSpec extends ObjectBehavior
 
         $dashboardCollection = Collection::fromWorklogCollection($worklogCollection, $start, $end);
 
-        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), Dashboard::MODE_MONTHLY)->shouldBeLike($dashboardCollection);
+        $this->fetch(self::DATE, User::fromArray($this->logRecord['author']), WorklogFetcher::MODE_MONTHLY)->shouldBeLike($dashboardCollection);
     }
 }

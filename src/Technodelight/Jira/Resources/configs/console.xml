@@ -211,7 +211,7 @@
                  class="Technodelight\Jira\Console\Option\Checker" />
 
         <!-- console output handlers -->
-        <service id="technodelight.jira.console.dashboard.dashboard" class="Technodelight\Jira\Console\Dashboard\Dashboard" >
+        <service id="technodelight.jira.console.dashboard.worklog_fetcher" class="Technodelight\Jira\Console\Dashboard\WorklogFetcher" >
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.worklog_handler" />
         </service>

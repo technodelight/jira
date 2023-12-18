@@ -118,7 +118,7 @@
             <argument type="service" id="technodelight.jira.renderer.issue.worklog" />
             <argument type="service" id="technodelight.jira.renderer.issue.header" />
             <argument type="service" id="technodelight.jira.renderer.dashboard" />
-            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.dashboard.worklog_fetcher" />
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.comment" class="Technodelight\Jira\Console\Command\Action\Issue\Comment">
@@ -194,8 +194,9 @@
 
         <!-- progress commands -->
         <service id="technodelight.jira.app.command.progress.today" class="Technodelight\Jira\Console\Command\Show\Progress\Day">
-            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.dashboard.worklog_fetcher" />
             <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
+            <argument type="service" id="technodelight.jira.config.project" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />
@@ -215,8 +216,9 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.week" class="Technodelight\Jira\Console\Command\Show\Progress\Week">
-            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.dashboard.worklog_fetcher" />
             <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
+            <argument type="service" id="technodelight.jira.config.project" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />
@@ -236,8 +238,9 @@
             <tag name="command" />
         </service>
         <service id="technodelight.jira.app.command.progress.month" class="Technodelight\Jira\Console\Command\Show\Progress\Month">
-            <argument type="service" id="technodelight.jira.console.dashboard.dashboard" />
+            <argument type="service" id="technodelight.jira.console.dashboard.worklog_fetcher" />
             <argument type="service" id="technodelight.jira.console.argument.date_resolver" />
+            <argument type="service" id="technodelight.jira.config.project" />
             <call method="addRenderer">
                 <argument>list</argument>
                 <argument type="service" id="technodelight.jira.renderer.dashboard.list" />

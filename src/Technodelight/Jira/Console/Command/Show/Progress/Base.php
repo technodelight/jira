@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Show\Progress;
 
-use RuntimeException;
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfiguration;
 use Technodelight\Jira\Console\Argument\Date;
 use Technodelight\Jira\Console\Argument\DateResolver;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 
 abstract class Base extends Command
@@ -21,8 +25,9 @@ abstract class Base extends Command
     private array $renderers = [];
 
     public function __construct(
-        private readonly Dashboard $dashboardConsole,
-        private readonly DateResolver $dateResolver
+        private readonly WorklogFetcher $worklogFetcher,
+        private readonly DateResolver $dateResolver,
+        private readonly ProjectConfiguration $projectConfiguration
     ) {
         parent::__construct();
     }
@@ -68,9 +73,9 @@ abstract class Base extends Command
         ;
     }
 
-    protected function dashboardConsole(): Dashboard
+    protected function worklogFetcher(): WorklogFetcher
     {
-        return $this->dashboardConsole;
+        return $this->worklogFetcher;
     }
 
     protected function dateArgument(InputInterface $input): ?Date
@@ -87,6 +92,24 @@ abstract class Base extends Command
     }
 
     abstract protected function defaultRendererType(): string;
+
+    abstract protected function rendererMode(): int;
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $date = $this->dateArgument($input);
+        $collection = $this->worklogFetcher()->fetch(
+            (string)$date,
+            $this->userArgument($input),
+            $this->rendererMode()
+        );
+        $this->rendererForOptions($input->getOptions())->render($output, $collection);
+
+        return $collection->totalTimeSpentSeconds()
+            >= ($collection->days() * $this->projectConfiguration->oneDayAmount())
+            ? self::SUCCESS
+            : self::FAILURE;
+    }
 
     protected function rendererForOptions(array $options): DashboardRenderer
     {
@@ -105,7 +128,7 @@ abstract class Base extends Command
             return $this->renderers[$type];
         }
 
-        throw new RuntimeException(
+        throw new InvalidArgumentException(
             sprintf('No renderer for %s', $type)
         );
     }

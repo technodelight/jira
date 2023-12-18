@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Console\Command\Show\Progress;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 
 class Month extends Base
 {
@@ -30,12 +30,21 @@ class Month extends Base
         return self::RENDERER_TYPE_SUMMARY;
     }
 
+    protected function rendererMode(): int
+    {
+        return WorklogFetcher::MODE_MONTHLY;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $date = $this->dateArgument($input);
-        $collection = $this->dashboardConsole()->fetch($date, $this->userArgument($input), Dashboard::MODE_MONTHLY);
+        $collection = $this->worklogFetcher()->fetch(
+            (string)$date,
+            $this->userArgument($input),
+            WorklogFetcher::MODE_MONTHLY
+        );
         $this->rendererForOptions($input->getOptions())->render($output, $collection);
 
-        return self::SUCCESS;
+        return parent::execute($input, $output);
     }
 }

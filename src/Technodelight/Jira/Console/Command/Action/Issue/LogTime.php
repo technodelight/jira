@@ -18,7 +18,7 @@ use Technodelight\Jira\Console\Argument\InteractiveIssueSelector;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogId;
 use Technodelight\Jira\Console\Argument\IssueKeyOrWorklogIdResolver;
 use Technodelight\Jira\Console\Argument\LogTimeArgsOptsParser;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 use Technodelight\Jira\Console\Input\Worklog\Comment as CommentInput;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\Worklog;
@@ -41,7 +41,7 @@ class LogTime extends Command
         private readonly WorklogRenderer $worklogRenderer,
         private readonly HeaderRenderer $headerRenderer,
         private readonly DashboardRenderer $dashboardRenderer,
-        private readonly Dashboard $dashboardDataProvider
+        private readonly WorklogFetcher $dashboardDataProvider
     ) {
         parent::__construct();
     }

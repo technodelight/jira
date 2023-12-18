@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Dashboard;
 
 use DateTime;
@@ -9,7 +11,7 @@ use Technodelight\Jira\Domain\User;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
-class Dashboard
+class WorklogFetcher
 {
     public const MODE_DAILY = 1;
     public const MODE_WEEKLY = 2;
@@ -20,7 +22,7 @@ class Dashboard
         private readonly WorklogHandler $worklogHandler
     ) {}
 
-    public function fetch($dateString, User $user = null, $mode = self::MODE_DAILY)
+    public function fetch($dateString, User $user = null, $mode = self::MODE_DAILY): Collection
     {
         $from = $this->defineDate($dateString, $mode, true);
         $to = $this->defineDate($dateString, $mode, false);
@@ -33,7 +35,7 @@ class Dashboard
                 if ($log->issueKey()) {
                     /** @var $log Worklog */
                     $log->assignIssue($issues->find($log->issueKey()));
-                } else if ($log->issueId()) {
+                } elseif ($log->issueId()) {
                     $log->assignIssue($issues->findById($log->issueId()));
                 }
             }
@@ -42,37 +44,39 @@ class Dashboard
         return Collection::fromWorklogCollection($logs, $from, $to);
     }
 
-    private function defineDate($dateString, $mode, $start)
+    private function defineDate(string $dateString, int $mode, bool $start): DateTime
     {
         switch ($mode) {
+            default:
             case self::MODE_DAILY:
                 return new DateTime($dateString);
             case self::MODE_WEEKLY:
                 return new DateTime($this->defineWeekStr($dateString, $start ? 1 : 7));
             case self::MODE_MONTHLY:
-                return new DateTime($this->defineMonthStr($dateString, $start ? true : false));
+                return new DateTime($this->defineMonthStr($dateString, $start));
         }
     }
 
-    private function defineWeekStr($dateString, $day)
+    private function defineWeekStr(string $dateString, int $day): string
     {
         $dayOfWeek = date('N', strtotime($dateString));
         $operator = $day < $dayOfWeek ? '-' : '+';
         $delta = abs($dayOfWeek - $day);
 
         $date = date('Y-m-d', strtotime($dateString));
+
         return date(
             'Y-m-d',
             strtotime(sprintf('%s %s %s day', $date, $operator, $delta))
         );
     }
 
-    private function defineMonthStr($dateString, $startOfMonthFlag)
+    private function defineMonthStr(string $dateString, bool $startOfMonthFlag): string
     {
         if ($startOfMonthFlag) {
             return date('Y-m-01', strtotime($dateString));
-        } else {
-            return date('Y-m-t', strtotime($dateString));
         }
+
+        return date('Y-m-t', strtotime($dateString));
     }
 }

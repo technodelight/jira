@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Console\Command\Show\Progress;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 
 class Day extends Base
 {
@@ -23,6 +23,9 @@ class Day extends Base
                 'today',
                 ['yesterday', 'today']
             )
+            ->addOption(
+                'exit-if'
+            )
         ;
         $this->addProgressCommandOptions();
     }
@@ -32,12 +35,8 @@ class Day extends Base
         return self::RENDERER_TYPE_LIST;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function rendererMode(): int
     {
-        $date = $this->dateArgument($input);
-        $collection = $this->dashboardConsole()->fetch($date, $this->userArgument($input), Dashboard::MODE_DAILY);
-        $this->rendererForOptions($input->getOptions())->render($output, $collection);
-
-        return self::SUCCESS;
+        return WorklogFetcher::MODE_DAILY;
     }
 }

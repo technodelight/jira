@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Console\Command\Show\Progress;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Technodelight\Jira\Console\Dashboard\Dashboard;
+use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 
 class Week extends Base
 {
@@ -31,12 +31,8 @@ class Week extends Base
         return self::RENDERER_TYPE_TABLE;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function rendererMode(): int
     {
-        $date = $this->dateArgument($input);
-        $collection = $this->dashboardConsole()->fetch($date, $this->userArgument($input), Dashboard::MODE_WEEKLY);
-        $this->rendererForOptions($input->getOptions())->render($output, $collection);
-
-        return self::SUCCESS;
+        return WorklogFetcher::MODE_WEEKLY;
     }
 }

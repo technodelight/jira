@@ -30,7 +30,8 @@ class Filter extends Command
     {
         $this
             ->setName('filter')
-            ->setDescription('Run a filter check on specific fields on the issue key and print out issue key if filter matches')
+            ->setDescription('Run a filter check on specific fields on the issue key and print out issue key'
+                .' if filter matches')
             ->addArgument(
                 IssueKeyResolver::ARGUMENT,
                 InputArgument::REQUIRED,
