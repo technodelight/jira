@@ -39,7 +39,7 @@ class Api
                     . ' preferred total length of {maxChars} characters. The user gives to the issue key and the other'
                     . ' contextual information you need to use to generate a meaningful and short branch name. The'
                     . ' branch name should reflect the intention of fixing or implementing a given feature, depending'
-                    . ' on the issue type. You only need to reply with the branch name.',
+                    . ' on the issue type. You should only reply with the branch name.',
                     [
                         '{pattern}' => $this->branchnameGenerator->fromIssue($issue),
                         '{maxChars}' => $this->gitConfiguration->maxBranchNameLength()

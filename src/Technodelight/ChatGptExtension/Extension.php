@@ -34,7 +34,6 @@ namespace Technodelight\ChatGptExtension
         {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
             $loader->load('services.xml');
-
             $def = $container->getDefinition('technodelight.jira.checkout_branch');
             $def->setArgument(2, new Reference('technodelight.chatgpt.git_branchname_generator'));
         }

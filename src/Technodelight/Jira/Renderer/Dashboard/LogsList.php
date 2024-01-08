@@ -114,7 +114,7 @@ class LogsList implements DashboardRenderer
                             sprintf(
                                 '<comment>%s</comment>: %s <fg=black>(%d)</>',
                                 $this->dateHelper->secondsToHuman($record->timeSpentSeconds()),
-                                trim($record->comment()),
+                                trim($record->comment() ?? ''),
                                 (string) $record->id()
                             )
                         )
