@@ -20,7 +20,6 @@ class Comment
     public function __construct(private readonly Api $api)
     {
     }
-
     public function read(
         InputInterface$input,
         OutputInterface $output,
@@ -50,7 +49,7 @@ class Comment
     {
         $words = [];
         foreach (array_filter($texts) as $text) {
-            foreach ($this->collectAutocompleteableWords($text) as $word) {
+            foreach ($this->collectAutocompleteableWords((string)$text) as $word) {
                 $words[] = $word;
             }
         }

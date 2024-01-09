@@ -22,17 +22,18 @@ class User extends Command
     {
         $this
             ->setName('show:user')
-            ->addArgument('accountId', InputArgument::OPTIONAL, 'User account ID', null)
+            ->addArgument('account', InputArgument::OPTIONAL, 'User account ID or name', null)
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $accountId = $input->getArgument('accountId');
         try {
-            $user = $this->api->user($input->getArgument('accountId'));
+            $user = $this->api->user($accountId);
             $result = Success::fromUser($user);
         } catch (\Exception $e) {
-            $result = Error::fromExceptionAndAccountId($e, $input->getArgument('accountId'));
+            $result = Error::fromExceptionAndAccountId($e, $accountId);
         } finally {
             $this->renderer->render($output, $result);
 

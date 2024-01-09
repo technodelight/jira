@@ -658,7 +658,7 @@ class Api
      * @param IssueKey $issueKey
      * @param string $attachmentFilePath
      */
-    public function addAttachment(IssueKey $issueKey, $attachmentFilePath)
+    public function addAttachment(IssueKey $issueKey, string $attachmentFilePath): void
     {
         $this->client->upload(
             sprintf('issue/%s/attachments', $issueKey),
@@ -671,7 +671,7 @@ class Api
      * @param string $commentString
      * @return Comment
      */
-    public function addComment(IssueKey $issueKey, $commentString)
+    public function addComment(IssueKey $issueKey, string $commentString): Comment
     {
         $response = $this->client->post(
             sprintf('issue/%s/comment', $issueKey),
@@ -689,7 +689,7 @@ class Api
      * @param CommentId $commentId
      * @return Comment
      */
-    public function retrieveComment(IssueKey $issueKey, CommentId $commentId)
+    public function retrieveComment(IssueKey $issueKey, CommentId $commentId): Comment
     {
         $response = $this->client->get(
             sprintf('issue/%s/comment/%s', $issueKey, $commentId)
@@ -703,7 +703,7 @@ class Api
      * @param string $comment
      * @return Comment
      */
-    public function updateComment(IssueKey $issueKey, CommentId $commentId, $comment)
+    public function updateComment(IssueKey $issueKey, CommentId $commentId, string $comment): Comment
     {
         $response = $this->client->put(
             sprintf('issue/%s/comment/%s', $issueKey, $commentId),
@@ -719,7 +719,7 @@ class Api
      * @param CommentId $commentId
      * @return bool
      */
-    public function deleteComment(IssueKey $issueKey, CommentId $commentId)
+    public function deleteComment(IssueKey $issueKey, CommentId $commentId): bool
     {
         $this->client->delete(sprintf('issue/%s/comment/%s', $issueKey, $commentId));
         return true;
