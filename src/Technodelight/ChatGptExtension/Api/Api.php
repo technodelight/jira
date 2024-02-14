@@ -32,14 +32,18 @@ class Api
     {
         $tokensCount = 0;
 
-        return $this->callApiWithMessages($this->assembleContent(
+        $reply = $this->callApiWithMessages($this->assembleContent(
             [
-                '' => ['system', strtr('You are an assistant to generate GIT branch names from the context'
-                    . ' given by the user. The branch pattern looks like this sample: {pattern}, with a maximum'
-                    . ' preferred total length of {maxChars} characters. The user gives to the issue key and the other'
-                    . ' contextual information you need to use to generate a meaningful and short branch name. The'
-                    . ' branch name should reflect the intention of fixing or implementing a given feature, depending'
-                    . ' on the issue type. You should only reply with the branch name.',
+                '' => ['system', strtr(<<<EOL
+You are a helpful assistant to generate Git branch names from the context given by the user.
+Rule 0: Do NOT include any other text apart from the branch name in your reply.
+Rule 1: The branch pattern looks like this sample in the quotes: "{pattern}".
+Rule 2: maximum preferred total length of the branch name is {maxChars} characters.
+Rule 3: The user gives the issue key and other contextual information you need to use to generate a meaningful and short
+branch name. The branch name should reflect the intention of fixing or implementing a given feature, depending
+on the issue type and provided context.
+Rule 4: The branch name should be encapsulated in double quotes in your reply.
+EOL,
                     [
                         '{pattern}' => $this->branchnameGenerator->fromIssue($issue),
                         '{maxChars}' => $this->gitConfiguration->maxBranchNameLength()
@@ -52,6 +56,17 @@ class Api
             $tokensCount,
             fn($key, $value) => sprintf(self::CONTENT_W_LINEBREAK, $key, trim($value))
         ));
+
+        $branchName = '';
+        if (preg_match('~("["]+")~', $reply, $matches)) {
+            $branchName = $matches[1] ?? '';
+        }
+
+        if (!empty($branchName)) {
+            return $branchName;
+        }
+
+        throw new \UnexpectedValueException('ChatGPT did not generate a meaningful reply');
     }
 
     public function summarize(Issue $issue): string
