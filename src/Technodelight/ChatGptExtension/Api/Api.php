@@ -58,7 +58,7 @@ EOL,
         ));
 
         $branchName = '';
-        if (preg_match('~("["]+")~', $reply, $matches)) {
+        if (preg_match('~"([^"]+)"~', $reply, $matches) !== false) {
             $branchName = $matches[1] ?? '';
         }
 
@@ -66,7 +66,7 @@ EOL,
             return $branchName;
         }
 
-        throw new \UnexpectedValueException('ChatGPT did not generate a meaningful reply');
+        throw new \UnexpectedValueException('ChatGPT did not generate a meaningful reply:'.PHP_EOL.$reply);
     }
 
     public function summarize(Issue $issue): string
