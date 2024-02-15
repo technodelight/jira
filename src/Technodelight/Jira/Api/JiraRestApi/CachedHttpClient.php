@@ -95,9 +95,9 @@ class CachedHttpClient implements Client
         return $result;
     }
 
-    public function download($url, $filename, callable $progressFunction = null)
+    public function download($url, $filenameOrResource, callable $progressFunction = null)
     {
-        $this->httpClient->download($url, $filename, $progressFunction);
+        $this->httpClient->download($url, $filenameOrResource, $progressFunction);
     }
 
     public function upload($url, $filename)

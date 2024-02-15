@@ -2,35 +2,32 @@
 
 namespace Technodelight\Jira\Helper;
 
+use GlobIterator;
+use SplFileInfo;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 
 class ImageProvider
 {
-    const PREFIX = '_img_';
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private $api;
-    /**
-     * @var string
-     */
-    private $cacheDir;
-    /**
-     * @var int
-     */
-    private $ttl;
+    private const PREFIX = '_img_';
 
-    public function __construct(Api $api, ITermConfiguration $config)
-    {
-        $this->api = $api;
-        $this->ttl = $config->imageCacheTtl();
-        $this->cacheDir = getenv('HOME') . DIRECTORY_SEPARATOR . '.jira.api_cache';
+    private string $cacheDir;
+    private int $ttl;
+
+    public function __construct(
+        private readonly Api $api,
+        ITermConfiguration $config
+    ) {
+        $this->ttl = (int)$config->imageCacheTtl();
+        $this->cacheDir = getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/img_cache';
+        if (!is_dir($this->cacheDir)) {
+            @mkdir($this->cacheDir, 0744);
+        }
         $this->cleanup();
     }
 
-    public function contents($url)
+    public function contents(string $url): string
     {
         $path = $this->cacheDir . DIRECTORY_SEPARATOR . $this->filename($url);
         if (is_file($path)) {
@@ -41,7 +38,7 @@ class ImageProvider
         return file_get_contents($path);
     }
 
-    private function filename($url)
+    private function filename($url): string
     {
         return self::PREFIX . md5($url);
     }
@@ -54,9 +51,9 @@ class ImageProvider
     private function cleanup()
     {
         $delta = strtotime('-' . $this->ttl . ' day');
-        $iterator = new \GlobIterator($this->cacheDir . DIRECTORY_SEPARATOR . self::PREFIX . '*');
+        $iterator = new GlobIterator($this->cacheDir . DIRECTORY_SEPARATOR . self::PREFIX . '*');
         foreach ($iterator as $splFileInfo) {
-            /** @var $splFileInfo \SplFileInfo  */
+            /** @var $splFileInfo SplFileInfo  */
             if ($splFileInfo->getMTime() < $delta) {
                 unlink($splFileInfo->getRealPath());
             }

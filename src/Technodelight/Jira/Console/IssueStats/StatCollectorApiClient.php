@@ -65,9 +65,9 @@ class StatCollectorApiClient implements Client
         return $result;
     }
 
-    public function download($url, $filename, callable $progressFunction = null)
+    public function download($url, $filenameOrResource, callable $progressFunction = null)
     {
-        return $this->client->download($url, $filename, $progressFunction);
+        return $this->client->download($url, $filenameOrResource, $progressFunction);
     }
 
     public function upload($url, $filename)

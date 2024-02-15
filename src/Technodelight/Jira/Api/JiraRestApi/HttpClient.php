@@ -122,7 +122,7 @@ class HttpClient implements Client
         }
     }
 
-    public function download($url, $filename, callable $progressFunction = null): void
+    public function download($url, $filenameOrResource, callable $progressFunction = null): void
     {
         $response = $this->httpClient()->get(
             $url,
@@ -131,7 +131,11 @@ class HttpClient implements Client
             ])
         );
 
-        fwrite($filename, (string)$response->getBody());
+        if (is_string($filenameOrResource)) {
+            $filenameOrResource = fopen($filenameOrResource, 'w');
+        }
+
+        fwrite($filenameOrResource, (string)$response->getBody());
     }
 
     public function upload($url, $filename): void
