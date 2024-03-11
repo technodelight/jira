@@ -124,8 +124,11 @@ class BatchAssistant
             return [];
         }
 
-        $issueKeys = file('php://stdin', FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES);
+        $issueKeys = [];
+        foreach (file('php://stdin', FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES) as $row) {
+            $issueKeys[] = array_filter(array_map('trim', explode(',', $row)));
+        }
 
-        return array_unique(array_filter(array_map('trim', $issueKeys)));
+        return array_unique($issueKeys);
     }
 }
