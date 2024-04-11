@@ -103,25 +103,38 @@ EOL,
                 'description' => ['user', $issue->description()],
                 'acceptance criteria' => ['user', $issue->findField('Acceptance Criteria')],
                 'additional context' => ['user', $additionalContext],
-                'comments' => ['user', $issue->comments() ? $this->assembleCommentsString($issue) : null],
+                'comments' => ['user', $issue->comments()],
             ],
             $tokenCounts,
-            fn($key, $value) => sprintf(self::CONTENT_W_LINEBREAK, $key, trim($value))
+            function (string $key, mixed $value, int &$tokenCounts) {
+                if ($key === 'comments') {
+                    return $this->assembleCommentsString($value, $tokenCounts);
+                }
+
+                return sprintf(self::CONTENT_W_LINEBREAK, $key, trim($value));
+            }
         ));
     }
 
     public function summarizeComments(Issue $issue): string
     {
         $tokenCounts = 0;
+
         return $this->callApiWithMessages($this->assembleContent(
             [
                 '' => ['system', 'You are an assistant to summarize comments.'
                     . ' You need to summarize it in a compact and meaningful way.'
                     . ' You can use the last previously provided information about the JIRA issue.'],
-                'comments' => ['user', $issue->comments() ? $this->assembleCommentsString($issue) : null],
+                'comments' => ['user', $issue->comments()],
             ],
             $tokenCounts,
-            fn($key, $value) => sprintf(self::CONTENT_W_LINEBREAK, $key, trim($value))
+            function (string $key, mixed $value, int &$tokenCounts) {
+                if ($key === 'comments') {
+                    return $this->assembleCommentsString($value, $tokenCounts);
+                }
+
+                return sprintf(self::CONTENT_W_LINEBREAK, $key, trim($value));
+            }
         ));
     }
 
@@ -130,19 +143,26 @@ EOL,
         $contents = [];
         foreach ($fields as $key => $roleAndValue) {
             [$role, $value] = $roleAndValue + ['user', ''];
-            if (null !== $value && !empty(trim($value))) {
-                $content = $value;
-                if ($role === 'user') {
-                    $content = $assembler($key, $value);
+            if (!empty($value)) {
+                if ($role === 'user' && $assembler) {
+                    $value = $assembler($key, $value, $tokenCounts);
                 }
-                if (($tokenCounts + $this->guessTokenCount($content)) < self::TOKEN_LENGTH_SOFT_LIMIT) {
+                $content = trim($value);
+                if (($tokenCounts + ($tokenCount = $this->guessTokenCount($content))) < self::TOKEN_LENGTH_SOFT_LIMIT) {
                     $contents[] = [
                         'role' => $role,
                         'content' => $content
                     ];
-                    $tokenCounts+= $this->guessTokenCount($content);
+                    $tokenCounts+= $tokenCount;
                 } else {
-                    $this->log('skip appending field ' . $key . ' due to length token limitation');
+                    $this->log(
+                        sprintf(
+                            'skip appending field %s due to length token limitation (%d / %d)',
+                            $key,
+                            $tokenCounts,
+                            $tokenCount
+                        )
+                    );
                 }
             }
         }
@@ -150,11 +170,28 @@ EOL,
         return $contents;
     }
 
-    private function assembleCommentsString(Issue $issue): string
+    /**
+     * @param Comment[] $comments
+     * @param int $tokenCounts
+     * @return string
+     */
+    private function assembleCommentsString(array $comments, int $tokenCounts): string
     {
-        return 'comments:' . PHP_EOL . join(PHP_EOL, array_map(
-                fn(Comment $comment) => $comment->author()->displayName() . ': ' . $comment->body(), $issue->comments()
-                , $issue->comments()));
+        $commentTokens = $tokenCounts;
+
+        return 'comments:' . PHP_EOL . join(PHP_EOL, array_filter(array_map(
+            function (Comment $comment) use (&$commentTokens) {
+                $body = $comment->author()->displayName() . ': ' . $comment->body();
+                if (($commentTokens + ($tokenCount = $this->guessTokenCount($body))) < self::TOKEN_LENGTH_SOFT_LIMIT) {
+                    $commentTokens+= $tokenCount;
+
+                    return $body;
+                }
+
+                return null;
+            },
+            array_reverse($comments)
+        )));
     }
 
     private function callApiWithMessages(array $messages): string
