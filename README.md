@@ -86,6 +86,7 @@ And other powerful features such as:
 
 Please bear in mind *this app is still in development* and it may have bugs. If you find one or you have a feature request/suggestion, please open an issue [here](https://github.com/technodelight/jira/issues).
 
+https://www.instagram.com/p/C53T1Qeyz__/?igsh=aWU3MDM1b2tsdGUx
 
 # Tips
 
