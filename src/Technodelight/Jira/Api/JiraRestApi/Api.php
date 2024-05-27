@@ -622,7 +622,9 @@ class Api
             throw new BadMethodCallException(
                 $e->getMessage() . PHP_EOL
                 . sprintf('See advanced search help at %s', self::SEARCH_HELP_LINK) . PHP_EOL
-                . 'Query was: ' . PHP_EOL . $jql
+                . 'Query was: ' . PHP_EOL . $jql,
+                $e->getCode(),
+                $e
             );
         }
     }

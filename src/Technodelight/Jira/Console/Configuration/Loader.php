@@ -35,15 +35,20 @@ class Loader
 
     private function loadConfigurationYaml(SplFileInfo $splFileInfo): array
     {
+        static $noticeTriggered = false;
+
         if ($splFileInfo->isReadable() === false && $splFileInfo->getRealPath() !== false) {
             throw FilePrivilegeErrorException::fromUnreadablePath($splFileInfo->getPathname());
         }
 
         $perms = substr(sprintf('%04o', $splFileInfo->getPerms() & 07777), -4);
-        if ($perms !== '0600') {
-            throw FilePrivilegeErrorException::fromInvalidPermAndPath(
+        if ($perms !== '0600' && !$noticeTriggered) {
+            // treat this as a warning instead of fatal error
+            $e = FilePrivilegeErrorException::fromInvalidPermAndPath(
                 $splFileInfo->getPerms(), $splFileInfo->getPathname()
             );
+            user_error($e->getMessage(), E_USER_NOTICE);
+            $noticeTriggered = true;
         }
 
         return $this->handleImports(Yaml::parse(file_get_contents($splFileInfo->getRealPath())), $splFileInfo->getRealPath());
@@ -56,7 +61,7 @@ class Loader
             foreach ($imports as $importDef) {
                 $iterator = new GlobIterator(dirname($parentPath) . DIRECTORY_SEPARATOR . $importDef['resource'], FilesystemIterator::CURRENT_AS_FILEINFO);
                 foreach ($iterator as $fileInfo) {
-                    $rawConfig = array_merge($rawConfig, $this->loadConfigurationYaml($fileInfo));
+                    $rawConfig = array_merge_recursive($rawConfig, $this->loadConfigurationYaml($fileInfo));
                 }
             }
             unset($rawConfig['imports']);
