@@ -35,20 +35,24 @@ class Loader
 
     private function loadConfigurationYaml(SplFileInfo $splFileInfo): array
     {
-        static $noticeTriggered = false;
+        // there can be multiple config files and we must track it by absolute path
+        static $noticeTriggered = [];
 
+        $absFilePath = $splFileInfo->getPathname() . DIRECTORY_SEPARATOR . $splFileInfo->getFilename();
         if ($splFileInfo->isReadable() === false && $splFileInfo->getRealPath() !== false) {
-            throw FilePrivilegeErrorException::fromUnreadablePath($splFileInfo->getPathname());
+            throw FilePrivilegeErrorException::fromUnreadablePath(
+                $absFilePath
+            );
         }
 
-        $perms = substr(sprintf('%04o', $splFileInfo->getPerms() & 07777), -4);
-        if ($perms !== '0600' && !$noticeTriggered) {
+        $perms = $splFileInfo->getPerms() & 0777;
+        if (!isset($noticeTriggered[$absFilePath]) && (0600 !== $perms)) {
             // treat this as a warning instead of fatal error
-            $e = FilePrivilegeErrorException::fromInvalidPermAndPath(
-                $splFileInfo->getPerms(), $splFileInfo->getPathname()
+            $e = FilePrivilegeErrorException::fromInvalidPermAndFilePath(
+                $perms, $absFilePath
             );
             user_error($e->getMessage(), E_USER_NOTICE);
-            $noticeTriggered = true;
+            $noticeTriggered[$absFilePath] = true;
         }
 
         return $this->handleImports(Yaml::parse(file_get_contents($splFileInfo->getRealPath())), $splFileInfo->getRealPath());

@@ -11,9 +11,11 @@ class FilePrivilegeErrorException extends ConfigurationFileException
         return $exc;
     }
 
-    public static function fromInvalidPermAndPath($perms, $path)
+    public static function fromInvalidPermAndFilePath($perms, $path)
     {
-        $exc = new self(sprintf('Configuration cannot be readable by others! %s should be 0600)', $perms));
+        $exc = new self(
+            sprintf('Configuration %s cannot be readable by others! 0%o should be 0600)', $path, $perms)
+    );
         $exc->setPath($path);
         return $exc;
     }
