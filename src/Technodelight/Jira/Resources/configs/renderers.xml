@@ -163,6 +163,7 @@
             <argument type="service" id="technodelight.jira.template_helper" />
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.jira_tag_converter" />
+            <argument type="service" id="technodelight.jira.image_renderer" />
         </service>
 
         <!-- special issue renderers -->

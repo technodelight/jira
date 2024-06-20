@@ -4,14 +4,11 @@ namespace Technodelight\Jira\Helper;
 
 class TemplateHelper
 {
-    /**
-     * @param array|string $string
-     * @param int $pad pad length
-     * @param string $paddingChar character to use
-     * @return string
-     */
-    public function tabulate($string, $pad = 4, $paddingChar = ' ')
-    {
+    public function tabulate(
+        array|string $string,
+        int $pad = 4,
+        string $paddingChar = ' '
+    ): string {
         if (!is_array($string)) {
             $string = explode(PHP_EOL, $string);
         } else {
@@ -21,15 +18,12 @@ class TemplateHelper
             . implode(PHP_EOL . str_repeat($paddingChar, $pad), $string);
     }
 
-    /**
-     * @param array|string $string
-     * @param int $level
-     * @param int $pad
-     * @param string $paddingChar
-     * @return string
-     */
-    public function tabulateWithLevel($string, $level = 1, $pad = 4, $paddingChar = ' ')
-    {
+    public function tabulateWithLevel(
+        array|string$string,
+        int $level = 1,
+        int $pad = 4,
+        string $paddingChar = ' '
+    ): string {
         return $this->tabulate($string, $level * $pad, $paddingChar);
     }
 }

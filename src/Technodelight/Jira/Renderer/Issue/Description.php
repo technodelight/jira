@@ -5,7 +5,7 @@ namespace Technodelight\Jira\Renderer\Issue;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\AccountIdUsernameReplacer;
-use Technodelight\Jira\Helper\Image;
+use Technodelight\Jira\Helper\Image as ImageRenderer;
 use Technodelight\JiraTagConverter\JiraTagConverter;
 use Technodelight\Jira\Helper\TemplateHelper;
 use Technodelight\Jira\Helper\Wordwrap;
@@ -17,7 +17,7 @@ class Description implements IssueRenderer
 
     public function __construct(
         private readonly TemplateHelper $templateHelper,
-        private readonly Image $imageRenderer,
+        private readonly ImageRenderer $imageRenderer,
         private readonly Wordwrap $wordwrap,
         private readonly JiraTagConverter $tagConverter,
         private readonly AccountIdUsernameReplacer $replacer,

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper;
 
+use LogicException;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\ITermImage\Image as ITermImage;
@@ -9,41 +12,25 @@ use Technodelight\ITermImage\ITermVersion;
 
 class Image
 {
-    /**
-     * @var ImageProvider
-     */
-    private $imageProvider;
-    /**
-     * @var ITermVersion
-     */
-    private $itermVersion;
-    /**
-     * @var int
-     */
-    private $thumbnailWidth;
-    /**
-     * @var bool
-     */
-    private $displayImages;
+    private const IMAGE_TAG_REGEX = '~!([^|!]+)(\|thumbnail)?(\|width=\d*(,height=\d*)?(,alt="[^"]*")?)?!~';
 
-    public function __construct(ImageProvider $imageProvider, ITermConfiguration $config)
-    {
-        $this->imageProvider = $imageProvider;
-        $this->itermVersion = new ITermVersion();
-        $this->displayImages = $config->renderImages();
-        $this->thumbnailWidth = $config->thumbnailWidth();
+    public function __construct(
+        private readonly ImageProvider $imageProvider,
+        private readonly ITermConfiguration $config,
+        private readonly ITermVersion $itermVersion = new ITermVersion()
+    ) {
     }
 
-    public function render($body, Issue $issue)
+    public function render(string $body, Issue $issue): string
     {
-        if (preg_match_all('~!([^|!]+)(\|thumbnail)?(\|width=\d*(,height=\d*)?)?!~', $body, $matches)) {
+        if (preg_match_all(self::IMAGE_TAG_REGEX, $body, $matches)) {
             $replacePairs = [];
             foreach ($matches[1] as $k => $embeddedImage) {
                 if (empty(trim($embeddedImage))) {
                     continue;
                 }
 
-                if (!$this->isIterm() || !$this->displayImages) {
+                if (!$this->isIterm() || !$this->config->renderImages()) {
                     $image = sprintf('<comment>jira download %s %s</>', $issue->issueKey(), $embeddedImage);
                 } else {
                     try {
@@ -59,29 +46,19 @@ class Image
         return $body;
     }
 
-    /**
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @param $imageFilename
-     * @return string
-     */
-    protected function renderThumbnail(Issue $issue, $imageFilename)
+    private function renderThumbnail(Issue $issue, string $imageFilename): ITermImage
     {
         return ITermImage::fromContents($this->getImageContents($issue, $imageFilename));
     }
 
-    /**
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @param $imageFilename
-     * @return string
-     */
-    protected function getImageContents(Issue $issue, $imageFilename)
+    private function getImageContents(Issue $issue, string $imageFilename): string
     {
         return $this->imageProvider->contents(
             $this->findAttachment($issue, $imageFilename)
         );
     }
 
-    private function findAttachment(Issue $issue, $filename)
+    private function findAttachment(Issue $issue, string $filename): string
     {
         foreach ($issue->attachments() as $attachment) {
             if ($attachment->filename() == $filename) {
@@ -89,16 +66,17 @@ class Image
             }
         }
 
-        throw new \InvalidArgumentException(
+        throw new LogicException(
             sprintf('Attachment "%s" cannot be found', $filename)
         );
     }
 
-    private function isIterm()
+    private function isIterm(): bool
     {
-        if (empty($this->itermVersion)) {
+        if (empty((string)$this->itermVersion)) {
             return false;
         }
-        return version_compare($this->itermVersion, '3.0.0', '>=');
+
+        return version_compare((string)$this->itermVersion, '3.0.0', '>=');
     }
 }
