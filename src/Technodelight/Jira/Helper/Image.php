@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Technodelight\Jira\Helper;
 
+use Exception;
 use LogicException;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Domain\Issue;
@@ -12,7 +13,7 @@ use Technodelight\ITermImage\ITermVersion;
 
 class Image
 {
-    private const IMAGE_TAG_REGEX = '~!([^|!]+)(\|thumbnail)?(\|width=\d*(,height=\d*)?(,alt="[^"]*")?)?!~';
+    private const IMAGE_TAG_REGEX = '~!([^|!]+)(\|thumbnail)?(\|width=\d*)(,height=\d*)?(,alt="[^"]*")?!~';
 
     public function __construct(
         private readonly ImageProvider $imageProvider,
@@ -34,8 +35,16 @@ class Image
                     $image = sprintf('<comment>jira download %s %s</>', $issue->issueKey(), $embeddedImage);
                 } else {
                     try {
-                        $image = $this->renderThumbnail($issue, $embeddedImage);
-                    } catch (\Exception $e) {
+                        $image = $this->renderThumbnail(
+                            $issue,
+                            $embeddedImage,
+                            $this->getThumbnailWidth($matches, $k)
+                        );
+                    } catch (Exception $e) {
+                        trigger_error(
+                            sprintf("(%s) %s", get_class($e), $e->getMessage()),
+                            E_USER_WARNING
+                        );
                         continue;
                     }
                 }
@@ -46,9 +55,14 @@ class Image
         return $body;
     }
 
-    private function renderThumbnail(Issue $issue, string $imageFilename): ITermImage
-    {
-        return ITermImage::fromContents($this->getImageContents($issue, $imageFilename));
+    private function renderThumbnail(
+        Issue $issue,
+        string $imageFilename,
+        int $thumbWidth
+    ): ITermImage {
+        return ITermImage::fromContents(
+            $this->getImageContents($issue, $imageFilename), $thumbWidth, $this->itermVersion
+        );
     }
 
     private function getImageContents(Issue $issue, string $imageFilename): string
@@ -78,5 +92,15 @@ class Image
         }
 
         return version_compare((string)$this->itermVersion, '3.0.0', '>=');
+    }
+
+    private function getThumbnailWidth(array $matches, int $index): int
+    {
+        $width = $this->config->thumbnailWidth();
+        if (isset($matches[3][$index])) {
+            [,$width] = explode('=', $matches[3][$index], 2) + ['', $this->config->thumbnailWidth()];
+        }
+
+        return (int)$width > 0 ? (int)$width : $this->config->thumbnailWidth();
     }
 }
