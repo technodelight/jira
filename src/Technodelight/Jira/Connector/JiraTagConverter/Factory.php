@@ -3,13 +3,16 @@
 namespace Technodelight\Jira\Connector\JiraTagConverter;
 
 use Symfony\Component\Console\Terminal;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Console\Application;
 use Technodelight\JiraTagConverter\JiraTagConverter;
 
 class Factory
 {
-    public function __construct(private readonly Terminal $terminal)
-    {
+    public function __construct(
+        private readonly Terminal $terminal,
+        private readonly ITermConfiguration $configuration
+    ) {
     }
 
     public function build(array $opts = [], $setTermWidth = true)
@@ -17,6 +20,9 @@ class Factory
         if ($setTermWidth) {
             $opts['terminalWidth'] = $this->terminal->getWidth();
         }
+        // do not touch image sequences if iterm image rendering is enabled
+        $opts['images'] = $opts['images'] ?? !$this->configuration->renderImages();
+
         return new JiraTagConverter($opts);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -8,15 +10,8 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Renderer implements IssueRenderer
 {
-    /**
-     * @var IssueRenderer[]
-     */
-    private $renderers;
-
-    public function __construct(array $renderers)
-    {
-        $this->renderers = $renderers;
-    }
+    /** @param IssueRenderer[] $renderers */
+    public function __construct(private readonly array $renderers = []) {}
 
     public function render(OutputInterface $output, Issue $issue): void
     {

@@ -80,6 +80,7 @@
                  id="technodelight.jira.connector.jira_tag_converter.factory"
                  class="Technodelight\Jira\Connector\JiraTagConverter\Factory">
             <argument type="service" id="terminal" />
+            <argument type="service" id="technodelight.jira.config.integrations.iterm" />
         </service>
         <service id="technodelight.jira.jira_tag_converter" class="Technodelight\JiraTagConverter\JiraTagConverter">
             <factory service="technodelight.jira.connector.jira_tag_converter.factory" method="build" />
