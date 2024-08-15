@@ -71,7 +71,16 @@ class CustomField implements IssueRenderer
         Field $field,
         OutputInterface $output,
         array|string $value
-    ): mixed {
+    ): string {
+        // if custom field is some kind of atlassian object, we need to extract it's name and description
+        if (is_array($value)) {
+            return sprintf(
+                '%s%s',
+                $value['name'] ?? '',
+                !empty($value['description']) ? sprintf(' (%)', $value['description']) : ''
+            );
+        }
+
         return $this->formatter->format($field, $output, $this->imageRenderer->render($value, $issue));
     }
 }
