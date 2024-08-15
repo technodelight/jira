@@ -38,7 +38,8 @@
     "require-dev": {
         "roave/security-advisories": "dev-latest",
         "behat/behat": "^3.3",
-        "phpspec/phpspec": "~7"
+        "phpspec/phpspec": "~7",
+        "phpmd/phpmd": "^2.15"
     },
     "authors": [
         {
@@ -62,13 +63,17 @@
     "scripts": {
         "test": [
             "@test-unit",
-            "@test-acceptance"
+            "@test-acceptance",
+            "@test-analysis"
         ],
         "test-unit": [
             "phpspec --ansi run -fpretty"
         ],
         "test-acceptance": [
             "behat --colors"
+        ],
+        "test-analysis": [
+            "phpmd src text cleancode,naming,unusedcode --color"
         ],
         "build": [
             "./build"

@@ -1,8 +1,14 @@
+# composer
 /vendor/
+
+# builds
 jira.phar
 jira*.phar
-.jira.yml
 /builds/*
-/bin/behat
-/bin/phpspec
-/bin/yaml-lint
+
+# app files
+.jira.yml
+
+# bin
+/bin/*
+!/bin/jira
