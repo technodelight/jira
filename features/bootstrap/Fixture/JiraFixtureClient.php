@@ -84,7 +84,7 @@ class JiraFixtureClient implements Client
     {
         $this->debugInfo('POST', $url);
 
-        $this->posts[$this->keyify($url)] = $data;
+        self::$setups['post'][$this->keyify($url)] = $data;
     }
 
     private function keyify($key)

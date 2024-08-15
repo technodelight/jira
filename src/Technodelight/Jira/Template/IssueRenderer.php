@@ -14,32 +14,19 @@ use Technodelight\Jira\Renderer\Board\Renderer as BoardRenderer;
  */
 class IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Renderer\IssueRenderer[]
-     */
-    private $renderers;
-    /**
-     * @var RenderersConfiguration
-     */
-    private $configuration;
+    private ?bool $listMode = null;
 
-    private $listMode = null;
-    /**
-     * @var BoardRenderer
-     */
-    private $boardRenderer;
-
-    public function __construct(array $renderers, FormatterHelper $formatterHelper, RenderersConfiguration $configuration, BoardRenderer $boardRenderer)
-    {
-        $this->renderers = $renderers;
-        $this->formatterHelper = $formatterHelper;
-        $this->configuration = $configuration;
-        $this->boardRenderer = $boardRenderer;
+    public function __construct(
+        private readonly array $renderers,
+        private readonly FormatterHelper $formatterHelper,
+        private readonly RenderersConfiguration $configuration,
+        private readonly BoardRenderer $boardRenderer
+    ){
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param  IssueCollection $issues
+     * @param OutputInterface $output
+     * @param IssueCollection $issues
      * @param mixed $mode
      */
     public function renderIssues(OutputInterface $output, IssueCollection $issues, $mode = false)
@@ -63,7 +50,7 @@ class IssueRenderer
     }
 
     /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @param OutputInterface $output
      * @param \Technodelight\Jira\Domain\Issue $issue
      * @param bool|array $mode when array, it should be a list of options
      */
