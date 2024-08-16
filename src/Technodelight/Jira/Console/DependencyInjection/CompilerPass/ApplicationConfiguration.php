@@ -49,12 +49,11 @@ class ApplicationConfiguration implements CompilerPassInterface
             }
             $methodName = $method->name;
             $childConfig = $config->$methodName();
-            if (is_array($childConfig)) {
-                foreach ($childConfig as $conf) {
-                    $this->processRegistrableConfiguration($container, $parentPrefix, $conf);
-                }
-            } else {
-                $this->processRegistrableConfiguration($container, $parentPrefix, $childConfig);
+            if (!is_array($childConfig)) {
+                $childConfig = [$childConfig];
+            }
+            foreach ($childConfig as $conf) {
+                $this->processRegistrableConfiguration($container, $parentPrefix, $conf);
             }
         }
     }

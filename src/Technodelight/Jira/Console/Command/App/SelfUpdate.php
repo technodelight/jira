@@ -36,43 +36,45 @@ class SelfUpdate extends Command
         ;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $runningFile = Phar::running(false) ?: self::DEFAULT_LOCAL_BIN_JIRA;
         $release = $this->github->repo()->releases()->all('technodelight', 'jira')[0];
         $currentVersion = trim($this->getApplication()->getVersion());
 
-        if (version_compare($currentVersion, $release['tag_name'], '<') && isset($release['assets'][0])) {
-            $output->writeln('✨ <comment>Yay, let\'s do an update!</comment>✨');
-            $output->writeln('');
-            $output->writeln($this->getReleaseNotesSince($currentVersion, $release['tag_name']));
-            $output->writeln('');
-            $output->writeln("Release date is {$release['published_at']}");
-            $q = new QuestionHelper();
-            if ($input->getOption('yes')) {
-                $consent = true;
-            } else {
-                $consent = $q->ask(
-                    $input,
-                    $output,
-                    new Question(PHP_EOL . "<comment>Do you want to perform an update now?</comment> [Y/n]", true)
-                );
-            }
-            if ($consent) {
-                if (!is_writable($runningFile)) {
-                    $output->writeln("<error>Can't write file {$runningFile}.</error>");
-                    return self::FAILURE;
-                }
-                if ($this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
-                    $output->writeln("<info>Successfully updated to {$release['tag_name']}</info> 🤘");
-                } else {
-                    $output->writeln("<error>Something unexpected happened during update.</error>");
-                    return self::FAILURE;
-                }
-            }
-        } else {
+        if (version_compare($currentVersion, $release['tag_name'], '==') || !isset($release['assets'][0])) {
             $output->writeln('👍 You are using the latest <info>' . $currentVersion . '</info> version');
+            return self::SUCCESS;
         }
+
+        $output->writeln('✨ <comment>Yay, let\'s do an update!</comment>✨');
+        $output->writeln('');
+        $output->writeln($this->getReleaseNotesSince($currentVersion, $release['tag_name']));
+        $output->writeln('');
+        $output->writeln("Release date is {$release['published_at']}");
+        $helper = new QuestionHelper();
+        $consent = $input->getOption(('yes')) ? true : null;
+        if ($consent === null) {
+            $consent = $helper->ask(
+                $input,
+                $output,
+                new Question(PHP_EOL . "<comment>Do you want to perform an update now?</comment> [Y/n]", true)
+            );
+        }
+
+        if ($consent) {
+            if (!is_writable($runningFile)) {
+                $output->writeln("<error>Can't write file {$runningFile}.</error>");
+                return self::FAILURE;
+            }
+            if (!$this->update($output, $runningFile, $release['assets'][0]['browser_download_url'])) {
+                $output->writeln("<error>Something unexpected happened during update.</error>");
+                return self::FAILURE;
+            }
+            $output->writeln("<info>Successfully updated to {$release['tag_name']}</info> 🤘");
+        }
+
         return self::SUCCESS;
     }
 
@@ -80,7 +82,7 @@ class SelfUpdate extends Command
     {
         $downloader = new Downloader;
         if ($downloader->downloadWithCurl($output, $newReleaseUrl, $runningFile)) {
-            if(!is_executable($runningFile) && !@chmod($runningFile, 0755)) {
+            if(!is_executable($runningFile) && !chmod($runningFile, 0755)) {
                 $output->writeln(sprintf('chmod failed and file %1$s is not executable,'
                     . ' please check the output of \'chmod 0755 %1$s\'', $runningFile));
             }

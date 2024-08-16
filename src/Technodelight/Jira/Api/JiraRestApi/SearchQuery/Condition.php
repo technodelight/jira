@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
 use Sirprize\Queried\Condition\BaseCondition;
@@ -7,21 +9,19 @@ use Sirprize\Queried\Condition\Tokenizer;
 
 class Condition extends BaseCondition
 {
-    const OPERATOR_AND = 'AND';
-    const OPERATOR_OR = 'OR';
-    const OPERATOR_ORDER_BY = 'ORDER BY';
+    public const OPERATOR_AND = 'AND';
+    public const OPERATOR_OR = 'OR';
+    public const OPERATOR_ORDER_BY = 'ORDER BY';
 
-    /**
-     * Condition operator, ie. AND, OR, IS, LIKE, ~ etc.
-     * @var string
-     */
-    protected $operator = self::OPERATOR_AND;
+    protected string $operator = self::OPERATOR_AND;
 
-    public function build(Tokenizer $tokenizer = null)
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
+    public function build(Tokenizer $tokenizer = null): void
     {
         $clause = $this->getClause();
-        foreach ($this->getParams() as $name => $param) {
-            if ($value = $this->getValue($name)) {
+        foreach (array_keys($this->getParams()) as $name) {
+            $value = $this->getValue($name);
+            if (!empty($value)) {
                 $clause = strtr(
                     $clause,
                     [$this->nameToId($name) => $this->escapeValue($value)]
@@ -31,7 +31,7 @@ class Condition extends BaseCondition
         $this->setClause($clause);
     }
 
-    public function operator($operator = null)
+    public function operator($operator = null): string|Condition
     {
         if (is_null($operator)) {
             return $this->operator;
@@ -40,14 +40,14 @@ class Condition extends BaseCondition
         return $this;
     }
 
-    private function nameToId($name)
+    private function nameToId(string $name): string
     {
         return sprintf(':%s', $name);
     }
 
-    private function escapeValue($value)
+    private function escapeValue(string $value): string
     {
-        if (strpos($value, '(') !== false) {
+        if (str_contains($value, '(')) {
             return $value;
         }
         return sprintf('"%s"', $value);

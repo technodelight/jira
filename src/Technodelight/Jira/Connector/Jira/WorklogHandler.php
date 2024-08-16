@@ -14,19 +14,21 @@ use Technodelight\Jira\Domain\WorklogCollection;
 
 class WorklogHandler implements WorklogHandlerInterface
 {
-    public function __construct(private readonly Api $api)
-    {
-    }
+    public function __construct(private readonly Api $api) {}
 
+    /**
+     * @SuppressWarnings(PHPMD.ShortVariable)
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
     public function find(DateTime $from, DateTime $to): WorklogCollection
     {
         $issues = $this->api->findUserIssuesWithWorklogs($from, $to, $this->api->user());
 
-        $worklogCollection = WorklogCollection::createEmpty();
+        $workLogCollection = WorklogCollection::createEmpty();
         foreach ($issues as $issue) {
-            $worklogCollection->merge($issue->worklogs());
+            $workLogCollection->merge($issue->worklogs());
         }
-        return $worklogCollection;
+        return $workLogCollection;
     }
 
     public function findByIssue(Issue $issue, ?int $limit = null): WorklogCollection
@@ -44,6 +46,7 @@ class WorklogHandler implements WorklogHandlerInterface
         return $this->api->updateWorklog($worklog);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function retrieve(int $worklogId): Worklog
     {
         return $this->api->retrieveWorklogs([WorklogId::fromNumeric($worklogId)])->current();

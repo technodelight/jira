@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -10,34 +12,22 @@ use GuzzleHttp\TransferStats;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
+use UnexpectedValueException;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class HttpClient implements Client
 {
-    const API_PATH = '/rest/api/2/';
+    private const API_PATH = '/rest/api/2/';
 
-    /**
-     * @var GuzzleClient
-     */
-    private $httpClient;
+    private GuzzleClient $httpClient;
 
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @param Config $config
-     */
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
+    public function __construct(private readonly Config $config) {}
 
     public function post($url, $data = [])
     {
         try {
             $result = $this->httpClient()->post($url, ['json' => $data]);
-            return json_decode($result->getBody(), true);
+            return json_decode((string)$result->getBody(), true);
         } catch (GuzzleClientException $e) {
             throw ClientException::fromException($e);
         }
@@ -47,7 +37,7 @@ class HttpClient implements Client
     {
         try {
             $result = $this->httpClient()->put($url, ['json' => $data]);
-            return json_decode($result->getBody(), true);
+            return json_decode($result->getBody()->getContents(), true);
         } catch (GuzzleClientException $e) {
             throw ClientException::fromException($e);
         }
@@ -57,7 +47,7 @@ class HttpClient implements Client
     {
         try {
             $result = $this->httpClient()->get($url);
-            return json_decode($result->getBody(), true);
+            return json_decode($result->getBody()->getContents(), true);
         } catch (GuzzleClientException $e) {
             throw ClientException::fromException($e);
         }
@@ -67,13 +57,13 @@ class HttpClient implements Client
     {
         try {
             $result = $this->httpClient()->delete($url);
-            return json_decode($result->getBody(), true);
+            return json_decode($result->getBody()->getContents(), true);
         } catch (GuzzleClientException $e) {
             throw ClientException::fromException($e);
         }
     }
 
-    public function multiGet(array $urls)
+    public function multiGet(array $urls): array
     {
         $promises = [];
         foreach ($urls as $url) {
@@ -84,9 +74,9 @@ class HttpClient implements Client
         $results = [];
         foreach ($responses as $url => $settle) {
             if ($settle['state'] != 'fulfilled') {
-                throw new \UnexpectedValueException('Something went wrong while querying JIRA!');
+                throw new UnexpectedValueException('Something went wrong while querying JIRA!');
             }
-            /** @var \Psr\Http\Message\ResponseInterface $value */
+            /** @var ResponseInterface $value */
             $value = $settle['value'];
             $results[$url] = json_decode((string) $value->getBody(), true);
         }
@@ -96,12 +86,14 @@ class HttpClient implements Client
 
     /**
      * @param string $jql
-     * @param string|null $fields
-     *
+     * @param null $startAt
+     * @param null $fields
+     * @param array|null $expand
+     * @param array|null $properties
      * @return array
      * @throws GuzzleException
      */
-    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null): array
     {
         try {
             $result = $this->httpClient()->post(
@@ -116,7 +108,7 @@ class HttpClient implements Client
                     ])
                 ]
             );
-            return json_decode($result->getBody(), true);
+            return json_decode($result->getBody()->getContents(), true);
         } catch (GuzzleClientException $exception) {
             throw ClientException::fromException($exception);
         }
@@ -178,6 +170,7 @@ class HttpClient implements Client
         );
     }
 
+    /** @SuppressWarnings(PHPMD) */
     private function httpClient(): GuzzleClient
     {
         if (!isset($this->httpClient)) {
@@ -191,11 +184,11 @@ class HttpClient implements Client
                             return;
                         }
 
-                        static $i = 0;
+                        static $index = 0;
                         static $chars = ['|', '/', '-', '\\'];
 
-                        printf("\033[1G\033[2K" . $chars[$i % 4] . PHP_EOL . "\033[1A");
-                        $i++;
+                        printf("\033[1G\033[2K" . $chars[$index % 4] . PHP_EOL . "\033[1A");
+                        $index++;
                     },
                     'stream' => true,
                     'on_stats' => function (TransferStats $stats) {

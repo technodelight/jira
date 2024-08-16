@@ -1,26 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\Symfony;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class ApplicationConfigurationBuilder
 {
-    /**
-     * @var array
-     */
-    private $symfonyConfigurationArray;
+    public function __construct(private readonly array $symfonyConfig) {}
 
-    public function __construct(array $symfonyConfigurationArray)
+    public function build(): ApplicationConfiguration
     {
-        $this->symfonyConfigurationArray = $symfonyConfigurationArray;
-    }
-
-    /**
-     * @return ApplicationConfiguration
-     */
-    public function build()
-    {
-        return ApplicationConfiguration::fromSymfonyConfigArray($this->symfonyConfigurationArray);
+        return ApplicationConfiguration::fromSymfonyConfigArray($this->symfonyConfig);
     }
 }

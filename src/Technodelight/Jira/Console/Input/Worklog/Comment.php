@@ -26,14 +26,14 @@ class Comment
         Issue $issue = null,
         ?Worklog $worklog = null
     ): ?string {
-        $q = new QuestionHelper();
+        $helper = new QuestionHelper();
         $question = new Question($this->worklogCommentDialogText($worklog ? $worklog->comment() : '', $worklog));
         $question->setAutocompleterCallback(new Aggregate([
             new Word($this->fetchWordsList($issue)),
             new UsernameAutocomplete($issue, $this->api)
         ]));
 
-        return $q->ask($input, $output, $question);
+        return $helper->ask($input, $output, $question);
     }
 
     private function fetchWordsList(Issue $issue): array

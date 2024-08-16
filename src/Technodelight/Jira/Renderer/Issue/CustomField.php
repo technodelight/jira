@@ -15,6 +15,7 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class CustomField implements IssueRenderer
 {
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
     public function __construct(
         private readonly TemplateHelper $templateHelper,
         private readonly Api $api,
@@ -22,27 +23,32 @@ class CustomField implements IssueRenderer
         private readonly Formatter $formatter,
         private readonly string $customFieldName,
         private readonly bool $inline = false
-    ) {
-    }
+    ) {}
 
     public function render(OutputInterface $output, Issue $issue): void
     {
         $field = $this->lookupField($this->customFieldName);
-        if ($value = $issue->findField($field->key())) {
-            $content = [
-                sprintf('<comment>%s:</>', strtolower($field->name())),
-                $this->renderContent($issue, $field, $output, $value)
-            ];
-
-            if ($this->inline) {
-                $content = implode(' ', $content);
-            }
-
-            $output->writeln($this->tab($content));
+        $value = $issue->findField($field->key());
+        if (empty($value)) {
+            return;
         }
+
+        $content = [
+            sprintf('<comment>%s:</>', strtolower($field->name())),
+            $this->renderContent($issue, $field, $output, $value)
+        ];
+
+        if ($this->inline) {
+            $content = implode(' ', $content);
+        }
+
+        $output->writeln($this->tab($content));
     }
 
-    /** @throws Exception */
+    /**
+     * @throws Exception
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
     private function lookupField(string $fieldName): Field
     {
         $fields = array_filter(

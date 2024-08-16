@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Action;
 
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -7,17 +9,10 @@ use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\Helper;
 use Technodelight\Jira\Domain\Issue\IssueKey;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class StyleGuide
 {
-    /**
-     * @var FormatterHelper
-     */
-    private $formatterHelper;
-
-    public function __construct(FormatterHelper $formatterHelper)
-    {
-        $this->formatterHelper = $formatterHelper;
-    }
+    public function __construct(private readonly FormatterHelper $formatterHelper) {}
 
     public function formatIssueKey(IssueKey $issueKey): string
     {

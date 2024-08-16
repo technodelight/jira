@@ -5,22 +5,14 @@ namespace Technodelight\Jira\Configuration\ApplicationConfiguration\Integrations
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration\BranchNameGeneratorConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess,PHPMD.UnusedPrivateField) */
 class GitConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var int
-     */
-    private $maxBranchNameLength;
-    /**
-     * @var BranchNameGeneratorConfiguration
-     */
-    private $branchNameGenerator;
-    /**
-     * @var array
-     */
-    private $config;
+    private int $maxBranchNameLength;
+    private BranchNameGeneratorConfiguration $branchNameGenerator;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): GitConfiguration
     {
         $instance = new self;
         $instance->config = $config;

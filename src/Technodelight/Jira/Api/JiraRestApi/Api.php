@@ -32,6 +32,7 @@ use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Domain\WorklogCollection;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class Api
 {
     public const FIELDS_ALL = '*all';
@@ -321,8 +322,8 @@ class Api
 
     private function fetchAndAssignWorklogsToIssues(
         IssueCollection $issues,
-        DateTime $from = null,
-        DateTime $to = null,
+        DateTime $fromDay = null,
+        DateTime $toDay = null,
         User $user = null,
         ?int $limit = null
     ): void {
@@ -339,8 +340,8 @@ class Api
                 $response['worklogs'][$k] = $this->normaliseDateFields($log);
             }
             $worklogs = WorklogCollection::fromIssueArray($issue, $response['worklogs']);
-            if ($from && $to) {
-                $worklogs = $worklogs->filterByDate($from, $to);
+            if ($fromDay && $toDay) {
+                $worklogs = $worklogs->filterByDate($fromDay, $toDay);
             }
             if ($user) {
                 $worklogs = $worklogs->filterByUser($user);
@@ -353,19 +354,19 @@ class Api
     }
 
     public function findUserIssuesWithWorklogs(
-        DateTime $from,
-        DateTime $to,
+        DateTime $fromDay,
+        DateTime $toDay,
         User $user = null,
         ?int $limit = null
     ): IssueCollection {
         $query = SearchQueryBuilder::factory()
-            ->worklogDate($from->format('Y-m-d'), $to->format('Y-m-d'));
+            ->worklogDate($fromDay->format('Y-m-d'), $toDay->format('Y-m-d'));
         if ($user) {
             $query->worklogAuthor($user);
         }
 
         $issues = $this->search($query->assemble(), null, 'issueKey');
-        $this->fetchAndAssignWorklogsToIssues($issues, $from, $to, $user, $limit);
+        $this->fetchAndAssignWorklogsToIssues($issues, $fromDay, $toDay, $user, $limit);
 
         return $issues;
     }
@@ -939,8 +940,9 @@ class Api
         $fields = ['body', 'comment', 'value'];
         $accountIds = [];
         foreach ($jiraItem as $field => $value) {
+            $numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches);
             if (in_array($field, $fields, true)
-                && $numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches)) {
+                && $numOfMatches > 0) {
                 for ($i = 0; $i < $numOfMatches; $i++) {
                     $accountIds[] = $matches[3][$i];
                 }
@@ -959,8 +961,9 @@ class Api
 
         $users = $this->users($accountIds);
         foreach ($jiraItem as $field => $value) {
+            $numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $value, $matches);
             if (in_array($field, ['body', 'comment'], true)
-                && $numOfMatches = preg_match_all('~(\[\~)([^]]+)(\])~smu', $value, $matches)) {
+                && $numOfMatches > 0) {
                 for ($i = 0; $i < $numOfMatches; $i++) {
                     $username = $matches[2][$i];
                     foreach ($users as $user) {

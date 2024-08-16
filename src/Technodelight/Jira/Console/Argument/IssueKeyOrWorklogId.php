@@ -14,6 +14,7 @@ class IssueKeyOrWorklogId
     private ?IssueKey $issueKey = null;
     private ?Worklog $worklog = null;
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public static function fromString($string): self
     {
         $instance = new self;

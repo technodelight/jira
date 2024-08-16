@@ -50,6 +50,7 @@ class Fields extends Command
         ;
     }
 
+    /** @SuppressWarnings(PHPMD) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($this->optionChecker->hasOptionWithoutValue($input, 'issueKey')) {
@@ -72,7 +73,8 @@ class Fields extends Command
     {
         $table = [];
         foreach ($fields as $field) {
-            if (($like = $input->getOption('like'))
+            $like = $input->getOption('like');
+            if (!empty($like)
                 && !$this->isFieldLike($field, $like)) {
                 continue;
             }

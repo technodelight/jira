@@ -1,21 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class FiltersConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var FilterConfiguration[]
-     */
-    private $filters;
-    /**
-     * @var array
-     */
-    private $config;
+    /** @var FilterConfiguration[] */
+    private array $filters;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): FiltersConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -30,10 +28,7 @@ class FiltersConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
-    /**
-     * @return FilterConfiguration[]
-     */
-    public function items()
+    public function items(): array
     {
         return $this->filters;
     }
@@ -43,9 +38,6 @@ class FiltersConfiguration implements RegistrableConfiguration
         return 'filters';
     }
 
-    /**
-     * @return array
-     */
     public function configAsArray(): array
     {
         return $this->config;

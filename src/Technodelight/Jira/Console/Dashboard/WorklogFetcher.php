@@ -22,11 +22,12 @@ class WorklogFetcher
         private readonly WorklogHandler $worklogHandler
     ) {}
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function fetch($dateString, User $user = null, $mode = self::MODE_DAILY): Collection
     {
-        $from = $this->defineDate($dateString, $mode, true);
-        $to = $this->defineDate($dateString, $mode, false);
-        $logs = $this->worklogHandler->find($from, $to)->filterByUser($user ? $user : $this->jira->user());
+        $fromDay = $this->defineDate($dateString, $mode, true);
+        $toDay = $this->defineDate($dateString, $mode, false);
+        $logs = $this->worklogHandler->find($fromDay, $toDay)->filterByUser($user ? $user : $this->jira->user());
 
         $issueKeys = $logs->issueKeys();
         if (!empty($issueKeys)) {
@@ -41,7 +42,7 @@ class WorklogFetcher
             }
         }
 
-        return Collection::fromWorklogCollection($logs, $from, $to);
+        return Collection::fromWorklogCollection($logs, $fromDay, $toDay);
     }
 
     private function defineDate(string $dateString, int $mode, bool $start): DateTime

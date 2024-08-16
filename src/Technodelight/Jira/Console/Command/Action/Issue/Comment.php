@@ -58,6 +58,7 @@ class Comment extends Command
             );
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
@@ -73,29 +74,37 @@ class Comment extends Command
             if ($input->getOption('update')) {
                 $commentId = CommentId::fromNumeric($input->getOption('update'));
                 $input->setArgument('comment', $this->commentInput->updateComment($issueKey, $commentId, $output));
-            } else {
-                $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
+                return;
             }
+
+            $input->setArgument('comment', $this->commentInput->createComment($issue, $input, $output));
         }
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
         $comment = $input->getArgument('comment');
 
-        if ($updateCommentId = $input->getOption('update')) {
+        $updateCommentId = $input->getOption('update');
+        $deleteCommentId = $input->getOption('delete');
+
+        if (!empty($updateCommentId)) {
             $comment = $this->jira->updateComment($issueKey, CommentId::fromNumeric($updateCommentId), $comment);
             $output->writeln(sprintf('Comment <info>%s</> was updated successfully', $comment->id()));
             $this->commentRenderer->renderComment($output, $comment);
-        } elseif ($deleteCommentId = $input->getOption('delete')) {
+            return self::SUCCESS;
+        }
+        if (!empty($deleteCommentId)) {
             $this->jira->deleteComment($issueKey, CommentId::fromNumeric($deleteCommentId));
             $output->writeln('<info>Comment has been deleted</>');
-        } else {
-            $comment = $this->jira->addComment($issueKey, $comment);
-            $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
-            $this->commentRenderer->renderComment($output, $comment);
+            return self::SUCCESS;
         }
+
+        $comment = $this->jira->addComment($issueKey, $comment);
+        $output->writeln(sprintf('Comment <info>%s</> was created successfully', $comment->id()));
+        $this->commentRenderer->renderComment($output, $comment);
 
         return self::SUCCESS;
     }

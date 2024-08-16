@@ -11,8 +11,9 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfig
 use Technodelight\Jira\Domain\Comment;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Helper\GitBranchnameGenerator;
+use UnexpectedValueException;
 
-
+/** @SuppressWarnings(PHPMD.StaticAccess)  */
 class Api
 {
     private const CONTENT_W_LINEBREAK = "%s:\n%s";
@@ -66,7 +67,7 @@ EOL,
             return $branchName;
         }
 
-        throw new \UnexpectedValueException('ChatGPT did not generate a meaningful reply:'.PHP_EOL.$reply);
+        throw new UnexpectedValueException('ChatGPT did not generate a meaningful reply:'.PHP_EOL.$reply);
     }
 
     public function summarize(Issue $issue): string
@@ -148,22 +149,27 @@ EOL,
                     $value = $assembler($key, $value, $tokenCounts);
                 }
                 $content = trim($value);
-                if (($tokenCounts + ($tokenCount = $this->guessTokenCount($content))) < self::TOKEN_LENGTH_SOFT_LIMIT) {
+                $tokenCount = $this->guessTokenCount($content);
+                // within token limit, add to the content
+                if (($tokenCounts + $tokenCount) < self::TOKEN_LENGTH_SOFT_LIMIT) {
                     $contents[] = [
                         'role' => $role,
                         'content' => $content
                     ];
                     $tokenCounts+= $tokenCount;
-                } else {
-                    $this->log(
-                        sprintf(
-                            'skip appending field %s due to length token limitation (%d / %d)',
-                            $key,
-                            $tokenCounts,
-                            $tokenCount
-                        )
-                    );
+                    continue;
                 }
+
+                // cannot append more token, log
+                $this->log(
+                    sprintf(
+                        'skip appending field %s due to length token limitation (%d / %d)',
+                        $key,
+                        $tokenCounts,
+                        $tokenCount
+                    )
+                );
+                break;
             }
         }
 
@@ -182,7 +188,8 @@ EOL,
         return 'comments:' . PHP_EOL . join(PHP_EOL, array_filter(array_map(
             function (Comment $comment) use (&$commentTokens) {
                 $body = $comment->author()->displayName() . ': ' . $comment->body();
-                if (($commentTokens + ($tokenCount = $this->guessTokenCount($body))) < self::TOKEN_LENGTH_SOFT_LIMIT) {
+                $tokenCount = $this->guessTokenCount($body);
+                if (($commentTokens + $tokenCount) < self::TOKEN_LENGTH_SOFT_LIMIT) {
                     $commentTokens+= $tokenCount;
 
                     return $body;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
 use DateTime;
@@ -16,6 +18,7 @@ use Technodelight\TimeAgo;
 
 class Changelog implements IssueRenderer
 {
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
     public function __construct(
         private readonly Api $api,
         private readonly TemplateHelper $helper,
@@ -24,37 +27,38 @@ class Changelog implements IssueRenderer
         private readonly int|bool $limit = false
     ) {}
 
+    /**
+     * @throws \Exception
+     */
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($changelogs = $this->filterChangelogs($this->api->issueChangelogs($issue->key()))) {
-            $output->writeln($this->tab('<comment>changelogs:</comment>'));
-            foreach ($changelogs as $changelog) {
-                $output->writeln(
-                    $this->tab($this->tab(
-                        sprintf(
-                            '<info>%s</info> <comment>[~%s]</> %s: <fg=black>(%s)</>',
-                            $changelog->author()->displayName(),
-                            $changelog->author()->name(),
-                            $this->ago($changelog->created()),
-                            $changelog->created()->format('Y-m-d H:i:s')
-                        )
-                    ))
-                );
-                foreach ($changelog->items() as $item) {
-                    $output->writeln($this->tab($this->tab($this->tab(
-                        $this->renderChange($output, $item)
-                    ))));
-                }
+        $changelogs = $this->filterChangelogs($this->api->issueChangelogs($issue->key()));
+        if (empty($changelogs)) {
+            return;
+        }
+
+        $output->writeln($this->tab('<comment>changelogs:</comment>'));
+        foreach ($changelogs as $changelog) {
+            $output->writeln(
+                $this->tab($this->tab(
+                    sprintf(
+                        '<info>%s</info> <comment>[~%s]</> %s: <fg=black>(%s)</>',
+                        $changelog->author()->displayName(),
+                        $changelog->author()->name(),
+                        $this->ago($changelog->created()),
+                        $changelog->created()->format('Y-m-d H:i:s')
+                    )
+                ))
+            );
+            foreach ($changelog->items() as $item) {
+                $output->writeln($this->tab($this->tab($this->tab(
+                    $this->renderChange($output, $item)
+                ))));
             }
         }
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param Item $item
-     * @return string
-     */
-    private function renderChange(OutputInterface $output, Item $item)
+    private function renderChange(OutputInterface $output, Item $item): string
     {
         if ($item->isMultiLine()) {
             return $this->multilineChange($output, $item);

@@ -3,6 +3,7 @@
 namespace Technodelight\Jira\Renderer;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration;
+use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\Factory;
 use Technodelight\Jira\Renderer\Issue\Renderer;
@@ -10,32 +11,15 @@ use Technodelight\Jira\Renderer\Issue\RendererContainer;
 
 class IssueRendererFactory
 {
-    /**
-     * @var \Technodelight\Jira\Configuration\ApplicationConfiguration
-     */
-    private $config;
-    /**
-     * @var \Technodelight\Jira\Renderer\Issue\CustomField\Factory
-     */
-    private $factory;
-    /**
-     * @var \Technodelight\Jira\Renderer\Issue\RendererContainer
-     */
-    private $rendererProvider;
-
-    public function __construct(ApplicationConfiguration $config, Factory $factory, RendererContainer $rendererProvider)
-    {
-        $this->config = $config;
-        $this->factory = $factory;
-        $this->rendererProvider = $rendererProvider;
+    public function __construct(
+        private readonly ApplicationConfiguration $config,
+        private readonly Factory $factory,
+        private readonly RendererContainer $rendererProvider
+    ) {
     }
 
-    /**
-     * @param string $mode
-     * @return Renderer
-     * @throws RendererConfigurationError
-     */
-    public function build($mode)
+    /** @throws RendererConfigurationError */
+    public function build(string $mode): Renderer
     {
         $rendererConfig = $this->config($mode);
 
@@ -51,21 +35,17 @@ class IssueRendererFactory
         return new Renderer($renderers);
     }
 
-    /**
-     * @param string $mode
-     * @return \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration
-     */
-    private function config($mode)
+    private function config(string $mode): RendererConfiguration
     {
         return $this->config->renderers()->mode($mode);
     }
 
     /**
      * @param FieldConfiguration $fieldConfiguration
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @param IssueRenderer[] $renderers
      * @throws RendererConfigurationError
      */
-    private function changeField(FieldConfiguration $fieldConfiguration, array &$renderers)
+    private function changeField(FieldConfiguration $fieldConfiguration, array &$renderers): void
     {
         if ($fieldConfiguration->remove()) {
             unset($renderers[$fieldConfiguration->name()]);
@@ -76,9 +56,9 @@ class IssueRendererFactory
 
     /**
      * @param FieldConfiguration $fieldConfiguration
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @param IssueRenderer[] $renderers
      */
-    private function createField(FieldConfiguration $fieldConfiguration, array &$renderers)
+    private function createField(FieldConfiguration $fieldConfiguration, array &$renderers): void
     {
         if (!$fieldConfiguration->remove()) {
             $renderers[$fieldConfiguration->name()] = $this->createFieldRenderer($fieldConfiguration);
@@ -87,10 +67,10 @@ class IssueRendererFactory
 
     /**
      * @param FieldConfiguration $fieldConfiguration
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @param IssueRenderer[] $renderers
      * @throws RendererConfigurationError
      */
-    private function moveField(FieldConfiguration $fieldConfiguration, array &$renderers)
+    private function moveField(FieldConfiguration $fieldConfiguration, array &$renderers): void
     {
         $this->validateMove($fieldConfiguration, $renderers);
 
@@ -101,34 +81,34 @@ class IssueRendererFactory
             $renderer = $renderers[$moveName];
             unset($reorderedRenderers[$moveName]);
             $reorderedRenderers[$moveName] = $renderer;
-        } else {
-            foreach ($renderers as $rendererName => $renderer) {
-                if ($rendererName == $moveName) {
-                    continue;
-                }
-                if ($fieldConfiguration->before() == '-' && $rendererName == 'header') {
-                    $reorderedRenderers[$rendererName] = $renderer;
-                    $reorderedRenderers[$moveName] = $renderers[$moveName];
-                    break;
-                } elseif ($fieldConfiguration->before() == $rendererName) {
-                    $reorderedRenderers[$moveName] = $renderers[$moveName];
-                    $reorderedRenderers[$rendererName] = $renderer;
-                } elseif ($fieldConfiguration->after() == $rendererName) {
-                    $reorderedRenderers[$rendererName] = $renderer;
-                    $reorderedRenderers[$moveName] = $renderers[$moveName];
-                } else {
-                    $reorderedRenderers[$rendererName] = $renderer;
-                }
+            $renderers = $reorderedRenderers;
+
+            return;
+        }
+
+        //@TODO: refactor me
+        foreach ($renderers as $rendererName => $renderer) {
+            if ($rendererName === $moveName) {
+                continue;
+            }
+            $reorderedRenderers[$rendererName] = $renderer;
+            if ($fieldConfiguration->before() == '-' && $rendererName == 'header') {
+                $reorderedRenderers[$rendererName] = $renderer;
+                $reorderedRenderers[$moveName] = $renderers[$moveName];
+                break;
+            } elseif ($fieldConfiguration->before() == $rendererName) {
+                $reorderedRenderers[$moveName] = $renderers[$moveName];
+                $reorderedRenderers[$rendererName] = $renderer;
+            } elseif ($fieldConfiguration->after() == $rendererName) {
+                $reorderedRenderers[$rendererName] = $renderer;
+                $reorderedRenderers[$moveName] = $renderers[$moveName];
             }
         }
+
         $renderers = $reorderedRenderers;
     }
 
-    /**
-     * @param \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration $fieldConfiguration
-     * @return \Technodelight\Jira\Renderer\IssueRenderer
-     */
-    private function createFieldRenderer(FieldConfiguration $fieldConfiguration)
+    private function createFieldRenderer(FieldConfiguration $fieldConfiguration): IssueRenderer
     {
         if ($this->isCustomField($fieldConfiguration)) {
             return $this->createCustomFieldRenderer($fieldConfiguration);
@@ -137,37 +117,34 @@ class IssueRendererFactory
         return $this->createBuiltInFieldRenderer($fieldConfiguration);
     }
 
-    /**
-     * @param \Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration $fieldConfiguration
-     * @return \Technodelight\Jira\Renderer\Issue\CustomField
-     */
-    private function createCustomFieldRenderer(FieldConfiguration $fieldConfiguration)
+    private function createCustomFieldRenderer(FieldConfiguration $fieldConfiguration): IssueRenderer
     {
         $formatters = $this->config->renderers()->formatters();
-        $formatter = isset($formatters[$fieldConfiguration->formatter()]) ? $formatters[$fieldConfiguration->formatter()] : null;
+        $formatter = $formatters[$fieldConfiguration->formatter()] ?? null;
         return $this->factory->fromFieldName(
             $fieldConfiguration->name(),
             $fieldConfiguration->inline(),
-            $formatter ? $formatter->createInstance() : null
+            $formatter?->createInstance()
         );
     }
 
-    private function isCustomField(FieldConfiguration $fieldConfiguration)
+    private function isCustomField(FieldConfiguration $fieldConfiguration): bool
     {
         return !$this->rendererProvider->has($fieldConfiguration->name());
     }
 
-    private function createBuiltInFieldRenderer(FieldConfiguration $fieldConfiguration)
+    private function createBuiltInFieldRenderer(FieldConfiguration $fieldConfiguration): IssueRenderer
     {
         return $this->rendererProvider->get($fieldConfiguration->name());
     }
 
     /**
      * @param FieldConfiguration $fieldConfiguration
-     * @param \Technodelight\Jira\Renderer\IssueRenderer[] $renderers
+     * @param IssueRenderer[] $renderers
      * @throws RendererConfigurationError
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    private function validateMove(FieldConfiguration $fieldConfiguration, array &$renderers)
+    private function validateMove(FieldConfiguration $fieldConfiguration, array &$renderers): void
     {
         if (!empty($fieldConfiguration->before())
             && !isset($renderers[$fieldConfiguration->before()])

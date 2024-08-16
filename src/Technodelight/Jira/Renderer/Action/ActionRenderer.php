@@ -16,6 +16,7 @@ class ActionRenderer implements Renderer
         $this->renderers = $renderers;
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
     public function canProcess(Result $result): bool
     {
         return true;

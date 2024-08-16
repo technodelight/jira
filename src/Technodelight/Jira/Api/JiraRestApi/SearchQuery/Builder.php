@@ -1,8 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\JiraRestApi\SearchQuery;
 
+use DateTime;
+use InvalidArgumentException;
+use Sirprize\Queried\QueryException;
 use Technodelight\Jira\Domain\Issue\IssueKey;
+use Technodelight\Jira\Domain\Issue\IssueType;
+use Technodelight\Jira\Domain\Status;
 use Technodelight\Jira\Domain\User;
 
 class Builder
@@ -60,17 +67,17 @@ class Builder
     }
 
     /**
-     * @param IssueKey|string|IssueKey[]|string[] $issueKey
+     * @param string|IssueKey|IssueKey[]|string[] $issueKey
      * @return $this
-     * @throws \Sirprize\Queried\QueryException
+     * @throws QueryException
      */
-    public function issueKey($issueKey): self
+    public function issueKey(array|IssueKey|string $issueKey): self
     {
         if (!is_array($issueKey)) {
             $issueKey = [$issueKey];
         }
         if (empty($issueKey)) {
-            throw new \InvalidArgumentException('issueKey cannot be empty!');
+            throw new InvalidArgumentException('issueKey cannot be empty!');
         }
         $this->baseQuery->activateCondition('issueKey', ['issueKeys' => join('","', $issueKey)]);
         return $this;
@@ -82,7 +89,7 @@ class Builder
         return $this;
     }
 
-    public function issueType($issueType): self
+    public function issueType(string|array|IssueType $issueType): self
     {
         if (!is_array($issueType)) {
             $issueType = [$issueType];
@@ -91,7 +98,7 @@ class Builder
         return $this;
     }
 
-    public function status($status): self
+    public function status(string|array|Status $status): self
     {
         if (!is_array($status)) {
             $status = [$status];
@@ -100,7 +107,7 @@ class Builder
         return $this;
     }
 
-    public function statusCategory($statusCategory): self
+    public function statusCategory(string|array $statusCategory): self
     {
         if (!is_array($statusCategory)) {
             $statusCategory = [$statusCategory];
@@ -110,41 +117,41 @@ class Builder
         return $this;
     }
 
-    public function sprint($sprint): self
+    public function sprint(string $sprint): self
     {
         $this->baseQuery->activateCondition('sprint', ['sprint' => $sprint]);
         return $this;
     }
 
-    public function worklogDate($from, $to): self
+    public function worklogDate(string|DateTime $fromDay, string|DateTime $toDay): self
     {
         $this->baseQuery->activateCondition(
             'worklogDate',
-            ['from' => $from, 'to' => $to]
+            ['from' => $fromDay, 'to' => $toDay]
         );
         return $this;
     }
 
     /** @TODO: check if this still works */
-    public function worklogAuthor(User $worklogAuthor)
+    public function worklogAuthor(User $worklogAuthor): self
     {
         $this->baseQuery->activateCondition('worklogAuthor', ['worklogAuthor' => (string) $worklogAuthor->id()]);
         return $this;
     }
 
-    public function updated($from, $to): self
+    public function updated(string|DateTime $fromDay, string|DateTime $toDay): self
     {
-        $this->baseQuery->activateCondition('updated', ['from' => $from, 'to' => $to]);
+        $this->baseQuery->activateCondition('updated', ['from' => $fromDay, 'to' => $toDay]);
         return $this;
     }
 
-    public function assignee($assignee): self
+    public function assignee(string|User $assignee): self
     {
         $this->baseQuery->activateCondition('assignee', ['assignee' => $assignee]);
         return $this;
     }
 
-    public function assigneeWas($assignee): self
+    public function assigneeWas(string|User $assignee): self
     {
         $this->baseQuery->activateCondition('assigneeWas', ['assignee' => $assignee]);
         return $this;
@@ -156,13 +163,13 @@ class Builder
         return $this;
     }
 
-    public function orderAsc($field): self
+    public function orderAsc(string $field): self
     {
         $this->baseQuery->activateCondition('orderByAsc', ['field' => $field]);
         return $this;
     }
 
-    public function orderDesc($field): self
+    public function orderDesc(string $field): self
     {
         $this->baseQuery->activateCondition('orderByDesc', ['field' => $field]);
         return $this;

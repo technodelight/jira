@@ -6,12 +6,13 @@ use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class IssueLinkArgument
 {
-    private $relation;
+    private string $relation;
     /**
      * @var IssueKey
      */
-    private $issueKey;
+    private IssueKey $issueKey;
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function __construct($relation, $issueKey)
     {
         $this->relation = strtr($relation, ['-' => ' ']);
@@ -22,7 +23,7 @@ class IssueLinkArgument
      * @param array $options
      * @return IssueLinkArgument[]
      */
-    public static function fromOptions(array $options)
+    public static function fromOptions(array $options): array
     {
         return array_filter(
             array_map(
@@ -36,12 +37,12 @@ class IssueLinkArgument
         );
     }
 
-    public function relation()
+    public function relation(): string
     {
         return $this->relation;
     }
 
-    public function issueKey()
+    public function issueKey(): IssueKey
     {
         return $this->issueKey;
     }

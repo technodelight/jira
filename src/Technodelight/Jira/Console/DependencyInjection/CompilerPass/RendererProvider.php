@@ -19,11 +19,7 @@ class RendererProvider implements CompilerPassInterface
                 if (!isset($tag['key'])) {
                     continue;
                 }
-                if (!isset($tag['types'])) {
-                    $tag['types'] = ['standard'];
-                } else {
-                    $tag['types'] = array_map('trim', explode(',', $tag['types']));
-                }
+                $tag['types'] = array_map('trim', explode(',', $tag['types'] ?? 'standard'));
 
                 $key = $tag['key'];
                 foreach ($tag['types'] as $type) {

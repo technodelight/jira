@@ -323,7 +323,6 @@
             <argument type="service" id="technodelight.jira.api" />
             <argument type="service" id="technodelight.jira.renderer.issue.header"/>
             <argument type="service" id="technodelight.jira.renderer.issue.issue_relations"/>
-            <argument type="service" id="console.formatter_helper"/>
             <argument type="service" id="technodelight.jira.renderer.action.styleguide" />
         </service>
         <!-- issue transition renderer-->

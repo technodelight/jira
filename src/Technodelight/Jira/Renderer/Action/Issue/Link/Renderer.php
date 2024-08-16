@@ -13,41 +13,12 @@ use Technodelight\Jira\Renderer\Issue\IssueRelations;
 
 class Renderer implements ActionRenderer
 {
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var Header
-     */
-    private $headerRenderer;
-    /**
-     * @var IssueRelations
-     */
-    private $issueRelationsRenderer;
-    /**
-     * @var FormatterHelper
-     */
-    private $formatterHelper;
-    /**
-     * @var StyleGuide
-     */
-    private $styleGuide;
-
     public function __construct(
-        Api $api,
-        Header $headerRenderer,
-        IssueRelations $issueRelationsRenderer,
-        FormatterHelper $formatterHelper,
-        StyleGuide $styleGuide
-    )
-    {
-        $this->api = $api;
-        $this->headerRenderer = $headerRenderer;
-        $this->issueRelationsRenderer = $issueRelationsRenderer;
-        $this->formatterHelper = $formatterHelper;
-        $this->styleGuide = $styleGuide;
-    }
+        private readonly Api $api,
+        private readonly Header $headerRenderer,
+        private readonly IssueRelations $relationsRenderer,
+        private readonly StyleGuide $styleGuide
+    ) {}
 
     public function canProcess(Result $result): bool
     {
@@ -67,11 +38,6 @@ class Renderer implements ActionRenderer
         return 0;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param Result $result
-     * @return int
-     */
     protected function renderSuccess(OutputInterface $output, Success $result): int
     {
         $output->writeln(
@@ -91,7 +57,7 @@ class Renderer implements ActionRenderer
 
         $issue = $this->api->retrieveIssue($result->issueKey());
         $this->headerRenderer->render($output, $issue);
-        $this->issueRelationsRenderer->render($output, $issue);
+        $this->relationsRenderer->render($output, $issue);
 
         return 0;
     }
@@ -108,7 +74,7 @@ class Renderer implements ActionRenderer
 
         $issue = $this->api->retrieveIssue($error->issueKey());
         $this->headerRenderer->render($output, $issue);
-        $this->issueRelationsRenderer->render($output, $issue);
+        $this->relationsRenderer->render($output, $issue);
 
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_VERBOSE) {
             $output->writeln($error->exception()->getTraceAsString()); //@TODO: a nice formatting would be good here

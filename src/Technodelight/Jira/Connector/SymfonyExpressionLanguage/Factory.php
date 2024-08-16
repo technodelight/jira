@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Connector\SymfonyExpressionLanguage;
 
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
@@ -7,20 +9,14 @@ use Technodelight\Jira\Helper\GitBranchnameGenerator\ExpressionLanguageProvider;
 
 class Factory
 {
-    /**
-     * @var ExpressionLanguageProvider
-     */
-    private $expressionLanguageProvider;
-
-    public function __construct(ExpressionLanguageProvider $expressionLanguageProvider)
+    public function __construct(private readonly ExpressionLanguageProvider $provider)
     {
-        $this->expressionLanguageProvider = $expressionLanguageProvider;
     }
 
     public function build()
     {
         $expressionLanguage = new ExpressionLanguage();
-        $expressionLanguage->registerProvider($this->expressionLanguageProvider);
+        $expressionLanguage->registerProvider($this->provider);
 
         return $expressionLanguage;
     }

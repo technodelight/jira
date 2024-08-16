@@ -77,6 +77,7 @@ class Assign extends Command
         }
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);

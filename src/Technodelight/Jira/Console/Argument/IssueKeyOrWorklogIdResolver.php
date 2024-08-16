@@ -29,13 +29,15 @@ class IssueKeyOrWorklogIdResolver
         throw new RuntimeException('Input does not have issue argument specified');
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function resolve(?string $value): IssueKeyOrWorklogId
     {
         $argument = IssueKeyOrWorklogId::fromString((string) $this->guesser->guessIssueKey($value) ?: $value);
+        $issueKey = $this->guesser->guessIssueKey(null, $this->git->currentBranch());
         if ($argument->isWorklogId()) {
             return IssueKeyOrWorklogId::fromWorklog($this->worklogHandler->retrieve($argument->worklogId()?->id()));
         }
-        if ($argument->isEmpty() && $issueKey = $this->guesser->guessIssueKey(null, $this->git->currentBranch())) {
+        if ($argument->isEmpty() && !empty($issueKey)) {
             return IssueKeyOrWorklogId::fromString((string) $issueKey);
         }
 

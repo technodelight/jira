@@ -26,7 +26,7 @@ class Search extends Command implements IssueRendererAware
         private readonly IssueRenderer $renderer,
         private readonly TemplateHelper $templateHelper,
         private readonly OpenApp $openApp,
-        private readonly CurrentInstanceProvider $currentInstanceProvider,
+        private readonly CurrentInstanceProvider $instanceProvider,
         private readonly Configuration $configuration
     ) {
         parent::__construct();
@@ -75,7 +75,7 @@ class Search extends Command implements IssueRendererAware
             $this->openApp->open(
                 sprintf(
                     'https://%s/issues/?jql=%s',
-                    $this->currentInstanceProvider->currentInstance()->domain(),
+                    $this->instanceProvider->currentInstance()->domain(),
                     urlencode($input->getArgument('jql'))
                 )
             );
@@ -99,6 +99,7 @@ class Search extends Command implements IssueRendererAware
         return self::SUCCESS;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function dumpFilterConfiguration(OutputInterface $output, string $filterName, string $jql): void
     {
         // perform saving of that filter!

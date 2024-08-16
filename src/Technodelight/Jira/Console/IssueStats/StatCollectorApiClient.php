@@ -1,25 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\IssueStats;
 
 use Technodelight\Jira\Api\JiraRestApi\Client;
 
 class StatCollectorApiClient implements Client
 {
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Client
-     */
-    private $client;
-    /**
-     * @var \Technodelight\Jira\Console\IssueStats\IssueStats
-     */
-    private $stats;
-
-    public function __construct(Client $client, IssueStats $stats)
-    {
-        $this->client = $client;
-        $this->stats = $stats;
-    }
+    public function __construct(
+        private readonly Client $client,
+        private readonly IssueStats $stats
+    ) {}
 
     public function post($url, $data = [])
     {
@@ -75,19 +67,20 @@ class StatCollectorApiClient implements Client
         return $this->client->upload($url, $filename);
     }
 
-    private function parseIssueKeys($string)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    private function parseIssueKeys($string): array
     {
         return StringParser::parse($string);
     }
 
-    private function view(array $issueKeys)
+    private function view(array $issueKeys): void
     {
         foreach ($issueKeys as $issueKey) {
             $this->stats->view($issueKey);
         }
     }
 
-    private function update(array $issueKeys)
+    private function update(array $issueKeys): void
     {
         foreach ($issueKeys as $issueKey) {
             $this->stats->update($issueKey);

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
+use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\Api;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
@@ -12,29 +15,13 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Transitions implements IssueRenderer
 {
-    /**
-     * @var TransitionsConfiguration
-     */
-    private $configuration;
-    /**
-     * @var Api
-     */
-    private $api;
-    /**
-     * @var TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var bool
-     */
-    private $fullMode;
-
-    public function __construct(TransitionsConfiguration $configuration, Api $api, TemplateHelper $templateHelper, $fullMode = true)
-    {
-        $this->configuration = $configuration;
-        $this->api = $api;
-        $this->templateHelper = $templateHelper;
-        $this->fullMode = $fullMode;
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
+    public function __construct(
+        private readonly TransitionsConfiguration $configuration,
+        private readonly Api $api,
+        private readonly TemplateHelper $templateHelper,
+        private readonly bool $fullMode = true
+    ) {
     }
 
     public function render(OutputInterface $output, Issue $issue): void
@@ -48,29 +35,26 @@ class Transitions implements IssueRenderer
                         $this->tab($this->tab($this->showTransitionsFull($transitions, $issue)))
                     ]
                 );
-            } else {
-                $commands = $this->showTransitionsShort($transitions, $issue);
-                $output->writeln(
-                    $this->tab(
-                        sprintf(
-                            '<comment>transitions:</comment> %s%s',
-                            join(', ', $commands),
-                            count($commands) !== count($transitions) ? sprintf(', %d more', count($transitions) - count($commands)) : ''
-                        )
-                    )
-                );
+                return;
             }
+
+            $commands = $this->showTransitionsShort($transitions);
+            $output->writeln(
+                $this->tab(
+                    sprintf(
+                        '<comment>transitions:</comment> %s%s',
+                        join(', ', $commands),
+                        count($commands) !== count($transitions) ? sprintf(', %d more', count($transitions) - count($commands)) : ''
+                    )
+                )
+            );
         }
     }
 
-    /**
-     * @param Transition[] $transitions
-     */
-    private function showTransitionsFull(array $transitions, Issue $issue)
+    private function showTransitionsFull(array $transitions, Issue $issue): array
     {
-        $self = $this;
-        return array_map(function(Transition $transition) use ($self, $issue) {
-            $command = $self->checkHasCommand($transition);
+        return array_map(function(Transition $transition) use ($issue) {
+            $command = $this->checkHasCommand($transition);
             return sprintf(
                 '<info>%s</> <fg=cyan>%s</> <fg=black>%s</>',
                 $transition->name(),
@@ -80,11 +64,10 @@ class Transitions implements IssueRenderer
         }, $transitions);
     }
 
-    private function showTransitionsShort(array $transitions, Issue $issue)
+    private function showTransitionsShort(array $transitions): array
     {
-        $self = $this;
-        return array_filter(array_map(function(Transition $transition) use ($self, $issue) {
-            $command = $self->checkHasCommand($transition);
+        return array_filter(array_map(function(Transition $transition) {
+            $command = $this->checkHasCommand($transition);
 
             if ($command) {
                 return sprintf('<fg=cyan>%s</>', $command);
@@ -94,24 +77,16 @@ class Transitions implements IssueRenderer
         }, $transitions));
     }
 
-    /**
-     * @param Transition $transition
-     * @return string
-     */
-    private function checkHasCommand(Transition $transition)
+    private function checkHasCommand(Transition $transition): string
     {
         try {
             return 'workflow:' . $this->configuration->commandForTransition($transition->name());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
     }
 
-    /**
-     * @param string[]|string $string
-     * @return string
-     */
-    private function tab($string)
+    private function tab(array|string $string): string
     {
         return $this->templateHelper->tabulate($string);
     }

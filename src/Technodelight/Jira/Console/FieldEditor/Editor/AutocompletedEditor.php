@@ -25,7 +25,7 @@ class AutocompletedEditor implements Editor
 
     public function edit(InputInterface $input, OutputInterface $output, IssueKey $issueKey, Field $field, $optionName)
     {
-        $q = new QuestionHelper();
+        $helper = new QuestionHelper();
         $question = new Question(
             sprintf('<comment>Please select value to %s for</comment> <info>%s:</info>', $optionName, $field->name())
         );
@@ -34,14 +34,14 @@ class AutocompletedEditor implements Editor
                 new IssueMetaAutocompleter($this->api, $issueKey, $field->name())
             ])
         );
-        $value = $q->ask($input);
+        $value = $helper->ask($input, $output, $question);
 
+        $allowedValues = $field->allowedValues();
         if ($field->autocompleteUrl()) {
             $values = $this->api->autocompleteUrl($field->autocompleteUrl(), $value);
             $allowedValues = $values['suggestions'];
-        } else {
-            $allowedValues = $field->allowedValues();
         }
+
         if (!in_array($value, $allowedValues, true)) {
             $confirmQuestion = new ConfirmationQuestion(
                 sprintf(
@@ -51,7 +51,7 @@ class AutocompletedEditor implements Editor
                 ),
                 false
             );
-            if ($q->ask($input, $output, $confirmQuestion)) {
+            if ($helper->ask($input, $output, $confirmQuestion)) {
                 return $value;
             }
         }

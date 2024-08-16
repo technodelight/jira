@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Board\Card;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +25,8 @@ class Badges extends Base
         }
     }
 
-    private function renderBadges(array $versions, array $labels)
+    /** @SuppressWarnings(PHPMD) */
+    private function renderBadges(array $versions, array $labels): array
     {
         $rows = [];
         foreach ($versions as $version) {
@@ -46,10 +49,11 @@ class Badges extends Base
                 }
             }
             if (!empty($nextRow)) {
-                $rows[$idx + 1] = array_merge(isset($rows[$idx + 1]) ? $rows[$idx + 1] : [], $nextRow);
+                $rows[$idx + 1] = array_merge($rows[$idx + 1] ?? [], $nextRow);
             }
 
-            // check how the row should be rendered, ie. if it overflows the max width
+            // check how the row should be rendered, i.e. if it overflows the max width
+            //@TODO: Refactor this
             if($this->totalLengthOfStringsInArray($row) > self::BLOCK_WIDTH && count($row) == 1) {
                 /** @var RenderableBadge $badge */
                 $badge = array_shift($row);
@@ -66,12 +70,12 @@ class Badges extends Base
         return $rows;
     }
 
-    private function totalLengthOfStringsInArray($texts)
+    private function totalLengthOfStringsInArray($texts): int
     {
         return array_sum(array_map('strlen', $texts)) + count($texts) - 1;
     }
 
-    private function formatBadge($text, $colorDef)
+    private function formatBadge($text, $colorDef): string
     {
         return sprintf('<%s>%s</>', $colorDef, $text);
     }

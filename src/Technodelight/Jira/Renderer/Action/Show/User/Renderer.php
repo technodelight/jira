@@ -42,6 +42,7 @@ class Renderer implements ActionRenderer
      * @param OutputInterface $output
      * @param Success $result
      * @return int
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     protected function renderSuccess(OutputInterface $output, Success $result): int
     {

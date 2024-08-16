@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\DependencyInjection\Container;
 
 use Exception;
+use ProjectServiceContainer;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Technodelight\Jira\Console\DependencyInjection\CacheMaintainer;
@@ -13,6 +16,7 @@ class Provider
      * @param string $version
      * @return Container
      * @throws Exception
+     * @SuppressWarnings(PHPMD)
      */
     public function build($version)
     {
@@ -21,7 +25,7 @@ class Provider
         if (file_exists($file) && !defined('SKIP_CACHE_CONTAINER')) {
             require_once $file;
             /** @var Container $container */
-            $container = new \ProjectServiceContainer();
+            $container = new ProjectServiceContainer();
 
             //@TODO this stopped working with the new symfony DI version
 //            $cacheMaintainer = $container->get('technodelight.jira.console.di.cache_maintainer');

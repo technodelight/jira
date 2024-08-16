@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputArgument;
@@ -20,7 +21,7 @@ class Statuses extends Command
     public function __construct(
         private readonly ProjectKeyResolver $projectKeyResolver,
         private readonly Api $api,
-        private readonly TransitionsConfiguration $transitionsConfiguration,
+        private readonly TransitionsConfiguration $transitionsConf,
         private readonly FormatterHelper $formatterHelper,
         private readonly ColorExtractor $colorExtractor,
         private readonly TemplateHelper $templateHelper
@@ -37,18 +38,20 @@ class Statuses extends Command
                 'projectKey',
                 InputArgument::OPTIONAL,
                 'Project to show statuses for. Can guess project from current feature branch'
-            );
+            )
+        ;
     }
 
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($projectKey = $this->projectKeyResolver->argument($input)) {
+        $projectKey = $this->projectKeyResolver->argument($input);
+        if (!empty($projectKey)) {
             $this->projectStatuses($output, $projectKey);
-        } else {
-            $this->genericStatuses($output);
+            return self::SUCCESS;
         }
 
+        $this->genericStatuses($output);
         return self::SUCCESS;
     }
 
@@ -113,8 +116,8 @@ class Statuses extends Command
     private function getCommandForStatus(Status $status): string
     {
         try {
-            return sprintf('jira %s', $this->transitionsConfiguration->commandForTransition($status->name()));
-        } catch (\Exception $e) {
+            return sprintf('jira %s', $this->transitionsConf->commandForTransition($status->name()));
+        } catch (Exception $exception) {
             return '';
         }
     }

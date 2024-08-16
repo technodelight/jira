@@ -2,6 +2,7 @@
 
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,6 +12,7 @@ use Technodelight\Jira\Renderer\Action\Renderer;
 use Technodelight\Jira\Renderer\Action\Show\User\Error;
 use Technodelight\Jira\Renderer\Action\Show\User\Success;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class User extends Command
 {
     public function __construct(private readonly Api $api, private readonly Renderer $renderer)
@@ -32,7 +34,7 @@ class User extends Command
         try {
             $user = $this->api->user($accountId);
             $result = Success::fromUser($user);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result = Error::fromExceptionAndAccountId($e, $accountId);
         } finally {
             $this->renderer->render($output, $result);

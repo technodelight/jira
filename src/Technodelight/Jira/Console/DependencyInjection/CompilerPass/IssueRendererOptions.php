@@ -17,16 +17,16 @@ class IssueRendererOptions implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        /** @var RenderersConfiguration $renderersConfiguration */
-        $renderersConfiguration = $container->get('technodelight.jira.config.renderers');
-        $this->addContainerDefinitionsForRenderers($renderersConfiguration, $container);
+        /** @var RenderersConfiguration $rendererConfs */
+        $rendererConfs = $container->get('technodelight.jira.config.renderers');
+        $this->addContainerDefinitionsForRenderers($rendererConfs, $container);
 
         $commandServiceIds = array_keys($container->findTaggedServiceIds('command'));
         foreach ($commandServiceIds as $serviceId) {
             $commandDef = $container->getDefinition($serviceId);
 
             if ($container->get($serviceId) instanceof IssueRendererAware) {
-                foreach ($renderersConfiguration->modes() as $configuration) {
+                foreach ($rendererConfs->modes() as $configuration) {
                     $commandDef->addMethodCall(
                         'addOption',
                         [
@@ -63,20 +63,20 @@ class IssueRendererOptions implements CompilerPassInterface
         }
     }
 
-    private function addContainerDefinitionsForRenderers(RenderersConfiguration $renderersConfiguration, ContainerBuilder $container)
+    private function addContainerDefinitionsForRenderers(RenderersConfiguration $rendererConfs, ContainerBuilder $container)
     {
-        $coreRendererDefinition = $container->getDefinition('technodelight.jira.issue_renderer');
-        $rendererCollectionArgument = $coreRendererDefinition->getArgument(0);
+        $coreRenderer = $container->getDefinition('technodelight.jira.issue_renderer');
+        $coreRendererArg = $coreRenderer->getArgument(0);
 
-        foreach ($renderersConfiguration->modes() as $modeName => $configuration) {
+        foreach (array_keys($rendererConfs->modes()) as $modeName) {
             $serviceId = sprintf('technodelight.jira.renderer.issue.%s', $modeName);
             $container->register($serviceId, IssueRenderer::class);
             $container->getDefinition($serviceId)
                 ->setFactory([new Reference('technodelight.jira.renderer.issue.factory'), 'build'])
                 ->addArgument($modeName);
-            $rendererCollectionArgument[$modeName] = new Reference($serviceId);
+            $coreRendererArg[$modeName] = new Reference($serviceId);
         }
 
-        $coreRendererDefinition->replaceArgument(0, $rendererCollectionArgument);
+        $coreRenderer->replaceArgument(0, $coreRendererArg);
     }
 }

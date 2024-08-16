@@ -5,18 +5,14 @@ namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 use UnexpectedValueException;
 
+/** @SuppressWarnings(PHPMD.StaticAccess,PHPMD.UnusedPrivateField) */
 class InstancesConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var InstanceConfiguration[]
-     */
-    private $instances;
-    /**
-     * @var array
-     */
-    private $config;
+    /** @var InstanceConfiguration[] */
+    private array $instances;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): InstancesConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -33,21 +29,16 @@ class InstancesConfiguration implements RegistrableConfiguration
     /**
      * @return InstanceConfiguration[]
      */
-    public function items()
+    public function items(): array
     {
         return $this->instances;
     }
 
-    /**
-     * @param string $name
-     * @throws UnexpectedValueException
-     * @return InstanceConfiguration
-     */
-    public function findByName($name)
+    public function findByName(string $name): InstanceConfiguration
     {
         if (count($this->items()) == 1 && $name == 'default') {
-            foreach ($this->items() as $instanceConfiguration) {
-                return $instanceConfiguration;
+            foreach ($this->items() as $instanceConfig) {
+                return $instanceConfig;
             }
         }
 

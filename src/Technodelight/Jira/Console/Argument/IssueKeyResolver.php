@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 use BadMethodCallException;
@@ -15,18 +17,13 @@ class IssueKeyResolver
     public const ARGUMENT = 'issueKey';
     public const OPTION = 'issueKey';
 
-    private Git $git;
-    private Guesser $guesser;
-    private InteractiveIssueSelector  $issueSelector;
+    public function __construct(
+        private readonly Git $git,
+        private readonly Guesser $guesser,
+        private readonly InteractiveIssueSelector $issueSelector
+    ) {}
 
-    public function __construct(Git $git, Guesser $guesser, InteractiveIssueSelector $issueSelector)
-    {
-        $this->git = $git;
-        $this->guesser = $guesser;
-        $this->issueSelector = $issueSelector;
-    }
-
-    public function argument(InputInterface $input, OutputInterface $output, $strict = true): IssueKey
+    public function argument(InputInterface $input, OutputInterface $output): IssueKey
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
             throw new BadMethodCallException('There\'s no issueKey argument specified in the input definition');
@@ -39,17 +36,17 @@ class IssueKeyResolver
                 //@TODO: something stopped working here
                 if ($argument === self::ARGUMENT && !$this->isArgValueAnIssueKey($value, $issueKey)) {
                     $shift = true;
-                    $previousArgumentValue = $input->getArgument(self::ARGUMENT);
+                    $prevArgValue = $input->getArgument(self::ARGUMENT);
                     $input->setArgument($argument, (string) $issueKey);
-                } else if ($shift && isset($previousArgumentValue)) {
-                    $input->setArgument($argument, $previousArgumentValue);
-                    $previousArgumentValue = $value;
+                } else if ($shift && isset($prevArgValue)) {
+                    $input->setArgument($argument, $prevArgValue);
+                    $prevArgValue = $value;
                     $shift = false;
                 }
             }
         }
 
-        if (null === $issueKey && $strict === true) {
+        if (null === $issueKey) {
             throw new UnexpectedValueException(
                 ':\'( Cannot figure out issueKey argument, please specify explicitly'
             );
@@ -58,7 +55,7 @@ class IssueKeyResolver
         return $issueKey;
     }
 
-    public function option(InputInterface $input, OutputInterface $output)
+    public function option(InputInterface $input, OutputInterface $output): ?string
     {
         if (!$input->hasOption(self::OPTION)) {
             return null;
@@ -68,16 +65,17 @@ class IssueKeyResolver
         return $value;
     }
 
-    private function resolve($argumentOrOption, InputInterface $input, OutputInterface $output)
+    private function resolve($argumentOrOption, InputInterface $input, OutputInterface $output): ?IssueKey
     {
-        if ($key = $this->guesser->guessIssueKey($argumentOrOption, $this->git->currentBranch())) {
+        $key = $this->guesser->guessIssueKey($argumentOrOption, $this->git->currentBranch());
+        if (!empty($key)) {
             return $key;
         }
 
         return $this->guesser->guessIssueKey($this->issueSelector->chooseIssue($input, $output)->key());
     }
 
-    private function isArgValueAnIssueKey($value, $issueKey)
+    private function isArgValueAnIssueKey($value, $issueKey): bool
     {
         return $value === (string) $issueKey
             || (null !== $this->guesser->guessIssueKey((string)$issueKey));

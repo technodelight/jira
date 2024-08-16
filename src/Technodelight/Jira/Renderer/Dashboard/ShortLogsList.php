@@ -75,7 +75,8 @@ class ShortLogsList implements DashboardRenderer
 
                 // parent issue
                 $parentInfo = '';
-                if ($parent = $issue->parent()) {
+                $parent = $issue->parent();
+                if (!empty($parent)) {
                     $parentInfo = sprintf('<bg=yellow>[%s]</> ', $parent->issueKey());
                 }
                 // issue header

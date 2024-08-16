@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument\IssueKeyResolver;
 
 use Technodelight\GitShell\Branch;
@@ -10,36 +12,26 @@ use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class Guesser
 {
-    /**
-     * @var AliasesConfiguration
-     */
-    private $aliasConfig;
-    /**
-     * @var BranchNameGeneratorConfiguration
-     */
-    private $branchConfig;
-
-    public function __construct(AliasesConfiguration $aliasConfig, BranchNameGeneratorConfiguration $branchConfig)
-    {
-        $this->aliasConfig = $aliasConfig;
-        $this->branchConfig = $branchConfig;
-    }
+    public function __construct(
+        private readonly AliasesConfiguration $aliasConfig,
+        private readonly BranchNameGeneratorConfiguration $branchConfig
+    ) {}
 
     public function guessIssueKey($guessable, Branch $currentBranch = null): ?IssueKey
     {
-        if ($key = $this->fromString((string)$guessable)) {
-            return $key;
-        }
-        if ($key = $this->fromUrl($guessable)) {
-            return $key;
-        }
-        if (!is_null($currentBranch) && $key = $this->fromBranch($currentBranch)) {
-            return $key;
-        }
+        $fromString = $this->fromString((string)$guessable);
+        $fromUrl = $this->fromUrl($guessable);
+        $fromBranch =  $this->fromBranch($currentBranch);
 
-        return null;
+        return match(true) {
+            !empty($fromString) => $fromString,
+            !empty($fromUrl) => $fromUrl,
+            $currentBranch !== null && !empty($fromBranch) => $fromBranch,
+            default => null
+        };
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function fromString($string): ?IssueKey
     {
         try {
@@ -49,6 +41,7 @@ class Guesser
         }
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function fromBranch(Branch $branch): ?IssueKey
     {
         try {
@@ -61,6 +54,8 @@ class Guesser
             return null;
         }
     }
+
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
 
     private function findIssueKeyFromBranch(Branch $branch): ?IssueKey
     {
@@ -96,6 +91,7 @@ class Guesser
         return null;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function fromUrl($guessable): ?IssueKey
     {
         if (preg_match('~https?://.*/(' . IssueKey::PATTERN . ').*~', (string)$guessable, $matches)) {

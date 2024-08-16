@@ -6,13 +6,8 @@ namespace Technodelight\Jira\Connector\HoaConsole;
 
 class Aggregate
 {
-    private array $autocompleters;
-
     /** @param array<int, Autocompleter> $autocompleters */
-    public function __construct(array $autocompleters = [])
-    {
-        $this->autocompleters = $autocompleters;
-    }
+    public function __construct(private readonly array $autocompleters = []) {}
 
     public function __invoke(string $buffer): array
     {
@@ -20,7 +15,8 @@ class Aggregate
         $word = end($words);
 
         foreach ($this->autocompleters as $autocompleter) {
-            if ($complete = $autocompleter->complete($word)) {
+            $complete = $autocompleter->complete($word);
+            if (!empty($complete)) {
                 return is_array($complete) ? $complete : [$complete];
             }
         }

@@ -10,12 +10,12 @@ class LogTimeArgsOptsParser
 
     public static function fromArgsOpts(array $arguments = [], array $opts = []): self
     {
-        $logTimeArgsOptsParser = new LogTimeArgsOptsParser();
-        $logTimeArgsOptsParser->arguments = $arguments;
-        $logTimeArgsOptsParser->opts = $opts;
-        $logTimeArgsOptsParser->parse();
+        $instance = new LogTimeArgsOptsParser();
+        $instance->arguments = $arguments;
+        $instance->opts = $opts;
+        $instance->parse();
 
-        return $logTimeArgsOptsParser;
+        return $instance;
     }
 
     /** @return string|int|null */
@@ -44,6 +44,10 @@ class LogTimeArgsOptsParser
         return (bool)$this->opts['interactive'] ?? false;
     }
 
+    /**
+     * Fucking idiot MD. See line 16
+     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+     */
     private function parse(): void
     {
         unset($this->arguments['command']);

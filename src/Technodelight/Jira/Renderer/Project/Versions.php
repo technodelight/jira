@@ -22,7 +22,8 @@ class Versions implements ProjectRenderer
 
     public function render(OutputInterface $output, Project $project): void
     {
-        if ($versions = $project->versions()) {
+        $versions = $project->versions();
+        if (!empty($versions)) {
             $this->renderVersions($output, $versions);
         }
     }

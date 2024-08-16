@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\FieldEditor\Editor;
 
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -15,27 +17,11 @@ use Technodelight\Jira\Domain\Issue\Meta\Field;
 
 class UserEditor implements Editor
 {
-    /**
-     * @var \Technodelight\Jira\Api\JiraRestApi\Api
-     */
-    private $api;
+    public function __construct(private readonly Api $api) {}
 
-    public function __construct(Api $api)
+    public function edit(InputInterface $input, OutputInterface $output, IssueKey $issueKey, Field $field, $optionName): string
     {
-        $this->api = $api;
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param IssueKey $issueKey
-     * @param Field $field
-     * @param string $optionName
-     * @return string
-     */
-    public function edit(InputInterface $input, OutputInterface $output, IssueKey $issueKey, Field $field, $optionName)
-    {
-        $q = new QuestionHelper();
+        $helper = new QuestionHelper();
         $question = new Question(sprintf('<comment>Please provide a username for %s:</comment> ', $field->name()));
         $question->setAutocompleterCallback(
             new Aggregate([
@@ -43,13 +29,9 @@ class UserEditor implements Editor
             ])
         );
 
-        return $q->ask($input, $output, $question);
+        return $helper->ask($input, $output, $question);
     }
 
-    /**
-     * @param Field $field
-     * @return bool
-     */
     public function canEditField(Field $field): bool
     {
         return $field->schemaType() === 'user';

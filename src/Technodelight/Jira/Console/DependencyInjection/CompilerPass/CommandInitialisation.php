@@ -43,14 +43,15 @@ class CommandInitialisation implements CompilerPassInterface
                     $container,
                     $filter
                 );
-            } else {
-                $this->createAndAddServiceCommand(
-                    'filter',
-                    $filter->command(),
-                    $container,
-                    $this->createFilterDef($container, [$filter->command(), $filter->jql()])
-                );
+                continue;
             }
+
+            $this->createAndAddServiceCommand(
+                'filter',
+                $filter->command(),
+                $container,
+                $this->createFilterDef($container, [$filter->command(), $filter->jql()])
+            );
         }
     }
 

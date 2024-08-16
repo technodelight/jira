@@ -2,23 +2,25 @@
 
 namespace Technodelight\Jira\Console\IssueStats;
 
+use InvalidArgumentException;
+
 class Event
 {
-    const UPDATE = 'update';
-    const VIEW = 'view';
+    public const UPDATE = 'update';
+    public const VIEW = 'view';
 
-    private $eventType;
-    private $time;
+    private string $eventType;
+    private int $time;
 
-    private static $eventTypes = [
+    private static array $eventTypes = [
         self::UPDATE => 'Update',
         self::VIEW => 'View',
     ];
 
-    public static function fromString($eventType)
+    public static function fromString($eventType): Event
     {
         if (!isset(self::$eventTypes[$eventType])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf('"%s" event type is invalid', $eventType)
             );
         }
@@ -30,36 +32,36 @@ class Event
         return $instance;
     }
 
-    public static function fromArray(array $array)
+    public static function fromArray(array $array): Event
     {
         $instance = new self;
         list ($instance->eventType, $instance->time) = $array;
         return $instance;
     }
 
-    public function is($type)
+    public function isType($type): bool
     {
-        return $type == $this->eventType;
+        return $type === $this->eventType;
     }
 
-    public function type()
+    public function type(): string
     {
         return $this->eventType;
     }
 
-    public function time()
+    public function time(): int
     {
         return $this->time;
     }
 
-    public function asArray()
+    public function asArray(): array
     {
         return [$this->eventType, $this->time];
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return (string) $this->eventType;
+        return $this->eventType;
     }
 
 

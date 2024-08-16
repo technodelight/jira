@@ -5,6 +5,7 @@ namespace Technodelight\Jira\Renderer\Dashboard;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\JiraRestApi\DateHelper;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\AliasesConfiguration;
+use Technodelight\Jira\Domain\WorklogCollection;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 use Technodelight\Jira\Domain\DashboardCollection as Collection;
 
@@ -33,10 +34,10 @@ class ProjectStats implements DashboardRenderer
 
         $projects = [];
         $issuesCount = [];
-        foreach ($collection as $worklogs) {
-            foreach ($worklogs as $worklog) {
-                /** @var $worklog \Technodelight\Jira\Domain\Worklog */
-                $issue = $worklog->issue();
+        foreach ($collection as $workLogs) {
+            foreach ($workLogs as $workLog) {
+                /** @var $workLog \Technodelight\Jira\Domain\Worklog */
+                $issue = $workLog->issue();
                 if (!isset($projects[$issue->project()->key()])) {
                     $projects[$issue->project()->key()] = 0;
                     $issuesCount[$issue->project()->key()] = [];
@@ -44,36 +45,40 @@ class ProjectStats implements DashboardRenderer
             }
         }
 
-        foreach ($collection as $worklogs) {
-            foreach ($worklogs as $worklog) {
-                $projects[$worklog->issue()->project()->key()]+= $worklog->timeSpentSeconds();
-                $issuesCount[$worklog->issue()->project()->key()][] = $worklog->issueKey();
+        foreach ($collection as $workLogs) {
+            foreach ($workLogs as $workLog) {
+                $projects[$workLog->issue()->project()->key()]+= $workLog->timeSpentSeconds();
+                $issuesCount[$workLog->issue()->project()->key()][] = $workLog->issueKey();
             }
         }
 
         $aliasedIssues = [];
-        foreach ($collection as $worklogs) {
-            foreach ($worklogs->issueKeys() as $issueKey) {
+        foreach ($collection as $workLogs) {
+            foreach ($workLogs->issueKeys() as $issueKey) {
                 $alias = $this->aliasesConfiguration->issueKeyToAlias($issueKey);
                 if ($alias != $issueKey) {
                     if (!isset($aliasedIssues[$alias])) {
-                        $aliasedIssues[$alias] = $worklogs->filterByIssueKey($issueKey);
-                    } else {
-                        /** @var \Technodelight\Jira\Domain\WorklogCollection $aliasedWorklogs */
-                        $aliasedWorklogs = $aliasedIssues[$alias];
-                        $aliasedWorklogs->merge($worklogs->filterByIssueKey($issueKey));
+                        $aliasedIssues[$alias] = $workLogs->filterByIssueKey($issueKey);
+                        continue;
                     }
+
+                    /** @var WorklogCollection $aliasedWorkLogs */
+                    $aliasedWorkLogs = $aliasedIssues[$alias];
+                    $aliasedWorkLogs->merge($workLogs->filterByIssueKey($issueKey));
                 }
             }
         }
 
         foreach ($projects as $project => $timeSpent) {
             $output->writeln(
-                sprintf('<info>%s</>: %d %s, %s',
-                    $project,
-                    count(array_unique($issuesCount[$project])),
-                    count(array_unique($issuesCount[$project])) == 1 ? 'issue' : 'issues',
-                    $this->dateHelper->secondsToHuman($timeSpent)
+                strtr(
+                    '<info>{project}</>: {count} {phrase}, {timeSpent}',
+                    [
+                        '{project}' => $project,
+                        '{count}' => count(array_unique($issuesCount[$project])),
+                        '{phrase}' => count(array_unique($issuesCount[$project])) == 1 ? 'issue' : 'issues',
+                        '{timeSpent}' => $this->dateHelper->secondsToHuman($timeSpent)
+                    ]
                 )
             );
         }
@@ -83,23 +88,27 @@ class ProjectStats implements DashboardRenderer
                 '',
                 'Where you spent the following amount of work on the aliased issues:'
             ]);
-            foreach ($aliasedIssues as $alias => $worklogs) {
-                /** @var \Technodelight\Jira\Domain\WorklogCollection $worklogs */
+            foreach ($aliasedIssues as $alias => $workLogs) {
+                /** @var WorklogCollection $workLogs */
                 $output->writeln(
-                    sprintf(
-                        '<comment>%s</>: %s',
-                        $alias,
-                        $this->dateHelper->secondsToHuman($worklogs->totalTimeSpentSeconds())
+                    strtr(
+                        '<comment>{alias}</>: {timeSpent}',
+                        [
+                            '{alias}' => $alias,
+                            '{timeSpent}' => $this->dateHelper->secondsToHuman($workLogs->totalTimeSpentSeconds())
+                        ]
                     )
                 );
-                foreach ($worklogs as $worklog) {
+                foreach ($workLogs as $workLog) {
                     $output->writeln(
-                        sprintf(
-                            '  - %s on %s, %s <fg=black>(%d)</>',
-                            $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()),
-                            $worklog->date()->format('Y-m-d'),
-                            $worklog->comment(),
-                            $worklog->id()
+                        strtr(
+                            '  - {timeSpent} on {date}, {comment} <fg=black>({id}})</>',
+                            [
+                                '{timeSpent}' => $this->dateHelper->secondsToHuman($workLog->timeSpentSeconds()),
+                                '{date}' => $workLog->date()->format('Y-m-d'),
+                                '{comment}' => $workLog->comment(),
+                                '{id}' => $workLog->id()
+                            ]
                         )
                     );
                 }

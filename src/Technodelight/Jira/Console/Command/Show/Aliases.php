@@ -23,9 +23,12 @@ class Aliases extends Command
         ;
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($rows = $this->issueAliases()) {
+        $rows = $this->issueAliases();
+        // add aliases to table, if any
+        if (!empty($rows)) {
             $output->writeln(['<comment>Issue Aliases:</comment>', '']);
             $table = new PrettyTable($output);
             $table->setHeaders(['Alias', 'Issue key']);

@@ -58,6 +58,7 @@ class Init extends Command
         return $this->interactiveInit($input, $output);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function interactiveInit(InputInterface $input, OutputInterface $output): int
     {
         $path = $this->configFilePath((bool)$input->getOption('local'));

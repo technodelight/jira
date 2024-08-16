@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,19 +17,20 @@ class Description implements IssueRenderer
 {
     private const MAX_ROWS = 2;
 
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
     public function __construct(
         private readonly TemplateHelper $templateHelper,
         private readonly ImageRenderer $imageRenderer,
         private readonly Wordwrap $wordwrap,
         private readonly JiraTagConverter $tagConverter,
         private readonly AccountIdUsernameReplacer $replacer,
-        private bool $renderFullDescription = true
-    ) {
-    }
+        private readonly bool $renderFull = true
+    ) {}
 
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($formattedDescription = $this->formatDescription($output, $issue)) {
+        $formattedDescription = $this->formatDescription($output, $issue);
+        if (!empty($formattedDescription)) {
             $output->writeln($this->templateHelper->tabulate($formattedDescription));
         }
     }
@@ -46,7 +49,7 @@ class Description implements IssueRenderer
 
     private function shortenIfNotFullRendering(string $text): string
     {
-        if (!$this->renderFullDescription) {
+        if (!$this->renderFull) {
             $lines = explode(PHP_EOL, $text);
             return implode(
                 PHP_EOL,
@@ -59,16 +62,10 @@ class Description implements IssueRenderer
         return $text;
     }
 
-    /**
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @param string $description
-     * @return string
-     */
     private function renderContents(OutputInterface $output, Issue $issue, string $description): string
     {
         $body = $this->wordwrap->wrap($this->tagConverter->convert($output, $description, ['tabulation' => 8]));
-        if ($this->renderFullDescription) {
+        if ($this->renderFull) {
             $body = $this->imageRenderer->render($body, $issue);
         }
 

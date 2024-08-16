@@ -38,7 +38,6 @@ class StoredIssueFilter extends Command implements IssueRendererAware
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $filter = $this->api->retrieveFilter($this->filter->filterId())->jql();
         $issues = $this->api->search($this->filter->jql(), $this->page($input), [Api::FIELDS_ALL, 'comment']);
         if (!$issues->count()) {
             $output->writeln('<info>There seem to be no results matching for your criteria.</info>');

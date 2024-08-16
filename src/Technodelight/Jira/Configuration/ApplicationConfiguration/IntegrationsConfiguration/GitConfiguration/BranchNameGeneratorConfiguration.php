@@ -1,44 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\GitConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
+/** @SuppressWarnings(PHPMD.UnusedPrivateField) */
 class BranchNameGeneratorConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var array
-     */
-    private $defaultPatterns = [
+    private array $defaultPatterns = [
         'preg_match("~^Release ~", issue.summary())' => ['pattern' => 'release/{clean(substr(issue.summary(), 8))}'],
         'preg_match("~.*~", issue.summary())' => ['pattern' => 'feature/{issueKey}-{summary}'],
     ];
     /**
      * @var array "regex" => ["pattern" => "pattern/{templeStuff}"]
      */
-    private $patterns;
-    /**
-     * @var string
-     */
-    private $separator;
-    /**
-     * @var string
-     */
-    private $whitelist;
-    /**
-     * @var string[]
-     */
-    private $remove;
-    /**
-     * @var string[]
-     */
-    private $replace;
-    /**
-     * @var array
-     */
-    private $config;
+    private array $patterns;
+    private string $separator;
+    private string $whitelist;
+    private array $remove;
+    private array $replace;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): BranchNameGeneratorConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -51,7 +36,7 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
-    public function patterns()
+    public function patterns(): array
     {
         $patterns = [];
         foreach ($this->patterns as $regex => $def) {
@@ -60,22 +45,22 @@ class BranchNameGeneratorConfiguration implements RegistrableConfiguration
         return $patterns;
     }
 
-    public function separator()
+    public function separator(): string
     {
         return $this->separator;
     }
 
-    public function whitelist()
+    public function whitelist(): string
     {
         return $this->whitelist;
     }
 
-    public function remove()
+    public function remove(): array
     {
         return $this->remove;
     }
 
-    public function replace()
+    public function replace(): array
     {
         return $this->replace;
     }

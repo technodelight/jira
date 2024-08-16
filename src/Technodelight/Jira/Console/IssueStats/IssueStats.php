@@ -1,39 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\IssueStats;
 
 use ICanBoogie\Storage\Storage;
 
 class IssueStats
 {
-    const CACHE_TTL = 604800;
+    private const CACHE_TTL = 604800;
 
-    /**
-     * @var \ICanBoogie\Storage\Storage
-     */
-    private $storage;
-    /**
-     * @var \Technodelight\Jira\Console\IssueStats\Serializer
-     */
-    private $serializer;
+    public function __construct(
+        private readonly Storage $storage,
+        private readonly Serializer $serializer
+    ) {}
 
-    public function __construct(Storage $storage, Serializer $serializer)
-    {
-        $this->storage = $storage;
-        $this->serializer = $serializer;
-    }
-
-    public function view($issueKey)
+    public function view($issueKey): void
     {
         $this->captureEvent($issueKey, Event::VIEW);
     }
 
-    public function update($issueKey)
+    public function update($issueKey): void
     {
         $this->captureEvent($issueKey, Event::UPDATE);
     }
 
-    public function clear()
+    public function clear(): void
     {
         $this->storage->clear();
     }
@@ -41,8 +33,9 @@ class IssueStats
     /**
      * @param string $issueKey
      * @param string $eventType
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    private function captureEvent($issueKey, $eventType)
+    private function captureEvent(string $issueKey, string $eventType): void
     {
         if (empty($issueKey)) {
             return;
@@ -53,18 +46,17 @@ class IssueStats
         $this->store($issueKey, $data);
     }
 
-    private function retrieve($issueKey)
+    private function retrieve($issueKey): array
     {
+        $data = [];
         if ($this->storage->exists($issueKey)) {
             $data = $this->storage->retrieve($issueKey);
-        } else {
-            $data = [];
         }
 
         return $this->serializer->unserialize($data);
     }
 
-    private function store($issueKey, array $data)
+    private function store($issueKey, array $data): void
     {
         $this->storage->store(
             $issueKey,

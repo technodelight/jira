@@ -1,26 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use DateTime;
 use DateTimeZone;
+use RuntimeException;
 use Technodelight\SecondsToNone;
 use Technodelight\SecondsToNone\Config;
 
 class DateHelper
 {
-    const FORMAT_FROM_JIRA = DateTime::ISO8601;
-    const FORMAT_TO_JIRA = 'Y-m-d\TH:i:s.000O';
-    /**
-     * @var Config
-     */
-    private $config;
+    public const FORMAT_FROM_JIRA = DateTime::ISO8601;
+    public const FORMAT_TO_JIRA = 'Y-m-d\TH:i:s.000O';
 
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
+    public function __construct(private readonly Config $config) {}
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public static function dateTimeFromJira($dateString): ?DateTime
     {
         list(,$timeZone) = explode('+', $dateString, 2);
@@ -30,7 +27,7 @@ class DateHelper
             ?: null;
     }
 
-    public static function dateTimeToJira($datetime)
+    public static function dateTimeToJira(string|DateTime $datetime): string
     {
         $date = ($datetime instanceof DateTime) ? $datetime : new DateTime($datetime);
         if ($date->format('H:i:s') == '00:00:00') {
@@ -39,25 +36,25 @@ class DateHelper
         return $date->format(self::FORMAT_TO_JIRA);
     }
 
-    public function secondsToHuman($seconds)
+    public function secondsToHuman(int $seconds): string
     {
         return $this->getSTN()->secondsToHuman($seconds);
     }
 
-    public function humanToSeconds($def)
+    public function humanToSeconds(string $def): float|int
     {
         return $this->getSTN()->humanToSeconds($def);
     }
 
-    public function stringToFormattedDate($dateString, $format)
+    public function stringToFormattedDate(string $dateString, string $format): string
     {
         return date($format, strtotime($dateString));
     }
 
-    private function getSTN()
+    private function getSTN(): SecondsToNone
     {
         if (!class_exists('Technodelight\SecondsToNone')) {
-            throw new \RuntimeException('Technodelight\SecondsToNone class cannot be found!');
+            throw new RuntimeException('Technodelight\SecondsToNone class cannot be found!');
         }
         return new SecondsToNone($this->config);
     }

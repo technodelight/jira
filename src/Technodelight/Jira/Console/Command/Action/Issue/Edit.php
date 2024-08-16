@@ -33,7 +33,7 @@ class Edit extends Command
         private readonly QuestionHelper $questionHelper,
         private readonly FieldEditor $editor,
         private readonly TemplateHelper $templateHelper,
-        private readonly MinimalHeader $minimalHeaderRenderer
+        private readonly MinimalHeader $minimalRenderer
     ) {
         parent::__construct();
     }
@@ -149,7 +149,7 @@ class Edit extends Command
         );
         $afterUpdate = $this->jira->retrieveIssue($issueKey);
 
-        $this->minimalHeaderRenderer->render($output, $this->jira->retrieveIssue($issueKey));
+        $this->minimalRenderer->render($output, $this->jira->retrieveIssue($issueKey));
         $this->renderChange($field, $beforeUpdate, $afterUpdate, $output);
 
         return self::SUCCESS;
@@ -201,13 +201,10 @@ class Edit extends Command
     {
         $lines = explode(PHP_EOL, $diff);
         foreach ($lines as $idx => $line) {
-            if (substr($line, 0, 1) === '-') {
-                $lines[$idx] = '<fg=red>' . $line . '</>';
-            } else {
-                if (substr($line, 0, 1) === '+') {
-                    $lines[$idx] = '<fg=green>' . $line . '</>';
-                }
-            }
+            $lines[$idx] = match(true) {
+                str_starts_with($line, '-') => '<fg=red>' . $line . '</>',
+                str_starts_with($line, '+') => '<fg=green>' . $line . '</>'
+            };
         }
         return implode(PHP_EOL, $lines);
     }

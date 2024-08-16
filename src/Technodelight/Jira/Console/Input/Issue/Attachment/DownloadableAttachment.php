@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Input\Issue\Attachment;
 
+use ErrorException;
+use InvalidArgumentException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,34 +17,18 @@ use Technodelight\Jira\Domain\Issue\IssueKey;
 
 class DownloadableAttachment
 {
-    /**
-     * @var Api
-     */
-    private $api;
+    public function __construct(private readonly Api $api) {}
 
-    public function __construct(Api $api)
-    {
-        $this->api = $api;
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param bool|IssueKey $issueKey
-     * @throws \ErrorException
-     */
     public function resolve(InputInterface $input, OutputInterface $output, IssueKey $issueKey)
     {
-        /** @var \Technodelight\Jira\Domain\Issue $issue */
         $issue = $this->api->retrieveIssue($issueKey);
 
         if (!count($issue->attachments())) {
-            throw new \ErrorException(
+            throw new ErrorException(
                 sprintf('No attachments for %s', $issue->issueKey())
             );
         }
 
-        /** @var \Symfony\Component\Console\Helper\QuestionHelper $helper */
         $helper = new QuestionHelper;
 
         $question = new ChoiceQuestion(
@@ -55,20 +43,15 @@ class DownloadableAttachment
         return $helper->ask($input, $output, $question);
     }
 
-    /**
-     * @param Issue $issue
-     * @param string $filename
-     * @return Attachment
-     */
-    public function findAttachmentByFilename(Issue $issue, $filename)
+    public function findAttachmentByFilename(Issue $issue, string $filename): Attachment
     {
         foreach ($issue->attachments() as $attachment) {
-            if ($attachment->filename() == $filename) {
+            if ($attachment->filename() === $filename) {
                 return $attachment;
             }
         }
 
-        throw new \InvalidArgumentException(
+        throw new InvalidArgumentException(
             sprintf('Attachment "%s" cannot be found', $filename)
         );
     }

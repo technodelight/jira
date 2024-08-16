@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Input\Issue\Attachment;
 
+use CallbackFilterIterator;
+use FilesystemIterator;
 use GlobIterator;
 use SplFileInfo;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -12,12 +16,7 @@ use Technodelight\Jira\Domain\Attachment;
 
 class UploadableAttachment
 {
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @throws \ErrorException
-     */
-    public function resolve(InputInterface $input, OutputInterface $output)
+    public function resolve(InputInterface $input, OutputInterface $output): string
     {
         $filename = $input->getArgument('filename');
 
@@ -43,10 +42,10 @@ class UploadableAttachment
         return $filename;
     }
 
-    private function listCurrentDirectory()
+    private function listCurrentDirectory(): array
     {
-        $iterator = new GlobIterator(getcwd(), GlobIterator::CURRENT_AS_FILEINFO | GlobIterator::KEY_AS_FILENAME);
-        $filteredIterator = new \CallbackFilterIterator($iterator, function(SplFileInfo $file) {
+        $iterator = new GlobIterator(getcwd(), FilesystemIterator::CURRENT_AS_FILEINFO | FilesystemIterator::KEY_AS_FILENAME);
+        $filteredIterator = new CallbackFilterIterator($iterator, function(SplFileInfo $file) {
             return !$file->isDir() && $file->isReadable();
         });
 

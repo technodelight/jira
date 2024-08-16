@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Dashboard;
 
 use DateTime;
@@ -12,37 +14,30 @@ class Header implements DashboardRenderer
     public function render(OutputInterface $output, DashboardCollection $collection): void
     {
         if (!$collection->count()) {
-            $from = $collection->from();
-            $to = $collection->to();
+            $fromDay = $collection->from();
+            $toDay = $collection->to();
             $output->writeln(
                 sprintf(
-                    "You don't have any issues at the moment, which has worklog %s",
-                    $from == $to ? $this->onDay($from) : $this->inTheseDays($from, $to)
+                    "You don't have any issues at the moment, which has work log %s",
+                    $fromDay == $toDay ? $this->onDay($fromDay) : $this->inTheseDays($fromDay, $toDay)
                 )
             );
         }
     }
 
-    /**
-     * @param DateTime $from
-     * @return string
-     */
-    protected function onDay(DateTime $from)
+    protected function onDay(DateTime $onDay): string
     {
-        return sprintf('on <info>%s</info>:', $from->format('Y-m-d, l'));
+        return strtr('on <info>{onDay}</info>:', ['{onDay}' => $onDay->format('Y-m-d, l')]);
     }
 
-    /**
-     * @param DateTime $from
-     * @param DateTime $to
-     * @return string
-     */
-    protected function inTheseDays(DateTime $from, DateTime $to)
+    protected function inTheseDays(DateTime $fromDay, DateTime $toDay): string
     {
-        return sprintf(
-            'from <info>%s</info> to <info>%s</info>',
-            $from->format('Y-m-d l'),
-            $to->format('Y-m-d l')
+        return strtr(
+            'from <info>{fromDay}</info> to <info>{toDay}</info>',
+            [
+                '{fromDay}' => $fromDay->format('Y-m-d l'),
+                '{toDay}' => $toDay->format('Y-m-d l')
+            ]
         );
     }
 }

@@ -24,6 +24,7 @@ class Renderers extends Command
             ->setDescription('Show available renderers for for rendering issues');
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new PrettyTable($output);

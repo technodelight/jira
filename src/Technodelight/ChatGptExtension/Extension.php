@@ -30,6 +30,7 @@ namespace Technodelight\ChatGptExtension
 
     class Extension implements ExtensionInterface
     {
+        /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
         public function load(array $configs, ContainerBuilder $container): void
         {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));

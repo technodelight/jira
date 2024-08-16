@@ -1,29 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\TaskWarrior;
 
 use Technodelight\ShellExec\Command;
 use Technodelight\ShellExec\Shell;
 use Technodelight\ShellExec\ShellCommandException;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class Api
 {
-    /**
-     * @var Shell
-     */
-    private $shell;
+    private bool $isSupported;
 
-    /**
-     * @var bool
-     */
-    private $isSupported;
+    public function __construct(private readonly Shell $shell) {}
 
-    public function __construct(Shell $shell)
-    {
-        $this->shell = $shell;
-    }
-
-    public function isSupported()
+    public function isSupported(): bool
     {
         if (!isset($this->isSupported)) {
             try {
@@ -42,7 +34,7 @@ class Api
         return $this->isSupported;
     }
 
-    public function list($pattern = null)
+    public function list($pattern = null): array
     {
         $command = Command::create('/usr/bin/env task');
         if ($pattern !== null) {
@@ -53,12 +45,12 @@ class Api
 
         try {
             return $this->shell->exec($command);
-        } catch (ShellCommandException $e) {
-            if ($e->getCode() == 1) {
+        } catch (ShellCommandException $exception) {
+            if ($exception->getCode() === 1) {
                 return [];
             }
 
-            throw $e;
+            throw $exception;
         }
     }
 }

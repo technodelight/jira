@@ -29,11 +29,7 @@ class IssueAttachmentAutocomplete implements Autocompleter
             foreach ($results as $key) {
                 $value = $values[$key];
                 if (count($matches) < 10) {
-                    if ($this->isImage($value)) {
-                        $matches[] = '!' . $value . '|thumbnail!';
-                    } else {
-                        $matches[] = '[^' . $value . ']';
-                    }
+                    $matches[] = $this->isImage($value) ? '!' . $value . '|thumbnail!' : '[^' . $value . ']';
                 }
             }
 

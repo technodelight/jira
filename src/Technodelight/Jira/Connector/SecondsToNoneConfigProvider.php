@@ -23,6 +23,7 @@ class SecondsToNoneConfigProvider
         return $instance->buildConfig();
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedPrivateMethod) */
     private function buildConfig()
     {
         return new Config($this->buildMapping(), self::PATTERN);

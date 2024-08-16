@@ -1,53 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RendererConfiguration\FieldConfiguration;
 
 class RendererConfiguration
 {
-    /** @var string */
-    private $name;
-    /** @var bool */
-    private $inherit;
-    /** @var FieldConfiguration[] */
-    private $fields;
+    private string $name;
+    private bool $inherit;
+    private array $fields;
 
-    public static function fromArray(array $config)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public static function fromArray(array $config): RendererConfiguration
     {
         $instance = new self;
         $instance->name = $config['name'];
-        $instance->inherit = isset($config['inherit']) ? $config['inherit'] : true;
+        $instance->inherit = $config['inherit'] ?? true;
         $instance->fields = array_map(
             function(array $field) {
                 return FieldConfiguration::fromArray($field);
             },
-            isset($config['fields']) ? $config['fields'] : []
+            $config['fields'] ?? []
         );
 
         return $instance;
     }
 
-    /**
-     * @return string
-     */
-    public function name()
+    public function name(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return bool
-     */
-    public function inherit()
+    public function inherit(): bool
     {
         return $this->inherit;
     }
 
-    /**
-     * @return FieldConfiguration[]
-     */
-    public function fields()
+    /** @return FieldConfiguration[] */
+    public function fields(): array
     {
         return $this->fields;
     }

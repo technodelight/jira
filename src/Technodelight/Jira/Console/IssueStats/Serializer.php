@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\IssueStats;
 
 class Serializer
@@ -7,8 +9,9 @@ class Serializer
     /**
      * @param array|null $events
      * @return Event[]
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function unserialize($events)
+    public function unserialize($events): array
     {
         return array_map(
             function(array $event) {
@@ -22,7 +25,7 @@ class Serializer
      * @param Event[] $events
      * @return array
      */
-    public function serialize(array $events)
+    public function serialize(array $events): array
     {
         return array_map(
             function(Event $event) {

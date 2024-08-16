@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Renderer\Issue;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -9,21 +11,15 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class Priority implements IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Helper\TemplateHelper
-     */
-    private $templateHelper;
-
-    public function __construct(TemplateHelper $templateHelper)
+    public function __construct(private readonly TemplateHelper $templateHelper)
     {
-        $this->templateHelper = $templateHelper;
     }
 
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($priority = $issue->priority()) {
+        if ($issue->priority()->name() !== '') {
             $output->writeln(
-                $this->tab(sprintf('<comment>priority:</comment> %s', $priority))
+                $this->tab(sprintf('<comment>priority:</comment> %s', $issue->priority()))
             );
         }
     }

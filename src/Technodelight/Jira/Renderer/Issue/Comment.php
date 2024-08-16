@@ -18,6 +18,7 @@ use Technodelight\TimeAgo;
 
 class Comment implements IssueRenderer
 {
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
     public function __construct(
         private readonly TemplateHelper $templateHelper,
         private readonly Image $imageRenderer,
@@ -29,15 +30,13 @@ class Comment implements IssueRenderer
 
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($comments = $this->filterComments($issue->comments())) {
+        $comments = $this->filterComments($issue->comments());
+        if (!empty($comments)) {
             $output->writeln($this->tab('<comment>comments:</comment>'));
             $output->writeln($this->tab($this->tab($this->renderComments($output, $comments, $issue))));
         }
     }
 
-    /**
-     * @param IssueComment[] $comments
-     */
     public function renderComments(OutputInterface $output, array $comments, Issue $issue = null): array
     {
         $self = $this;
@@ -57,16 +56,20 @@ class Comment implements IssueRenderer
             $content = $this->imageRenderer->render($content, $issue);
         }
 
-        return sprintf(
-            '<info>%s</> <comment>[~%s]</>%s %s: <fg=black>(%d) (%s) %s</>',
-            $comment->author()->displayName(),
-            $comment->author()->name(),
-            $this->visibility($comment),
-            $this->ago($comment->created()),
-            $comment->id()->id(),
-            $comment->created()->format('Y-m-d H:i:s'),
-            $this->commentUrl($comment, $issue)
-        ) . PHP_EOL . $this->tab($this->wordwrap->wrap($content));
+        return strtr(
+            '<info>{author}</> <comment>[~{username}]</>{visibility} {when}: <fg=black>({id}) ({timestamp}) {url}</>' . PHP_EOL
+            . '{content}',
+            [
+                '{author}' => $comment->author()->displayName(),
+                '{username}' => $comment->author()->name(),
+                '{visibility}' => $this->visibility($comment),
+                '{when}' => $this->ago($comment->created()),
+                '{id}' => $comment->id()->id(),
+                '{timestamp}' => $comment->created()->format('Y-m-d H:i:s'),
+                '{url}' => $this->commentUrl($comment, $issue),
+                '{content}' => $this->tab($this->wordwrap->wrap($content)),
+            ]
+        );
     }
 
     private function renderTags($output, $body): string

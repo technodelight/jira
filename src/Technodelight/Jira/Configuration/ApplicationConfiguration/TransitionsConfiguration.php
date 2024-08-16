@@ -2,20 +2,17 @@
 
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
+use RuntimeException;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
 class TransitionsConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var TransitionConfiguration[]
-     */
-    private $transitions;
-    /**
-     * @var array
-     */
-    private $config;
+    /** @var TransitionConfiguration[] */
+    private array $transitions;
+    private array $config;
 
-    public static function fromArray(array $config)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public static function fromArray(array $config): TransitionsConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -35,7 +32,7 @@ class TransitionsConfiguration implements RegistrableConfiguration
         return $this->transitions;
     }
 
-    public function commandForTransition($transitionName)
+    public function commandForTransition($transitionName): string
     {
         foreach ($this->items() as $transition) {
             if (in_array($transitionName, $transition->transitions())) {
@@ -43,12 +40,12 @@ class TransitionsConfiguration implements RegistrableConfiguration
             }
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             sprintf('Cannot resolve transition "%s" to a command', $transitionName)
         );
     }
 
-    public function transitionsForCommand($command)
+    public function transitionsForCommand($command): array
     {
         foreach ($this->items() as $transition) {
             if ($transition->command() == $command) {
@@ -56,7 +53,7 @@ class TransitionsConfiguration implements RegistrableConfiguration
             }
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             sprintf('Cannot find command "%s"', $command)
         );
     }

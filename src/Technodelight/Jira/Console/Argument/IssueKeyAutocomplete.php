@@ -24,7 +24,7 @@ class IssueKeyAutocomplete
                 );
             }
         ), 0, 10);
-        usort($issueKeys, fn($a, $b) => $a <=> $b);
+        usort($issueKeys, fn($elemA, $elemB) => $elemA <=> $elemB);
 
         return $issueKeys;
     }

@@ -46,18 +46,8 @@ class Renderer
             $issuesByStatuses[$issue->status()->name()][] = $issue;
         }
         $statuses = array_unique($statuses);
-        $allStatuses = [];
-        foreach ($this->api->status() as $status) {
-            $allStatuses[$status->name()] = $status->id();
-        }
 
-        uasort($statuses, function($a, $b) use ($allStatuses) {
-            if ($a == $b) {
-                return 0;
-            }
-
-            return $allStatuses[$a] < $allStatuses[$b] ? -1 : 1;
-        });
+        uasort($statuses, fn($statusOne, $statusTwo) => $statusOne <=> $statusTwo);
 
         $table->setHeaders($statuses);
 
@@ -87,11 +77,7 @@ class Renderer
         for ($i = 0; $i < $height; $i++) {
             $row = [];
             foreach ($statuses as $status) {
-                if (isset($columns[$status][$i])) {
-                    $row[] = $columns[$status][$i];
-                } else {
-                    $row[] = '';
-                }
+                $row[] = $columns[$status][$i] ?? '';
             }
             $rows[] = $row;
         }
@@ -112,6 +98,7 @@ class Renderer
         return PHP_EOL . join(PHP_EOL, $rows);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function pad(BufferedOutput $output, $string): string
     {
         return $string

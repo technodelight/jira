@@ -2,16 +2,17 @@
 
 namespace Technodelight\Jira\Template;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfiguration;
 use Technodelight\Jira\Domain\Issue;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Renderer\Board\Renderer as BoardRenderer;
+use Technodelight\Jira\Renderer\IssueRenderer as Renderer;
 
-/**
- * @TODO: wrong namespace, refactor me
- */
+/** @TODO: refactor me */
 class IssueRenderer
 {
     private ?bool $listMode = null;
@@ -21,51 +22,45 @@ class IssueRenderer
         private readonly FormatterHelper $formatterHelper,
         private readonly RenderersConfiguration $configuration,
         private readonly BoardRenderer $boardRenderer
-    ){
+    ) {
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param IssueCollection $issues
-     * @param mixed $mode
-     */
-    public function renderIssues(OutputInterface $output, IssueCollection $issues, $mode = false)
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
+    public function renderIssues(OutputInterface $output, IssueCollection $issues, array|bool $mode = false): void
     {
         if (is_array($mode) && isset($mode['board']) && $mode['board'] === true) {
             $this->boardRenderer->render($output, $issues);
-        } else {
-            $this->listMode = true;
-            $groupedIssues = $this->groupByParent(iterator_to_array($issues));
-            foreach ($groupedIssues as $issueGroup) {
-                $output->writeln(
-                    $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
-                );
-                foreach ($issueGroup['issues'] as $issue) {
-                    $this->render($output, $issue, $mode);
-                }
-            }
-            $this->renderStats($output, $issues);
-            $this->listMode = null;
+            return;
         }
+
+        $this->listMode = true;
+        $groupedIssues = $this->groupByParent(iterator_to_array($issues));
+        foreach ($groupedIssues as $issueGroup) {
+            $output->writeln(
+                $this->formatterHelper->formatBlock($issueGroup['parentInfo'], 'fg=black;bg=white', true) . PHP_EOL
+            );
+            foreach ($issueGroup['issues'] as $issue) {
+                $this->render($output, $issue, $mode);
+            }
+        }
+        $this->renderStats($output, $issues);
+        $this->listMode = null;
     }
 
-    /**
-     * @param OutputInterface $output
-     * @param \Technodelight\Jira\Domain\Issue $issue
-     * @param bool|array $mode when array, it should be a list of options
-     */
-    public function render(OutputInterface $output, Issue $issue, $mode = false)
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
+    public function render(OutputInterface $output, Issue $issue, array|bool $mode = false): void
     {
         if ($output->getVerbosity() == OutputInterface::VERBOSITY_QUIET) {
             $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
             $this->renderer('minimal')->render($output, $issue);
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
-        } else {
-            $this->renderer($mode)->render($output, $issue);
+            return;
         }
+
+        $this->renderer($mode)->render($output, $issue);
     }
 
-    private function renderStats(OutputInterface $output, IssueCollection $issues)
+    private function renderStats(OutputInterface $output, IssueCollection $issues): void
     {
         $output->writeln('');
         $output->writeln(
@@ -82,7 +77,7 @@ class IssueRenderer
      *
      * @return array issues grouped by parent
      */
-    private function groupByParent(array $issues)
+    private function groupByParent(array $issues): array
     {
         $groupedIssues = [];
         foreach ($issues as $issue) {
@@ -102,22 +97,13 @@ class IssueRenderer
             $groupedIssues[$group]['issues'][] = $issue;
         }
 
-        uksort($groupedIssues, function ($a) {
-            if ($a == 'Other issues') {
-                return 1;
-            }
-
-            return 0;
-        });
+        uksort($groupedIssues, fn(string $groupName) => $groupName <=> 'Other issues');
 
         return $groupedIssues;
     }
 
-    /**
-     * @param array|bool $mode
-     * @return mixed|\Technodelight\Jira\Renderer\IssueRenderer
-     */
-    private function renderer($mode = false)
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
+    private function renderer(array|bool $mode = false): Renderer
     {
         if ($mode === false) {
             return $this->rendererByMode($this->configuration->preferredListRenderer());
@@ -126,15 +112,15 @@ class IssueRenderer
         } else if (is_string($mode)) {
             return $this->rendererByMode($mode);
         } else if (is_array($mode)) {
-            $supportedRenderersToCheck = array_keys(array_intersect_key($this->renderers, $mode));
-            foreach ($supportedRenderersToCheck as $supportedRenderer) {
+            $supportedRenderers = array_keys(array_intersect_key($this->renderers, $mode));
+            foreach ($supportedRenderers as $supportedRenderer) {
                 if (isset($mode[$supportedRenderer]) && $mode[$supportedRenderer] === true) {
                     return $this->rendererByMode($supportedRenderer);
                 }
             }
             return $this->rendererByMode($this->listMode ? $this->configuration->preferredListRenderer() : $this->configuration->preferredViewRenderer());
         }
-        throw new \RuntimeException(sprintf(':\'( Cannot determine renderer mode. Argument was: %s', var_export($mode, true)));
+        throw new RuntimeException(sprintf(':\'( Cannot determine renderer mode. Argument was: %s', var_export($mode, true)));
     }
 
     private function rendererByMode($modeName)
@@ -143,6 +129,6 @@ class IssueRenderer
             return $this->renderers[$modeName];
         }
 
-        throw new \InvalidArgumentException(sprintf('Cannot find renderer mode %s', $modeName));
+        throw new InvalidArgumentException(sprintf('Cannot find renderer mode %s', $modeName));
     }
 }

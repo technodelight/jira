@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Api\JiraRestApi;
 
 use ICanBoogie\Storage\Storage;
@@ -8,27 +10,16 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\ProjectConfigurati
 
 class CachedHttpClient implements Client
 {
-    private $httpClient;
-    private $storage;
-    private $configuration;
-    private $instanceProvider;
-
     public function __construct(
-        HttpClient $httpClient,
-        Storage $storage,
-        ProjectConfiguration $configuration,
-        CurrentInstanceProvider $instanceProvider
-    )
-    {
-        $this->httpClient = $httpClient;
-        $this->storage = $storage;
-        $this->configuration = $configuration;
-        $this->instanceProvider = $instanceProvider;
-    }
+        private readonly HttpClient $httpClient,
+        private readonly Storage $storage,
+        private readonly ProjectConfiguration $configuration,
+        private readonly CurrentInstanceProvider $instanceProvider
+    ) {}
 
     public function post($url, $data = [])
     {
-        if (strpos('worklog/list', $url) === false && strpos('search', $url) === false) {
+        if (!str_contains('worklog/list', $url) && !str_contains('search', $url)) {
             $this->storage->clear();
         }
         return $this->httpClient->post($url, $data);
@@ -58,17 +49,18 @@ class CachedHttpClient implements Client
         return $this->httpClient->delete($url);
     }
 
-    public function multiGet(array $urls)
+    public function multiGet(array $urls): array
     {
         $cachedResults = [];
         $uncachedUrls = [];
-        foreach ($urls as $idx => $url) {
+        foreach ($urls as $url) {
             $result = $this->storage->retrieve($this->keyify($url));
             if (!is_null($result)) {
                 $cachedResults[$url] = $result;
-            } else {
-                $uncachedUrls[] = $url;
+                continue;
             }
+
+            $uncachedUrls[] = $url;
         }
         $results = [];
         foreach ($this->httpClient->multiGet($uncachedUrls) as $url => $result) {
@@ -78,12 +70,12 @@ class CachedHttpClient implements Client
         }
         $mergedResults = [];
         foreach ($urls as $url) {
-            $mergedResults[$url] = isset($cachedResults[$url]) ? $cachedResults[$url] : $results[$url];
+            $mergedResults[$url] = $cachedResults[$url] ?? $results[$url];
         }
         return $mergedResults;
     }
 
-    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null)
+    public function search($jql, $startAt = null, $fields = null, array $expand = null, array $properties = null): array
     {
         $key = $this->keyify($jql, $startAt, is_array($fields) ? join(',', $fields) : $fields, serialize($expand), serialize($properties));
         $result = $this->storage->retrieve($key);

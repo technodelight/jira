@@ -11,6 +11,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\RenderersConfigura
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\TransitionsConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class ApplicationConfiguration implements RegistrableConfiguration
 {
     private InstancesConfiguration $instances;

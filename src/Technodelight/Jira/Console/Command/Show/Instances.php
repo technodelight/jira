@@ -10,7 +10,7 @@ use Technodelight\JiraTagConverter\Components\PrettyTable;
 
 class Instances extends Command
 {
-    public function __construct(private readonly InstancesConfiguration $instancesConfiguration)
+    public function __construct(private readonly InstancesConfiguration $instancesConf)
     {
         parent::__construct();
     }
@@ -22,14 +22,15 @@ class Instances extends Command
             ->setDescription('List configured instances');
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if (empty($this->instancesConfiguration->items())) {
+        if (empty($this->instancesConf->items())) {
             $output->writeln('No instances configured.');
             return self::FAILURE;
         }
 
-        $rows = $this->addInstanceRows($this->instancesConfiguration);
+        $rows = $this->addInstanceRows($this->instancesConf);
 
         $this->renderTable($output, $rows);
 

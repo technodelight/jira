@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\EditorConfiguration;
@@ -7,26 +9,15 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfig
 use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfiguration\ITermConfiguration;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class IntegrationsConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var GitConfiguration
-     */
-    private $git;
-    /**
-     * @var ITermConfiguration
-     */
-    private $iterm;
-    /**
-     * @var EditorConfiguration
-     */
-    private $editor;
-    /**
-     * @var array
-     */
-    private $config;
+    private GitConfiguration $git;
+    private ITermConfiguration $iterm;
+    private EditorConfiguration $editor;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): IntegrationsConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -37,17 +28,17 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
-    public function git()
+    public function git(): GitConfiguration
     {
         return $this->git;
     }
 
-    public function iterm()
+    public function iterm(): ITermConfiguration
     {
         return $this->iterm;
     }
 
-    public function editor()
+    public function editor(): EditorConfiguration
     {
         return $this->editor;
     }
@@ -57,9 +48,6 @@ class IntegrationsConfiguration implements RegistrableConfiguration
         return 'integrations';
     }
 
-    /**
-     * @return array
-     */
     public function configAsArray(): array
     {
         return $this->config;

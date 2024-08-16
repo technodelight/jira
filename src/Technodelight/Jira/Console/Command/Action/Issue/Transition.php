@@ -99,6 +99,7 @@ class Transition extends Command
         ;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
@@ -169,9 +170,9 @@ class Transition extends Command
         }
     }
 
-    private function findTransitionByName(array $transitions, $transitionsToSearchFor): IssueTransition
+    private function findTransitionByName(array $transitions, array $transitinsToSearch): IssueTransition
     {
-        foreach ($transitionsToSearchFor as $name) {
+        foreach ($transitinsToSearch as $name) {
             foreach ($transitions as $transition) {
                 if ($transition->name() == $name) {
                     return $transition;
@@ -180,13 +181,14 @@ class Transition extends Command
         }
 
         throw new UnexpectedValueException(
-            sprintf('Cannot apply any transition from %s for this issue', join(', ', $transitionsToSearchFor))
+            sprintf('Cannot apply any transition from %s for this issue', join(', ', $transitinsToSearch))
         );
     }
 
     private function checkGitChanges(InputInterface $input, OutputInterface $output, IssueTransition $transition): void
     {
-        if (($diff = $this->git->diff()) && $input->isInteractive()) {
+        $diff = $this->git->diff();
+        if (!empty($diff) && $input->isInteractive()) {
             $output->writeln('It seems you have the following uncommited changes on your current branch:');
             foreach ($diff as $entry) {
                 /** @var DiffEntry $entry */

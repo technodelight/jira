@@ -18,12 +18,11 @@ class Success implements Result
     {
         $instance = new self;
         $instance->issueKey = $issueKey;
-        if ($assignee) {
-            $instance->phrase = '%s was assigned successfully to %s';
-            $instance->data = [$assignee];
-        } else {
-            $instance->phrase = '%s was unassigned successfully';
-        }
+        $instance->data = [$assignee];
+        $instance->phrase = match(true) {
+            !empty($assignee) => '%s was assigned successfully to %s',
+            default => '%s was unassigned successfully'
+        };
 
         return $instance;
     }

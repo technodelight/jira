@@ -11,15 +11,15 @@ class Downloader
 {
     public function downloadWithCurl(OutputInterface $output, string $downloadUrl, string $targetFile): bool
     {
-        $f = fopen($targetFile, 'w');
-        $ch = $this->initCurl($downloadUrl, $f, $this->progressBar($output));
+        $file = fopen($targetFile, 'w');
+        $curl = $this->initCurl($downloadUrl, $file, $this->progressBar($output));
 
-        $old = umask(0);
-        curl_exec($ch);
-        $err = curl_errno($ch);
-        curl_close($ch);
-        fclose($f);
-        umask($old);
+        $mask = umask(0);
+        curl_exec($curl);
+        $err = curl_errno($curl);
+        curl_close($curl);
+        fclose($file);
+        umask($mask);
 
         $output->writeln('');
 
@@ -49,21 +49,15 @@ class Downloader
         };
     }
 
-    /**
-     * @param string $downloadUrl
-     * @param resource $f
-     * @param callable $callback
-     * @return CurlHandle
-     */
-    private function initCurl(string $downloadUrl, $f, callable $callback): CurlHandle
+    private function initCurl(string $downloadUrl, $file, callable $callback): CurlHandle
     {
-        $ch = curl_init($downloadUrl);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_FILE, $f);
-        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $callback);
+        $curl = curl_init($downloadUrl);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_NOPROGRESS, false);
+        curl_setopt($curl, CURLOPT_FILE, $file);
+        curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $callback);
 
-        return $ch;
+        return $curl;
     }
 }

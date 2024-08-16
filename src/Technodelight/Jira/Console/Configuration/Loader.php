@@ -33,6 +33,7 @@ class Loader
         return $configs;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function loadConfigurationYaml(SplFileInfo $splFileInfo): array
     {
         // there can be multiple config files and we must track it by absolute path
@@ -48,10 +49,10 @@ class Loader
         $perms = $splFileInfo->getPerms() & 0777;
         if (!isset($noticeTriggered[$absFilePath]) && (0600 !== $perms)) {
             // treat this as a warning instead of fatal error
-            $e = FilePrivilegeErrorException::fromInvalidPermAndFilePath(
+            $exception = FilePrivilegeErrorException::fromInvalidPermAndFilePath(
                 $perms, $absFilePath
             );
-            user_error($e->getMessage(), E_USER_NOTICE);
+            user_error($exception->getMessage(), E_USER_NOTICE);
             $noticeTriggered[$absFilePath] = true;
         }
 

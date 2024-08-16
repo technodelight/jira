@@ -67,6 +67,7 @@ class Link extends Command
         }
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {

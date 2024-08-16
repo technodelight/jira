@@ -57,7 +57,8 @@ class Application extends BaseApp
         }
 
         // handle batch processing
-        if ($issueKeys = $this->batchAssistant->issueKeysFromPipe()) {
+        $issueKeys = $this->batchAssistant->issueKeysFromPipe();
+        if (!empty($issueKeys)) {
             $exitCode = 0;
             $this->setAutoExit(false);
             foreach ($issueKeys as $issueKey) {

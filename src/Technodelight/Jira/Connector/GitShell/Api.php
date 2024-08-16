@@ -2,143 +2,98 @@
 
 namespace Technodelight\Jira\Connector\GitShell;
 
+use Exception;
+use Generator;
+use InvalidArgumentException;
 use Technodelight\GitShell\ApiInterface as Git;
 use Technodelight\GitShell\ApiInterface;
 use Technodelight\GitShell\Branch;
-use Technodelight\GitShell\Remote;
 
+/** @SuppressWarnings(PHPMD) */
 class Api implements ApiInterface
 {
-    /**
-     * @var Git
-     */
-    private $git;
 
-    public function __construct(Git $git)
-    {
-        $this->git = $git;
-    }
+    public function __construct(private readonly Git $git) {}
 
-    /**
-     * @param string $from
-     * @param string $to
-     * @return \Generator
-     */
-    public function log($from, $to = 'head')
+    public function log($from, $to = 'head'): Generator
     {
         try {
             return $this->git()->log($from, $to);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             yield from [];
         }
     }
-
-    /**
-     * @param string $branch
-     * @return void
-     */
-    public function createBranch($branch)
+    public function createBranch($branch): void
     {
         $this->git()->createBranch($branch);
     }
 
-    /**
-     * @param string $branch
-     * @return void
-     */
-    public function switchBranch($branch)
+    public function switchBranch($branch): void
     {
         $this->git()->switchBranch($branch);
     }
 
-    /**
-     * @param bool $verbose
-     * @return Remote[]
-     */
-    public function remotes($verbose = false)
+    public function remotes($verbose = false): array
     {
         try {
             return $this->git()->remotes($verbose);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
     }
 
-    /**
-     * @param string $pattern optional
-     * @param bool $withRemotes include remotes or not
-     * @return Branch[]
-     */
-    public function branches($pattern = '', $withRemotes = true)
+    public function branches($pattern = '', $withRemotes = true): array
     {
         try {
             return $this->git()->branches($pattern, $withRemotes);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
     }
 
-    /**
-     * @return Branch|null
-     */
-    public function currentBranch()
+    public function currentBranch(): ?Branch
     {
         try {
             return $this->git()->currentBranch();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }
 
-    /**
-     * @TODO this often lies, the goal would be to find a branch's first parent
-     * @return false|string
-     */
-    public function parentBranch()
+    /** @TODO this often lies, the goal would be to find a branch's first parent */
+    public function parentBranch(): string|bool
     {
         try {
             return $this->git()->parentBranch();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
 
-    /**
-     * @return string|null
-     */
-    public function topLevelDirectory()
+    public function topLevelDirectory(): ?string
     {
         try {
             return $this->git()->topLevelDirectory();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }
 
-    /**
-     * Get name and status diff for current branch
-     *
-     * @param string|null $to
-     * @return \Technodelight\GitShell\DiffEntry[]
-     */
-    public function diff($to = null)
+    public function diff($to = null): array
     {
         try {
             return $this->git()->diff($to);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
     }
 
-    /**
-     * @return Git
-     */
-    private function git()
+    private function git(): Git
     {
         if ($this->git->topLevelDirectory()) {
             return $this->git;
         }
 
-        throw new \InvalidArgumentException('Not a git repo');
+        throw new InvalidArgumentException('Not a git repo');
     }
 }

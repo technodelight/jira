@@ -17,7 +17,7 @@ class Upload extends Command
     public function __construct(
         private readonly Api $api,
         private readonly IssueKeyResolver $issueKeyResolver,
-        private readonly UploadableAttachment $uploadableAttachmentInput
+        private readonly UploadableAttachment $uploadInput
     ) {
          parent::__construct();
     }
@@ -43,7 +43,7 @@ class Upload extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $issueKey = $this->issueKeyResolver->argument($input, $output);
-        $filename = $this->uploadableAttachmentInput->resolve($input, $output);
+        $filename = $this->uploadInput->resolve($input, $output);
 
         $this->api->addAttachment($issueKey, $filename);
 

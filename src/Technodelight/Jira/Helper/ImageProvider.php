@@ -22,7 +22,7 @@ class ImageProvider
         $this->ttl = (int)$config->imageCacheTtl();
         $this->cacheDir = getenv('HOME') . DIRECTORY_SEPARATOR . '.jira/img_cache';
         if (!is_dir($this->cacheDir)) {
-            @mkdir($this->cacheDir, 0744);
+            mkdir($this->cacheDir, 0744, true);
         }
         $this->cleanup();
     }

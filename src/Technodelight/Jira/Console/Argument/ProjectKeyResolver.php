@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Argument;
 
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,39 +14,27 @@ class ProjectKeyResolver
 {
     const ARGUMENT = 'projectKey';
 
-    /**
-     * @var Git
-     */
-    private $git;
-    /**
-     * @var ApplicationConfiguration
-     */
-    private $configuration;
+    public function __construct(
+        private readonly Git $git,
+        private readonly ApplicationConfiguration $configuration
+    ) {}
 
-    public function __construct(Git $git, ApplicationConfiguration $configuration)
-    {
-        $this->git = $git;
-        $this->configuration = $configuration;
-    }
-
-    /**
-     * @param InputInterface $input
-     * @return ProjectKey|null
-     */
-    public function argument(InputInterface $input)
+    public function argument(InputInterface $input): ?ProjectKey
     {
         if (!$input->hasArgument(self::ARGUMENT)) {
             return null;
         }
 
-        if ($projectKey = $this->fromString($input->getArgument(self::ARGUMENT))) {
+        $projectKey = $this->fromString($input->getArgument(self::ARGUMENT));
+        if (!empty($projectKey)) {
             return $projectKey;
         }
 
         return null;
     }
 
-    private function fromString($string)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    private function fromString($string): ?ProjectKey
     {
         try {
             return ProjectKey::fromString($string);

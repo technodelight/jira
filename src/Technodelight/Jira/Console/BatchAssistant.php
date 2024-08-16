@@ -59,6 +59,7 @@ class BatchAssistant
         }
     }
 
+    /** @SuppressWarnings(PHPMD.ElseExpression) */
     private function assembleArgumentsFromInput(string $issueKey, array $args): array
     {
         if ($args[0] == $_SERVER['PHP_SELF']) {

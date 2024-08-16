@@ -22,7 +22,8 @@ namespace Technodelight\SkeletonExtension
 
     class Extension implements ExtensionInterface
     {
-        public function load(array $configs, ContainerBuilder $container)
+        /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
+        public function load(array $configs, ContainerBuilder $container): void
         {
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources'));
             $loader->load('services.xml');
@@ -30,7 +31,7 @@ namespace Technodelight\SkeletonExtension
 
         public function configure(): ArrayNodeDefinition
         {
-            // TODO: Implement configure() method.
+            return new ArrayNodeDefinition('skeleton');
         }
     }
 }

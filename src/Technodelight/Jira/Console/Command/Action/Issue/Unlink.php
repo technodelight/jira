@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use Symfony\Component\Console\Command\Command;
@@ -29,10 +31,11 @@ class Unlink extends Command
             );
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $linkId = $input->getArgument('linkId');
-        $this->api->removeIssueLink(IssueLinkId::fromString($linkId));
+        $this->api->removeIssueLink(IssueLinkId::fromNumeric($linkId));
         $output->writeln(sprintf('Link <info>%s</info> has been successfully removed.', $linkId));
 
         return self::SUCCESS;

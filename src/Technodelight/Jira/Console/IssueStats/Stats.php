@@ -1,30 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\IssueStats;
 
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
 use Traversable;
 
-class Stats implements \IteratorAggregate, \Countable
+class Stats implements IteratorAggregate, Countable
 {
-    private $stats = [];
+    private array $stats = [];
 
     /**
      * @param string $issueKey
      * @param Event[] $events
      */
-    public function collectEvents($issueKey, $events)
+    public function collectEvents(string $issueKey, array $events): void
     {
         $lastTime = 0;
         $viewCount = array_filter(
             $events,
             function (Event $event) {
-                return $event->is(Event::VIEW);
+                return $event->isType(Event::VIEW);
             }
         );
         $updateCount = array_filter(
             $events,
             function (Event $event) {
-                return $event->is(Event::UPDATE);
+                return $event->isType(Event::UPDATE);
             }
         );
         foreach ($events as $event) {
@@ -40,21 +45,15 @@ class Stats implements \IteratorAggregate, \Countable
         ];
     }
 
-    public function orderByTotal()
-    {
-        $this->orderBy('total', '<');
-        return $this;
-    }
-
-    public function orderByMostRecent()
+    public function orderByMostRecent(): Stats
     {
         $this->orderBy('time', '>');
         return $this;
     }
 
-    public function issueKeys($limit = null)
+    public function issueKeys(?int $limit = null): array
     {
-        if (is_null($limit)) {
+        if ($limit === null) {
             return array_keys($this->stats);
         }
 
@@ -77,20 +76,20 @@ class Stats implements \IteratorAggregate, \Countable
      */
     public function getIterator(): Traversable
     {
-        return new \ArrayIterator($this->stats);
+        return new ArrayIterator($this->stats);
     }
 
-    private function orderBy($field, $op)
+    private function orderBy(string $field, string $operation): void
     {
-        uasort($this->stats, function ($a, $b) use($field, $op) {
-            if ($a[$field] == $b[$field]) {
+        uasort($this->stats, function ($elemA, $elemB) use($field, $operation) {
+            if ($elemA[$field] == $elemB[$field]) {
                 return 0;
             }
-            if ($op == '<') {
-                return $a[$field] < $b[$field] ? -1 : 1;
-            } else {
-                return $a[$field] > $b[$field] ? -1 : 1;
+            if ($operation === '<') {
+                return $elemA[$field] < $elemB[$field] ? -1 : 1;
             }
+
+            return $elemA[$field] > $elemB[$field] ? -1 : 1;
         });
     }
 

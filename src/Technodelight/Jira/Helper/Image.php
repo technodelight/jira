@@ -31,30 +31,14 @@ class Image
                     continue;
                 }
 
-                if (!$this->isIterm() || !$this->config->renderImages()) {
-                    $image = sprintf('<comment>jira download %s %s</>', $issue->issueKey(), $embeddedImage);
-                } else {
-                    try {
-                        $image = $this->renderThumbnail(
-                            $issue,
-                            $embeddedImage,
-                            $this->getThumbnailWidth($matches, $k)
-                        );
-                    } catch (Exception $e) {
-                        trigger_error(
-                            sprintf("(%s) %s", get_class($e), $e->getMessage()),
-                            E_USER_WARNING
-                        );
-                        continue;
-                    }
-                }
-                $replacePairs[$matches[0][$k]] = $image;
+                $replacePairs[$matches[0][$k]] = $this->getImageString($issue, $embeddedImage, $matches, $k);
             }
             $body = strtr($body, $replacePairs);
         }
         return $body;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function renderThumbnail(
         Issue $issue,
         string $imageFilename,
@@ -102,5 +86,26 @@ class Image
         }
 
         return (int)$width > 0 ? (int)$width : $this->config->thumbnailWidth();
+    }
+
+    private function getImageString(Issue $issue, string $embeddedImage, array $matches, int|string $index): string|ITermImage
+    {
+        if (!$this->isIterm() || !$this->config->renderImages()) {
+            return sprintf('<comment>jira download %s %s</>', $issue->issueKey(), $embeddedImage);
+        }
+
+        try {
+            return $this->renderThumbnail(
+                $issue,
+                $embeddedImage,
+                $this->getThumbnailWidth($matches, $index)
+            );
+        } catch (Exception $e) {
+            trigger_error(
+                sprintf("(%s) %s", get_class($e), $e->getMessage()),
+                E_USER_WARNING
+            );
+            return '';
+        }
     }
 }

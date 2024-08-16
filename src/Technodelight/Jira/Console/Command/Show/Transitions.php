@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Show;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +21,7 @@ class Transitions extends Command
     public function __construct(
         private readonly Api $jira,
         private readonly IssueKeyResolver $issueKeyResolver,
-        private readonly TransitionsConfiguration $transitionsConfiguration
+        private readonly TransitionsConfiguration $transitionsConf
     ) {
         parent::__construct();
     }
@@ -44,10 +47,10 @@ class Transitions extends Command
             $output->setVerbosity(OutputInterface::VERBOSITY_NORMAL);
             $this->renderQuietOutput($issueKey, $output);
             $output->setVerbosity(OutputInterface::VERBOSITY_QUIET);
-        } else {
-            $this->renderTableOutput($issueKey, $output);
+            return self::SUCCESS;
         }
 
+        $this->renderTableOutput($issueKey, $output);
         return self::SUCCESS;
     }
 
@@ -55,7 +58,8 @@ class Transitions extends Command
     {
         $transitions = $this->jira->retrievePossibleTransitionsForIssue($issueKey);
         foreach ($transitions as $transition) {
-            if ($command = $this->checkHasCommand($transition)) {
+            $command = $this->checkHasCommand($transition);
+            if (!empty($command)) {
                 $output->writeln($command);
             }
         }
@@ -72,8 +76,8 @@ class Transitions extends Command
     private function checkHasCommand(Transition $transition): string
     {
         try {
-            return 'workflow:' . $this->transitionsConfiguration->commandForTransition($transition->name());
-        } catch (\Exception $e) {
+            return 'workflow:' . $this->transitionsConf->commandForTransition($transition->name());
+        } catch (Exception $exception) {
             return '';
         }
     }

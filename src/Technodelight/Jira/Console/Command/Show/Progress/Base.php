@@ -85,7 +85,8 @@ abstract class Base extends Command
 
     protected function userArgument(InputInterface $input): ?string
     {
-        if (is_string($user = $input->getOption('user'))) {
+        $user = $input->getOption('user');
+        if (is_string($user)) {
             return $user;
         }
         return null;

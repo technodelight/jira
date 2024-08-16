@@ -12,36 +12,22 @@ use Technodelight\TimeAgo;
 
 class Attachment implements IssueRenderer
 {
-    /**
-     * @var \Technodelight\Jira\Helper\TemplateHelper
-     */
-    private $templateHelper;
-    /**
-     * @var bool
-     */
-    private $shortMode;
-
-    public function __construct(TemplateHelper $templateHelper, $shortMode = false)
-    {
-        $this->templateHelper = $templateHelper;
-        $this->shortMode = $shortMode;
-    }
+    /** @SuppressWarnings(PHPMD.BooleanArgumentFlag) */
+    public function __construct(
+        private readonly TemplateHelper $templateHelper,
+        private readonly bool $shortMode = false
+    ) {}
 
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($attachments = $issue->attachments()) {
-            if ($this->shortMode) {
-                $output->writeln($this->templateHelper->tabulate($this->renderSummary($attachments)));
-            } else {
-                $output->writeln($this->templateHelper->tabulate($this->renderAttachments($attachments)));
-            }
+        $attachments = $issue->attachments();
+        if (!empty($attachments)) {
+            $content = $this->shortMode ? $this->renderSummary($attachments) : $this->renderAttachments($attachments);
+            $output->writeln($this->templateHelper->tabulate($content));
         }
     }
 
-    /**
-     * @param IssueAttachment[] $attachments
-     */
-    private function renderAttachments(array $attachments)
+    private function renderAttachments(array $attachments): array
     {
         $rows = ['<comment>attachments:</comment>'];
         foreach ($attachments as $attachment) {
@@ -50,35 +36,37 @@ class Attachment implements IssueRenderer
         return $rows;
     }
 
-    private function renderAttachment(IssueAttachment $attachment)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    private function renderAttachment(IssueAttachment $attachment): string
     {
-        $timeAgo = TimeAgo::withTranslation($attachment->created(), 'en');
-
-        return sprintf(
-            '<info>%1$s</info> %2$s (by <fg=cyan>%3$s</> %4$s) <fg=black>jira download %5$s %6$s</>',
-            $attachment->filename(),
-            BytesInHuman::fromBytes($attachment->size()),
-            $attachment->author(),
-            $timeAgo->inWords(),
-            $attachment->issue()->issueKey(),
-            addcslashes($attachment->filename(),' ()')
+        return strtr(
+            '<info>{filename}</info> {size} (by <fg=cyan>{author}</> {when}) <fg=black>jira download {issueKey} {filenameSlashed}</>',
+            [
+                '{filename}' => $attachment->filename(),
+                '{size}' => BytesInHuman::fromBytes($attachment->size()),
+                '{author}' => $attachment->author(),
+                '{when}' => TimeAgo::withTranslation($attachment->created(), 'en')->inWords(),
+                '{issueKey}' => $attachment->issue()->issueKey(),
+                '{filenameSlashed}' => addcslashes($attachment->filename(),' ()')
+            ]
         );
     }
 
-    /**
-     * @param IssueAttachment[] $attachments
-     */
-    private function renderSummary(array $attachments)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    private function renderSummary(array $attachments): string
     {
         $totalSize = 0;
         foreach ($attachments as $attachment) {
             $totalSize+= $attachment->size();
         }
-        return sprintf(
-            '<comment>attachments:</comment> %d %s (%s)',
-            count($attachments),
-            count($attachments) == 1 ? 'file' : 'files',
-            BytesInHuman::fromBytes($totalSize)
+
+        return strtr(
+            '<comment>attachments:</comment> {count} {phrase} ({size})',
+            [
+                '{count}' => count($attachments),
+                '{phrase}' => count($attachments) == 1 ? 'file' : 'files',
+                '{size}' => BytesInHuman::fromBytes($totalSize)
+            ]
         );
     }
 }

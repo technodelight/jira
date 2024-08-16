@@ -63,6 +63,7 @@ class FieldConfiguration
     {
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedPrivateMethod) */
     private function withDefaults(array $config, $key)
     {
         return $config[$key] ?? null;

@@ -86,25 +86,23 @@ class LogsList implements DashboardRenderer
 
                 // parent issue, highlighted box
                 $parentInfo = '';
-                if ($parent = $issue->parent()) {
+                $parent = $issue->parent();
+                if (!empty($parent)) {
                     $parentInfo = sprintf('<bg=yellow>[%s %s]</>', $parent->issueKey(), $parent->summary());
                 }
 
                 // issue header
-                if (count($records) > 1) {
-                    $output->writeln(
-                        sprintf(
-                            '<info>%s</info> %s: (%s) ' . $parentInfo,
-                            $issueKey,
-                            $issue->summary(),
-                            $this->dateHelper->secondsToHuman($totalTimes[$issueKey])
-                        )
-                    );
-                } else {
-                    $output->writeln(
-                        sprintf('<info>%s</info> %s: ' . $parentInfo, $issueKey, $issue->summary())
-                    );
-                }
+                $output->writeln(
+                    strtr(
+                        '<info>{issueKey}</info> {summary}:{timeSpent} {parentInfo}',
+                        [
+                            '{issueKey}' => $issueKey,
+                            '{summary}' => $issue->summary(),
+                            '{timeSpent}' => count($records) > 1 ? sprintf(' (%s)', $this->dateHelper->secondsToHuman($totalTimes[$issueKey])) : '',
+                            '{parentInfo}' => $parentInfo
+                        ]
+                    )
+                );
 
                 // logs
                 foreach ($records as $record) {

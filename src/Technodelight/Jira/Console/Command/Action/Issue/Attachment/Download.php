@@ -29,7 +29,7 @@ class Download extends Command
     public function __construct(
         private readonly Api $api,
         private readonly IssueKeyResolver $issueKeyResolver,
-        private readonly DownloadableAttachment $downloadableAttachmentInput,
+        private readonly DownloadableAttachment $downloadInput,
         private readonly TargetPath $targetPathInput
     ) {
         parent::__construct();
@@ -63,7 +63,7 @@ class Download extends Command
         $issueKey = $this->issueKeyResolver->argument($input, $output);
 
         if (!$input->getArgument('filename')) {
-            $input->setArgument('filename', $this->downloadableAttachmentInput->resolve($input, $output, $issueKey));
+            $input->setArgument('filename', $this->downloadInput->resolve($input, $output, $issueKey));
         }
     }
 
@@ -84,13 +84,13 @@ class Download extends Command
             }
 
             // download file
-            $attachment = $this->downloadableAttachmentInput->findAttachmentByFilename($issue, $filename);
+            $attachment = $this->downloadInput->findAttachmentByFilename($issue, $filename);
             $targetFilePath = $targetPath . DIRECTORY_SEPARATOR . $filename;
             if ($this->confirmDownload($input, $output, $targetFilePath)) {
                 $downloader = new Downloader;
-                $f = fopen($targetFilePath, 'w');
+                $file = fopen($targetFilePath, 'w');
                 /** @var ProgressBar $progress */
-                $this->api->download($attachment->url(), $f, $downloader->progressBar($output));
+                $this->api->download($attachment->url(), $file, $downloader->progressBar($output));
 
                 $output->writeln('');
 
@@ -100,13 +100,13 @@ class Download extends Command
                         'info'
                     )
                 );
-            } else {
-                $output->writeln(
-                    $formatter->formatBlock(sprintf(self::CANCEL_MESSAGE, $filename), 'comment')
-                );
+                return self::SUCCESS;
             }
 
-            return self::SUCCESS;
+            $output->writeln(
+                $formatter->formatBlock(sprintf(self::CANCEL_MESSAGE, $filename), 'comment')
+            );
+            return self::FAILURE;
         } catch (Exception $e) {
             $errors = [
                 sprintf(self::ERROR_MESSAGE, $filename),

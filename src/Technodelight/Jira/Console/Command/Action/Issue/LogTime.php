@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Action\Issue;
 
 use DateTime;
@@ -31,7 +33,7 @@ class LogTime extends Command
 {
     public function __construct(
         private readonly Api $jira,
-        private readonly IssueKeyOrWorklogIdResolver $issueKeyOrWorklogIdResolver,
+        private readonly IssueKeyOrWorklogIdResolver $ikResolver,
         private readonly InteractiveIssueSelector $issueSelector,
         private readonly CommentInput $commentInput,
         private readonly DateResolver $dateResolver,
@@ -41,9 +43,20 @@ class LogTime extends Command
         private readonly WorklogRenderer $worklogRenderer,
         private readonly HeaderRenderer $headerRenderer,
         private readonly DashboardRenderer $dashboardRenderer,
-        private readonly WorklogFetcher $dashboardDataProvider
+        private readonly WorklogFetcher $dashDataProvider
     ) {
         parent::__construct();
+    }
+
+    public function fetchRelevantData(IssueKeyOrWorklogId $identifier): array
+    {
+        if ($identifier->isWorklogId()) {
+            $workLog = $this->worklogHandler->retrieve($identifier->worklogId()->id());
+            $issue = $this->jira->retrieveIssue($workLog->issueId());
+            return [$workLog, $issue];
+        }
+
+        return [null, $this->jira->retrieveIssue($identifier->issueKey())];
     }
 
     protected function configure(): void
@@ -55,7 +68,7 @@ class LogTime extends Command
             ->addArgument(
                 IssueKeyOrWorklogIdResolver::NAME,
                 InputArgument::OPTIONAL,
-                'Issue key, like PROJ-123 OR a specific worklog\'s ID'
+                'Issue key, like PROJ-123 OR a specific work log\'s ID'
             )
             ->addArgument(
                 'time',
@@ -65,7 +78,7 @@ class LogTime extends Command
             ->addArgument(
                 'comment',
                 InputArgument::OPTIONAL,
-                'Add comment to worklog'
+                'Add comment to work log'
             )
             ->addArgument(
                 'date',
@@ -83,7 +96,7 @@ class LogTime extends Command
                 'move',
                 'm',
                 InputOption::VALUE_REQUIRED,
-                'Move worklog to another date',
+                'Move work log to another date',
                 false
             )
             ->addOption(
@@ -96,11 +109,12 @@ class LogTime extends Command
                 'keep-default-comment',
                 'k',
                 InputOption::VALUE_NONE,
-                'Keep default comment (Worked on ISSUE-123 or the previous comment when updating existing worklog'
+                'Keep default comment (Worked on ISSUE-123 or the previous comment when updating existing work log'
             )
         ;
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $argParser = LogTimeArgsOptsParser::fromArgsOpts($input->getArguments(), $input->getOptions());
@@ -114,7 +128,7 @@ class LogTime extends Command
             return;
         }
 
-        $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
+        $issueKeyOrWorklogId = $this->ikResolver->argument($input);
 
         // fix when no arguments, but you want to log your time to current issue specified by branch
         if (!$input->getArgument('issueKeyOrWorklogId') && $issueKeyOrWorklogId->isEmpty()) {
@@ -140,20 +154,14 @@ class LogTime extends Command
                 $this->askForTimeToLog(
                     $input,
                     $output,
-                    $issueKeyOrWorklogId->issueKey(),
+                    $issueKeyOrWorklogId->issueKey() ? (string)$issueKeyOrWorklogId->issueKey() : '',
                     $issueKeyOrWorklogId->worklog()
                 )
             );
         }
 
         if (!$input->getArgument('comment')) {
-            if ($issueKeyOrWorklogId->isWorklogId()) {
-                $worklog = $this->worklogHandler->retrieve($issueKeyOrWorklogId->worklogId()->id());
-                $issue = $this->jira->retrieveIssue($worklog->issueId());
-            } else {
-                $issue = $this->jira->retrieveIssue($issueKeyOrWorklogId->issueKey());
-                $worklog = null;
-            }
+            list($worklog, $issue) = $this->fetchRelevantData($issueKeyOrWorklogId);
 
             $input->setArgument(
                 'comment',
@@ -173,7 +181,7 @@ class LogTime extends Command
 
     private function doWorklog(InputInterface $input, OutputInterface $output): int
     {
-        $issueKeyOrWorklogId = $this->issueKeyOrWorklogIdResolver->argument($input);
+        $issueKeyOrWorklogId = $this->ikResolver->argument($input);
         $timeSpent = $input->getArgument('time') ?: null;
         $comment = $input->getArgument('comment') ?: null;
         $worklogDate = $input->getOption('move') ? $this->dateResolver->option($input, 'move') : null;
@@ -209,15 +217,16 @@ class LogTime extends Command
                         $issueKeyOrWorklogId->worklog()->id()
                     )
                 );
-            } else {
-                $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
-                $output->writeln(
-                    sprintf(
-                        '<comment>Worklog <info>%s</info> has been updated</comment>',
-                        $issueKeyOrWorklogId->worklog()->id()
-                    )
-                );
+                return Command::SUCCESS;
             }
+
+            $this->updateWorklog($issueKeyOrWorklogId->worklog(), $timeSpent, $comment, $worklogDate);
+            $output->writeln(
+                sprintf(
+                    '<comment>Worklog <info>%s</info> has been updated</comment>',
+                    $issueKeyOrWorklogId->worklog()->id()
+                )
+            );
 
             return Command::SUCCESS;
         } catch (UnexpectedValueException $exception) {
@@ -330,9 +339,10 @@ class LogTime extends Command
         );
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function logNewWork($issueKey, $timeSpent, $comment, $startDay): Worklog
     {
-        $worklog = $this->worklogHandler->create(
+        $workLog = $this->worklogHandler->create(
             Worklog::fromArray([
                 'id' => null,
                 'author' => $this->jira->user(),
@@ -343,21 +353,20 @@ class LogTime extends Command
         );
         // load issue
         $issue = $this->jira->retrieveIssue($issueKey);
-        $worklog->assignIssue($issue);
+        $workLog->assignIssue($issue);
         $worklogs = $this->worklogHandler->findByIssue($issue, 20);
         $issue->assignWorklogs($worklogs);
-        return $worklog;
+        return $workLog;
     }
 
     private function loggedTimeDialogText(string $issueKey, Worklog $worklog = null): string
     {
+        $confirm = '';
         if ($worklog) {
             $confirm = sprintf(
                 "You logged '%s' previously. Leave the time empty to keep this value.",
                 $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds())
             );
-        } else {
-            $confirm = '';
         }
 
         return $confirm . PHP_EOL
@@ -392,7 +401,7 @@ class LogTime extends Command
         $output->writeln('');
         $this->dashboardRenderer->render(
             $output,
-            $this->dashboardDataProvider->fetch($worklog->date()->format('Y-m-d'))
+            $this->dashDataProvider->fetch($worklog->date()->format('Y-m-d'))
         );
     }
 
@@ -426,7 +435,7 @@ class LogTime extends Command
     {
         $this->dashboardRenderer->render(
             $output,
-            $this->dashboardDataProvider->fetch(
+            $this->dashDataProvider->fetch(
                 date('Y-m-d', strtotime($this->dateResolver->argument($input)))
             )
         );

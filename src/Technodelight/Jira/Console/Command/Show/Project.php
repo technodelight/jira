@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Command\Show;
 
+use InvalidArgumentException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -38,16 +41,16 @@ class Project extends Command
     {
         $projectKey = $this->projectKeyResolver->argument($input);
         if (null === $projectKey) {
-            throw new \InvalidArgumentException('Please specify project key!');
+            throw new InvalidArgumentException('Please specify project key!');
         }
         $project = $this->api->project($projectKey);
 
         if ($output->getVerbosity() > OutputInterface::VERBOSITY_NORMAL) {
             $this->fullProjectRenderer->render($output, $project);
-        } else {
-            $this->projectRenderer->render($output, $project);
+            return self::SUCCESS;
         }
 
+        $this->projectRenderer->render($output, $project);
         return self::SUCCESS;
     }
 }

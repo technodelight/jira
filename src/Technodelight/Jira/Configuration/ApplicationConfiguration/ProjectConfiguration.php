@@ -6,55 +6,40 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\Registrabl
 
 class ProjectConfiguration implements RegistrableConfiguration
 {
-    private $yesterdayAsWeekday;
-    private $defaultWorklogTimestamp;
-    private $oneDay;
-    private $cacheTtl;
-    /**
-     * @var array
-     */
-    private $config;
+    private bool $yesterdayAsWeekday;
+    private string $defaultTimestamp;
+    private string|int $oneDay;
+    private int $cacheTtl;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): ProjectConfiguration
     {
         $instance = new self;
         $instance->config = $config;
         $instance->yesterdayAsWeekday = $config['yesterdayAsWeekday'];
-        $instance->defaultWorklogTimestamp = $config['defaultWorklogTimestamp'];
+        $instance->defaultTimestamp = $config['defaultWorklogTimestamp'];
         $instance->oneDay = $config['oneDay'];
         $instance->cacheTtl = $config['cacheTtl'];
 
         return $instance;
     }
 
-    /**
-     * @return bool
-     */
-    public function yesterdayAsWeekday()
+    public function yesterdayAsWeekday(): bool
     {
         return $this->yesterdayAsWeekday;
     }
 
-    /**
-     * @return string
-     */
-    public function defaultWorklogTimestamp()
+    public function defaultWorklogTimestamp(): string
     {
-        return $this->defaultWorklogTimestamp;
+        return $this->defaultTimestamp;
     }
 
-    /**
-     * @return string|int
-     */
-    public function oneDayAmount()
+    public function oneDayAmount(): string|int
     {
         return $this->oneDay;
     }
 
-    /**
-     * @return int
-     */
-    public function cacheTtl()
+    public function cacheTtl(): int
     {
         return $this->cacheTtl;
     }
@@ -64,9 +49,6 @@ class ProjectConfiguration implements RegistrableConfiguration
         return 'project';
     }
 
-    /**
-     * @return array
-     */
     public function configAsArray(): array
     {
         return $this->config;

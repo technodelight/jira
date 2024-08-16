@@ -19,9 +19,9 @@ class Modes extends Command
     private const PADDING_WIDTH_WITH_SEPARATORS = 8;
 
     public function __construct(
-        private readonly RenderersConfiguration $renderersConfiguration,
-        private readonly Wordwrap $wordwrapper,
-        private readonly TerminalDimensionProvider $terminalDimensionProvider
+        private readonly RenderersConfiguration $renderersConf,
+        private readonly Wordwrap $wordWrapper,
+        private readonly TerminalDimensionProvider $termDimensions
     ) {
         parent::__construct();
     }
@@ -33,14 +33,15 @@ class Modes extends Command
             ->setDescription('Show configured issue rendering modes');
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new PrettyTable($output);
         $table->setHeaders(['Name', 'Fields']);
-        foreach ($this->renderersConfiguration->modes() as $mode) {
+        foreach ($this->renderersConf->modes() as $mode) {
             $table->addRow([
                 $mode->name(),
-                $this->wordwrapper->wrap(
+                $this->wordWrapper->wrap(
                     $this->fields($mode->fields()),
                     $this->calculateWrapWidth($mode)
                 )
@@ -63,7 +64,7 @@ class Modes extends Command
 
     private function calculateWrapWidth(RendererConfiguration $mode): int
     {
-        return $this->terminalDimensionProvider->width()
+        return $this->termDimensions->width()
             - strlen($mode->name())
             - self::PADDING_WIDTH_WITH_SEPARATORS;
     }

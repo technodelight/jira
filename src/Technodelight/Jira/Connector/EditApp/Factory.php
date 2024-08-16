@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Connector\EditApp;
 
 use Technodelight\CliEditorInput\AdaptableFactoryWithPreference;
@@ -8,20 +10,10 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\IntegrationsConfig
 
 class Factory
 {
-    /**
-     * @var EditorConfiguration
-     */
-    private $configuration;
+    public function __construct(private readonly EditorConfiguration $configuration) {}
 
-    public function __construct(EditorConfiguration $configuration)
-    {
-        $this->configuration = $configuration;
-    }
-
-    /**
-     * @return CliEditorInput
-     */
-    public function build()
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public function build(): CliEditorInput
     {
         return AdaptableFactoryWithPreference::build($this->configuration->executable());
     }

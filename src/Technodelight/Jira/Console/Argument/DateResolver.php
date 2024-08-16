@@ -46,6 +46,7 @@ class DateResolver implements Resolver
         return $this->resolve($input->getOption($optionName));
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function resolve($inputValue)
     {
         if (empty($inputValue)) {

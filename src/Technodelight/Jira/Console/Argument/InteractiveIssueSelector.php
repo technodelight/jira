@@ -18,6 +18,7 @@ use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\IssueCollection;
 use Technodelight\Jira\Domain\Project;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class InteractiveIssueSelector
 {
     public function __construct(
@@ -117,7 +118,8 @@ class InteractiveIssueSelector
         IssueCollection $issuesToChooseFrom,
         ?string $searchString = null
     ): void {
-        if ($localBranches = $this->git->branches('feature/', false)) {
+        $localBranches = $this->git->branches('feature/', false);
+        if (!empty($localBranches)) {
             $issueKeys = [];
             foreach ($localBranches as $branch) {
                 if ($branch->isRemote()) {

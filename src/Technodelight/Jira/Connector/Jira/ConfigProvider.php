@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Connector\Jira;
 
 use Technodelight\Jira\Api\JiraRestApi\HttpClient\Config;
@@ -7,15 +9,7 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\CurrentInstancePro
 
 class ConfigProvider implements Config
 {
-    /**
-     * @var CurrentInstanceProvider
-     */
-    private $instanceProvider;
-
-    public function __construct(CurrentInstanceProvider $currentInstanceProvider)
-    {
-        $this->instanceProvider = $currentInstanceProvider;
-    }
+    public function __construct(private readonly CurrentInstanceProvider $instanceProvider) {}
 
     public function username()
     {

@@ -21,7 +21,8 @@ class Description implements ProjectRenderer
 
     public function render(OutputInterface $output, Project $project): void
     {
-        if ($description = $project->description()) {
+        $description = $project->description();
+        if (!empty($description)) {
             $output->writeln($this->tab(wordwrap(strip_tags($description))));
         }
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Helper\GitBranchnameGenerator;
 
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
@@ -7,20 +9,11 @@ use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 
 class ExpressionLanguageProvider implements ExpressionFunctionProviderInterface
 {
-    /**
-     * @var StringCleaner
-     */
-    private $cleaner;
 
-    public function __construct(StringCleaner $cleaner)
-    {
-        $this->cleaner = $cleaner;
-    }
+    public function __construct(private readonly StringCleaner $cleaner) {}
 
-    /**
-     * @return ExpressionFunction[] An array of Function instances
-     */
-    public function getFunctions()
+    /** @SuppressWarnings(PHPMD) */
+    public function getFunctions(): array
     {
         $cleaner = $this->cleaner;
 

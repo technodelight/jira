@@ -1,21 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\ApplicationConfiguration;
 
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 
+/** @SuppressWarnings(PHPMD.StaticAccess) */
 class AliasesConfiguration implements RegistrableConfiguration
 {
-    /**
-     * @var AliasConfiguration[]
-     */
-    private $aliases;
-    /**
-     * @var array
-     */
-    private $config;
+    /** @var AliasConfiguration[] */
+    private array $aliases;
+    private array $config;
 
-    public static function fromArray(array $config)
+    public static function fromArray(array $config): AliasesConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -30,12 +28,12 @@ class AliasesConfiguration implements RegistrableConfiguration
         return $instance;
     }
 
-    public function items()
+    public function items(): array
     {
         return $this->aliases;
     }
 
-    public function aliasToIssueKey($alias)
+    public function aliasToIssueKey($alias): string
     {
         foreach ($this->items() as $item) {
             if ($item->alias() == $alias) {
@@ -46,7 +44,7 @@ class AliasesConfiguration implements RegistrableConfiguration
         return $alias;
     }
 
-    public function issueKeyToAlias($issueKey)
+    public function issueKeyToAlias($issueKey): string
     {
         foreach ($this->items() as $item) {
             if ($item->issueKey() == $issueKey) {
@@ -61,9 +59,6 @@ class AliasesConfiguration implements RegistrableConfiguration
         return 'aliases';
     }
 
-    /**
-     * @return array
-     */
     public function configAsArray(): array
     {
         return $this->config;

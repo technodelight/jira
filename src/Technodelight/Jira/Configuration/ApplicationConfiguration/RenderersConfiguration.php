@@ -5,28 +5,29 @@ use InvalidArgumentException;
 use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\RegistrableConfiguration;
 use Technodelight\Jira\Renderer\Issue\CustomField\DefaultFormatter;
 
+/** @SuppressWarnings(PHPMD) */
 class RenderersConfiguration implements RegistrableConfiguration
 {
     /**
      * @var \Technodelight\Jira\Configuration\ApplicationConfiguration\FormatterConfiguration[]
      */
-    private $formatters;
+    private array $formatters;
 
     /**
      * @var RendererConfiguration[]
      */
-    private $modes = [];
+    private array $modes = [];
 
     /**
      * @var array
      */
-    private $preference = [];
+    private array $preference = [];
     /**
      * @var array
      */
-    private $config;
+    private array $config;
 
-    private $defaultFormatters = [
+    private array $defaultFormatters = [
         ['name' => 'default', 'class' => DefaultFormatter::class],
     ];
 
@@ -82,7 +83,8 @@ class RenderersConfiguration implements RegistrableConfiguration
         ]
     ];
 
-    public static function fromArray(array $config)
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
+    public static function fromArray(array $config): RenderersConfiguration
     {
         $instance = new self;
         $instance->config = $config;
@@ -112,9 +114,7 @@ class RenderersConfiguration implements RegistrableConfiguration
             array_merge($instance->defaultFormatters, $config['formatters'] ?? [])
         );
 
-        $instance->preference = isset($config['preference'])
-            ? $config['preference']
-            : ['list' => 'short', 'view' => 'full'];
+        $instance->preference = $config['preference'] ?? ['list' => 'short', 'view' => 'full'];
         foreach ($instance->preference as $type => $renderer) {
             if (!isset($instance->modes[$renderer])) {
                 throw new InvalidArgumentException(
@@ -131,7 +131,7 @@ class RenderersConfiguration implements RegistrableConfiguration
      *
      * @return RendererConfiguration[]
      */
-    public function modes()
+    public function modes(): array
     {
         return $this->modes;
     }
@@ -140,7 +140,7 @@ class RenderersConfiguration implements RegistrableConfiguration
      * @param string $mode
      * @return RendererConfiguration
      */
-    public function mode($mode)
+    public function mode($mode): RendererConfiguration
     {
         if (isset($this->modes[$mode])) {
             return $this->modes[$mode];
@@ -153,7 +153,7 @@ class RenderersConfiguration implements RegistrableConfiguration
      * @param string $mode
      * @return bool
      */
-    public function hasMode($mode)
+    public function hasMode(string $mode): bool
     {
         try {
             $this->mode($mode);
@@ -166,7 +166,7 @@ class RenderersConfiguration implements RegistrableConfiguration
     /**
      * @return FormatterConfiguration[]
      */
-    public function formatters()
+    public function formatters(): array
     {
         return $this->formatters;
     }
@@ -198,8 +198,9 @@ class RenderersConfiguration implements RegistrableConfiguration
     {
     }
 
-    private function configMerged(array $config, $key)
+    /** @SuppressWarnings(PHPMD.UnusedPrivateMethod) */
+    private function configMerged(array $config, string $key): array
     {
-        return array_merge_recursive($this->defaults[$key], isset($config[$key]) ? $config[$key] : []);
+        return array_merge_recursive($this->defaults[$key], $config[$key] ?? []);
     }
 }

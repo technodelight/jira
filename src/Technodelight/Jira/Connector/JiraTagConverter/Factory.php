@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Connector\JiraTagConverter;
 
 use Symfony\Component\Console\Terminal;
@@ -15,11 +17,9 @@ class Factory
     ) {
     }
 
-    public function build(array $opts = [], $setTermWidth = true)
+    public function build(array $opts = []): JiraTagConverter
     {
-        if ($setTermWidth) {
-            $opts['terminalWidth'] = $this->terminal->getWidth();
-        }
+        $opts['terminalWidth'] = $opts['terminalWidth'] ?? $this->terminal->getWidth();
         // do not touch image sequences if iterm image rendering is enabled
         $opts['images'] = $opts['images'] ?? !$this->configuration->renderImages();
 

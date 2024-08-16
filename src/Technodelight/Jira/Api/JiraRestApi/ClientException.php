@@ -10,7 +10,8 @@ class ClientException extends \RuntimeException
 
     public static function fromException(GuzzleClientException $exception): ClientException
     {
-        if ($errorResponse = self::decodeResponse($exception)) {
+        $errorResponse = self::decodeResponse($exception);
+        if (!empty($errorResponse)) {
             return self::fromErrorResponse($errorResponse, $exception);
         }
 

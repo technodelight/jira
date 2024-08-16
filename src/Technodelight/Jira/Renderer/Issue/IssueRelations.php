@@ -20,53 +20,45 @@ class IssueRelations implements IssueRenderer
 
     public function render(OutputInterface $output, Issue $issue): void
     {
-        if ($parent = $issue->parent()) {
+        $parent = $issue->parent();
+        $subtasks = $issue->subtasks();
+        $links = $issue->links();
+
+        if (!empty($parent)) {
             $output->writeln($this->templateHelper->tabulate($this->renderTasks([$parent], 'parent')));
         }
-        if ($subtasks = $issue->subtasks()) {
+        if ($subtasks->count() > 0) {
             $output->writeln($this->templateHelper->tabulate($this->renderTasks(iterator_to_array($subtasks), 'subtasks')));
         }
-        if ($links = $issue->links()) {
+        if (!empty($links)) {
             $output->writeln($this->templateHelper->tabulate($this->renderTasks($links, 'links')));
         }
     }
 
-    private function renderTasks(array $tasks, $header)
+    private function renderTasks(array $tasks, string $header): array
     {
         $rows = [
             sprintf('<comment>%s:</comment> %s', $header, count($tasks) > 1 ? sprintf('(%d)', count($tasks)) : '')
         ];
         foreach ($tasks as $task) {
-            if ($task instanceof IssueLink) {
-                $rows[] = $this->templateHelper->tabulate($this->renderLink($task));
-            } else {
-                $rows[] = $this->templateHelper->tabulate($this->renderRelatedTask($task));
-            }
+            $content = $task instanceof IssueLink ? $this->renderLink($task) : $this->renderTasks($task, $header);
+            $rows[] = $this->templateHelper->tabulate($content);
         }
         return $rows;
     }
 
-    private function renderRelatedTask(Issue $related)
+    private function renderLink(IssueLink $link): string
     {
-        return sprintf(
-            '<info>%s</> %s %s <fg=black>%s</>',
-            $related->issueKey(),
-            $this->formatStatus($related->status()),
-            $related->summary(),
-            $related->url()
-        );
-    }
-
-    private function renderLink(IssueLink $link)
-    {
-        return sprintf(
-            '<comment>%s</> <info>%s</> %s %s <fg=black>%s</> <fg=black>%s</>',
-            $link->isInward() ? $link->type()->inward() : $link->type()->outward(),
-            $link->isInward() ? $link->inwardIssue()->key() : $link->outwardIssue()->key(),
-            $this->formatStatus($link->isInward() ? $link->inwardIssue()->status() : $link->outwardIssue()->status()),
-            $link->isInward() ? $link->inwardIssue()->summary() : $link->outwardIssue()->summary(),
-            $link->id(),
-            $link->isInward() ? $link->inwardIssue()->url() : $link->outwardIssue()->url()
+        return strtr(
+            '<comment>{issue}</> <info>{otherIssue}</> {status} {summary} <fg=black>{id} {url}</>',
+            [
+                '{issue}' => $link->isInward() ? $link->type()->inward() : $link->type()->outward(),
+                '{otherIssue}' => $link->isInward() ? $link->inwardIssue()->key() : $link->outwardIssue()->key(),
+                '{status}' => $this->formatStatus($link->isInward() ? $link->inwardIssue()->status() : $link->outwardIssue()->status()),
+                '{summary}' => $link->isInward() ? $link->inwardIssue()->summary() : $link->outwardIssue()->summary(),
+                '{id}' => $link->id(),
+                '{url}' => $link->isInward() ? $link->inwardIssue()->url() : $link->outwardIssue()->url(),
+            ]
         );
     }
 
