@@ -76,6 +76,7 @@
         <service id="technodelight.jira.renderer.issue.description" alias="technodelight.jira.renderer.issue.description.short" />
         <service id="technodelight.jira.renderer.issue.issue_relations" class="Technodelight\Jira\Renderer\Issue\IssueRelations">
             <argument type="service" id="technodelight.jira.template_helper" />
+            <argument type="service" id="technodelight.jira.renderer.issue.header" />
             <tag name="issue_renderer" key="issue_relations" />
         </service>
         <service id="technodelight.jira.renderer.issue.versions" class="Technodelight\Jira\Renderer\Issue\Versions">

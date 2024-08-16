@@ -17,7 +17,7 @@ class Guesser
         private readonly BranchNameGeneratorConfiguration $branchConfig
     ) {}
 
-    public function guessIssueKey($guessable, Branch $currentBranch = null): ?IssueKey
+    public function guessIssueKey($guessable, ?Branch $currentBranch = null): ?IssueKey
     {
         $fromString = $this->fromString((string)$guessable);
         $fromUrl = $this->fromUrl($guessable);
@@ -42,9 +42,12 @@ class Guesser
     }
 
     /** @SuppressWarnings(PHPMD.StaticAccess) */
-    private function fromBranch(Branch $branch): ?IssueKey
+    private function fromBranch(?Branch $branch): ?IssueKey
     {
         try {
+            if ($branch === null) {
+                return null;
+            }
             $issueKey = $this->aliasConfig->aliasToIssueKey($branch->name());
             if ($issueKey !== $branch->name()) { // has an alias for complete branch name
                 return IssueKey::fromString($issueKey);

@@ -23,6 +23,7 @@ use Technodelight\Jira\Console\Argument\LogTimeArgsOptsParser;
 use Technodelight\Jira\Console\Dashboard\WorklogFetcher;
 use Technodelight\Jira\Console\Input\Worklog\Comment as CommentInput;
 use Technodelight\Jira\Domain\Issue;
+use Technodelight\Jira\Domain\Issue\IssueKey;
 use Technodelight\Jira\Domain\Worklog;
 use Technodelight\Jira\Renderer\DashboardRenderer;
 use Technodelight\Jira\Renderer\Issue\Header as HeaderRenderer;
@@ -154,7 +155,7 @@ class LogTime extends Command
                 $this->askForTimeToLog(
                     $input,
                     $output,
-                    $issueKeyOrWorklogId->issueKey() ? (string)$issueKeyOrWorklogId->issueKey() : '',
+                    $issueKeyOrWorklogId->issueKey(),
                     $issueKeyOrWorklogId->worklog()
                 )
             );
@@ -263,7 +264,7 @@ class LogTime extends Command
             $issueKeyOrWorklogId->issueKey(),
             $timeSpent,
             $comment ?: 'Worked on issue ' . $issueKeyOrWorklogId->issueKey(),
-            $this->dateResolver->argument($input)
+            $this->dateResolver->argument($input)->toDateTime()->format(DateTime::ATOM)
         );
         $this->showSuccessMessages($output, $worklog);
 
@@ -297,7 +298,7 @@ class LogTime extends Command
                 $issue->key(),
                 $time,
                 $comment ?: 'Worked on issue ' . $issue->key(),
-                $this->dateResolver->argument($input)
+                $this->dateResolver->argument($input)->toDateTime()->format(DateTime::ATOM)
             );
             $this->showSuccessMessages($output, $worklog);
             $timeLeft = $timeLeft - $worklog->timeSpentSeconds();
@@ -413,11 +414,11 @@ class LogTime extends Command
     private function askForTimeToLog(
         InputInterface $input,
         OutputInterface $output,
-        string $issueKey,
-        Worklog $worklog = null
+        ?IssueKey $issueKey,
+        ?Worklog $worklog = null
     ): string {
         $question = new Question(
-            $this->loggedTimeDialogText($issueKey, $worklog),
+            $this->loggedTimeDialogText((string)$issueKey, $worklog),
             $worklog ? $this->dateHelper->secondsToHuman($worklog->timeSpentSeconds()) : '1d'
         );
         $question->setValidator(function ($answer) {
@@ -436,7 +437,7 @@ class LogTime extends Command
         $this->dashboardRenderer->render(
             $output,
             $this->dashDataProvider->fetch(
-                date('Y-m-d', strtotime($this->dateResolver->argument($input)))
+                date('Y-m-d', strtotime($this->dateResolver->argument($input)->toDateTime()->format(DateTime::ATOM)))
             )
         );
     }

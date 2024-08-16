@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Technodelight\Jira\Renderer\Issue;
 
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Technodelight\Jira\Api\SymfonyRgbOutputFormatter\PaletteOutputFormatterStyle;
 use Technodelight\Jira\Domain\Issue;
@@ -14,9 +15,10 @@ use Technodelight\Jira\Renderer\IssueRenderer;
 
 class IssueRelations implements IssueRenderer
 {
-    public function __construct(private readonly TemplateHelper $templateHelper)
-    {
-    }
+    public function __construct(
+        private readonly TemplateHelper $templateHelper,
+        private readonly Header $header
+    ) {}
 
     public function render(OutputInterface $output, Issue $issue): void
     {
@@ -37,11 +39,12 @@ class IssueRelations implements IssueRenderer
 
     private function renderTasks(array $tasks, string $header): array
     {
+        $count = count($tasks);
         $rows = [
-            sprintf('<comment>%s:</comment> %s', $header, count($tasks) > 1 ? sprintf('(%d)', count($tasks)) : '')
+            sprintf('<comment>%s:</comment> %s', $header, $count > 1 ? sprintf('(%d)', $count) : '')
         ];
         foreach ($tasks as $task) {
-            $content = $task instanceof IssueLink ? $this->renderLink($task) : $this->renderTasks($task, $header);
+            $content = $task instanceof IssueLink ? $this->renderLink($task) : $this->renderIssue($task);
             $rows[] = $this->templateHelper->tabulate($content);
         }
         return $rows;
@@ -60,6 +63,13 @@ class IssueRelations implements IssueRenderer
                 '{url}' => $link->isInward() ? $link->inwardIssue()->url() : $link->outwardIssue()->url(),
             ]
         );
+    }
+
+    private function renderIssue(Issue $issue): string
+    {
+        $output = new BufferedOutput();
+        $this->header->render($output, $issue);
+        return $output->fetch();
     }
 
     private function formatStatus(Status $status): string

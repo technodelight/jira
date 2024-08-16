@@ -940,9 +940,11 @@ class Api
         $fields = ['body', 'comment', 'value'];
         $accountIds = [];
         foreach ($jiraItem as $field => $value) {
+            if (!in_array($field, $fields, true)) {
+                continue;
+            }
             $numOfMatches = preg_match_all('~(\[\~)(accountid:([^]]+))(\])~smu', $value, $matches);
-            if (in_array($field, $fields, true)
-                && $numOfMatches > 0) {
+            if ($numOfMatches > 0) {
                 for ($i = 0; $i < $numOfMatches; $i++) {
                     $accountIds[] = $matches[3][$i];
                 }
