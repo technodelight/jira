@@ -55,7 +55,7 @@ class IssueKeyResolver
         return $issueKey;
     }
 
-    public function option(InputInterface $input, OutputInterface $output): ?string
+    public function option(InputInterface $input, OutputInterface $output): ?IssueKey
     {
         if (!$input->hasOption(self::OPTION)) {
             return null;

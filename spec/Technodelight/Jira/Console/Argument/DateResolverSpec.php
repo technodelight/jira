@@ -12,6 +12,8 @@ class DateResolverSpec extends ObjectBehavior
 {
     function let(ProjectConfiguration $configuration)
     {
+        $configuration->yesterdayAsWeekday()->willReturn(false);
+
         $this->beConstructedWith($configuration);
     }
 

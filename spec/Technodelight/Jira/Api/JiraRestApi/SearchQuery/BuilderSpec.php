@@ -23,7 +23,7 @@ class BuilderSpec extends ObjectBehavior
     function it_selects_a_project_and_assembles_it(BaseQuery $baseQuery, SearchCondition $projectCondition)
     {
         $projectCondition->getClause()->willReturn('project = "test"');
-        $projectCondition->build()->willReturn($projectCondition);
+        $projectCondition->build()->shouldBeCalled();
 
         $baseQuery->activateCondition('project', ['project' => 'test'])->shouldBeCalled();
         $baseQuery->getActiveConditions()->willReturn(
@@ -41,10 +41,10 @@ class BuilderSpec extends ObjectBehavior
     )
     {
         $projectCondition->getClause()->willReturn('project = "test"');
-        $projectCondition->build()->willReturn($projectCondition);
+        $projectCondition->build()->shouldBeCalled();
         $projectCondition->operator()->willReturn(SearchCondition::OPERATOR_AND);
         $statusCondition->getClause()->willReturn('status = "Open"');
-        $statusCondition->build()->willReturn($statusCondition);
+        $statusCondition->build()->shouldBeCalled();
         $statusCondition->operator()->willReturn(SearchCondition::OPERATOR_AND);
 
         $baseQuery->getActiveConditions()->willReturn(
