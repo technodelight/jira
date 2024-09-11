@@ -33,7 +33,7 @@ jobs:
       run: ./build --workflow
 
     - name: Upload Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       id: upload_artifact
       with:
         name: build
@@ -45,7 +45,7 @@ jobs:
     needs: build
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: build
       - name: Create changelog text
