@@ -32,7 +32,7 @@
         </service>
         <!-- console configuration -->
 
-        <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration" lazy="true">
+        <service id="technodelight.jira.config" class="Technodelight\Jira\Configuration\ApplicationConfiguration">
             <!--see \Technodelight\Jira\Console\DependencyInjection\CompilerPass\ApplicationConfiguration -->
             <factory class="Technodelight\Jira\Configuration\ApplicationConfiguration" method="fromSymfonyConfigArray" />
             <argument type="collection" />

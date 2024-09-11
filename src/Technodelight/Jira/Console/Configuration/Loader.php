@@ -36,9 +36,6 @@ class Loader
     /** @SuppressWarnings(PHPMD.StaticAccess) */
     private function loadConfigurationYaml(SplFileInfo $splFileInfo): array
     {
-        // there can be multiple config files and we must track it by absolute path
-        static $noticeTriggered = [];
-
         $absFilePath = $splFileInfo->getPathname() . DIRECTORY_SEPARATOR . $splFileInfo->getFilename();
         if ($splFileInfo->isReadable() === false && $splFileInfo->getRealPath() !== false) {
             throw FilePrivilegeErrorException::fromUnreadablePath(
