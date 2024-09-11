@@ -3,7 +3,7 @@
     "description": "JIRA PHP console application for day-to-day development",
     "license": "GPL-3.0-or-later",
     "require": {
-        "php": ">= 8.1",
+        "php": ">= 8.2",
         "ext-json": "*",
         "ext-curl": "*",
         "symfony/console": "~6",
