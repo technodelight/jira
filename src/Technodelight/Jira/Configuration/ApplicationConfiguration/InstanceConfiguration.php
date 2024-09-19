@@ -6,11 +6,11 @@ use Technodelight\Jira\Configuration\ApplicationConfiguration\Service\Registrabl
 
 class InstanceConfiguration implements RegistrableConfiguration
 {
-    private $name;
-    private $domain;
-    private $username;
-    private $password;
-    private $worklogHandler;
+    private string $name;
+    private string $domain;
+    private ?string $username;
+    private ?string $password;
+    private string $worklogHandler;
     /**
      * @var array
      */
@@ -22,8 +22,8 @@ class InstanceConfiguration implements RegistrableConfiguration
         $instance->config = $config;
         $instance->name = $config['name'];
         $instance->domain = $config['domain'];
-        $instance->username = $config['username'];
-        $instance->password = $config['password'];
+        $instance->username = $config['email'] ?? $config['username'] ?? null;
+        $instance->password = $config['token'] ?? $config['password'] ?? null;
         $instance->worklogHandler = $config['worklogHandler'];
 
         return $instance;

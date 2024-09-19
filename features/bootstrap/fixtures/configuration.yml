@@ -1,8 +1,8 @@
 instances:
   - name: default
     domain: fixtures.jira.phar
-    username: zenc@zenc.hu
-    password: topSecretPassword
+    email: zenc@zenc.hu
+    token: topSecretPassword
 
 # Project specific settings
 project:

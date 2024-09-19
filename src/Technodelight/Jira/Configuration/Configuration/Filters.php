@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\Configuration;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -9,11 +11,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Filters implements Configuration
 {
-
-    /**
-     * @return ArrayNodeDefinition|NodeDefinition
-     */
-    public function configurations()
+    public function configurations(): ArrayNodeDefinition|NodeDefinition
     {
         $root = (new TreeBuilder('filters'))->getRootNode();
 

@@ -13,7 +13,6 @@ class TreeBuilderFactory
 
         $rootNode
             ->children()
-                ->append((new Credentials)->configurations())
                 ->append((new Instances)->configurations())
                 ->append((new Integrations)->configurations())
                 ->append((new Project)->configurations())

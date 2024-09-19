@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\Configuration\Integrations;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -9,10 +11,7 @@ use Technodelight\Jira\Configuration\Configuration\Configuration;
 
 class Git implements Configuration
 {
-    /**
-     * @return ArrayNodeDefinition|NodeDefinition
-     */
-    public function configurations()
+    public function configurations(): ArrayNodeDefinition|NodeDefinition
     {
         return (new TreeBuilder('git'))->getRootNode()
             ->info('GIT related configurations')

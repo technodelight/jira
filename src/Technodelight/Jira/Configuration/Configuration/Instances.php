@@ -8,11 +8,10 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Instances implements Configuration
 {
-
     /**
      * @return ArrayNodeDefinition|NodeDefinition
      */
-    public function configurations()
+    public function configurations(): ArrayNodeDefinition|NodeDefinition
     {
         $root = (new TreeBuilder('instances'))->getRootNode();
 
@@ -36,18 +35,26 @@ class Instances implements Configuration
                         ->cannotBeEmpty()
                         ->isRequired()
                     ->end()
-                    ->scalarNode('username')
-                        ->info('Instance JIRA username')
+                    ->scalarNode('email')
+                        ->info('Atlassian ID (email)')
                         ->isRequired()
-                        ->defaultValue('<your jira username>')
+                        ->defaultValue('your@atlassian.email')
                         ->cannotBeEmpty()
+                    ->end()
+                    ->scalarNode('token')
+                        ->attribute('hidden', true)
+                        ->info('Instance API token, can be obtained from https://id.atlassian.com/manage-profile/security/api-tokens')
+                        ->defaultValue('supersecrettoken')
+                        ->isRequired()
+                        ->cannotBeEmpty()
+                    ->end()
+                    ->scalarNode('username')
+                        ->info('Instance JIRA username (your atlassian ID)')
+                        ->setDeprecated('technodelight/jira', '0.20.8', 'Use the email key instead')
                     ->end()
                     ->scalarNode('password')
                         ->attribute('hidden', true)
-                        ->info('Instance API token, can be obtained from https://id.atlassian.com/manage-profile/security/api-tokens')
-                        ->defaultValue('supersecretpassword')
-                        ->isRequired()
-                        ->cannotBeEmpty()
+                        ->setDeprecated('technodelight/jira', '0.20.8', 'Use the token key instead')
                     ->end()
                     ->scalarNode('worklogHandler')
                         ->info('Name of the worklog handler, defaults to jira\'s internal one (default)')

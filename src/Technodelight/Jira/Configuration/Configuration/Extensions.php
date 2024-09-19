@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Configuration\Configuration;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -8,10 +10,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Extensions implements Configuration
 {
-    /**
-     * @return ArrayNodeDefinition|NodeDefinition
-     */
-    public function configurations()
+    public function configurations(): ArrayNodeDefinition|NodeDefinition
     {
         $root = (new TreeBuilder('extensions'))->getRootNode();
 
@@ -23,6 +22,7 @@ class Extensions implements Configuration
                     ->prototype('scalar')
                         ->defaultValue([
                             './tools/jira/extensions',
+                            '~/.config/jira/extensions',
                             '~/.jira/extensions',
                         ])
                     ->end()

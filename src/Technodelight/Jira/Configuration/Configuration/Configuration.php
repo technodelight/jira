@@ -10,5 +10,5 @@ interface Configuration
     /**
      * @return ArrayNodeDefinition|NodeDefinition
      */
-    public function configurations();
+    public function configurations(): ArrayNodeDefinition|NodeDefinition;
 }

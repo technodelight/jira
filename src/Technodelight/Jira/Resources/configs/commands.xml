@@ -9,7 +9,7 @@
         <!-- internal commands -->
         <service id="technodelight.jira.app.command.init" class="Technodelight\Jira\Console\Command\App\Init">
             <argument type="service" id="technodelight.jira.connector.symfony_configuration_dumper" />
-            <argument type="service" id="technodelight.gitshell.api.internal" />
+            <argument type="service" id="technodelight.jira.console.configuration.directory_provider" />
             <argument type="service" id="technodelight.jira.console.configuration.tree_builder_factory" />
             <argument type="service" id="console.question_helper" />
             <tag name="command" />
