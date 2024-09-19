@@ -51,6 +51,7 @@ class Loader
         if (!empty($rawConfig['imports'])) {
             $imports = $rawConfig['imports'];
             foreach ($imports as $importDef) {
+                // here, we intentionally not use realpath, thus allowing importing files relative to the config file (which itself might be symlinked)
                 $iterator = new GlobIterator(dirname($parentPath) . DIRECTORY_SEPARATOR . $importDef['resource'], FilesystemIterator::CURRENT_AS_FILEINFO);
                 foreach ($iterator as $fileInfo) {
                     $rawConfig = array_merge_recursive($rawConfig, $this->loadConfigurationYaml($fileInfo));

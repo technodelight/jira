@@ -1,29 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Technodelight\Jira\Console\Configuration;
 
 use Exception;
 use Technodelight\GitShell\ApiInterface as Git;
 
-class DirectoryProvider
+readonly class DirectoryProvider
 {
-    private $git;
-
-    public function __construct(Git $git)
+    public function __construct(private Git $git)
     {
-        $this->git = $git;
     }
 
-    public function project()
+    public function project(): string
     {
         try {
-            return $this->git->topLevelDirectory();
+            $topLevelDirectory = $this->git->topLevelDirectory();
+            if ($topLevelDirectory !== null) {
+                return $topLevelDirectory;
+            }
         } catch (Exception $exc) {
-            return getcwd();
+            // ignore exception
         }
+
+        return getcwd() ?: '.';
     }
 
-    public function user() {
+    public function user(): string
+    {
         return getenv('HOME');
+    }
+
+    public function dotConfig(): string
+    {
+        return getenv('HOME') . '/.config/jira';
     }
 }

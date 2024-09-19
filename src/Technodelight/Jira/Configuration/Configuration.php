@@ -9,39 +9,28 @@ use Technodelight\Jira\Configuration\Configuration\TreeBuilderFactory;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * @var TreeBuilderFactory
-     */
-    private $builder;
-    /**
-     * @var TreeBuilder
-     */
-    private $treeBuilder;
-    /**
-     * @var ArrayNodeDefinition
-     */
-    private $rootNode;
+    private TreeBuilder $treeBuilder;
+    private ArrayNodeDefinition $rootNode;
 
-    public function __construct(TreeBuilderFactory $builder)
+    public function __construct(private readonly TreeBuilderFactory $builder)
     {
-        $this->builder = $builder;
     }
 
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $this->build();
 
         return $this->treeBuilder;
     }
 
-    public function getRootNode()
+    public function getRootNode(): ArrayNodeDefinition
     {
         $this->build();
 
         return $this->rootNode;
     }
 
-    private function build()
+    private function build(): void
     {
         if (!isset($this->treeBuilder) || !isset($this->rootNode)) {
             list ($this->treeBuilder, $this->rootNode) = $this->builder->build();
