@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d04964aa168d104c01943dc49789cd6",
+    "content-hash": "041a64db3da60906728fc5fac7ddffb3",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -1768,30 +1768,33 @@
         },
         {
             "name": "ssnepenthe/color-utils",
-            "version": "0.4.2",
+            "version": "0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ssnepenthe/color-utils.git",
-                "reference": "a68562f81fd603be0c45d102b4e8064c76ddf863"
+                "reference": "dc04a3b57ae29938b363819b57f3c7881a47f685"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ssnepenthe/color-utils/zipball/a68562f81fd603be0c45d102b4e8064c76ddf863",
-                "reference": "a68562f81fd603be0c45d102b4e8064c76ddf863",
+                "url": "https://api.github.com/repos/ssnepenthe/color-utils/zipball/dc04a3b57ae29938b363819b57f3c7881a47f685",
+                "reference": "dc04a3b57ae29938b363819b57f3c7881a47f685",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.0"
+                "php": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phploc/phploc": "^3.0",
-                "phpmd/phpmd": "^2.6",
-                "phpunit/phpunit": "^6.0",
-                "psy/psysh": "^0.8",
-                "squizlabs/php_codesniffer": "^2.8",
-                "vimeo/psalm": "^0.3"
+                "phpunit/phpunit": "^9.0",
+                "vimeo/psalm": "^4.0",
+                "yoast/phpunit-polyfills": "^4.0"
             },
             "type": "library",
+            "extra": {
+                "composer-normalize": {
+                    "indent-size": 4,
+                    "indent-style": "space"
+                }
+            },
             "autoload": {
                 "files": [
                     "inc/colors.php",
@@ -1804,7 +1807,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "GPL-2.0"
+                "GPL-2.0-or-later"
             ],
             "description": "A PHP library for performing SASS-like color manipulations.",
             "homepage": "https://github.com/ssnepenthe/color-utils",
@@ -1834,9 +1837,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ssnepenthe/color-utils/issues",
-                "source": "https://github.com/ssnepenthe/color-utils/tree/master"
+                "source": "https://github.com/ssnepenthe/color-utils/tree/0.5.0"
             },
-            "time": "2017-06-19T16:48:17+00:00"
+            "time": "2026-04-28T16:40:40+00:00"
         },
         {
             "name": "symfony/cache",
@@ -6462,6 +6465,6 @@
         "ext-curl": "*",
         "ext-readline": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }
