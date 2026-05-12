@@ -16,7 +16,7 @@
         "technodelight/seconds-to-none": "~1.0",
         "ssnepenthe/color-utils": "^0.5.0",
         "technodelight/php-time-ago": "^1.1",
-        "loilo/fuse": "^3.2",
+        "loilo/fuse": "^7.1",
         "sebastian/diff": "~4",
         "technodelight/bytes-in-human": "^1.0",
         "technodelight/shell-exec": "^1.0",
