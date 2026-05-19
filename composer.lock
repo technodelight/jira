@@ -665,16 +665,16 @@
         },
         {
             "name": "kriswallsmith/buzz",
-            "version": "1.3.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kriswallsmith/Buzz.git",
-                "reference": "94c65f64b24d90ab9ca2ca82f40368fa0a1d61dd"
+                "reference": "19d742cc36b7bc928ca88565ecb391c363fa46d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kriswallsmith/Buzz/zipball/94c65f64b24d90ab9ca2ca82f40368fa0a1d61dd",
-                "reference": "94c65f64b24d90ab9ca2ca82f40368fa0a1d61dd",
+                "url": "https://api.github.com/repos/kriswallsmith/Buzz/zipball/19d742cc36b7bc928ca88565ecb391c363fa46d3",
+                "reference": "19d742cc36b7bc928ca88565ecb391c363fa46d3",
                 "shasum": ""
             },
             "require": {
@@ -683,7 +683,7 @@
                 "psr/http-client": "^1.0",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
-                "symfony/options-resolver": "^3.4 || ^4.0 || ^5.0 || ^6.0 || ^7.0"
+                "symfony/options-resolver": "^3.4 || ^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0"
             },
             "provide": {
                 "php-http/client-implementation": "1.0",
@@ -729,9 +729,9 @@
             ],
             "support": {
                 "issues": "https://github.com/kriswallsmith/Buzz/issues",
-                "source": "https://github.com/kriswallsmith/Buzz/tree/1.3.0"
+                "source": "https://github.com/kriswallsmith/Buzz/tree/1.4.0"
             },
-            "time": "2024-09-23T13:16:34+00:00"
+            "time": "2026-05-15T12:02:31+00:00"
         },
         {
             "name": "loilo/fuse",
