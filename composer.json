@@ -10,7 +10,7 @@
         "guzzlehttp/guzzle": "~7",
         "symfony/config": "~6",
         "symfony/dependency-injection": "~6",
-        "sirprize/queried": "^0.1.0",
+        "sirprize/queried": "^2.0.0",
         "symfony/yaml": "~6",
         "icanboogie/storage": "^4.2",
         "technodelight/seconds-to-none": "~1.0",
