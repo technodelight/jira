@@ -33,7 +33,7 @@
         "knplabs/github-api": "^3.9",
         "cweagans/composer-patches": "^2.0",
         "ext-readline": "*",
-        "openai-php/client": "^0.19.2"
+        "openai-php/client": "^0.20.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
