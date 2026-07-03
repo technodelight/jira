@@ -38,7 +38,7 @@
     "require-dev": {
         "roave/security-advisories": "dev-latest",
         "behat/behat": "^3.3",
-        "phpspec/phpspec": "~7",
+        "phpspec/phpspec": "~8",
         "phpmd/phpmd": "^2.15"
     },
     "authors": [
