@@ -4849,16 +4849,16 @@
         },
         {
             "name": "phpspec/phpspec",
-            "version": "8.3.0",
+            "version": "8.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/phpspec.git",
-                "reference": "3191d330af2474fdb7d2fe7bff6153426384d423"
+                "reference": "322cb059cda1ca37d16c7d275d73b1bf61d32d76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/3191d330af2474fdb7d2fe7bff6153426384d423",
-                "reference": "3191d330af2474fdb7d2fe7bff6153426384d423",
+                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/322cb059cda1ca37d16c7d275d73b1bf61d32d76",
+                "reference": "322cb059cda1ca37d16c7d275d73b1bf61d32d76",
                 "shasum": ""
             },
             "require": {
@@ -4866,7 +4866,7 @@
                 "ext-tokenizer": "*",
                 "php": "8.2.* || 8.3.* || 8.4.* || 8.5.*",
                 "phpspec/php-diff": "^1.0",
-                "phpspec/prophecy": "^1.16",
+                "phpspec/prophecy": "^1.26.1",
                 "sebastian/exporter": "^3.1 || ^4.0 || ^5.0 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/console": "^5.4 || ^6.0 || ^7.0 || ^8.0",
                 "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.0 || ^8.0",
@@ -4933,9 +4933,9 @@
             ],
             "support": {
                 "issues": "https://github.com/phpspec/phpspec/issues",
-                "source": "https://github.com/phpspec/phpspec/tree/8.3.0"
+                "source": "https://github.com/phpspec/phpspec/tree/8.3.1"
             },
-            "time": "2026-04-13T14:13:44+00:00"
+            "time": "2026-07-04T10:42:34+00:00"
         },
         {
             "name": "phpspec/prophecy",
