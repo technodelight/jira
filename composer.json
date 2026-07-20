@@ -7,7 +7,7 @@
         "ext-json": "*",
         "ext-curl": "*",
         "symfony/console": "~6",
-        "guzzlehttp/guzzle": "~7",
+        "guzzlehttp/guzzle": "~8",
         "symfony/config": "~6",
         "symfony/dependency-injection": "~6",
         "sirprize/queried": "^0.1.0",
